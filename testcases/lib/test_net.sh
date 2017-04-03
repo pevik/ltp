@@ -487,25 +487,14 @@ export PASSWD="${PASSWD:-}"
 # Don't use it in new tests, use tst_rhost_run() from test_net.sh instead.
 export LTP_RSH="${LTP_RSH:-rsh -n}"
 
-# Test Links
-# Set first three octets of the network address, default is '10.0.0'
-export IPV4_NETWORK="${IPV4_NETWORK:-10.0.0}"
-# Set local host last octet, default is '2'
-export LHOST_IPV4_HOST="${LHOST_IPV4_HOST:-2}"
-# Set remote host last octet, default is '1'
-export RHOST_IPV4_HOST="${RHOST_IPV4_HOST:-1}"
-# Set the reverse of IPV4_NETWORK
-export IPV4_NET_REV="${IPV4_NET_REV:-0.0.10}"
-# Set first three octets of the network address, default is 'fd00:1:1:1'
-export IPV6_NETWORK="${IPV6_NETWORK:-fd00:1:1:1}"
-# Set local host last octet, default is '2'
-export LHOST_IPV6_HOST="${LHOST_IPV6_HOST:-:2}"
-# Set remote host last octet, default is '1'
-export RHOST_IPV6_HOST="${RHOST_IPV6_HOST:-:1}"
+# set test links + networks that aren't reachable through the test links
+IPV4_LHOST="${IPV4_LHOST:-10.0.0.2/24}"
+IPV4_RHOST="${IPV4_RHOST:-10.0.0.1/24}"
+eval `tst_net_vars $IPV4_LHOST $IPV4_RHOST`
 
-# Networks that aren't reachable through the test links
-export IPV4_NET16_UNUSED="${IPV4_NET16_UNUSED:-10.23}"
-export IPV6_NET32_UNUSED="${IPV6_NET32_UNUSED:-fd00:23}"
+IPV6_LHOST="${IPV6_LHOST:-fd00:1:1:1::2/64}"
+IPV6_RHOST="${IPV6_RHOST:-fd00:1:1:1::1/64}"
+eval `tst_net_vars $IPV6_LHOST $IPV6_RHOST`
 
 export HTTP_DOWNLOAD_DIR="${HTTP_DOWNLOAD_DIR:-/var/www/html}"
 export FTP_DOWNLOAD_DIR="${FTP_DOWNLOAD_DIR:-/var/ftp}"
