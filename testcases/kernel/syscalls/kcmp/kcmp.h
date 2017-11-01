@@ -21,7 +21,7 @@
 
 #include <sys/types.h>
 #include "config.h"
-#include "linux_syscall_numbers.h"
+#include "lapi/syscalls.h"
 
 #if !defined(HAVE_ENUM_KCMP_TYPE)
 
@@ -46,7 +46,7 @@ enum kcmp_type {
 
 int kcmp(int pid1, int pid2, int type, int fd1, int fd2)
 {
-	return ltp_syscall(__NR_kcmp, pid1, pid2, type, fd1, fd2);
+	return tst_syscall(__NR_kcmp, pid1, pid2, type, fd1, fd2);
 }
 
 #endif

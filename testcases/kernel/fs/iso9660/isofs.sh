@@ -62,7 +62,7 @@ gen_fs_tree()
 
 		mkdir -p "$new_path"
 
-		dd if=/dev/urandom of="$new_path/file" bs=1024 count=100 &> /dev/null
+		dd if=/dev/urandom of="$new_path/file" bs=1024 count=100 >/dev/null 2>&1
 
 		gen_fs_tree "$new_path" $((cur_depth + 1))
 	done
@@ -101,6 +101,8 @@ gen_fs_tree "$MAKE_FILE_SYS_DIR" 1
 
 # Make ISO9660 file system with different options.
 # Mount the ISO9660 file system with different mount options.
+
+tst_check_cmds mkisofs
 
 for mkisofs_opt in \
 	" " \

@@ -58,7 +58,7 @@ CALLS:	mkdir, stat, open
 #include <signal.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <wait.h>
+#include <sys/wait.h>
 
 #ifdef LINUX
 #include <stdlib.h>
@@ -346,10 +346,7 @@ int tree()
 
 	ch_ret_val = check();
 
-	if (gen_ret_val > ch_ret_val)
-		exit_val = ch_ret_val;
-	else
-		exit_val = gen_ret_val;
+	exit_val = MIN(ch_ret_val, gen_ret_val);
 
 	status = fclose(list_stream);
 	if (status != 0) {

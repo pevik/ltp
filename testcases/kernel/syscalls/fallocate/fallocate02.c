@@ -36,10 +36,11 @@
 #include <fcntl.h>
 #include <inttypes.h>
 #include <sys/utsname.h>
+#include <limits.h>
 
 #include "test.h"
 #include "safe_macros.h"
-#include "fallocate.h"
+#include "lapi/fallocate.h"
 
 #define BLOCKS_WRITTEN		12
 #ifdef TEST_DEFAULT

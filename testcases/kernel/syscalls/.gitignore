@@ -5,8 +5,6 @@
 /access/access02
 /access/access03
 /access/access04
-/access/access05
-/access/access06
 /acct/acct01
 /add_key/add_key01
 /add_key/add_key02
@@ -55,6 +53,7 @@
 /chroot/chroot04
 /clock_getres/clock_getres01
 /clock_nanosleep/clock_nanosleep01
+/clock_nanosleep/clock_nanosleep02
 /clock_nanosleep2/clock_nanosleep2_01
 /clone/clone01
 /clone/clone02
@@ -64,6 +63,7 @@
 /clone/clone06
 /clone/clone07
 /clone/clone08
+/clone/clone09
 /close/close01
 /close/close02
 /close/close08
@@ -232,8 +232,15 @@
 /fcntl/fcntl33_64
 /fcntl/fcntl34
 /fcntl/fcntl34_64
+/fcntl/fcntl35
+/fcntl/fcntl35_64
+/fcntl/fcntl36
+/fcntl/fcntl36_64
 /fdatasync/fdatasync01
 /fdatasync/fdatasync02
+/flistxattr/flistxattr01
+/flistxattr/flistxattr02
+/flistxattr/flistxattr03
 /flock/flock01
 /flock/flock02
 /flock/flock03
@@ -357,6 +364,7 @@
 /getsid/getsid02
 /getsockname/getsockname01
 /getsockopt/getsockopt01
+/getsockopt/getsockopt02
 /gettid/gettid01
 /gettimeofday/gettimeofday01
 /gettimeofday/gettimeofday02
@@ -367,6 +375,7 @@
 /getxattr/getxattr01
 /getxattr/getxattr02
 /getxattr/getxattr03
+/getxattr/getxattr04
 /inotify/inotify01
 /inotify/inotify02
 /inotify/inotify03
@@ -383,6 +392,9 @@
 /ioctl/ioctl01
 /ioctl/ioctl02
 /ioctl/ioctl03
+/ioctl/ioctl04
+/ioctl/ioctl05
+/ioctl/ioctl06
 /ioperm/ioperm01
 /ioperm/ioperm02
 /iopl/iopl01
@@ -403,7 +415,6 @@
 /ipc/msgget/msgget01
 /ipc/msgget/msgget02
 /ipc/msgget/msgget03
-/ipc/msgget/msgget04
 /ipc/msgrcv/msgrcv01
 /ipc/msgrcv/msgrcv02
 /ipc/msgrcv/msgrcv03
@@ -414,8 +425,6 @@
 /ipc/msgrcv/msgrcv08
 /ipc/msgsnd/msgsnd01
 /ipc/msgsnd/msgsnd02
-/ipc/msgsnd/msgsnd03
-/ipc/msgsnd/msgsnd04
 /ipc/msgsnd/msgsnd05
 /ipc/msgsnd/msgsnd06
 /ipc/semctl/semctl01
@@ -437,7 +446,6 @@
 /ipc/semop/semop05
 /ipc/shmat/shmat01
 /ipc/shmat/shmat02
-/ipc/shmat/shmat03
 /ipc/shmctl/shmctl01
 /ipc/shmctl/shmctl02
 /ipc/shmctl/shmctl03
@@ -450,8 +458,13 @@
 /ipc/shmget/shmget04
 /ipc/shmget/shmget05
 /keyctl/keyctl01
+/keyctl/keyctl02
+/keyctl/keyctl03
+/keyctl/keyctl04
+/keyctl/keyctl05
 /kcmp/kcmp01
 /kcmp/kcmp02
+/kcmp/kcmp03
 /kill/kill01
 /kill/kill02
 /kill/kill03
@@ -470,6 +483,8 @@
 /lchown/lchown02_16
 /lchown/lchown03
 /lchown/lchown03_16
+/lgetxattr/lgetxattr01
+/lgetxattr/lgetxattr02
 /link/link02
 /link/link03
 /link/link04
@@ -480,6 +495,9 @@
 /linkat/linkat01
 /linkat/linkat02
 /listen/listen01
+/listxattr/listxattr01
+/listxattr/listxattr02
+/listxattr/listxattr03
 /llistxattr/llistxattr01
 /llistxattr/llistxattr02
 /llistxattr/llistxattr03
@@ -488,14 +506,8 @@
 /llseek/llseek03
 /lseek/lseek01
 /lseek/lseek02
-/lseek/lseek03
-/lseek/lseek04
-/lseek/lseek05
-/lseek/lseek06
 /lseek/lseek07
-/lseek/lseek08
-/lseek/lseek09
-/lseek/lseek10
+/lseek/lseek11
 /lstat/lstat01
 /lstat/lstat01_64
 /lstat/lstat02
@@ -508,6 +520,9 @@
 /madvise/madvise04
 /madvise/madvise05
 /madvise/madvise06
+/madvise/madvise07
+/madvise/madvise08
+/madvise/madvise09
 /mallopt/mallopt01
 /mbind/mbind01
 /memcmp/memcmp01
@@ -583,6 +598,7 @@
 /move_pages/move_pages09
 /move_pages/move_pages10
 /move_pages/move_pages11
+/move_pages/move_pages12
 /mprotect/mprotect01
 /mprotect/mprotect02
 /mprotect/mprotect03
@@ -601,6 +617,7 @@
 /msync/msync01
 /msync/msync02
 /msync/msync03
+/msync/msync04
 /munlock/munlock01
 /munlock/munlock02
 /munlockall/munlockall01
@@ -619,7 +636,6 @@
 /nice/nice02
 /nice/nice03
 /nice/nice04
-/nice/nice05
 /open/open01
 /open/open02
 /open/open03
@@ -678,6 +694,8 @@
 /pselect/pselect01_64
 /pselect/pselect02
 /pselect/pselect02_64
+/pselect/pselect03
+/pselect/pselect03_64
 /ptrace/_syscalls.h
 /ptrace/ptrace01
 /ptrace/ptrace02
@@ -698,6 +716,7 @@
 /pwritev/pwritev02_64
 /quotactl/quotactl01
 /quotactl/quotactl02
+/quotactl/quotactl03
 /read/read01
 /read/read02
 /read/read03
@@ -723,6 +742,7 @@
 /recvfrom/recvfrom01
 /recvmsg/recvmsg01
 /recvmsg/recvmsg02
+/recvmsg/recvmsg03
 /remap_file_pages/remap_file_pages01
 /remap_file_pages/remap_file_pages02
 /removexattr/removexattr01
@@ -786,6 +806,7 @@
 /sched_setparam/sched_setparam05
 /sched_setscheduler/sched_setscheduler01
 /sched_setscheduler/sched_setscheduler02
+/sched_setscheduler/sched_setscheduler03
 /sched_yield/sched_yield01
 /select/select01
 /select/select02
@@ -811,6 +832,7 @@
 /sendmsg/sendmsg01
 /sendmsg/sendmsg02
 /sendto/sendto01
+/sendto/sendto02
 /set_robust_list/set_robust_list01
 /set_thread_area/set_thread_area01
 /set_thread_area/set_thread_area02
@@ -864,9 +886,6 @@
 /setpgrp/setpgrp02
 /setpriority/setpriority01
 /setpriority/setpriority02
-/setpriority/setpriority03
-/setpriority/setpriority04
-/setpriority/setpriority05
 /setregid/setregid01
 /setregid/setregid01_16
 /setregid/setregid02
@@ -949,7 +968,6 @@
 /sigwaitinfo/sigwaitinfo01
 /socket/socket01
 /socket/socket02
-/socket/socket03
 /socketcall/socketcall01
 /socketcall/socketcall02
 /socketcall/socketcall03
@@ -960,6 +978,8 @@
 /splice/splice01
 /splice/splice02
 /splice/splice03
+/splice/splice04
+/splice/splice05
 /ssetmask/ssetmask01
 /stat/stat01
 /stat/stat01_64
@@ -1038,8 +1058,6 @@
 /truncate/truncate03_64
 /ulimit/ulimit01
 /umask/umask01
-/umask/umask02
-/umask/umask03
 /umount/umount01
 /umount/umount02
 /umount/umount03
@@ -1092,21 +1110,24 @@
 /waitpid/waitpid12
 /waitpid/waitpid13
 /write/write01
-/write/write02
 /write/write03
 /write/write04
 /write/write05
 /writev/writev01
 /writev/writev02
-/writev/writev03
-/writev/writev04
 /writev/writev05
 /writev/writev06
+/writev/writev07
 /fanotify/fanotify01
 /fanotify/fanotify02
 /fanotify/fanotify03
 /fanotify/fanotify04
 /fanotify/fanotify05
 /fanotify/fanotify06
+/fanotify/fanotify07
+/fanotify/fanotify08
 /perf_event_open/perf_event_open01
 /perf_event_open/perf_event_open02
+/memfd_create/memfd_create01
+/memfd_create/memfd_create02
+/copy_file_range/copy_file_range01

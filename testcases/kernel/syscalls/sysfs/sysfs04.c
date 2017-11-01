@@ -69,9 +69,9 @@
  *****************************************************************************/
 
 #include <errno.h>
-#include  <syscall.h>
+#include  <sys/syscall.h>
 #include "test.h"
-#include "linux_syscall_numbers.h"
+#include "lapi/syscalls.h"
 
 #define INVALID_OPTION 100
 static void setup();

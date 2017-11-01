@@ -43,7 +43,7 @@ static void verify_request_key(void)
 
 	TEST(request_key("keyring", "ltp", NULL, KEY_REQKEY_DEFL_DEFAULT));
 	if (TEST_RETURN == -1) {
-		tst_res(TFAIL | TERRNO, "request_key() failed");
+		tst_res(TFAIL | TTERRNO, "request_key() failed");
 		return;
 	}
 
@@ -61,7 +61,6 @@ static void setup(void)
 }
 
 static struct tst_test test = {
-	.tid = "request_key01",
 	.setup = setup,
 	.test_all = verify_request_key,
 };

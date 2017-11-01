@@ -30,6 +30,24 @@
 	safe_file_scanf(__FILE__, __LINE__, NULL, \
 	                (path), (fmt), ## __VA_ARGS__)
 
+#define FILE_LINES_SCANF(path, fmt, ...) \
+	file_lines_scanf(__FILE__, __LINE__, NULL, 0,\
+			(path), (fmt), ## __VA_ARGS__)
+
+#define SAFE_FILE_LINES_SCANF(path, fmt, ...) \
+	file_lines_scanf(__FILE__, __LINE__, NULL, 1,\
+			(path), (fmt), ## __VA_ARGS__)
+
+#define SAFE_READ_MEMINFO(item) \
+       ({long tst_rval; \
+        SAFE_FILE_LINES_SCANF("/proc/meminfo", item " %ld", \
+                        &tst_rval); \
+        tst_rval;})
+
+#define FILE_PRINTF(path, fmt, ...) \
+	file_printf(__FILE__, __LINE__, \
+		    (path), (fmt), ## __VA_ARGS__)
+
 #define SAFE_FILE_PRINTF(path, fmt, ...) \
 	safe_file_printf(__FILE__, __LINE__, NULL, \
 	                 (path), (fmt), ## __VA_ARGS__)

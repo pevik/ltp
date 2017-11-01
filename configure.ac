@@ -31,12 +31,11 @@ AC_PROG_YACC
 AC_PREFIX_DEFAULT(/opt/ltp)
 
 AC_CHECK_HEADERS([ \
-    dmapi.h \
     ifaddrs.h \
     libaio.h \
     mm.h \
     pthread.h \
-    attr/xattr.h \
+    sys/xattr.h \
     linux/genetlink.h \
     linux/mempolicy.h \
     linux/module.h \
@@ -44,7 +43,6 @@ AC_CHECK_HEADERS([ \
     sys/epoll.h \
     sys/inotify.h \
     sys/fanotify.h \
-    sys/jfsdmapi.h \
     sys/prctl.h \
 ])
 
@@ -106,7 +104,7 @@ fi
 AC_ARG_WITH([open-posix-testsuite],
   [AC_HELP_STRING([--with-open-posix-testsuite],
     [compile and install the open posix testsuite (default=no)])],
-  [with_open_posix_testsuite=yes]
+  [with_open_posix_testsuite=$withval]
 )
 if test "x$with_open_posix_testsuite" = xyes; then
     AC_SUBST([WITH_OPEN_POSIX_TESTSUITE],["yes"])
@@ -131,6 +129,8 @@ else
 fi
 
 AC_CONFIG_SUBDIRS([utils/ffsb-6.0-rc2])
+
+AC_CONFIG_COMMANDS([syscalls.h], [cd include/lapi/syscalls; ./regen.sh])
 
 # END testsuites knobs
 LTP_CHECK_FORTIFY_SOURCE
@@ -188,5 +188,9 @@ LTP_CHECK_PWRITEV
 LTP_CHECK_EPOLL_PWAIT
 LTP_CHECK_KEYUTILS_SUPPORT
 LTP_CHECK_SYNC_ADD_AND_FETCH
+LTP_CHECK_BUILTIN_CLEAR_CACHE
+LTP_CHECK_MMSGHDR
+LTP_CHECK_UNAME_DOMAINNAME
+LTP_CHECK_X_TABLES
 
 AC_OUTPUT

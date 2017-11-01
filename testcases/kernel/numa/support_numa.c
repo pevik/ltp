@@ -1,33 +1,30 @@
 /******************************************************************************/
 /*                                                                            */
 /* Copyright (c) International Business Machines  Corp., 2007                 */
+/* Copyright (c) Linux Test Project, 2016                                     */
 /*                                                                            */
-/* This program is free software;  you can redistribute it and/or modify      */
+/* This program is free software: you can redistribute it and/or modify       */
 /* it under the terms of the GNU General Public License as published by       */
-/* the Free Software Foundation; either version 2 of the License, or          */
+/* the Free Software Foundation, either version 3 of the License, or          */
 /* (at your option) any later version.                                        */
 /*                                                                            */
 /* This program is distributed in the hope that it will be useful,            */
-/* but WITHOUT ANY WARRANTY;  without even the implied warranty of            */
-/* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See                  */
-/* the GNU General Public License for more details.                           */
+/* but WITHOUT ANY WARRANTY; without even the implied warranty of             */
+/* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the              */
+/* GNU General Public License for more details.                               */
 /*                                                                            */
 /* You should have received a copy of the GNU General Public License          */
-/* along with this program;  if not, write to the Free Software               */
-/* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA    */
+/* along with this program. If not, see <http://www.gnu.org/licenses/>.       */
 /*                                                                            */
 /******************************************************************************/
 
 /******************************************************************************/
 /*                                                                            */
-/* File:        support_numa.c                                                     */
+/* File:        support_numa.c                                                */
 /*                                                                            */
-/* Description: Allocates 1MB of memory and touches it to verify numa         */
+/* Description: Allocates memory and touches it to verify numa                */
 /*                                                                            */
 /* Author:      Sivakumar Chinnaiah  Sivakumar.C@in.ibm.com                   */
-/*                                                                            */
-/* History:     Created - Jul 18 2007 - Sivakumar Chinnaiah                   */
-/*                                                 Sivakumar.C@in.ibm.com     */
 /*                                                                            */
 /******************************************************************************/
 
@@ -38,81 +35,152 @@
 #include <signal.h>
 #include <limits.h>
 #include <string.h>
-#include "test.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
+#include <fcntl.h>
+#include "lapi/mmap.h"
 
 /* Global Variables */
 #define MB (1<<20)
 #define PAGE_SIZE getpagesize()
 #define barrier() __asm__ __volatile__("": : :"memory")
+#define TEST_SFILE "ltp_numa_testfile"
+#define STR "abcdefghijklmnopqrstuvwxyz12345\n"
 
-/* Extern Global Variables */
-extern int tst_count;		/* to avoid compilation errors. */
-extern char *TESTDIR;		/* to avoid compilation errors. */
-
-/* Global Variables */
-char *TCID = "support_numa";	/* to avoid compilation errors. */
-int TST_TOTAL = 1;		/* to avoid compilation errors. */
-
-void sigfunc(int sig)
+static void help(void)
 {
-	tst_resm(TINFO, "#Caught signal signum=%d", sig);
+	printf("Input:	Describe input arguments to this program\n");
+	printf("	argv[1] == \"alloc_1MB\" then allocate 1MB of memory\n");
+	printf("	argv[1] == \"alloc_1MB_shared\" then allocate 1MB of share memory\n");
+	printf("	argv[1] == \"alloc_2HPSZ_THP\" then allocate 2HUGE PAGE SIZE of THP memory\n");
+	printf("        argv[1] == \"alloc_1huge_page\" then allocate 1HUGE PAGE SIZE of memory\n");
+	printf("        argv[1] == \"pause\" then pause the program to catch sigint\n");
+	printf("Exit:	On failure - Exits with non-zero value\n");
+	printf("	On success - exits with 0 exit value\n");
+
+	exit(1);
 }
 
-/******************************************************************************/
-/*                                                                            */
-/* Function:    main                                                          */
-/*                                                                            */
-/* Description: Alloctes 1MB of memory and touches it to verify numa behaviour*/
-/*                                                                            */
-/* Input:       Describe input arguments to this program                      */
-/*               argv[1] ==1 then print pagesize                              */
-/*               argv[1] ==2 then allocate 1MB of memory                      */
-/*		 argv[1] ==3 then pause the program to catch sigint	      */
-/*                                                                            */
-/* Exit:       On failure - Exits with non-zero value.                        */
-/*             On success - exits with 0 exit value.                          */
-/*                                                                            */
-/******************************************************************************/
+static int read_hugepagesize(void)
+{
+	FILE *fp;
+	char line[BUFSIZ], buf[BUFSIZ];
+	int val;
+
+	fp = fopen("/proc/meminfo", "r");
+	if (fp == NULL) {
+		fprintf(stderr, "Failed to open /proc/meminfo");
+		return 0;
+	}
+
+	while (fgets(line, BUFSIZ, fp) != NULL) {
+		if (sscanf(line, "%64s %d", buf, &val) == 2)
+			if (strcmp(buf, "Hugepagesize:") == 0) {
+				fclose(fp);
+				return 1024 * val;
+			}
+	}
+
+	fclose(fp);
+	fprintf(stderr, "can't find \"%s\" in %s", "Hugepagesize:", "/proc/meminfo");
+
+	return 0;
+}
 
 int main(int argc, char *argv[])
 {
-	int i;
+	int i, fd, rc, hpsz;
 	char *buf = NULL;
-	int count = 0;
-	struct sigaction sa;
+	struct stat sb;
 
-	switch (atoi(argv[1])) {
-	case 1:
-		printf("%d", PAGE_SIZE);
-		tst_exit();
-	case 2:
+	if (argc != 2) {
+		fprintf(stderr, "Here expect only one number(i.e. 2) as the parameter\n");
+		exit(1);
+	}
+
+	if (!strcmp(argv[1], "alloc_1MB")) {
 		buf = malloc(MB);
 		if (!buf) {
-			tst_resm(TINFO, "#Memory is not available\n");
-			tst_exit();
-			exit(2);
+			fprintf(stderr, "Memory is not available\n");
+			exit(1);
 		}
 		for (i = 0; i < MB; i += PAGE_SIZE) {
-			count++;
 			buf[i] = 'a';
 			barrier();
 		}
+
+		raise(SIGSTOP);
+
 		free(buf);
-		tst_exit();
-	case 3:
-		/* Trap SIGINT */
-		sa.sa_handler = sigfunc;
-		sa.sa_flags = SA_RESTART;
-		sigemptyset(&sa.sa_mask);
-		if (sigaction(SIGINT, &sa, 0) < 0) {
-			tst_brkm(TBROK, NULL, "#Sigaction SIGINT failed\n");
-			tst_exit();
+	} else if (!strcmp(argv[1], "alloc_1MB_shared")) {
+		fd = open(TEST_SFILE, O_RDWR | O_CREAT, 0666);
+		/* Writing 1MB of random data into this file [32 * 32768 = 1024 * 1024] */
+		for (i = 0; i < 32768; i++){
+			rc = write(fd, STR, strlen(STR));
+			if (rc == -1 || ((size_t)rc != strlen(STR)))
+				fprintf(stderr, "write failed\n");
+		}
+
+		if ((fstat(fd, &sb)) == -1)
+			fprintf(stderr, "fstat failed\n");
+
+		buf = mmap(NULL, sb.st_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+		if (buf == MAP_FAILED){
+			fprintf(stderr, "mmap failed\n");
+			close(fd);
 			exit(1);
 		}
-		/* wait for signat Int */
-		pause();
-		tst_exit();
-	default:
-		exit(1);
+
+		memset(buf, 'a', sb.st_size);
+
+		raise(SIGSTOP);
+
+		munmap(buf, sb.st_size);
+		close(fd);
+		remove(TEST_SFILE);
+	} else if (!strcmp(argv[1], "alloc_2HPSZ_THP")) {
+		ssize_t size = 2 * read_hugepagesize();
+		if (size == 0)
+			exit(1);
+
+		buf = mmap(NULL, size, PROT_READ | PROT_WRITE,
+				MAP_PRIVATE | MAP_ANONYMOUS,
+				-1, 0);
+		if (buf == MAP_FAILED) {
+			perror("mmap failed");
+			exit(1);
+		}
+
+		memset(buf, 'a', size);
+
+		raise(SIGSTOP);
+
+		munmap(buf, size);
+	} else if (!strcmp(argv[1], "alloc_1huge_page")) {
+		hpsz = read_hugepagesize();
+		if (hpsz == 0)
+			exit(1);
+
+		buf = mmap(NULL, hpsz, PROT_READ | PROT_WRITE,
+				MAP_PRIVATE | MAP_ANONYMOUS | MAP_HUGETLB,
+				-1, 0);
+
+		if (buf == MAP_FAILED) {
+			perror("mmap failed");
+			exit(1);
+		}
+
+		memset(buf, 'a', hpsz);
+
+		raise(SIGSTOP);
+
+		munmap(buf, hpsz);
+	} else if (!strcmp(argv[1], "pause")) {
+		raise(SIGSTOP);
+	} else {
+		help();
 	}
+
+	return 0;
 }

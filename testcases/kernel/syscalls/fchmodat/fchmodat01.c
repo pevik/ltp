@@ -37,14 +37,13 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <error.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
 #include <signal.h>
 #include "test.h"
 #include "safe_macros.h"
-#include "linux_syscall_numbers.h"
+#include "lapi/syscalls.h"
 
 #define TEST_CASES 6
 #ifndef AT_FDCWD
@@ -128,8 +127,8 @@ void setup(void)
 	fds[0] = SAFE_OPEN(cleanup, pathname, O_DIRECTORY);
 	fds[1] = fds[4] = fds[0];
 
-	SAFE_FILE_PRINTF(cleanup, testfile, testfile);
-	SAFE_FILE_PRINTF(cleanup, testfile2, testfile2);
+	SAFE_FILE_PRINTF(cleanup, testfile, "%s", testfile);
+	SAFE_FILE_PRINTF(cleanup, testfile2, "%s", testfile2);
 
 	fds[2] = SAFE_OPEN(cleanup, testfile3, O_CREAT | O_RDWR, 0600);
 	fds[3] = 100;

@@ -12,7 +12,7 @@ in this document.
 
 Changelog:
 
- * Initial version: Garrett Cooper <yanegomi@gmail.com>
+ * Initial version: Ngie Cooper <yaneurabeya@gmail.com>
  * Reformatted for asciidoc: Cyril Hrubis <chrubis@suse.cz>
 **********************************************************************
 
@@ -109,7 +109,7 @@ the testcase occurred.
 8. Don't roll your own syscall numbers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Header +linux_syscall_numbers.h+ exists for this purpose and does a pretty
+Header +lapi/syscalls.h+ exists for this purpose and does a pretty
 dang good job.
 
 9. Keep errors as short and sweet as possible

@@ -38,6 +38,7 @@
 /*              Manas Kumar Nayak maknayak@in.ibm.com>                        */
 /******************************************************************************/
 
+#define _XOPEN_SOURCE 500
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -47,7 +48,7 @@
 #include <sys/stat.h>
 
 #include "test.h"
-#include "linux_syscall_numbers.h"
+#include "lapi/syscalls.h"
 
 struct testcase_t {
 	const char *msg;

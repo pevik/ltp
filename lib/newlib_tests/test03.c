@@ -28,6 +28,5 @@ static void do_test(void)
 }
 
 static struct tst_test test = {
-	.tid = "test02",
 	.test_all = do_test,
 };

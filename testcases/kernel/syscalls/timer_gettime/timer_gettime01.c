@@ -22,12 +22,12 @@
 
 #include <time.h>
 #include <signal.h>
-#include <syscall.h>
+#include <sys/syscall.h>
 #include <stdio.h>
 #include <errno.h>
 
 #include "test.h"
-#include "linux_syscall_numbers.h"
+#include "lapi/syscalls.h"
 
 char *TCID = "timer_gettime01";
 int TST_TOTAL = 3;

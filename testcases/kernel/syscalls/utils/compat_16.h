@@ -24,7 +24,7 @@
 
 #include <errno.h>
 #include <grp.h>
-#ifdef __GLIBC__
+#if defined(__GLIBC__) || defined(__ANDROID__)
 #include <sys/fsuid.h>
 #endif
 #include <sys/types.h>
@@ -32,7 +32,7 @@
 
 #include "compat_gid.h"
 #include "compat_uid.h"
-#include "linux_syscall_numbers.h"
+#include "lapi/syscalls.h"
 
 int setresuid(uid_t ruid, uid_t euid, uid_t suid);
 int setresgid(gid_t rgid, gid_t egid, gid_t sgid);

@@ -70,9 +70,9 @@
  *****************************************************************************/
 
 #include <errno.h>
-#include <syscall.h>
+#include <sys/syscall.h>
 #include "test.h"
-#include "linux_syscall_numbers.h"
+#include "lapi/syscalls.h"
 
 static void setup();
 static void cleanup();

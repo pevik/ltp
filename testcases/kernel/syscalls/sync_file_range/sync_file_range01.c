@@ -92,7 +92,7 @@
 #include <unistd.h>
 
 #include "test.h"
-#include "linux_syscall_numbers.h"
+#include "lapi/syscalls.h"
 
 #ifndef SYNC_FILE_RANGE_WAIT_BEFORE
 #define SYNC_FILE_RANGE_WAIT_BEFORE 1
@@ -214,6 +214,11 @@ static inline long syncfilerange(int fd, off64_t offset, off64_t nbytes,
 /* s390 */
 #elif (defined(__s390__) || defined(__s390x__)) && __WORDSIZE == 32
 	return ltp_syscall(__NR_sync_file_range, fd, (int)(offset >> 32),
+		(int)offset, (int)(nbytes >> 32), (int)nbytes, flags);
+
+/* mips */
+#elif defined(__mips__) && __WORDSIZE == 32
+	return ltp_syscall(__NR_sync_file_range, fd, 0, (int)(offset >> 32),
 		(int)offset, (int)(nbytes >> 32), (int)nbytes, flags);
 
 /* other */

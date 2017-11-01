@@ -26,9 +26,22 @@ export TST_TOTAL=99
 export TST_COUNT=0
 . test.sh
 
-if tst_kvercmp 2 6 22 ; then
+if tst_kvcmp -lt "2.6.22"; then
 	tst_brkm TCONF "System kernel version is less than 2.6.22,cannot execute test"
 fi
+
+# Starting with 4.8.0 operations on immutable files return EPERM instead of
+# EACCES.
+# This patch has also been merged to stable 4.4 with
+# b3b4283 ("vfs: move permission checking into notify_change() for utimes(NULL)")
+if tst_kvcmp -ge "4.4.27" -a -lt "4.5.0"; then
+	imaccess=EPERM
+elif tst_kvcmp -lt "4.4.27"; then
+	imaccess=EACCES
+else
+	imaccess=EPERM
+fi
+
 
 RESULT_FILE=$TMPDIR/utimensat.result
 
@@ -38,7 +51,7 @@ FILE=$TEST_DIR/utimensat.test_file
 TEST_PROG=utimensat01
 
 if [ ! -f $LTPROOT/testcases/bin/$TEST_PROG ]; then
-	tst_brkm TWARN "$LTPROOT/testcases/bin/$TEST_PROG is missing (please check install)"
+	tst_brkm TBROK "$LTPROOT/testcases/bin/$TEST_PROG is missing (please check install)"
 fi
 
 # Summary counters of all test results
@@ -415,10 +428,10 @@ echo "Testing immutable file, owned by self"
 echo
 
 echo "***** Testing times==NULL case *****"
-run_test -W "" 600 "+i" "" EACCES
+run_test -W "" 600 "+i" "" $imaccess
 
 echo "***** Testing times=={ UTIME_NOW, UTIME_NOW } case *****"
-run_test -W "" 600 "+i" "0 n 0 n" EACCES
+run_test -W "" 600 "+i" "0 n 0 n" $imaccess
 
 echo "***** Testing times=={ UTIME_OMIT, UTIME_OMIT } case *****"
 run_test -W "" 600 "+i" "0 o 0 o" SUCCESS n n
@@ -441,10 +454,10 @@ echo "Testing immutable append-only file, owned by self"
 echo
 
 echo "***** Testing times==NULL case *****"
-run_test -W "" 600 "+ai" "" EACCES
+run_test -W "" 600 "+ai" "" $imaccess
 
 echo "***** Testing times=={ UTIME_NOW, UTIME_NOW } case *****"
-run_test -W "" 600 "+ai" "0 n 0 n" EACCES
+run_test -W "" 600 "+ai" "0 n 0 n" $imaccess
 
 echo "***** Testing times=={ UTIME_OMIT, UTIME_OMIT } case *****"
 run_test -W "" 600 "+ai" "0 o 0 o" SUCCESS n n

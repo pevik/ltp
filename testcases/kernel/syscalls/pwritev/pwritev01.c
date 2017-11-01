@@ -23,10 +23,12 @@
 * and after writing the file, the file offset is not changed.
 */
 
+#define _GNU_SOURCE
 #include <string.h>
 #include <sys/uio.h>
 #include "tst_test.h"
 #include "pwritev.h"
+#include "tst_safe_prw.h"
 
 #define	CHUNK		64
 
@@ -66,7 +68,7 @@ static void verify_pwritev(unsigned int n)
 	}
 
 	if (TEST_RETURN != tc->size) {
-		tst_res(TFAIL, "pwritev() wrote %li bytes, expected %li",
+		tst_res(TFAIL, "pwritev() wrote %li bytes, expected %zi",
 			 TEST_RETURN, tc->size);
 		return;
 	}
@@ -89,7 +91,7 @@ static void verify_pwritev(unsigned int n)
 		return;
 	}
 
-	tst_res(TPASS, "writev() wrote %li bytes successfully "
+	tst_res(TPASS, "writev() wrote %zi bytes successfully "
 		 "with content 'a' expectedly ", tc->size);
 }
 
@@ -102,12 +104,11 @@ static void setup(void)
 
 static void cleanup(void)
 {
-	if (fd > 0 && close(fd))
-		tst_res(TWARN | TERRNO, "failed to close file");
+	if (fd > 0)
+		SAFE_CLOSE(fd);
 }
 
 static struct tst_test test = {
-	.tid = "pwritev01",
 	.tcnt = ARRAY_SIZE(tcases),
 	.setup = setup,
 	.cleanup = cleanup,

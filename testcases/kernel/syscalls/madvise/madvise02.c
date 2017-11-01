@@ -175,12 +175,11 @@ static void advice_test(unsigned int i)
 static void cleanup(void)
 {
 	free(ptr_addr);
-	munmap(file1, st.st_size);
-	munmap(file2, st.st_size - pagesize);
+	SAFE_MUNMAP(file1, st.st_size);
+	SAFE_MUNMAP(file2, st.st_size - pagesize);
 }
 
 static struct tst_test test = {
-	.tid = "madvise02",
 	.tcnt = ARRAY_SIZE(tcases),
 	.test = advice_test,
 	.needs_tmpdir = 1,

@@ -20,7 +20,7 @@
  * with this program; if not, write the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Garrett Cooper, April 2012
+ * Ngie Cooper, April 2012
  */
 
 /****************************************************************************
@@ -45,7 +45,7 @@
 #include <errno.h>
 #include <string.h>
 #include "test.h"
-#include "linux_syscall_numbers.h"
+#include "lapi/syscalls.h"
 #include "inotify.h"
 #include "safe_macros.h"
 

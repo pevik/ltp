@@ -21,6 +21,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <sys/mount.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/time.h>
@@ -29,6 +30,9 @@
 #include "tst_test.h"
 #include "tst_device.h"
 #include "lapi/futex.h"
+#include "lapi/syscalls.h"
+#include "tst_ansi_color.h"
+#include "tst_timer_test.h"
 
 #include "old_resource.h"
 #include "old_device.h"
@@ -36,16 +40,17 @@
 
 struct tst_test *tst_test;
 
-static char tmpdir_created;
 static int iterations = 1;
 static float duration = -1;
 static pid_t main_pid, lib_pid;
+static int mntpoint_mounted;
 
 struct results {
 	int passed;
 	int skipped;
 	int failed;
 	int warnings;
+	unsigned int timeout;
 };
 
 static struct results *results;
@@ -70,14 +75,20 @@ static void setup_ipc(void)
 {
 	size_t size = getpagesize();
 
-#ifndef ANDROID
-	//TODO: Fallback to tst_tmpdir() if /dev/shm does not exits?
-	snprintf(shm_path, sizeof(shm_path), "/dev/shm/ltp_%s_%d",
-	         tst_test->tid, getpid());
-#else
-	snprintf(shm_path, sizeof(shm_path), "%s/ltp_%s_%d",
-	         getenv("TMPDIR"), tst_test->tid, getpid());
-#endif
+	if (access("/dev/shm", F_OK) == 0) {
+		snprintf(shm_path, sizeof(shm_path), "/dev/shm/ltp_%s_%d",
+		         tst_test->tid, getpid());
+	} else {
+		char *tmpdir;
+
+		if (!tst_tmpdir_created())
+			tst_tmpdir();
+
+		tmpdir = tst_get_tmpdir();
+		snprintf(shm_path, sizeof(shm_path), "%s/ltp_%s_%d",
+		         tmpdir, tst_test->tid, getpid());
+		free(tmpdir);
+	}
 
 	ipc_fd = open(shm_path, O_CREAT | O_EXCL | O_RDWR, 0600);
 	if (ipc_fd < 0)
@@ -108,11 +119,13 @@ static void cleanup_ipc(void)
 	if (ipc_fd > 0 && close(ipc_fd))
 		tst_res(TWARN | TERRNO, "close(ipc_fd) failed");
 
-	if (!access(shm_path, F_OK) && unlink(shm_path))
+	if (shm_path[0] && !access(shm_path, F_OK) && unlink(shm_path))
 		tst_res(TWARN | TERRNO, "unlink(%s) failed", shm_path);
 
-	msync((void*)results, size, MS_SYNC);
-	munmap((void*)results, size);
+	if (results) {
+		msync((void*)results, size, MS_SYNC);
+		munmap((void*)results, size);
+	}
 }
 
 void tst_reinit(void)
@@ -137,12 +150,10 @@ void tst_reinit(void)
 	SAFE_CLOSE(fd);
 }
 
-static void update_results(const char *file, unsigned int lineno, int ttype)
+static void update_results(int ttype)
 {
-	if (!results) {
-		tst_brk(TBROK,
-		        "%s: %d: Results IPC not initialized!", file, lineno);
-	}
+	if (!results)
+		return;
 
 	switch (ttype) {
 	case TCONF:
@@ -190,6 +201,7 @@ static void print_result(const char *file, const int lineno, int ttype,
 	break;
 	default:
 		tst_brk(TBROK, "Invalid ttype value %i", ttype);
+		abort();
 	}
 
 	if (ttype & TERRNO)
@@ -198,20 +210,29 @@ static void print_result(const char *file, const int lineno, int ttype,
 	if (ttype & TTERRNO)
 		str_errno = tst_strerrno(TEST_ERRNO);
 
-	ret = snprintf(str, size, "%s:%i: %s: ", file, lineno, res);
+	ret = snprintf(str, size, "%s:%i: ", file, lineno);
+	str += ret;
+	size -= ret;
 
+	if (tst_color_enabled(STDERR_FILENO))
+		ret = snprintf(str, size, "%s%s: %s", tst_ttype2color(ttype),
+			       res, ANSI_COLOR_RESET);
+	else
+		ret = snprintf(str, size, "%s: ", res);
 	str += ret;
 	size -= ret;
 
 	ret = vsnprintf(str, size, fmt, va);
-
 	str += ret;
 	size -= ret;
 
-	if (str_errno)
-		snprintf(str, size, ": %s\n", str_errno);
-	else
-		snprintf(str, size, "\n");
+	if (str_errno) {
+		ret = snprintf(str, size, ": %s", str_errno);
+		str += ret;
+		size -= ret;
+	}
+
+	snprintf(str, size, "\n");
 
 	fputs(buf, stderr);
 }
@@ -221,16 +242,35 @@ void tst_vres_(const char *file, const int lineno, int ttype,
 {
 	print_result(file, lineno, ttype, fmt, va);
 
-	update_results(file, lineno, TTYPE_RESULT(ttype));
+	update_results(TTYPE_RESULT(ttype));
 }
 
 void tst_vbrk_(const char *file, const int lineno, int ttype,
-               const char *fmt, va_list va) __attribute__((noreturn));
+               const char *fmt, va_list va);
+
+static void (*tst_brk_handler)(const char *file, const int lineno, int ttype,
+			       const char *fmt, va_list va) = tst_vbrk_;
+
+static void tst_cvres(const char *file, const int lineno, int ttype,
+		      const char *fmt, va_list va)
+{
+	if (TTYPE_RESULT(ttype) == TBROK) {
+		ttype &= ~TTYPE_MASK;
+		ttype |= TWARN;
+	}
+
+	print_result(file, lineno, ttype, fmt, va);
+	update_results(TTYPE_RESULT(ttype));
+}
 
 static void do_test_cleanup(void)
 {
+	tst_brk_handler = tst_cvres;
+
 	if (tst_test->cleanup)
 		tst_test->cleanup();
+
+	tst_brk_handler = tst_vbrk_;
 }
 
 void tst_vbrk_(const char *file, const int lineno, int ttype,
@@ -238,7 +278,13 @@ void tst_vbrk_(const char *file, const int lineno, int ttype,
 {
 	print_result(file, lineno, ttype, fmt, va);
 
-	if (getpid() == main_pid)
+	/*
+	 * The getpid implementation in some C library versions may cause cloned
+	 * test threads to show the same pid as their parent when CLONE_VM is
+	 * specified but CLONE_THREAD is not. Use direct syscall to avoid
+	 * cleanup running in the child.
+	 */
+	if (syscall(SYS_getpid) == main_pid)
 		do_test_cleanup();
 
 	if (getpid() == lib_pid)
@@ -263,7 +309,7 @@ void tst_brk_(const char *file, const int lineno, int ttype,
 	va_list va;
 
 	va_start(va, fmt);
-	tst_vbrk_(file, lineno, ttype, fmt, va);
+	tst_brk_handler(file, lineno, ttype, fmt, va);
 	va_end(va);
 }
 
@@ -291,7 +337,7 @@ static void check_child_status(pid_t pid, int status)
 	}
 }
 
-static void reap_children(void)
+void tst_reap_children(void)
 {
 	int status;
 	pid_t pid;
@@ -335,10 +381,10 @@ static struct option {
 	char *optstr;
 	char *help;
 } options[] = {
-	{"h",  "-h      Prints this help"},
-	{"i:", "-i n    Execute test n times"},
-	{"I:", "-I x    Execute test for n seconds"},
-	{"C:", "-C ARG  Run child process with ARG arguments (used internally)"},
+	{"h",  "-h       Prints this help"},
+	{"i:", "-i n     Execute test n times"},
+	{"I:", "-I x     Execute test for n seconds"},
+	{"C:", "-C ARG   Run child process with ARG arguments (used internally)"},
 };
 
 static void print_help(void)
@@ -352,7 +398,7 @@ static void print_help(void)
 		return;
 
 	for (i = 0; tst_test->options[i].optstr; i++)
-		fprintf(stderr, "%s", tst_test->options[i].help);
+		fprintf(stderr, "%s\n", tst_test->options[i].help);
 }
 
 static void check_option_collision(void)
@@ -398,7 +444,7 @@ static void parse_topt(unsigned int topts_len, int opt, char *optarg)
 	if (i >= topts_len)
 		tst_brk(TBROK, "Invalid option '%c' (should not happen)", opt);
 
-	*(toptions[i].arg) = optarg;
+	*(toptions[i].arg) = optarg ? optarg : "";
 }
 
 /* see self_exec.c */
@@ -447,6 +493,69 @@ static void parse_opts(int argc, char *argv[])
 	}
 }
 
+int tst_parse_int(const char *str, int *val, int min, int max)
+{
+	long rval;
+
+	if (!str)
+		return 0;
+
+	int ret = tst_parse_long(str, &rval, min, max);
+
+	if (ret)
+		return ret;
+
+	*val = (int)rval;
+	return 0;
+}
+
+int tst_parse_long(const char *str, long *val, long min, long max)
+{
+	long rval;
+	char *end;
+
+	if (!str)
+		return 0;
+
+	errno = 0;
+	rval = strtol(str, &end, 10);
+
+	if (str == end || *end != '\0')
+		return EINVAL;
+
+	if (errno)
+		return errno;
+
+	if (rval > max || rval < min)
+		return ERANGE;
+
+	*val = rval;
+	return 0;
+}
+
+int tst_parse_float(const char *str, float *val, float min, float max)
+{
+	double rval;
+	char *end;
+
+	if (!str)
+		return 0;
+
+	errno = 0;
+	rval = strtod(str, &end);
+
+	if (str == end || *end != '\0')
+		return EINVAL;
+
+	if (errno)
+		return errno;
+
+	if (rval > (double)max || rval < (double)min)
+		return ERANGE;
+
+	*val = (float)rval;
+	return 0;
+}
 
 static void do_exit(int ret)
 {
@@ -460,7 +569,7 @@ static void do_exit(int ret)
 		if (results->failed)
 			ret |= TFAIL;
 
-		if (results->skipped)
+		if (results->skipped && !results->passed)
 			ret |= TCONF;
 
 		if (results->warnings)
@@ -476,7 +585,11 @@ void check_kver(void)
 {
 	int v1, v2, v3;
 
-	tst_parse_kver(tst_test->min_kver, &v1, &v2, &v3);
+	if (tst_parse_kver(tst_test->min_kver, &v1, &v2, &v3)) {
+		tst_res(TWARN,
+		        "Invalid kernel version %s, expected %%d.%%d.%%d",
+		        tst_test->min_kver);
+	}
 
 	if (tst_kvercmp(v1, v2, v3) < 0) {
 		tst_brk(TCONF, "The test requires kernel %s or newer",
@@ -514,25 +627,68 @@ static void copy_resources(void)
 		TST_RESOURCE_COPY(NULL, tst_test->resource_files[i], NULL);
 }
 
+static const char *get_tid(char *argv[])
+{
+	char *p;
+
+	if (!argv[0] || !argv[0][0]) {
+		tst_res(TINFO, "argv[0] is empty!");
+		return "ltp_empty_argv";
+	}
+
+	p = strrchr(argv[0], '/');
+	if (p)
+		return p+1;
+
+	return argv[0];
+}
+
 static struct tst_device tdev;
 struct tst_device *tst_device;
+
+static void assert_test_fn(void)
+{
+	int cnt = 0;
+
+	if (tst_test->test)
+		cnt++;
+
+	if (tst_test->test_all)
+		cnt++;
+
+	if (tst_test->sample)
+		cnt++;
+
+	if (!cnt)
+		tst_brk(TBROK, "No test function speficied");
+
+	if (cnt != 1)
+		tst_brk(TBROK, "You can define only one test function");
+
+	if (tst_test->test && !tst_test->tcnt)
+		tst_brk(TBROK, "Number of tests (tcnt) must not be > 0");
+
+	if (!tst_test->test && tst_test->tcnt)
+		tst_brk(TBROK, "You can define tcnt only for test()");
+}
 
 static void do_setup(int argc, char *argv[])
 {
 	if (!tst_test)
 		tst_brk(TBROK, "No tests to run");
 
-	if (!tst_test->test && !tst_test->test_all)
-		tst_brk(TBROK, "No test function speficied");
+	if (tst_test->tconf_msg)
+		tst_brk(TCONF, "%s", tst_test->tconf_msg);
 
-	if (tst_test->test && tst_test->test_all)
-		tst_brk(TBROK, "You can define either test() or test_all()");
+	assert_test_fn();
 
-	if (tst_test->test && !tst_test->tcnt)
-		tst_brk(TBROK, "Number of tests (tcnt) must not be > 0");
+	if (tst_test->sample)
+		tst_test = tst_timer_test_setup(tst_test);
 
-	if (tst_test->test_all && tst_test->tcnt)
-		tst_brk(TBROK, "You can't define tcnt for test_all()");
+	if (!tst_test->tid)
+		tst_test->tid = get_tid(argv);
+
+	parse_opts(argc, argv);
 
 	if (tst_test->needs_root && geteuid() != 0)
 		tst_brk(TCONF, "Test needs to be run as root");
@@ -540,23 +696,68 @@ static void do_setup(int argc, char *argv[])
 	if (tst_test->min_kver)
 		check_kver();
 
-	parse_opts(argc, argv);
+	if (tst_test->format_device)
+		tst_test->needs_device = 1;
+
+	if (tst_test->mount_device) {
+		tst_test->needs_device = 1;
+		tst_test->format_device = 1;
+	}
 
 	setup_ipc();
 
-	if (needs_tmpdir()) {
+	if (needs_tmpdir() && !tst_tmpdir_created())
 		tst_tmpdir();
-		tmpdir_created = 1;
+
+	if (tst_test->mntpoint)
+		SAFE_MKDIR(tst_test->mntpoint, 0777);
+
+	if ((tst_test->needs_rofs || tst_test->mount_device) &&
+	    !tst_test->mntpoint) {
+		tst_brk(TBROK, "tst_test->mntpoint must be set!");
 	}
 
-	if (tst_test->needs_device) {
-		tdev.dev = tst_acquire_device(NULL);
-		tdev.fs_type = tst_dev_fs_type();
+	if (tst_test->needs_rofs) {
+		/* If we failed to mount read-only tmpfs. Fallback to
+		 * using a device with empty read-only filesystem.
+		 */
+		if (mount(NULL, tst_test->mntpoint, "tmpfs", MS_RDONLY, NULL)) {
+			tst_res(TINFO | TERRNO, "Can't mount tmpfs read-only"
+				" at %s, setting up a device instead\n",
+				tst_test->mntpoint);
+			tst_test->mount_device = 1;
+			tst_test->needs_device = 1;
+			tst_test->format_device = 1;
+			tst_test->mnt_flags = MS_RDONLY;
+		} else {
+			mntpoint_mounted = 1;
+		}
+	}
+
+	if (tst_test->needs_device && !mntpoint_mounted) {
+		tdev.dev = tst_acquire_device_(NULL, tst_test->dev_min_size);
 
 		if (!tdev.dev)
 			tst_brk(TCONF, "Failed to acquire device");
 
 		tst_device = &tdev;
+
+		if (tst_test->dev_fs_type)
+			tdev.fs_type = tst_test->dev_fs_type;
+		else
+			tdev.fs_type = tst_dev_fs_type();
+
+		if (tst_test->format_device) {
+			SAFE_MKFS(tdev.dev, tdev.fs_type,
+			          tst_test->dev_fs_opts,
+				  tst_test->dev_extra_opt);
+		}
+
+		if (tst_test->mount_device) {
+			SAFE_MOUNT(tdev.dev, tst_test->mntpoint, tdev.fs_type,
+				   tst_test->mnt_flags, tst_test->mnt_data);
+			mntpoint_mounted = 1;
+		}
 	}
 
 	if (tst_test->resource_files)
@@ -576,10 +777,13 @@ static void do_test_setup(void)
 
 static void do_cleanup(void)
 {
+	if (mntpoint_mounted)
+		tst_umount(tst_test->mntpoint);
+
 	if (tst_test->needs_device && tdev.dev)
 		tst_release_device(tdev.dev);
 
-	if (needs_tmpdir() && tmpdir_created) {
+	if (tst_tmpdir_created()) {
 		/* avoid munmap() on wrong pointer in tst_rmdir() */
 		tst_futexes = NULL;
 		tst_rmdir();
@@ -601,7 +805,7 @@ static void run_tests(void)
 			exit(0);
 		}
 
-		reap_children();
+		tst_reap_children();
 
 		if (results_equal(&saved_results, results))
 			tst_brk(TBROK, "Test haven't reported results!");
@@ -616,7 +820,7 @@ static void run_tests(void)
 			exit(0);
 		}
 
-		reap_children();
+		tst_reap_children();
 
 		if (results_equal(&saved_results, results))
 			tst_brk(TBROK, "Test %i haven't reported results!", i);
@@ -667,61 +871,110 @@ static void testrun(void)
 }
 
 static pid_t test_pid;
-static unsigned int timeout = 300;
+
+
+static volatile sig_atomic_t sigkill_retries;
+
+#define WRITE_MSG(msg) do { \
+	if (write(2, msg, sizeof(msg) - 1)) { \
+		/* https://gcc.gnu.org/bugzilla/show_bug.cgi?id=66425 */ \
+	} \
+} while (0)
 
 static void alarm_handler(int sig LTP_ATTRIBUTE_UNUSED)
 {
+	WRITE_MSG("Test timeouted, sending SIGKILL!\n");
 	kill(-test_pid, SIGKILL);
+	alarm(5);
+
+	if (++sigkill_retries > 10) {
+		WRITE_MSG("Cannot kill test processes!\n");
+		WRITE_MSG("Congratulation, likely test hit a kernel bug.\n");
+		WRITE_MSG("Exitting uncleanly...\n");
+		_exit(TFAIL);
+	}
 }
 
 static void heartbeat_handler(int sig LTP_ATTRIBUTE_UNUSED)
 {
-	alarm(timeout);
+	alarm(results->timeout);
+	sigkill_retries = 0;
 }
 
-void tst_run_tcases(int argc, char *argv[], struct tst_test *self)
+static void sigint_handler(int sig LTP_ATTRIBUTE_UNUSED)
 {
-	int status;
-	char *mul;
+	if (test_pid > 0) {
+		WRITE_MSG("Sending SIGKILL to test process...\n");
+		kill(-test_pid, SIGKILL);
+	}
+}
 
-	lib_pid = getpid();
-	tst_test = self;
-	TCID = tst_test->tid;
+void tst_set_timeout(int timeout)
+{
+	char *mul = getenv("LTP_TIMEOUT_MUL");
 
-	do_setup(argc, argv);
+	if (timeout == -1) {
+		tst_res(TINFO, "Timeout per run is disabled");
+		return;
+	}
 
-	if (tst_test->timeout)
-		timeout = tst_test->timeout;
+	results->timeout = timeout;
 
-	mul = getenv("LTP_TIMEOUT_MUL");
 	if (mul) {
 		float m = atof(mul);
 
 		if (m < 1)
 			tst_brk(TBROK, "Invalid timeout multiplier '%s'", mul);
 
-		timeout = timeout * m + 0.5;
+		results->timeout = results->timeout * m + 0.5;
 	}
 
-	tst_res(TINFO, "Timeout per run is %us", timeout);
+	tst_res(TINFO, "Timeout per run is %uh %02um %02us",
+		results->timeout/3600, (results->timeout%3600)/60,
+		results->timeout % 60);
+
+	if (getpid() == lib_pid)
+		alarm(results->timeout);
+	else
+		kill(getppid(), SIGUSR1);
+}
+
+void tst_run_tcases(int argc, char *argv[], struct tst_test *self)
+{
+	int status;
+
+	lib_pid = getpid();
+	tst_test = self;
+
+	do_setup(argc, argv);
+
+	TCID = tst_test->tid;
 
 	SAFE_SIGNAL(SIGALRM, alarm_handler);
 	SAFE_SIGNAL(SIGUSR1, heartbeat_handler);
 
-	alarm(timeout);
+	if (tst_test->timeout)
+		tst_set_timeout(tst_test->timeout);
+	else
+		tst_set_timeout(300);
+
+	SAFE_SIGNAL(SIGINT, sigint_handler);
 
 	test_pid = fork();
 	if (test_pid < 0)
 		tst_brk(TBROK | TERRNO, "fork()");
 
 	if (!test_pid) {
+		SAFE_SIGNAL(SIGALRM, SIG_DFL);
+		SAFE_SIGNAL(SIGUSR1, SIG_DFL);
+		SAFE_SIGNAL(SIGINT, SIG_DFL);
 		SAFE_SETPGID(0, 0);
 		testrun();
 	}
 
 	SAFE_WAITPID(test_pid, &status, 0);
-
 	alarm(0);
+	SAFE_SIGNAL(SIGINT, SIG_DFL);
 
 	if (WIFEXITED(status) && WEXITSTATUS(status))
 		do_exit(WEXITSTATUS(status));

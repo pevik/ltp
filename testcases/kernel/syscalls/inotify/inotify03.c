@@ -36,13 +36,13 @@
 #include <sys/mount.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/fcntl.h>
+#include <fcntl.h>
 #include <errno.h>
 #include <string.h>
 #include <sys/syscall.h>
 #include <signal.h>
 #include "test.h"
-#include "linux_syscall_numbers.h"
+#include "lapi/syscalls.h"
 #include "inotify.h"
 
 char *TCID = "inotify03";
@@ -165,6 +165,8 @@ int main(int argc, char *argv[])
 static void setup(void)
 {
 	int ret;
+
+	tst_require_root();
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 

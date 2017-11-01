@@ -26,12 +26,12 @@ stop_dhcp()
 	while [ $count -le 10 ]; do
 		pkill -x $dhcp_name
 		[ "$(pgrep -x $dhcp_name)" ] || return 0
-		usleep 100000
+		tst_sleep 100ms
 		count=$((count + 1))
 	done
 
 	pkill -9 -x $dhcp_name
-	usleep 100000
+	tst_sleep 100ms
 	[ "$(pgrep -x $dhcp_name)" ] && return 1 || return 0
 }
 
@@ -40,8 +40,7 @@ init()
 	tst_require_root
 	tst_check_cmds cat $dhcp_name awk ip pgrep pkill dhclient
 
-	veth_loaded=
-	lsmod | grep -q '^veth ' && veth_loaded=1
+	lsmod | grep -q '^veth ' && veth_loaded=yes || veth_loaded=no
 
 	tst_resm TINFO "create veth interfaces"
 	ip li add $iface0 type veth peer name $iface1 || \
@@ -68,6 +67,8 @@ init()
 
 cleanup()
 {
+	[ -z "$veth_loaded" ] && return
+
 	stop_dhcp
 
 	pkill -f "dhclient -$ipv $iface1"
@@ -81,9 +82,7 @@ cleanup()
 
 	[ $veth_added ] && ip li del $iface0
 
-	if [ -z $veth_loaded ]; then
-		lsmod | grep -q '^veth ' && rmmod veth
-	fi
+	[ "$veth_loaded" = "no" ] && lsmod | grep -q '^veth ' && rmmod veth
 
 	tst_rmdir
 }

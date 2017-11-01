@@ -48,7 +48,7 @@
 #include "config.h"
 #include "test.h"
 #include "safe_macros.h"
-#include "linux_syscall_numbers.h"
+#include "lapi/syscalls.h"
 #include "numa_helper.h"
 #include "migrate_pages_common.h"
 
@@ -126,7 +126,7 @@ static int migrate_to_node(pid_t pid, int node)
 			tst_resm(TFAIL | TERRNO, "migrate_pages failed "
 				 "ret: %ld, ", TEST_RETURN);
 		else
-			tst_resm(TWARN, "migrate_pages could not migrate all "
+			tst_resm(TINFO, "migrate_pages could not migrate all "
 				 "pages, not migrated: %ld", TEST_RETURN);
 		print_mem_stats(pid, node);
 	}

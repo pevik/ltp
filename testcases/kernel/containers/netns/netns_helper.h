@@ -24,7 +24,7 @@
 #include <sched.h>
 #include "config.h"
 #include "libclone.h"
-#include "linux_syscall_numbers.h"
+#include "lapi/syscalls.h"
 #include "test.h"
 #include "safe_macros.h"
 
@@ -56,6 +56,12 @@ static void check_iproute(unsigned int spe_ipver)
 	pclose(ipf);
 }
 
+static int dummy(void *arg)
+{
+	(void) arg;
+	return 0;
+}
+
 static void check_netns(void)
 {
 	int pid, status;
@@ -64,8 +70,8 @@ static void check_netns(void)
 		tst_brkm(TCONF | TERRNO, NULL, "CLONE_NEWNS (%d) not supported",
 			 CLONE_NEWNS);
 
-	pid = do_clone_unshare_test(T_UNSHARE, CLONE_NEWNET | CLONE_NEWNS, NULL,
-			NULL);
+	pid = do_clone_unshare_test(T_UNSHARE, CLONE_NEWNET | CLONE_NEWNS,
+	                            dummy, NULL);
 	if (pid == -1)
 		tst_brkm(TCONF | TERRNO, NULL,
 				"unshare syscall smoke test failed");

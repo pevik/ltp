@@ -19,7 +19,7 @@
 #ifndef __SCHED_H__
 #define __SCHED_H__
 
-#include "linux_syscall_numbers.h"
+#include "lapi/syscalls.h"
 #include <stdint.h>
 #include <inttypes.h>
 
@@ -55,5 +55,21 @@ int sched_getattr(pid_t pid,
 {
 	return syscall(__NR_sched_getattr, pid, attr, size, flags);
 }
+
+#ifndef CLONE_VM
+#define CLONE_VM   0x00000100
+#endif
+
+#ifndef CLONE_FS
+#define CLONE_FS   0x00000200
+#endif
+
+#ifndef CLONE_SYSVSEM
+#define CLONE_SYSVSEM   0x00040000
+#endif
+
+#ifndef CLONE_IO
+#define CLONE_IO        0x80000000
+#endif
 
 #endif /* __SCHED_H__ */
