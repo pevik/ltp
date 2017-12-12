@@ -76,10 +76,6 @@ msgsnd03
 msgsnd04
 msgsnd05
 msgsnd06
-process_vm01
-process_vm_readv02
-process_vm_readv03
-process_vm_writev02
 remap_file_pages01
 remap_file_pages02
 sem01
@@ -512,3 +508,14 @@ setresuid05
 setresgid01
 chown03
 setgroups04
+
+# TODO b/69263988
+# The leapsec timer test relies on manipulations of the system time
+# which may be disrupted if the device is configured to use network time.
+leapsec_timer
+
+# b/70174578
+# The getrusage03 test is dependent on the runtime environment and the current
+# memory pressure in the system, making it a poor choice to include in a
+# compliance test suite.
+getrusage03

@@ -458,8 +458,6 @@ ltp_packages := \
   ltp_getrlimit02 \
   ltp_getrusage01 \
   ltp_getrusage02 \
-  ltp_getrusage03 \
-  ltp_getrusage03_child \
   ltp_getrusage04 \
   ltp_getsid01 \
   ltp_getsid02 \
@@ -539,7 +537,6 @@ ltp_packages := \
   ltp_ksm03 \
   ltp_ksm04 \
   ltp_ksm06 \
-  ltp_leapsec_timer \
   ltp_lftest \
   ltp_lgetxattr01 \
   ltp_lgetxattr02 \
@@ -815,6 +812,10 @@ ltp_packages := \
   ltp_preadv02_64 \
   ltp_print_caps \
   ltp_proc01 \
+  ltp_process_vm01 \
+  ltp_process_vm_readv02 \
+  ltp_process_vm_readv03 \
+  ltp_process_vm_writev02 \
   ltp_pselect01 \
   ltp_pselect01_64 \
   ltp_pselect02 \
