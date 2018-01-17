@@ -33,6 +33,21 @@ char *safe_basename(const char *file, const int lineno,
 	return rval;
 }
 
+int safe_chroot(const char *file, const int lineno, void (*cleanup_fn) (void),
+               const char *path)
+{
+	int rval;
+
+	rval = chroot(path);
+	if (rval == -1) {
+		tst_brkm(TBROK | TERRNO, cleanup_fn,
+			 "%s:%d: chroot(%s) failed",
+			 file, lineno, path);
+	}
+
+	return rval;
+}
+
 int
 safe_chdir(const char *file, const int lineno, void (*cleanup_fn) (void),
 	   const char *path)
