@@ -106,7 +106,7 @@ check_connectivity_interval()
 	check_connectivity $src_iface $dst_addr $cnt
 }
 
-# Run netstress process on both lhost and rhost.
+# Run netstress TCP process on both lhost and rhost.
 # make_background_tcp_traffic [IP]
 # IP: server IP; Default value is $(tst_ipaddr).
 make_background_tcp_traffic()

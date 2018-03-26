@@ -1,0 +1,47 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Copyright (c) 2018 Petr Vorel <pvorel@suse.cz>
+# Copyright (c) International Business Machines Corp., 2005
+# Author: Mitsuru Chinen <mitch@jp.ibm.com>
+
+TST_TESTFUNC="do_test"
+TST_SETUP="do_setup"
+TST_CLEANUP="restore_ipaddr"
+TST_NEEDS_CMDS="ip"
+TST_CNT=$NS_TIMES
+TST_NEEDS_TMPDIR=1
+
+. tst_net_stress.sh
+
+do_setup()
+{
+	mask=$IPV4_LPREFIX
+	[ "$TST_IPV6" ] && mask=$IPV6_LPREFIX
+	netstress_setup
+	tst_res TINFO "change IPv$TST_IPVER route destination $NS_TIMES times"
+}
+
+do_test()
+{
+	local iface=$(tst_iface)
+	local addr new_rt
+
+	new_rt="$(tst_ipaddr_un $1)/$mask"
+	addr="$(tst_ipaddr_un $1 1)"
+
+	tst_res TINFO "testing route '$new_rt'"
+	tst_rhost_run -c "ip addr add $addr/$mask dev $(tst_iface rhost)"
+
+	ROD ip route add $new_rt dev $iface
+	ROD ip neigh replace $addr lladdr $(tst_hwaddr rhost) nud permanent dev $iface
+
+	tst_netload -T udp -r 1 -a 1 -H $addr
+
+	ROD ip neigh del $addr lladdr $(tst_hwaddr rhost) dev $iface
+	ROD ip route del $new_rt dev $iface
+	tst_rhost_run -c "ip addr del $addr/$mask dev $(tst_iface rhost)"
+
+	tst_res TPASS "Test passed"
+}
+
+tst_run
