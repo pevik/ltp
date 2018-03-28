@@ -93,6 +93,9 @@ df_test()
 	ROD_SILENT dd if=/dev/zero of=mntpoint/testimg bs=1024 count=1024
 
 	df_verify $cmd
+	if [ $? -ne 0 ]; then
+		return
+	fi
 
 	df_check $cmd
 	if [ $? -eq 0 ]; then
