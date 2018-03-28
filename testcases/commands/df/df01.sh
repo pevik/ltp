@@ -79,10 +79,7 @@ df_test()
 {
 	cmd="$1 -P"
 
-	df_verify $cmd
-	if [ $? -ne 0 ]; then
-		return
-	fi
+	tst_verify_cmd -o output -n $cmd || return
 
 	df_check $cmd
 	if [ $? -ne 0 ]; then
@@ -92,10 +89,7 @@ df_test()
 
 	ROD_SILENT dd if=/dev/zero of=mntpoint/testimg bs=1024 count=1024
 
-	df_verify $cmd
-	if [ $? -ne 0 ]; then
-		return
-	fi
+	tst_verify_cmd -o output -n $cmd || return
 
 	df_check $cmd
 	if [ $? -eq 0 ]; then
@@ -108,22 +102,6 @@ df_test()
 
 	# flush file system buffers, then we can get the actual sizes.
 	sync
-}
-
-df_verify()
-{
-	$@ >output 2>&1
-	if [ $? -ne 0 ]; then
-		grep -q -E "unrecognized option | invalid option" output
-		if [ $? -eq 0 ]; then
-			tst_res TCONF "'$1' not supported."
-			return 32
-		else
-			tst_res TFAIL "'$1' failed."
-			cat output
-			return 1
-		fi
-	fi
 }
 
 df_check()
@@ -184,44 +162,29 @@ test7()
 
 test8()
 {
-	df_verify "df -h"
-	if [ $? -eq 0 ]; then
-		tst_res TPASS "'df -h' passed."
-	fi
+	tst_verify_cmd "df -h" || return
 }
 
 test9()
 {
-	df_verify "df -H"
-	if [ $? -eq 0 ]; then
-		tst_res TPASS "'df -H' passed."
-	fi
+	tst_verify_cmd "df -H" || return
 }
 
 test10()
 {
-	df_verify "df -m"
-	if [ $? -eq 0 ]; then
-		tst_res TPASS "'df -m' passed."
-	fi
+	tst_verify_cmd "df -m" || return
 }
 
 test11()
 {
-	df_verify "df --version"
-	if [ $? -eq 0 ]; then
-		tst_res TPASS "'df --version' passed."
-	fi
+	tst_verify_cmd "df --version" || return
 }
 
 test12()
 {
 	cmd="df -x ${DF_FS_TYPE} -P"
 
-	df_verify $cmd
-	if [ $? -ne 0 ]; then
-		return
-	fi
+	tst_verify_cmd -o output -n $cmd || return
 
 	grep ${TST_DEVICE} output | grep -q mntpoint
 	if [ $? -ne 0 ]; then

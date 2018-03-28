@@ -211,6 +211,38 @@ tst_check_cmds()
 	done
 }
 
+tst_verify_cmd()
+{
+	local pattern="${TST_VERIFY_CMD_PATTERN:-unrecognized option|invalid option|unknown option|invalid option|Usage}"
+	local opt OPTIND dont_pass output
+
+	while getopts "no:" opt; do
+		case $opt in
+			'n') dont_pass=1;;
+			'o') output="$OPTARG";;
+			*);;
+		esac
+	done
+	[ ! "$output" ] && output=$(mktemp "./LTP_$TST_ID.XXXXXXXXXX")
+
+	shift $((OPTIND - 1))
+
+	$@ >$output 2>&1
+	if [ $? -ne 0 ]; then
+		grep -q -E "$pattern" $output
+		if [ $? -eq 0 ]; then
+			tst_res TCONF "'$1' not supported."
+			return 32
+		fi
+		tst_res TFAIL "'$1' failed."
+		cat $output
+		return 1
+	fi
+	if [ ! "$dont_pass" ]; then
+		tst_res TPASS "'$1' passed."
+	fi
+}
+
 tst_is_int()
 {
 	[ "$1" -eq "$1" ] 2>/dev/null
