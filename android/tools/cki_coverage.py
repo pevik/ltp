@@ -277,22 +277,38 @@ class CKI_Coverage(object):
       return
     count = 0
     uncovered = 0
+
+    print ""
+    print "         Covered Syscalls"
     for syscall in self.cki_syscalls:
+      if not self.passing_tests[syscall]:
+        continue
       if not count % 20:
         print ("%25s   Disabled Skipped Failing Passing -------------" %
                "-------------")
-      sys.stdout.write("%25s   %s        %s       %s       %s" %
+      sys.stdout.write("%25s   %s        %s       %s       %s\n" %
                        (syscall, len(self.disabled_tests[syscall]),
                         len(self.skipped_tests[syscall]),
                         len(self.failing_tests[syscall]),
                         len(self.passing_tests[syscall])))
-      if not self.passing_tests[syscall]:
-        print " <-- uncovered"
-        uncovered += 1
-      else:
-        print ""
       count += 1
-    print ""
+
+    count = 0
+    print "\n"
+    print "       Uncovered Syscalls"
+    for syscall in self.cki_syscalls:
+      if self.passing_tests[syscall]:
+        continue
+      if not count % 20:
+        print ("%25s   Disabled Skipped Failing Passing -------------" %
+               "-------------")
+      sys.stdout.write("%25s   %s        %s       %s       %s\n" %
+                       (syscall, len(self.disabled_tests[syscall]),
+                        len(self.skipped_tests[syscall]),
+                        len(self.failing_tests[syscall]),
+                        len(self.passing_tests[syscall])))
+      uncovered += 1
+      count += 1
     print ("Total uncovered syscalls: %s out of %s" %
            (uncovered, len(self.cki_syscalls)))
 
@@ -304,24 +320,64 @@ class CKI_Coverage(object):
     """
     count = 0
     uncovered = 0
+
+    print ""
+    print "         Covered Syscalls"
     for syscall in self.cki_syscalls:
+      if (len(self.syscall_tests[syscall]) -
+          len(self.disabled_tests[syscall]) <= 0):
+        continue
       if not count % 20:
         print ("%25s   Disabled Enabled -------------" %
                "-------------")
-      sys.stdout.write("%25s   %s        %s" %
+      sys.stdout.write("%25s   %s        %s\n" %
                        (syscall, len(self.disabled_tests[syscall]),
                         len(self.syscall_tests[syscall]) -
                         len(self.disabled_tests[syscall])))
-      if (len(self.syscall_tests[syscall]) -
-          len(self.disabled_tests[syscall]) <= 0):
-        print " <-- uncovered"
-        uncovered += 1
-      else:
-        print ""
       count += 1
+
+    count = 0
+    print "\n"
+    print "       Uncovered Syscalls"
+    for syscall in self.cki_syscalls:
+      if (len(self.syscall_tests[syscall]) -
+          len(self.disabled_tests[syscall]) > 0):
+        continue
+      if not count % 20:
+        print ("%25s   Disabled Enabled -------------" %
+               "-------------")
+      sys.stdout.write("%25s   %s        %s\n" %
+                       (syscall, len(self.disabled_tests[syscall]),
+                        len(self.syscall_tests[syscall]) -
+                        len(self.disabled_tests[syscall])))
+      uncovered += 1
+      count += 1
+
     print ""
     print ("Total uncovered syscalls: %s out of %s" %
            (uncovered, len(self.cki_syscalls)))
+
+  def output_summary(self):
+    """Print a one line summary of the CKI syscall LTP coverage.
+
+    Pretty prints a one line summary of the CKI syscall coverage in LTP
+    for the specified architecture.
+    """
+    uncovered_with_test = 0
+    uncovered_without_test = 0
+    for syscall in self.cki_syscalls:
+      if (len(self.syscall_tests[syscall]) -
+          len(self.disabled_tests[syscall]) > 0):
+        continue
+      if (len(self.disabled_tests[syscall]) > 0):
+        uncovered_with_test += 1
+      else:
+        uncovered_without_test += 1
+    print ("arch, cki syscalls, uncovered with disabled test(s), "
+           "uncovered with no tests, total uncovered")
+    print ("%s, %s, %s, %s, %s" % (self._arch, len(self.cki_syscalls),
+                                uncovered_with_test, uncovered_without_test,
+                                uncovered_with_test + uncovered_without_test))
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(description="Output list of system calls "
@@ -332,6 +388,8 @@ if __name__ == "__main__":
   parser.add_argument("-l", action="store_true",
                       help="list CKI syscalls only, without coverage")
   parser.add_argument("-r", "--results", help="path to VTS test_result.xml")
+  parser.add_argument("-s", action="store_true",
+                      help="print one line summary of CKI coverage for arch")
   args = parser.parse_args()
   if args.arch not in gensyscalls.all_arches:
     print "Arch must be one of the following:"
@@ -340,7 +398,9 @@ if __name__ == "__main__":
 
   cki = gensyscalls.SysCallsTxtParser()
   cki.parse_file(os.path.join(bionic_libc_root, "SYSCALLS.TXT"))
-  cki.parse_file(os.path.join(bionic_libc_root, "SECCOMP_WHITELIST.TXT"))
+  cki.parse_file(os.path.join(bionic_libc_root, "SECCOMP_WHITELIST_APP.TXT"))
+  cki.parse_file(os.path.join(bionic_libc_root, "SECCOMP_WHITELIST_COMMON.TXT"))
+  cki.parse_file(os.path.join(bionic_libc_root, "SECCOMP_WHITELIST_SYSTEM.TXT"))
   cki.parse_file(os.path.join(bionic_libc_root, "SECCOMP_WHITELIST_GLOBAL.TXT"))
   if args.l:
     for syscall in cki.syscalls:
@@ -360,5 +420,10 @@ if __name__ == "__main__":
   beta_string = ("*** WARNING: This script is still in development and may\n"
                  "*** report both false positives and negatives.")
   print beta_string
+
+  if args.s:
+    cki_cov.output_summary()
+    exit(0)
+
   cki_cov.output_results()
   print beta_string
