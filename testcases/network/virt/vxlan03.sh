@@ -1,5 +1,6 @@
 #!/bin/sh
 # SPDX-License-Identifier: GPL-2.0-or-later
+# Copyright (c) 2018 Petr Vorel <pvorel@suse.cz>
 # Copyright (c) 2014-2017 Oracle and/or its affiliates.
 # Author: Alexey Kodanev <alexey.kodanev@oracle.com>
 #
@@ -10,16 +11,15 @@
 # Test-case 2: The same as above but must fail, because VXLAN allows
 #              to communicate only within the same VXLAN segment.
 
-TCID=vxlan03
-TST_TOTAL=4
-TST_NEEDS_TMPDIR=1
-
 virt_type="vxlan"
 start_id=16700000
 
 # Destination address, can be unicast or multicast address
 vxlan_dst_addr="uni"
 
+TST_NEEDS_TMPDIR=1
+TST_TESTFUNC=do_test
+TST_CLEANUP=virt_cleanup
 . virt_lib.sh
 
 # In average cases (with small packets less then 150 bytes) VxLAN slower
@@ -29,30 +29,31 @@ vxlan_dst_addr="uni"
 VIRT_PERF_THRESHOLD=${VIRT_PERF_THRESHOLD:-160}
 [ "$VIRT_PERF_THRESHOLD" -lt 160 ] && VIRT_PERF_THRESHOLD=160
 
-TST_CLEANUP="virt_cleanup"
+do_test()
+{
+	if [ -z $ip_local -o -z $ip_remote ]; then
+		tst_brk TBROK "you must specify IP address"
+	fi
 
-if [ -z $ip_local -o -z $ip_remote ]; then
-	tst_brkm TBROK "you must specify IP address"
-fi
+	opts=" ,gbp"
 
-opts=" ,gbp"
+	for n in $(seq 1 2); do
+		p="$(echo $opts | cut -d',' -f$n)"
 
-for n in $(seq 1 2); do
-	p="$(echo $opts | cut -d',' -f$n)"
+		virt_check_cmd virt_add ltp_v0 id 0 $p || continue
 
-	virt_check_cmd virt_add ltp_v0 id 0 $p || continue
+		tst_res TINFO "the same VNI must work"
+		# VNI is 24 bits long, so max value, which is not reserved, is 0xFFFFFE
+		vxlan_setup_subnet_$vxlan_dst_addr "id 0xFFFFFE $p" "id 0xFFFFFE $p"
+		virt_netperf_msg_sizes
+		virt_cleanup_rmt
 
-	tst_resm TINFO "the same VNI must work"
-	# VNI is 24 bits long, so max value, which is not reserved, is 0xFFFFFE
-	vxlan_setup_subnet_$vxlan_dst_addr "id 0xFFFFFE $p" "id 0xFFFFFE $p"
-	virt_netperf_msg_sizes
-	virt_cleanup_rmt
+		tst_res TINFO "different VNI shall not work together"
+		vxlan_setup_subnet_$vxlan_dst_addr "id 0xFFFFFE $p" "id 0xFFFFFD $p"
+		virt_minimize_timeout
+		virt_compare_netperf "fail"
+		virt_cleanup_rmt
+	done
+}
 
-	tst_resm TINFO "different VNI shall not work together"
-	vxlan_setup_subnet_$vxlan_dst_addr "id 0xFFFFFE $p" "id 0xFFFFFD $p"
-	virt_minimize_timeout
-	virt_compare_netperf "fail"
-	virt_cleanup_rmt
-done
-
-tst_exit
+tst_run
