@@ -1,0 +1,66 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-2.0-or-later
+#
+# Copyright (c) 2018 Petr Vorel <pvorel@suse.cz>
+# Copyright (c) International Business Machines Corp., 2005
+#
+# Author: Mitsuru Chinen <mitch@jp.ibm.com>
+
+TST_TESTFUNC="do_test"
+TST_SETUP="do_setup"
+TST_NEEDS_CMDS="ip"
+
+. tst_net_stress.sh
+
+virt_type="macvlan"
+. virt_lib.sh
+
+IFACE="ltp_v0"
+
+do_setup()
+{
+	if [ "$(echo $LHOST_HWADDRS | wc -w)" -lt 2 ]; then
+		tst_brk TCONF "this test case requires more than one test link in LHOST_HWADDRS variable"
+	fi
+	netstress_setup
+	virt_check_cmd virt_add "$IFACE"
+}
+
+do_test()
+{
+	local iface=$(tst_iface)
+	local iface2="$IFACE"
+	local addr="$(tst_ipaddr_un 1)"
+	local gw="$(tst_ipaddr_un 2)"
+	local cnt=1
+
+	local udp_size=1472
+	local mask=24
+	if [ "$TST_IPV6" ]; then
+		udp_size=1452
+		mask=64
+	fi
+
+	local rt="$(tst_ipaddr_un 0)/$mask"
+
+	tst_res TINFO "change IPv$ipver route gateway $NS_TIMES times"
+
+	while [ $cnt -le $NS_TIMES ]; do
+		# TODO change to iface2
+		ROD ip addr add $addr/$mask dev $iface
+		ROD ip route add $rt dev $iface via $gw
+		ROD ip neigh replace $addr lladdr $(tst_hwaddr rhost) nud permanent dev $iface2
+
+		# Load the route with one UDP datagram
+		ROD ns-udpsender -f $ipver -D $addr -p $cnt -o -s $udp_size
+
+		ROD ip neigh del $addr lladdr $(tst_hwaddr rhost) dev $iface2
+		ROD ip route del $rt dev $iface2 via $gw
+
+		cnt=$(($cnt + 1))
+	done
+
+	tst_res TPASS "test is finished correctly"
+}
+
+tst_run
