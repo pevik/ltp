@@ -246,7 +246,7 @@ tst_rescmp()
 
 tst_run()
 {
-	local tst_i
+	local tst_i tst_data
 
 	if [ -n "$TST_TEST_PATH" ]; then
 		for tst_i in $(grep TST_ "$TST_TEST_PATH" | sed 's/.*TST_//; s/[="} \t\/:`].*//'); do
@@ -255,7 +255,7 @@ tst_run()
 			OPTS|USAGE|PARSE_ARGS|POS_ARGS);;
 			NEEDS_ROOT|NEEDS_TMPDIR|NEEDS_DEVICE|DEVICE);;
 			NEEDS_CMDS|NEEDS_MODULE|MODPATH|DATAROOT);;
-			IPV6);;
+			IPV6|TEST_DATA|TEST_DATA_IFS);;
 			*) tst_res TWARN "Reserved variable TST_$tst_i used!";;
 			esac
 		done
@@ -352,18 +352,30 @@ tst_run()
 			if type ${TST_TESTFUNC}1 > /dev/null 2>&1; then
 				for tst_i in $(seq $TST_CNT); do
 					local res=$(tst_resstr)
-					$TST_TESTFUNC$tst_i
+					$TST_TESTFUNC$tst_i $tst_i $TST_TEST_DATA
 					tst_rescmp "$res"
 					TST_COUNT=$((TST_COUNT+1))
 				done
 			else
 				for tst_i in $(seq $TST_CNT); do
 					local res=$(tst_resstr)
-					$TST_TESTFUNC $tst_i
+					$TST_TESTFUNC $tst_i $TST_TEST_DATA
 					tst_rescmp "$res"
 					TST_COUNT=$((TST_COUNT+1))
 				done
 			fi
+		elif [ -n "$TST_TEST_DATA" ]; then
+			tst_i=1
+			tst_check_cmds cut
+			while true; do
+				tst_data="$(echo "$TST_TEST_DATA" | cut -d"$TST_TEST_DATA_IFS" -f$tst_i)"
+				[ -z "$tst_data" ] && break
+				local res=$(tst_resstr)
+				$TST_TESTFUNC $tst_i "$tst_data"
+				tst_rescmp "$res"
+				TST_COUNT=$((TST_COUNT+1))
+				tst_i=$((tst_i+1))
+			done
 		else
 			local res=$(tst_resstr)
 			$TST_TESTFUNC
@@ -399,6 +411,8 @@ if [ -z "$TST_NO_DEFAULT_RUN" ]; then
 	if [ -z "$TST_TESTFUNC" ]; then
 		tst_brk TBROK "TST_TESTFUNC is not defined"
 	fi
+
+	TST_TEST_DATA_IFS="${TST_TEST_DATA_IFS:- }"
 
 	if [ -n "$TST_CNT" ]; then
 		if ! tst_is_int "$TST_CNT"; then
