@@ -1,0 +1,5 @@
+TST_TEST test.TST_TEST.sh
+TST_TEST.TST_CNT.separate test.TST_TEST.TST_CNT.separate.sh
+TST_TEST.TST_CNT test.TST_TEST.TST_CNT.sh
+TST_TEST.getopts test.TST_TEST.getopts.sh
+TST_TEST.getopts_a_f test.TST_TEST.getopts.sh -a -f foo
