@@ -53,6 +53,7 @@
 #include <signal.h>
 #include <string.h>
 #include "test.h"
+#include "safe_macros.h"
 
 #define DISTANT_MMAP_SIZE (64*1024*1024)
 #define OPT_MISSING(prog, opt) do { \
@@ -60,6 +61,8 @@
         fprintf(stderr, "requires an argument\n"); \
 	usage(prog); \
 } while (0)
+
+#define TEST_FILENAME "ashfile"
 
 static int verbose_print = 0;
 static char *volatile map_address;
@@ -108,13 +111,14 @@ static void sig_handler_mapped(int signal, siginfo_t * info, void *ut)
 
 int mkfile(int size)
 {
-	char template[] = "/tmp/ashfileXXXXXX";
 	int fd, i;
 
-	if ((fd = mkstemp(template)) == -1)
-		tst_brkm(TBROK | TERRNO, NULL, "mkstemp() failed");
+	fd = open(TEST_FILENAME,  O_RDWR | O_CREAT, 0600);
+	if (fd < 0)
+		tst_brkm(TBROK | TERRNO, NULL, "open for %s failed",
+			 TEST_FILENAME);
 
-	unlink(template);
+	unlink(TEST_FILENAME);
 
 	for (i = 0; i < size; i++)
 		if (write(fd, "a", 1) == -1)
@@ -347,8 +351,7 @@ int main(int argc, char **argv)
 		MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
 	if (distant_area == (void *)-1)
 		tst_brkm(TBROK | TERRNO, NULL, "distant_area: mmap()");
-	if (munmap(distant_area, (size_t) DISTANT_MMAP_SIZE) == -1)
-		tst_brkm(TBROK | TERRNO, NULL, "distant_area: munmap()");
+	SAFE_MUNMAP(NULL, distant_area, (size_t)DISTANT_MMAP_SIZE);
 	distant_area += DISTANT_MMAP_SIZE / 2;
 
 	if (verbose_print)
@@ -374,6 +377,8 @@ int main(int argc, char **argv)
 			exit(-1);
 		}
 	}
+
+	tst_tmpdir();
 
 	for (;;) {
 		if ((fd = mkfile(file_size)) == -1)
@@ -415,6 +420,8 @@ int main(int argc, char **argv)
 
 		close(fd);
 	}
+
+	tst_rmdir();
 
 	exit(0);
 }
