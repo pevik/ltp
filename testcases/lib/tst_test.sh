@@ -244,13 +244,21 @@ _tst_rescmp()
 	fi
 }
 
+_tst_get_used_var()
+{
+	local _tst_pattern="$1"
+
+	grep $_tst_pattern "$TST_TEST_PATH" | grep -v '^[[:space:]]*#' | \
+		sed "s/.*${_tst_pattern}//;"' s/[="} \t\/:`].*//'
+}
+
 tst_run()
 {
 	local _tst_i
 	local _tst_name
 
 	if [ -n "$TST_TEST_PATH" ]; then
-		for _tst_i in $(grep TST_ "$TST_TEST_PATH" | sed 's/.*TST_//; s/[="} \t\/:`].*//'); do
+		for _tst_i in $(_tst_get_used_var "TST_"); do
 			case "$_tst_i" in
 			SETUP|CLEANUP|TESTFUNC|ID|CNT|MIN_KVER);;
 			OPTS|USAGE|PARSE_ARGS|POS_ARGS);;
@@ -261,7 +269,7 @@ tst_run()
 			esac
 		done
 
-		for _tst_i in $(grep _tst_ "$TST_TEST_PATH" | sed 's/.*_tst_//; s/[="} \t\/:`].*//'); do
+		for _tst_i in $(_tst_get_used_var "_tst_"); do
 			tst_res TWARN "Private variable or function _tst_$_tst_i used!"
 		done
 	fi
