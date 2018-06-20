@@ -30,6 +30,9 @@ char* safe_basename(const char *file, const int lineno,
 int safe_chdir(const char *file, const int lineno,
                void (*cleanup_fn)(void), const char *path);
 
+int safe_chroot(const char *file, const int lineno,
+               void (*cleanup_fn)(void), const char *path);
+
 int safe_close(const char *file, const int lineno,
                void (*cleanup_fn)(void), int fildes);
 
