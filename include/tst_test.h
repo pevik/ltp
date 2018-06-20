@@ -195,6 +195,15 @@ void tst_reinit(void);
 extern long TEST_RETURN;
 extern int TEST_ERRNO;
 
+extern void *TEST_RETURN_PTR;
+
+#define TESTPTR(SCALL) \
+	do { \
+		errno = 0; \
+		TEST_RETURN_PTR = (void*)(TEST_RETURN = (intptr_t)SCALL); \
+		TEST_ERRNO = errno; \
+	} while (0)
+
 /*
  * Functions to convert ERRNO to its name and SIGNAL to its name.
  */
