@@ -15,6 +15,7 @@
 
 ltp_packages := \
   ltp_abort01 \
+  ltp_abs01 \
   ltp_accept01 \
   ltp_accept4_01 \
   ltp_access01 \
@@ -80,9 +81,13 @@ ltp_packages := \
   ltp_chmod05 \
   ltp_chmod07 \
   ltp_chown01 \
+  ltp_chown01_16 \
   ltp_chown02 \
+  ltp_chown02_16 \
   ltp_chown03 \
+  ltp_chown03_16 \
   ltp_chown05 \
+  ltp_chown05_16 \
   ltp_chroot01 \
   ltp_chroot02 \
   ltp_chroot03 \
@@ -244,10 +249,15 @@ ltp_packages := \
   ltp_fchmod07 \
   ltp_fchmodat01 \
   ltp_fchown01 \
+  ltp_fchown01_16 \
   ltp_fchown02 \
+  ltp_fchown02_16 \
   ltp_fchown03 \
+  ltp_fchown03_16 \
   ltp_fchown04 \
+  ltp_fchown04_16 \
   ltp_fchown05 \
+  ltp_fchown05_16 \
   ltp_fchownat01 \
   ltp_fchownat02 \
   ltp_fcntl01 \
@@ -451,12 +461,21 @@ ltp_packages := \
   ltp_getdomainname01 \
   ltp_getdtablesize01 \
   ltp_getegid01 \
+  ltp_getegid01_16 \
   ltp_getegid02 \
+  ltp_getegid02_16 \
   ltp_geteuid01 \
+  ltp_geteuid01_16 \
   ltp_geteuid02 \
+  ltp_geteuid02_16 \
   ltp_getgid01 \
+  ltp_getgid01_16 \
   ltp_getgid03 \
+  ltp_getgid03_16 \
   ltp_getgroups01 \
+  ltp_getgroups01_16 \
+  ltp_getgroups03 \
+  ltp_getgroups03_16 \
   ltp_gethostbyname_r01 \
   ltp_gethostname01 \
   ltp_getitimer01 \
@@ -498,7 +517,9 @@ ltp_packages := \
   ltp_gettimeofday01 \
   ltp_gettimeofday02 \
   ltp_getuid01 \
+  ltp_getuid01_16 \
   ltp_getuid03 \
+  ltp_getuid03_16 \
   ltp_getxattr01 \
   ltp_getxattr02 \
   ltp_getxattr03 \
@@ -576,10 +597,14 @@ ltp_packages := \
   ltp_ksm02 \
   ltp_ksm03 \
   ltp_ksm04 \
+  ltp_ksm05 \
   ltp_ksm06 \
   ltp_lchown01 \
+  ltp_lchown01_16 \
   ltp_lchown02 \
+  ltp_lchown02_16 \
   ltp_lchown03 \
+  ltp_lchown03_16 \
   ltp_lftest \
   ltp_lgetxattr01 \
   ltp_lgetxattr02 \
@@ -596,6 +621,9 @@ ltp_packages := \
   ltp_listxattr01 \
   ltp_listxattr02 \
   ltp_listxattr03 \
+  ltp_llistxattr01 \
+  ltp_llistxattr02 \
+  ltp_llistxattr03 \
   ltp_llseek01 \
   ltp_llseek02 \
   ltp_llseek03 \
@@ -1027,19 +1055,33 @@ ltp_packages := \
   ltp_setegid01 \
   ltp_setegid02 \
   ltp_setfsgid01 \
+  ltp_setfsgid01_16 \
   ltp_setfsgid02 \
+  ltp_setfsgid02_16 \
   ltp_setfsgid03 \
+  ltp_setfsgid03_16 \
   ltp_setfsuid01 \
+  ltp_setfsuid01_16 \
   ltp_setfsuid02 \
+  ltp_setfsuid02_16 \
   ltp_setfsuid03 \
+  ltp_setfsuid03_16 \
   ltp_setfsuid04 \
+  ltp_setfsuid04_16 \
   ltp_setgid01 \
+  ltp_setgid01_16 \
   ltp_setgid02 \
+  ltp_setgid02_16 \
   ltp_setgid03 \
+  ltp_setgid03_16 \
   ltp_setgroups01 \
+  ltp_setgroups01_16 \
   ltp_setgroups02 \
+  ltp_setgroups02_16 \
   ltp_setgroups03 \
+  ltp_setgroups03_16 \
   ltp_setgroups04 \
+  ltp_setgroups04_16 \
   ltp_sethostname01 \
   ltp_sethostname02 \
   ltp_sethostname03 \
@@ -1055,25 +1097,45 @@ ltp_packages := \
   ltp_setpgrp02 \
   ltp_setpriority02 \
   ltp_setregid01 \
+  ltp_setregid01_16 \
   ltp_setregid02 \
+  ltp_setregid02_16 \
   ltp_setregid03 \
+  ltp_setregid03_16 \
   ltp_setregid04 \
+  ltp_setregid04_16 \
   ltp_setresgid01 \
+  ltp_setresgid01_16 \
   ltp_setresgid02 \
+  ltp_setresgid02_16 \
   ltp_setresgid03 \
+  ltp_setresgid03_16 \
   ltp_setresgid04 \
+  ltp_setresgid04_16 \
   ltp_setresuid01 \
+  ltp_setresuid01_16 \
   ltp_setresuid02 \
+  ltp_setresuid02_16 \
   ltp_setresuid03 \
+  ltp_setresuid03_16 \
   ltp_setresuid04 \
+  ltp_setresuid04_16 \
   ltp_setresuid05 \
+  ltp_setresuid05_16 \
   ltp_setreuid01 \
+  ltp_setreuid01_16 \
   ltp_setreuid02 \
+  ltp_setreuid02_16 \
   ltp_setreuid03 \
+  ltp_setreuid03_16 \
   ltp_setreuid04 \
+  ltp_setreuid04_16 \
   ltp_setreuid05 \
+  ltp_setreuid05_16 \
   ltp_setreuid06 \
+  ltp_setreuid06_16 \
   ltp_setreuid07 \
+  ltp_setreuid07_16 \
   ltp_setrlimit01 \
   ltp_setrlimit02 \
   ltp_setrlimit03 \
@@ -1085,9 +1147,13 @@ ltp_packages := \
   ltp_settimeofday01 \
   ltp_settimeofday02 \
   ltp_setuid01 \
+  ltp_setuid01_16 \
   ltp_setuid02 \
+  ltp_setuid02_16 \
   ltp_setuid03 \
+  ltp_setuid03_16 \
   ltp_setuid04 \
+  ltp_setuid04_16 \
   ltp_setxattr01 \
   ltp_setxattr02 \
   ltp_setxattr03 \
@@ -1245,6 +1311,8 @@ ltp_packages := \
   ltp_testcases_bin_clockdiff01.sh \
   ltp_testcases_bin_cmdlib.sh \
   ltp_testcases_bin_connector_test.sh \
+  ltp_testcases_bin_cp_tests.sh \
+  ltp_testcases_bin_cpio_tests.sh \
   ltp_testcases_bin_cpuacct.sh \
   ltp_testcases_bin_cpuhotplug01.sh \
   ltp_testcases_bin_cpuhotplug02.sh \
@@ -1554,6 +1622,7 @@ ltp_packages := \
   ltp_testcases_bin_memcg_test_4.sh \
   ltp_testcases_bin_memcg_usage_in_bytes_test.sh \
   ltp_testcases_bin_memcg_use_hierarchy_test.sh \
+  ltp_testcases_bin_mkdir_tests.sh \
   ltp_testcases_bin_modaltr.sh \
   ltp_testcases_bin_move_pages.sh \
   ltp_testcases_bin_myfunctions-io.sh \

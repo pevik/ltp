@@ -9,9 +9,6 @@ ulimit01
 
 # Non-POSIX functions not implemented in bionic
 getcontext01
-llistxattr01
-llistxattr02
-llistxattr03
 mallopt01
 profil01
 stime01
@@ -160,13 +157,26 @@ openat02
 process
 sendmsg02
 
+# needs gzip -r
+gzip_tests.sh
+
+# needs mv -b
+mv_tests.sh
+
+# needs tar -d, tar -r
+tar_tests.sh
+
+# needs wc --long-options
+wc01.sh
+
+# needs which --long-options
+which01.sh
+
 # Following tests are for commands that are not available on Android
 # device
 ar01
 at_allow01
 at_deny01
-cp_tests.sh
-cpio_tests.sh
 cron02
 cron03
 cron_allow01
@@ -177,7 +187,6 @@ cron_illegal_cron_lines
 cron_neg_tests.sh
 cron_pos_tests.sh
 cron_tests.sh
-df01.sh
 du01.sh
 eject_check_tray
 eject-tests.sh
@@ -202,7 +211,6 @@ ftrace_tracing_cpumask.sh
 ftrace_tracing_enabled.sh
 ftrace_tracing_max_latency.sh
 ftrace_tracing_on.sh
-gzip_tests.sh
 insmod01.sh
 keyctl01.sh
 ld01
@@ -216,10 +224,7 @@ lddfile5.obj.so
 logrotate_tests.sh
 lsmod01.sh
 mail_tests.sh
-mkdir_tests.sh
-mkfs01.sh
 mkswap01.sh
-mv_tests.sh
 nm01
 sssd01
 sssd02
@@ -228,7 +233,6 @@ sssd-lib.sh
 su01
 su01_s1
 su_set_passwd
-tar_tests.sh
 tpm_changeauth_tests.sh
 tpm_changeauth_tests_exp01.sh
 tpm_changeauth_tests_exp02.sh
@@ -270,8 +274,6 @@ tpmtoken_setpasswd_tests_exp02.sh
 tpmtoken_setpasswd_tests_exp03.sh
 tpmtoken_setpasswd_tests_exp04.sh
 unzip_tests.sh
-wc01.sh
-which01.sh
 
 # Following tests are for containers which Android doesn't support / use.
 # Some of these also require SysV IPC, so they need to be disabled anyway.
@@ -347,6 +349,8 @@ chmod06
 chown04
 chown04_16
 creat06
+df01.sh
+mkfs01.sh
 
 # Requires glob()
 epoll-test
@@ -357,10 +361,6 @@ ioctl02
 # Require aio.h
 growfiles
 pipeio
-
-# Require {get,set}grent()
-getgroups03
-getgroups03_16
 
 # Require mqueue
 mq_timedsend01
@@ -395,12 +395,6 @@ gf13
 
 # Case designed only for i386
 f00f
-
-# build error due to use of <values.h> for MIN_INT
-abs01
-
-# build error due to -Wnull-dereference
-ksm05
 
 # build error due to dereference of sigset_t
 rt_sigsuspend01
