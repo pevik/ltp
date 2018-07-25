@@ -155,7 +155,7 @@ class BuildGenerator(object):
                 target_bp.append('        "%s",' % d)
             target_bp.append('    ],')
 
-        bionic_builtin_libs = set(['m', 'rt', 'pthread'])
+        bionic_builtin_libs = set(['m', 'rt', 'pthread', 'util'])
         filtered_libs = set(local_libraries).difference(bionic_builtin_libs)
 
         static_libraries = set(i for i in local_libraries if i in ltp_libs)
@@ -301,7 +301,8 @@ class BuildGenerator(object):
             "Please copy and paste them into disabled_tests.txt\n")
         for i in cc_libraries:
             if len(set(cc_libraries[i]).intersection(disabled_libs)) > 0:
-                print os.path.basename(i)
+                if not os.path.basename(i) in disabled_tests:
+                    print os.path.basename(i)
 
         print("Disabled_cflag tests: Test cases listed here are"
               "suggested to be disabled since they require a disabled cflag. "
@@ -397,6 +398,17 @@ class BuildGenerator(object):
                                     local_c_includes)
 
         for target in install:
+            # Check if the absolute path to the prebuilt (relative to LTP_ROOT)
+            # is disabled. This is helpful in case there are duplicates with basename
+            # of the prebuilt.
+            #  e.g.
+            #   ./ testcases / kernel / fs / fs_bind / move / test01
+            #   ./ testcases / kernel / fs / fs_bind / cloneNS / test01
+            #   ./ testcases / kernel / fs / fs_bind / regression / test01
+            #   ./ testcases / kernel / fs / fs_bind / rbind / test01
+            #   ./ testcases / kernel / fs / fs_bind / bind / test01
+            if target in disabled_tests:
+                continue
             if os.path.basename(target) in disabled_tests:
                 continue
             local_src_files = install[target]
