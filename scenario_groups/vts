@@ -5,6 +5,7 @@ commands
 connectors
 containers
 cpuhotplug
+cve
 dio
 fcntl-locktests_android
 filecaps
@@ -23,12 +24,12 @@ math
 mm
 modules
 nptl
-numa
 pipes
 power_management_tests
 pty
 sched
+sched_low_mem
+securebits
 syscalls
 timers
-securebits
 tracing
