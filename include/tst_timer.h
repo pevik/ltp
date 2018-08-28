@@ -54,6 +54,11 @@ struct tst_timer {
 	struct timespec start_time;
 };
 
+static inline long long tst_timespec_to_ns(struct timespec t)
+{
+	return t.tv_sec * 1000000000 + t.tv_nsec;
+}
+
 /*
  * Converts timespec to microseconds.
  */
@@ -197,6 +202,12 @@ static inline struct timespec tst_timespec_diff(struct timespec t1,
 	}
 
 	return res;
+}
+
+static inline long long tst_timespec_diff_ns(struct timespec t1,
+					     struct timespec t2)
+{
+	return t1.tv_nsec - t2.tv_nsec + 1000000000LL * (t1.tv_sec - t2.tv_sec);
 }
 
 static inline long long tst_timespec_diff_us(struct timespec t1,
