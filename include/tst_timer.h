@@ -34,6 +34,26 @@
 #include <sys/time.h>
 #include <time.h>
 
+#ifdef CLOCK_MONOTONIC_RAW
+# define TST_CLOCK_DEFAULT CLOCK_MONOTONIC_RAW
+#else
+# define TST_CLOCK_DEFAULT CLOCK_MONOTONIC
+#endif
+
+/**
+ * Encapsulates a stopwatch timer.
+ *
+ * Useful when you need to use multiple timers in a single test.
+ */
+struct tst_timer {
+	/** The POSIX clock type  */
+	clockid_t clock_id;
+	/** How much time can pass before tst_timer_expired_st() returns true */
+	struct timespec limit;
+	/** Where to start measuring time from */
+	struct timespec start_time;
+};
+
 /*
  * Converts timespec to microseconds.
  */
@@ -88,6 +108,19 @@ static inline struct timeval tst_us_to_timeval(long long us)
 
 	ret.tv_sec = us / 1000000;
 	ret.tv_usec = us % 1000000;
+
+	return ret;
+}
+
+/*
+ * Converts seconds to struct timespec
+ */
+static inline struct timespec tst_sec_to_timespec(time_t seconds)
+{
+	struct timespec ret;
+
+	ret.tv_sec = seconds;
+	ret.tv_nsec = 0;
 
 	return ret;
 }
@@ -244,12 +277,22 @@ static inline long long tst_timespec_abs_diff_ms(struct timespec t1,
  */
 void tst_timer_check(clockid_t clk_id);
 
+void tst_timer_init_st(struct tst_timer *tim);
+
 /*
  * Marks a start time for given clock type.
  *
  * @clk_id: Posix clock to use.
  */
 void tst_timer_start(clockid_t clk_id);
+
+/**
+ * Sets the start time for timer tim.
+ *
+ * @relates tst_timer
+ * @param tim The timer to start
+ */
+void tst_timer_start_st(struct tst_timer *tim);
 
 /*
  * Returns true if timer started by tst_timer_start() has been running for
@@ -258,6 +301,14 @@ void tst_timer_start(clockid_t clk_id);
  * @ms: Time interval in miliseconds.
  */
 int tst_timer_expired_ms(long long ms);
+
+/**
+ * Returns true if timer tim has been running for longer than tst_timer::limit
+ *
+ * @relates tst_timer
+ * @param tim The timer to check
+ */
+int tst_timer_expired_st(struct tst_timer *tim);
 
 /*
  * Marks timer end time.

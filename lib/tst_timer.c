@@ -61,6 +61,16 @@ void tst_timer_start(clockid_t clk_id)
 		tst_res(TWARN | TERRNO, "tst_clock_gettime() failed");
 }
 
+void tst_timer_start_st(struct tst_timer *tim)
+{
+	if (!tim->clock_id)
+		tim->clock_id = TST_CLOCK_DEFAULT;
+	tst_timer_check(tim->clock_id);
+
+	if (tst_clock_gettime(tim->clock_id, &tim->start_time))
+		tst_res(TWARN | TERRNO, "tst_clock_gettime() failed");
+}
+
 int tst_timer_expired_ms(long long ms)
 {
 	struct timespec cur_time;
@@ -69,6 +79,17 @@ int tst_timer_expired_ms(long long ms)
 		tst_res(TWARN | TERRNO, "tst_clock_gettime() failed");
 
 	return tst_timespec_diff_ms(cur_time, start_time) >= ms;
+}
+
+int tst_timer_expired_st(struct tst_timer *tim)
+{
+	struct timespec cur_time;
+
+	if (tst_clock_gettime(tim->clock_id, &cur_time))
+		tst_res(TWARN | TERRNO, "tst_clock_gettime() failed");
+
+	return tst_timespec_lt(tim->limit,
+			       tst_timespec_diff(cur_time, tim->start_time));
 }
 
 void tst_timer_stop(void)
