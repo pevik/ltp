@@ -34,8 +34,6 @@
 
 static struct tst_fzsync_pair fzsync_pair = TST_FZSYNC_PAIR_INIT;
 
-static pthread_t thrd;
-
 /*
  * Thread 2: repeatedly remove the shm ID and reallocate it again for a
  * new shm segment.
@@ -44,12 +42,10 @@ static void *thrproc(void *unused)
 {
 	int id = SAFE_SHMGET(0xF00F, 4096, IPC_CREAT|0700);
 
-	for (;;) {
-		if (!tst_fzsync_wait_b(&fzsync_pair))
-			break;
+	while (tst_fzsync_start_race_b(&fzsync_pair)) {
 		SAFE_SHMCTL(id, IPC_RMID, NULL);
 		id = SAFE_SHMGET(0xF00F, 4096, IPC_CREAT|0700);
-		if (!tst_fzsync_wait_b(&fzsync_pair))
+		if (!tst_fzsync_end_race_b(&fzsync_pair))
 			break;
 	}
 	return unused;
@@ -57,30 +53,27 @@ static void *thrproc(void *unused)
 
 static void setup(void)
 {
-	tst_timer_check(CLOCK_MONOTONIC);
-
+	fzsync_pair.execution_time = 5;
 	/* Skip test if either remap_file_pages() or SysV IPC is unavailable */
 	tst_syscall(__NR_remap_file_pages, NULL, 0, 0, 0, 0);
 	tst_syscall(__NR_shmctl, 0xF00F, IPC_RMID, NULL);
-
-	SAFE_PTHREAD_CREATE(&thrd, NULL, thrproc, NULL);
 }
 
 static void do_test(void)
 {
-	tst_timer_start(CLOCK_MONOTONIC);
-
 	/*
 	 * Thread 1: repeatedly attach a shm segment, then remap it until the ID
 	 * seems to have been removed by the other process.
 	 */
-	while (!tst_timer_expired_ms(5000)) {
+	tst_fzsync_pair_reset(&fzsync_pair, thrproc);
+	for (;;) {
 		int id;
 		void *addr;
 
 		id = SAFE_SHMGET(0xF00F, 4096, IPC_CREAT|0700);
 		addr = SAFE_SHMAT(id, NULL, 0);
-		tst_fzsync_wait_a(&fzsync_pair);
+		if (!tst_fzsync_start_race_a(&fzsync_pair))
+			break;
 		do {
 			/* This is the system call that crashed */
 			TEST(syscall(__NR_remap_file_pages, addr, 4096,
@@ -106,10 +99,7 @@ static void do_test(void)
 
 static void cleanup(void)
 {
-	if (thrd) {
-		tst_fzsync_pair_exit(&fzsync_pair);
-		SAFE_PTHREAD_JOIN(thrd, NULL);
-	}
+	tst_fzsync_pair_cleanup(&fzsync_pair);
 	shmctl(0xF00F, IPC_RMID, NULL);
 }
 

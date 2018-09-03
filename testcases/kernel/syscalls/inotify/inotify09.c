@@ -52,19 +52,16 @@
 #include <sys/inotify.h>
 
 static struct tst_fzsync_pair fzsync_pair = TST_FZSYNC_PAIR_INIT;
-static pthread_t pt_write_seek;
 static int fd;
 
 static void *write_seek(void *unused)
 {
 	char buf[64];
 
-	while (tst_fzsync_wait_update_b(&fzsync_pair)) {
-		tst_fzsync_delay_b(&fzsync_pair);
+	while (tst_fzsync_start_race_b(&fzsync_pair)) {
 		SAFE_WRITE(0, fd, buf, sizeof(buf));
-		tst_fzsync_time_b(&fzsync_pair);
 		SAFE_LSEEK(fd, 0, SEEK_SET);
-		if (!tst_fzsync_wait_b(&fzsync_pair))
+		if (!tst_fzsync_end_race_b(&fzsync_pair))
 			break;
 	}
 	return unused;
@@ -73,8 +70,6 @@ static void *write_seek(void *unused)
 static void setup(void)
 {
 	fd = SAFE_OPEN(FNAME, O_CREAT | O_RDWR, 0600);
-	fzsync_pair.info_gap = 0x7fff;
-	SAFE_PTHREAD_CREATE(&pt_write_seek, 0, write_seek, NULL);
 }
 
 static void cleanup(void)
@@ -82,10 +77,7 @@ static void cleanup(void)
 	if (fd > 0)
 		SAFE_CLOSE(fd);
 
-	if (pt_write_seek) {
-		tst_fzsync_pair_exit(&fzsync_pair);
-		SAFE_PTHREAD_JOIN(pt_write_seek, NULL);
-	}
+	tst_fzsync_pair_cleanup(&fzsync_pair);
 }
 
 static void verify_inotify(void)
@@ -97,20 +89,21 @@ static void verify_inotify(void)
 	inotify_fd = myinotify_init1(0);
 	if (inotify_fd < 0)
 		tst_brk(TBROK | TERRNO, "inotify_init failed");
+
+	tst_fzsync_pair_reset(&fzsync_pair, write_seek);
 	for (tests = 0; tests < TEARDOWNS; tests++) {
 		wd = myinotify_add_watch(inotify_fd, FNAME, IN_MODIFY);
 		if (wd < 0)
 			tst_brk(TBROK | TERRNO, "inotify_add_watch() failed.");
 
-		tst_fzsync_wait_update_a(&fzsync_pair);
-		tst_fzsync_delay_a(&fzsync_pair);
+		if (!tst_fzsync_start_race_a(&fzsync_pair))
+			break;
 
 		wd = myinotify_rm_watch(inotify_fd, wd);
 		if (wd < 0)
 			tst_brk(TBROK | TERRNO, "inotify_rm_watch() failed.");
 
-		tst_fzsync_time_a(&fzsync_pair);
-		tst_fzsync_wait_a(&fzsync_pair);
+		tst_fzsync_end_race_a(&fzsync_pair);
 	}
 	SAFE_CLOSE(inotify_fd);
 	/* We survived for given time - test succeeded */
