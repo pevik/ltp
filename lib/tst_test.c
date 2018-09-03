@@ -1038,16 +1038,9 @@ unsigned int tst_timeout_remaining(void)
 	return 0;
 }
 
-void tst_set_timeout(int timeout)
+float tst_timeout_mul(void)
 {
 	char *mul = getenv("LTP_TIMEOUT_MUL");
-
-	if (timeout == -1) {
-		tst_res(TINFO, "Timeout per run is disabled");
-		return;
-	}
-
-	results->timeout = timeout;
 
 	if (mul) {
 		float m = atof(mul);
@@ -1055,8 +1048,20 @@ void tst_set_timeout(int timeout)
 		if (m < 1)
 			tst_brk(TBROK, "Invalid timeout multiplier '%s'", mul);
 
-		results->timeout = results->timeout * m + 0.5;
+		return m;
 	}
+
+	return 1;
+}
+
+void tst_set_timeout(int timeout)
+{
+	if (timeout == -1) {
+		tst_res(TINFO, "Timeout per run is disabled");
+		return;
+	}
+
+	results->timeout = timeout * tst_timeout_mul() + 0.5;
 
 	tst_res(TINFO, "Timeout per run is %uh %02um %02us",
 		results->timeout/3600, (results->timeout%3600)/60,
