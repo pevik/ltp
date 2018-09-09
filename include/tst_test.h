@@ -41,6 +41,7 @@
 #include "tst_kernel.h"
 #include "tst_minmax.h"
 #include "tst_get_bad_addr.h"
+#include "tst_path_has_mnt_flags.h"
 
 /*
  * Reports testcase result.
@@ -127,6 +128,7 @@ struct tst_test {
 	int format_device:1;
 	int mount_device:1;
 	int needs_rofs:1;
+	int needs_devfs:1;
 	/*
 	 * If set the test function will be executed for all available
 	 * filesystems and the current filesytem type would be set in the
