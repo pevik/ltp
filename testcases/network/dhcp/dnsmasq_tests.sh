@@ -8,10 +8,25 @@
 dhcp_name="dnsmasq"
 
 . dhcp_lib.sh
+TST_SETUP="setup"
+
+log="/var/log/tst_dnsmasq.log"
+
+lease_dir="/var/lib/misc"
+lease_file="$lease_dir/dnsmasq.tst.leases"
 
 common_opt="--no-hosts --no-resolv --dhcp-authoritative \
-	--log-facility=./tst_dnsmasq.log --interface=$iface0 \
-	--dhcp-leasefile=tst_dnsmasq.lease --port=0 --conf-file= "
+	--log-facility=$log --interface=$iface0 \
+	--dhcp-leasefile=$lease_file --port=0 --conf-file= "
+
+setup()
+{
+	dhcp_lib_setup
+	if [ ! -d "$lease_dir" ]; then
+		mkdir -p $lease_dir
+		remove_lease_dir=1
+	fi
+}
 
 start_dhcp()
 {
@@ -33,12 +48,13 @@ start_dhcp6()
 
 cleanup_dhcp()
 {
-	rm -f tst_dnsmasq.log
+	rm -f $log $lease_file
+	[ "$remove_lease_dir" = 1 ] && rm -r $lease_dir
 }
 
 print_dhcp_log()
 {
-	cat tst_dnsmasq.log
+	cat $log
 }
 
 print_dhcp_version()
