@@ -34,6 +34,7 @@ export TST_TMPDIR_RHOST=0
 export TST_LIB_LOADED=1
 
 . tst_ansi_color.sh
+. tst_security.sh
 
 # default trap function
 trap "tst_brk TBROK 'test interrupted'" INT
@@ -393,6 +394,7 @@ tst_run()
 			NEEDS_DRIVERS);;
 			IPV6|IPVER|TEST_DATA|TEST_DATA_IFS);;
 			RETRY_FUNC|RETRY_FN_EXP_BACKOFF);;
+			SECURITY_WARN|DISABLE_APPARMOR|DISABLE_SELINUX);;
 			*) tst_res TWARN "Reserved variable TST_$_tst_i used!";;
 			esac
 		done
@@ -421,10 +423,20 @@ tst_run()
 		tst_brk TBROK "Number of iterations (-i) must be > 0"
 	fi
 
-	if [ "$TST_NEEDS_ROOT" = 1 ]; then
+	if [ "$TST_NEEDS_ROOT" = 1 ] || [ "$TST_DISABLE_APPARMOR" = 1 ] || [ "$TST_DISABLE_SELINUX" = 1 ]; then
 		if [ "$(id -ru)" != 0 ]; then
 			tst_brk TCONF "Must be super/root for this test!"
 		fi
+	fi
+
+	[ "$TST_DISABLE_APPARMOR" = 1 ] && tst_disable_apparmor
+	[ "$TST_DISABLE_SELINUX" = 1 ] && tst_disable_selinux
+
+	if [ "$TST_SECURITY_WARN" = 1 ]; then
+		tst_apparmor_enabled && \
+			tst_res TINFO "AppArmor enabled, this may affect test results. Disable it with TST_DISABLE_APPARMOR=1 (requires super/root)"
+		tst_selinux_enabled && \
+			tst_res TINFO "SELinux enabled, this may affect test results. Disable it with TST_DISABLE_SELINUX=1 (requires super/root)"
 	fi
 
 	tst_test_cmds $TST_NEEDS_CMDS
