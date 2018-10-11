@@ -52,11 +52,6 @@ cleanup_dhcp()
 	[ "$remove_lease_dir" = 1 ] && rm -r $lease_dir
 }
 
-print_dhcp_log()
-{
-	cat $log
-}
-
 print_dhcp_version()
 {
 	dnsmasq --version | head -2
