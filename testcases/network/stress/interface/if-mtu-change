@@ -21,6 +21,7 @@
 IF_CMD='ifconfig'
 TST_SETUP="do_setup"
 TST_CLEANUP="do_cleanup"
+TST_SECURITY_WARN=1
 . if-lib.sh
 
 # The interval of the mtu change [second]

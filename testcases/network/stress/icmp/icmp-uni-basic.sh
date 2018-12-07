@@ -8,6 +8,7 @@
 TST_TESTFUNC=do_test
 TST_SETUP=do_setup
 TST_CLEANUP=tst_ipsec_cleanup
+TST_SECURITY_WARN=1
 . ipsec_lib.sh
 
 do_setup()

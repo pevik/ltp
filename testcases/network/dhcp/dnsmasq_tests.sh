@@ -6,6 +6,7 @@
 # Author: Alexey Kodanev alexey.kodanev@oracle.com
 
 dhcp_name="dnsmasq"
+TST_SECURITY_WARN=1
 
 . dhcp_lib.sh
 TST_SETUP="setup"

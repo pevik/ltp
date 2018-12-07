@@ -18,6 +18,7 @@
 TST_TOTAL=6
 TCID="traceroute01"
 TST_CLEANUP="cleanup"
+TST_SECURITY_WARN=1
 
 TST_USE_LEGACY_API=1
 . tst_net.sh

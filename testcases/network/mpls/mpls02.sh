@@ -5,6 +5,7 @@
 TST_SETUP="setup"
 TST_TESTFUNC="do_test"
 TST_CLEANUP="cleanup"
+TST_SECURITY_WARN=1
 
 . mpls_lib.sh
 
