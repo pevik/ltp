@@ -137,8 +137,9 @@ class CKI_Coverage(object):
   coverage when in fact they do.
   """
 
-  LTP_SYSCALL_ROOT = os.path.join(os.environ["ANDROID_BUILD_TOP"],
-                                  "external/ltp/testcases/kernel/syscalls")
+  LTP_KERNEL_ROOT = os.path.join(os.environ["ANDROID_BUILD_TOP"],
+                                 "external/ltp/testcases/kernel")
+  LTP_KERNEL_TESTSUITES = ["syscalls", "timers"]
   DISABLED_IN_LTP_PATH = os.path.join(os.environ["ANDROID_BUILD_TOP"],
                         "external/ltp/android/tools/disabled_tests.txt")
 
@@ -166,11 +167,16 @@ class CKI_Coverage(object):
 
     Load the list of all syscall tests existing in LTP.
     """
-    for path, dirs, files in os.walk(self.LTP_SYSCALL_ROOT):
+    for testsuite in self.LTP_KERNEL_TESTSUITES:
+      self.__load_ltp_testsuite(testsuite)
+
+  def __load_ltp_testsuite(self, testsuite):
+    root = os.path.join(self.LTP_KERNEL_ROOT, testsuite)
+    for path, dirs, files in os.walk(root):
       for filename in files:
         basename, ext = os.path.splitext(filename)
         if ext != ".c": continue
-        self.ltp_full_set.append(basename)
+        self.ltp_full_set.append("%s.%s" % (testsuite, basename))
 
   def load_ltp_disabled_tests(self):
     """Load the list of LTP tests not being compiled.
@@ -223,6 +229,8 @@ class CKI_Coverage(object):
       return True
     if syscall in ("epoll_ctl", "epoll_create") and test == "epoll-ltp":
       return True
+    if syscall in ("prlimit", "ugetrlimit") and test == "getrlimit03":
+      return True
 
     return False
 
@@ -250,20 +258,21 @@ class CKI_Coverage(object):
       # a naming convention in the regexp below. Exceptions exist though.
       # For now those are checked for specifically.
       test_re = re.compile(r"^%s_?0?\d\d?$" % ltp_syscall_name)
-      for test in self.ltp_full_set:
+      for full_test_name in self.ltp_full_set:
+        testsuite, test = full_test_name.split('.')
         if (re.match(test_re, test) or
             self.ltp_test_special_cases(ltp_syscall_name, test)):
           # The filenames of the ioctl tests in LTP do not match the name
           # of the testcase defined in that source, which is what shows
           # up in VTS.
-          if ltp_syscall_name == "ioctl":
-            test = "ioctl01_02"
+          if testsuite == "syscalls" and ltp_syscall_name == "ioctl":
+            full_test_name = "syscalls.ioctl01_02"
           # Likewise LTP has a test named epoll01, which is built as an
           # executable named epoll-ltp, and tests the epoll_{create,ctl}
           # syscalls.
-          if test == "epoll-ltp":
-            test = "epoll01"
-          self.syscall_tests[syscall["name"]].append(test)
+          if full_test_name == "syscalls.epoll-ltp":
+            full_test_name = "syscalls.epoll01"
+          self.syscall_tests[syscall["name"]].append(full_test_name)
     self.cki_syscalls.sort()
 
   def update_test_status(self):
@@ -275,12 +284,13 @@ class CKI_Coverage(object):
       self.disabled_tests[syscall] = []
       if not self.syscall_tests[syscall]:
         continue
-      for test in self.syscall_tests[syscall]:
+      for full_test_name in self.syscall_tests[syscall]:
+        _, test = full_test_name.split('.')
         if (test in self.disabled_in_ltp or
-            "syscalls.%s" % test in self.disabled_in_vts_ltp or
-            ("syscalls.%s_32bit" % test not in self.stable_in_vts_ltp and
-             "syscalls.%s_64bit" % test not in self.stable_in_vts_ltp)):
-          self.disabled_tests[syscall].append(test)
+            full_test_name in self.disabled_in_vts_ltp or
+            ("%s_32bit" % full_test_name not in self.stable_in_vts_ltp and
+             "%s_64bit" % full_test_name not in self.stable_in_vts_ltp)):
+          self.disabled_tests[syscall].append(full_test_name)
           continue
 
   def output_results(self):
