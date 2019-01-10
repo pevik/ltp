@@ -27,4 +27,8 @@ void tst_init_sockaddr_inet_bin(struct sockaddr_in *sa, uint32_t ip_val, uint16_
 void tst_init_sockaddr_inet6(struct sockaddr_in6 *sa, const char *ip_str, uint16_t port);
 void tst_init_sockaddr_inet6_bin(struct sockaddr_in6 *sa, const struct in6_addr *ip_val, uint16_t port);
 
-#endif
+void tst_setup_addrinfo(const char *src_addr, const char *port,
+		    const struct addrinfo *hints,
+		    struct addrinfo **addr_info);
+
+#endif /* TST_NET_H_ */
