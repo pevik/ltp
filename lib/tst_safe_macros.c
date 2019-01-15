@@ -138,3 +138,47 @@ int safe_sigaction(const char *file, const int lineno,
 
 	return rval;
 }
+
+struct group *safe_getgrnam(const char *file, const int lineno,
+			    const char *name)
+{
+	struct group *rval;
+
+	rval = getgrnam(name);
+	if (rval == NULL) {
+		tst_brk_(file, lineno, TBROK | TERRNO,
+			"getgrnam(%s) failed", name);
+	}
+
+	return rval;
+}
+
+struct group *safe_getgrnam_fallback(const char *file, const int lineno,
+				     const char *name, const char *fallback)
+{
+	struct group *rval;
+
+	errno = 0;
+	rval = getgrnam(name);
+	if (rval == NULL) {
+		tst_res_(file, lineno, TINFO,
+			 "getgrnam(%s) failed - try fallback %s",
+			 name, fallback);
+		rval = safe_getgrnam(file, lineno, fallback);
+	}
+
+	return rval;
+}
+
+int safe_chroot(const char *file, const int lineno, const char *path)
+{
+	int rval;
+
+	rval = chroot(path);
+	if (rval == -1) {
+		tst_brk_(file, lineno, TBROK | TERRNO,
+			 "chroot(%s) failed", path);
+	}
+
+	return rval;
+}

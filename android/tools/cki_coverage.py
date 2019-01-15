@@ -70,6 +70,7 @@ x86_64_syscall_tbl_url = src_url_start
 # Syscalls which are either banned, optional, or deprecated, so not part of the
 # CKI.
 CKI_BLACKLIST = [
+        'acct',                    # CONFIG_BSD_PROCESS_ACCT
         'fanotify_init',           # CONFIG_FANOTIFY
         'fanotify_mark',           # CONFIG_FANOTIFY
         'get_mempolicy',           # CONFIG_NUMA
@@ -137,8 +138,9 @@ class CKI_Coverage(object):
   coverage when in fact they do.
   """
 
-  LTP_SYSCALL_ROOT = os.path.join(os.environ["ANDROID_BUILD_TOP"],
-                                  "external/ltp/testcases/kernel/syscalls")
+  LTP_KERNEL_ROOT = os.path.join(os.environ["ANDROID_BUILD_TOP"],
+                                 "external/ltp/testcases/kernel")
+  LTP_KERNEL_TESTSUITES = ["syscalls", "timers"]
   DISABLED_IN_LTP_PATH = os.path.join(os.environ["ANDROID_BUILD_TOP"],
                         "external/ltp/android/tools/disabled_tests.txt")
 
@@ -166,11 +168,16 @@ class CKI_Coverage(object):
 
     Load the list of all syscall tests existing in LTP.
     """
-    for path, dirs, files in os.walk(self.LTP_SYSCALL_ROOT):
+    for testsuite in self.LTP_KERNEL_TESTSUITES:
+      self.__load_ltp_testsuite(testsuite)
+
+  def __load_ltp_testsuite(self, testsuite):
+    root = os.path.join(self.LTP_KERNEL_ROOT, testsuite)
+    for path, dirs, files in os.walk(root):
       for filename in files:
         basename, ext = os.path.splitext(filename)
         if ext != ".c": continue
-        self.ltp_full_set.append(basename)
+        self.ltp_full_set.append("%s.%s" % (testsuite, basename))
 
   def load_ltp_disabled_tests(self):
     """Load the list of LTP tests not being compiled.
@@ -203,7 +210,8 @@ class CKI_Coverage(object):
     """
     if syscall == "clock_nanosleep" and test == "clock_nanosleep2_01":
       return True
-    if syscall == "fadvise" and test.startswith("posix_fadvise"):
+    if syscall in ("arm_fadvise64_", "fadvise64_") and \
+      test.startswith("posix_fadvise"):
       return True
     if syscall == "futex" and test.startswith("futex_"):
       return True
@@ -215,6 +223,15 @@ class CKI_Coverage(object):
       test_re = re.compile(r"^fstatat\d+$")
       if re.match(test_re, test):
         return True
+    if syscall in ("arm_sync_file_range", "sync_file_range2") and \
+      test.startswith("sync_file_range"):
+      return True
+    if syscall == "get_thread_area" and test == "set_thread_area01":
+      return True
+    if syscall in ("epoll_ctl", "epoll_create") and test == "epoll-ltp":
+      return True
+    if syscall in ("prlimit", "ugetrlimit") and test == "getrlimit03":
+      return True
 
     return False
 
@@ -242,15 +259,21 @@ class CKI_Coverage(object):
       # a naming convention in the regexp below. Exceptions exist though.
       # For now those are checked for specifically.
       test_re = re.compile(r"^%s_?0?\d\d?$" % ltp_syscall_name)
-      for test in self.ltp_full_set:
+      for full_test_name in self.ltp_full_set:
+        testsuite, test = full_test_name.split('.')
         if (re.match(test_re, test) or
             self.ltp_test_special_cases(ltp_syscall_name, test)):
           # The filenames of the ioctl tests in LTP do not match the name
           # of the testcase defined in that source, which is what shows
           # up in VTS.
-          if ltp_syscall_name == "ioctl":
-            test = "ioctl01_02"
-          self.syscall_tests[syscall["name"]].append(test)
+          if testsuite == "syscalls" and ltp_syscall_name == "ioctl":
+            full_test_name = "syscalls.ioctl01_02"
+          # Likewise LTP has a test named epoll01, which is built as an
+          # executable named epoll-ltp, and tests the epoll_{create,ctl}
+          # syscalls.
+          if full_test_name == "syscalls.epoll-ltp":
+            full_test_name = "syscalls.epoll01"
+          self.syscall_tests[syscall["name"]].append(full_test_name)
     self.cki_syscalls.sort()
 
   def update_test_status(self):
@@ -262,12 +285,16 @@ class CKI_Coverage(object):
       self.disabled_tests[syscall] = []
       if not self.syscall_tests[syscall]:
         continue
-      for test in self.syscall_tests[syscall]:
+      for full_test_name in self.syscall_tests[syscall]:
+        _, test = full_test_name.split('.')
+        # The VTS LTP stable list is composed of tuples of the test name and
+        # a boolean flag indicating whether it is mandatory.
+        stable_vts_ltp_testnames = [i[0] for i in self.stable_in_vts_ltp]
         if (test in self.disabled_in_ltp or
-            "syscalls.%s" % test in self.disabled_in_vts_ltp or
-            ("syscalls.%s_32bit" % test not in self.stable_in_vts_ltp and
-             "syscalls.%s_64bit" % test not in self.stable_in_vts_ltp)):
-          self.disabled_tests[syscall].append(test)
+            full_test_name in self.disabled_in_vts_ltp or
+            ("%s_32bit" % full_test_name not in stable_vts_ltp_testnames and
+             "%s_64bit" % full_test_name not in stable_vts_ltp_testnames)):
+          self.disabled_tests[syscall].append(full_test_name)
           continue
 
   def output_results(self):
@@ -344,6 +371,9 @@ class CKI_Coverage(object):
     if not seen:
       cki.syscalls.append({"name":syscall, arch:True})
 
+  def delete_syscall(self, cki, syscall):
+    cki.syscalls = list(filter(lambda i: i["name"] != syscall, cki.syscalls))
+
   def check_blacklist(self, cki, error_on_match):
     unlisted_syscalls = []
     for s in cki.syscalls:
@@ -351,8 +381,6 @@ class CKI_Coverage(object):
         if error_on_match:
           print "Syscall %s found in both bionic CKI and blacklist!" % s["name"]
           sys.exit()
-        else:
-          cki.syscalls.remove(s)
       else:
         unlisted_syscalls.append(s)
     cki.syscalls = unlisted_syscalls
@@ -435,6 +463,12 @@ class CKI_Coverage(object):
     self.get_arm_kernel_syscalls(cki)
     self.get_x86_kernel_syscalls(cki)
     self.get_x86_64_kernel_syscalls(cki)
+
+    # restart_syscall is a special syscall which the kernel issues internally
+    # when a process is resumed with SIGCONT.  seccomp whitelists this syscall,
+    # but it is not part of the CKI or meaningfully testable from userspace.
+    # See restart_syscall(2) for more details.
+    self.delete_syscall(cki, "restart_syscall")
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(description="Output list of system calls "
