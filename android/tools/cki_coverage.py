@@ -54,7 +54,7 @@ bionic_libc_root = os.path.join(os.environ["ANDROID_BUILD_TOP"], "bionic/libc")
 
 src_url_start = 'https://git.kernel.org/pub/scm/linux/kernel/git/'
 tip_url = 'torvalds/linux.git/plain/'
-stable_url = 'stable/linux-stable.git/plain/'
+stable_url = 'stable/linux.git/plain/'
 unistd_h = 'include/uapi/asm-generic/unistd.h'
 arm64_unistd32_h = 'arch/arm64/include/asm/unistd32.h'
 arm_syscall_tbl = 'arch/arm/tools/syscall.tbl'
@@ -154,11 +154,6 @@ class CKI_Coverage(object):
 
   syscall_tests = {}
   disabled_tests = {}
-  failing_tests = {}
-  skipped_tests = {}
-  passing_tests = {}
-
-  test_results = {}
 
   def __init__(self, arch):
     self._arch = arch
@@ -208,28 +203,44 @@ class CKI_Coverage(object):
       A boolean indicating whether the given syscall is tested
       by the given testcase.
     """
-    if syscall == "clock_nanosleep" and test == "clock_nanosleep2_01":
+    compat_syscalls = [ "chown32", "fchown32", "getegid32", "geteuid32",
+            "getgid32", "getgroups32", "getuid32", "lchown32",
+            "setfsgid32", "setfsuid32", "setgid32", "setgroups32",
+            "setregid32", "setresgid32", "setresuid32", "setreuid32",
+            "setuid32"]
+    if syscall in compat_syscalls:
+        test_re = re.compile(r"^%s\d+$" % syscall[0:-2])
+        if re.match(test_re, test):
+            return True
+    if syscall == "_llseek" and test.startswith("llseek"):
       return True
     if syscall in ("arm_fadvise64_", "fadvise64_") and \
       test.startswith("posix_fadvise"):
       return True
+    if syscall in ("arm_sync_file_range", "sync_file_range2") and \
+      test.startswith("sync_file_range"):
+      return True
+    if syscall == "clock_nanosleep" and test == "clock_nanosleep2_01":
+      return True
+    if syscall in ("epoll_ctl", "epoll_create") and test == "epoll-ltp":
+      return True
     if syscall == "futex" and test.startswith("futex_"):
+      return True
+    if syscall == "get_thread_area" and test == "set_thread_area01":
       return True
     if syscall == "inotify_add_watch" or syscall == "inotify_rm_watch":
       test_re = re.compile(r"^inotify\d+$")
       if re.match(test_re, test):
         return True
+    inotify_init_tests = [ "inotify01", "inotify02", "inotify03", "inotify04" ]
+    if syscall == "inotify_init" and test in inotify_init_tests:
+        return True
+    if syscall == "lsetxattr" and test.startswith("lgetxattr"):
+        return True
     if syscall == "newfstatat":
       test_re = re.compile(r"^fstatat\d+$")
       if re.match(test_re, test):
         return True
-    if syscall in ("arm_sync_file_range", "sync_file_range2") and \
-      test.startswith("sync_file_range"):
-      return True
-    if syscall == "get_thread_area" and test == "set_thread_area01":
-      return True
-    if syscall in ("epoll_ctl", "epoll_create") and test == "epoll-ltp":
-      return True
     if syscall in ("prlimit", "ugetrlimit") and test == "getrlimit03":
       return True
 
@@ -249,7 +260,7 @@ class CKI_Coverage(object):
     for syscall in syscalls:
       if self._arch is not None and self._arch not in syscall:
         continue
-      self.cki_syscalls.append(syscall["name"])
+      self.cki_syscalls.append(syscall)
       self.syscall_tests[syscall["name"]] = []
       # LTP does not use the 64 at the end of syscall names for testcases.
       ltp_syscall_name = syscall["name"]
@@ -274,7 +285,7 @@ class CKI_Coverage(object):
           if full_test_name == "syscalls.epoll-ltp":
             full_test_name = "syscalls.epoll01"
           self.syscall_tests[syscall["name"]].append(full_test_name)
-    self.cki_syscalls.sort()
+    self.cki_syscalls.sort(key=lambda tup: tup["name"])
 
   def update_test_status(self):
     """Populate test configuration and output for all CKI syscalls.
@@ -282,10 +293,10 @@ class CKI_Coverage(object):
     Go through VTS test configuration to populate data for all CKI syscalls.
     """
     for syscall in self.cki_syscalls:
-      self.disabled_tests[syscall] = []
-      if not self.syscall_tests[syscall]:
+      self.disabled_tests[syscall["name"]] = []
+      if not self.syscall_tests[syscall["name"]]:
         continue
-      for full_test_name in self.syscall_tests[syscall]:
+      for full_test_name in self.syscall_tests[syscall["name"]]:
         _, test = full_test_name.split('.')
         # The VTS LTP stable list is composed of tuples of the test name and
         # a boolean flag indicating whether it is mandatory.
@@ -294,8 +305,15 @@ class CKI_Coverage(object):
             full_test_name in self.disabled_in_vts_ltp or
             ("%s_32bit" % full_test_name not in stable_vts_ltp_testnames and
              "%s_64bit" % full_test_name not in stable_vts_ltp_testnames)):
-          self.disabled_tests[syscall].append(full_test_name)
+          self.disabled_tests[syscall["name"]].append(full_test_name)
           continue
+
+  def syscall_arch_string(self, syscall, arch):
+    """Return a string showing whether the arch supports the given syscall."""
+    if arch not in syscall or not syscall[arch]:
+      return " "
+    else:
+      return "*"
 
   def output_results(self):
     """Pretty print the CKI syscall LTP coverage."""
@@ -305,32 +323,50 @@ class CKI_Coverage(object):
     print ""
     print "         Covered Syscalls"
     for syscall in self.cki_syscalls:
-      if (len(self.syscall_tests[syscall]) -
-          len(self.disabled_tests[syscall]) <= 0):
+      if (len(self.syscall_tests[syscall["name"]]) -
+          len(self.disabled_tests[syscall["name"]]) <= 0):
         continue
       if not count % 20:
-        print ("%25s   Disabled Enabled -------------" %
+        print ("%25s   Disabled Enabled arm64 arm x86_64 x86 -----------" %
                "-------------")
-      sys.stdout.write("%25s   %s        %s\n" %
-                       (syscall, len(self.disabled_tests[syscall]),
-                        len(self.syscall_tests[syscall]) -
-                        len(self.disabled_tests[syscall])))
+      enabled = (len(self.syscall_tests[syscall["name"]]) -
+                 len(self.disabled_tests[syscall["name"]]))
+      if enabled > 9:
+        column_sp = "      "
+      else:
+        column_sp = "       "
+      sys.stdout.write("%25s   %s        %s%s%s     %s   %s      %s\n" %
+                       (syscall["name"], len(self.disabled_tests[syscall["name"]]),
+                        enabled, column_sp,
+                        self.syscall_arch_string(syscall, "arm64"),
+                        self.syscall_arch_string(syscall, "arm"),
+                        self.syscall_arch_string(syscall, "x86_64"),
+                        self.syscall_arch_string(syscall, "x86")))
       count += 1
 
     count = 0
     print "\n"
     print "       Uncovered Syscalls"
     for syscall in self.cki_syscalls:
-      if (len(self.syscall_tests[syscall]) -
-          len(self.disabled_tests[syscall]) > 0):
+      if (len(self.syscall_tests[syscall["name"]]) -
+          len(self.disabled_tests[syscall["name"]]) > 0):
         continue
       if not count % 20:
-        print ("%25s   Disabled Enabled -------------" %
+        print ("%25s   Disabled Enabled arm64 arm x86_64 x86 -----------" %
                "-------------")
-      sys.stdout.write("%25s   %s        %s\n" %
-                       (syscall, len(self.disabled_tests[syscall]),
-                        len(self.syscall_tests[syscall]) -
-                        len(self.disabled_tests[syscall])))
+      enabled = (len(self.syscall_tests[syscall["name"]]) -
+                 len(self.disabled_tests[syscall["name"]]))
+      if enabled > 9:
+        column_sp = "      "
+      else:
+        column_sp = "       "
+      sys.stdout.write("%25s   %s        %s%s%s     %s   %s      %s\n" %
+                       (syscall["name"], len(self.disabled_tests[syscall["name"]]),
+                        enabled, column_sp,
+                        self.syscall_arch_string(syscall, "arm64"),
+                        self.syscall_arch_string(syscall, "arm"),
+                        self.syscall_arch_string(syscall, "x86_64"),
+                        self.syscall_arch_string(syscall, "x86")))
       uncovered += 1
       count += 1
 
@@ -347,10 +383,10 @@ class CKI_Coverage(object):
     uncovered_with_test = 0
     uncovered_without_test = 0
     for syscall in self.cki_syscalls:
-      if (len(self.syscall_tests[syscall]) -
-          len(self.disabled_tests[syscall]) > 0):
+      if (len(self.syscall_tests[syscall["name"]]) -
+          len(self.disabled_tests[syscall["name"]]) > 0):
         continue
-      if (len(self.disabled_tests[syscall]) > 0):
+      if (len(self.disabled_tests[syscall["name"]]) > 0):
         uncovered_with_test += 1
       else:
         uncovered_without_test += 1
@@ -490,7 +526,7 @@ if __name__ == "__main__":
     exit(-1)
 
   if args.k:
-    minversion = "3.18"
+    minversion = "4.9"
     print "Checking kernel version %s" % minversion
     minversion = "?h=v" + minversion
     unistd_h_url += stable_url + unistd_h + minversion
