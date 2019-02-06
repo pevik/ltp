@@ -2317,6 +2317,8 @@ ltp_packages := \
   ltp_unlinkat01 \
   ltp_unshare01 \
   ltp_unshare02 \
+  ltp_ustat01 \
+  ltp_ustat02 \
   ltp_utime01 \
   ltp_utime02 \
   ltp_utime03 \
@@ -2329,6 +2331,8 @@ ltp_packages := \
   ltp_vfork \
   ltp_vfork01 \
   ltp_vfork02 \
+  ltp_vhangup01 \
+  ltp_vhangup02 \
   ltp_vma01 \
   ltp_vma02 \
   ltp_vma03 \
