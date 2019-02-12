@@ -13,10 +13,6 @@ mallopt01
 profil01
 stime01
 stime02
-ustat01
-ustat02
-vhangup01
-vhangup02
 
 # Test SysV IPC, which is not allowed in Android kernels.
 
@@ -478,3 +474,7 @@ testcases/bin/fs_bind/rbind/test22
 testcases/bin/fs_bind/regression/test01
 testcases/bin/fs_bind/regression/test02
 testcases/bin/fs_bind/regression/test03
+
+# Depends on CONFIG_EXT4_FS_ENCRYPTION which is not required on Android.
+# b/123523766
+statx05

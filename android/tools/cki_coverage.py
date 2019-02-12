@@ -113,6 +113,7 @@ CKI_BLACKLIST = [
         'shmdt',                   # CONFIG_SYSVIPC
         'shmget',                  # CONFIG_SYSVIPC
         'ssetmask',                # CONFIG_SGETMASK_SYSCALL
+        'stime',                   # deprecated
         'syscall',                 # deprecated
         '_sysctl',                 # CONFIG_SYSCTL_SYSCALL
         'sysfs',                   # CONFIG_SYSFS_SYSCALL
@@ -204,10 +205,10 @@ class CKI_Coverage(object):
       by the given testcase.
     """
     compat_syscalls = [ "chown32", "fchown32", "getegid32", "geteuid32",
-            "getgid32", "getgroups32", "getuid32", "lchown32",
-            "setfsgid32", "setfsuid32", "setgid32", "setgroups32",
-            "setregid32", "setresgid32", "setresuid32", "setreuid32",
-            "setuid32"]
+            "getgid32", "getgroups32", "getresgid32", "getresuid32",
+            "getuid32", "lchown32", "setfsgid32", "setfsuid32", "setgid32",
+            "setgroups32", "setregid32", "setresgid32", "setresuid32",
+            "setreuid32", "setuid32"]
     if syscall in compat_syscalls:
         test_re = re.compile(r"^%s\d+$" % syscall[0:-2])
         if re.match(test_re, test):
@@ -243,6 +244,9 @@ class CKI_Coverage(object):
         return True
     if syscall in ("prlimit", "ugetrlimit") and test == "getrlimit03":
       return True
+    shutdown_tests = [ "send01", "sendmsg01", "sendto01" ]
+    if syscall == "shutdown" and test in shutdown_tests:
+        return True
 
     return False
 
