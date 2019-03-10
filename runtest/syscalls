@@ -992,6 +992,7 @@ rt_sigprocmask01 rt_sigprocmask01
 rt_sigprocmask02 rt_sigprocmask02
 rt_sigqueueinfo01 rt_sigqueueinfo01
 rt_sigsuspend01 rt_sigsuspend01
+rt_tgsigqueueinfo01 rt_tgsigqueueinfo01
 
 sbrk01 sbrk01
 sbrk02 sbrk02
@@ -1343,6 +1344,8 @@ symlinkat01 symlinkat01
 
 sync01 sync01
 sync02 sync02
+
+syncfs01 syncfs01
 
 #testcases for sync_file_range
 sync_file_range01 sync_file_range01
