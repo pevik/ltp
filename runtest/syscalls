@@ -832,6 +832,8 @@ pipe11 pipe11
 pipe2_01 pipe2_01
 pipe2_02 pipe2_02
 
+pivot_root01 pivot_root01
+
 poll01 poll01
 poll02 poll02
 
@@ -903,6 +905,11 @@ pwritev02 pwritev02
 pwritev02_64 pwritev02_64
 pwritev03 pwritev03
 pwritev03_64 pwritev03_64
+
+pwritev201 pwritev201
+pwritev201_64 pwritev201_64
+pwritev202 pwritev202
+pwritev202_64 pwritev202_64
 
 quotactl01 quotactl01
 quotactl02 quotactl02
@@ -987,10 +994,13 @@ rmdir03A symlink01 -T rmdir03
 rt_sigaction01 rt_sigaction01
 rt_sigaction02 rt_sigaction02
 rt_sigaction03 rt_sigaction03
+rt_sigpending02 rt_sigpending02
 rt_sigprocmask01 rt_sigprocmask01
 rt_sigprocmask02 rt_sigprocmask02
 rt_sigqueueinfo01 rt_sigqueueinfo01
 rt_sigsuspend01 rt_sigsuspend01
+rt_sigtimedwait01 rt_sigtimedwait01
+rt_tgsigqueueinfo01 rt_tgsigqueueinfo01
 
 sbrk01 sbrk01
 sbrk02 sbrk02
@@ -1033,9 +1043,21 @@ sched_getattr01 sched_getattr01
 sched_getattr02 sched_getattr02
 
 select01 select01
+select01_SYS__newselect select01_SYS__newselect
+select01_SYS_select select01_SYS_select
+select01_SYS_pselect6 select01_SYS_pselect6
 select02 select02
+select02_SYS__newselect select02_SYS__newselect
+select02_SYS_select select02_SYS_select
+select02_SYS_pselect6 select02_SYS_pselect6
 select03 select03
+select03_SYS__newselect select03_SYS__newselect
+select03_SYS_select select03_SYS_select
+select03_SYS_pselect6 select03_SYS_pselect6
 select04 select04
+select04_SYS__newselect select04_SYS__newselect
+select04_SYS_select select04_SYS_select
+select04_SYS_pselect6 select04_SYS_pselect6
 
 semctl01 semctl01
 semctl02 semctl02
@@ -1079,6 +1101,8 @@ sendfile09_64 sendfile09_64
 
 sendmsg01 sendmsg01
 sendmsg02 sendmsg02
+
+sendmmsg01 sendmmsg01
 
 sendto01 sendto01
 sendto02 sendto02
@@ -1267,6 +1291,8 @@ sigrelse01 sigrelse01
 
 sigsuspend01 sigsuspend01
 
+sigtimedwait01 sigtimedwait01
+
 sigwaitinfo01 sigwaitinfo01
 
 socket01 socket01
@@ -1343,6 +1369,8 @@ symlinkat01 symlinkat01
 sync01 sync01
 sync02 sync02
 
+syncfs01 syncfs01
+
 #testcases for sync_file_range
 sync_file_range01 sync_file_range01
 
@@ -1376,6 +1404,10 @@ syslog09 syslog09
 syslog10 syslog10
 syslog11 syslog11
 syslog12 syslog12
+
+tgkill01 tgkill01
+tgkill02 tgkill02
+tgkill03 tgkill03
 
 time01 time01
 time02 time02

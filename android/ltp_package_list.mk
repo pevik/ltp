@@ -32,7 +32,7 @@ ltp_packages := \
   ltp_adjtimex02 \
   ltp_aio-stress \
   ltp_aio01 \
-  ltp_aio_tio \
+  ltp_aio02 \
   ltp_aiocp \
   ltp_aiodio_append \
   ltp_aiodio_sparse \
@@ -904,6 +904,7 @@ ltp_packages := \
   ltp_pipe11 \
   ltp_pipe2_01 \
   ltp_pipe2_02 \
+  ltp_pivot_root01 \
   ltp_pm_get_sched_values \
   ltp_poll01 \
   ltp_poll02 \
@@ -976,6 +977,10 @@ ltp_packages := \
   ltp_pwritev02_64 \
   ltp_pwritev03 \
   ltp_pwritev03_64 \
+  ltp_pwritev201 \
+  ltp_pwritev201_64 \
+  ltp_pwritev202 \
+  ltp_pwritev202_64 \
   ltp_quotactl01 \
   ltp_quotactl02 \
   ltp_quotactl03 \
@@ -1038,11 +1043,13 @@ ltp_packages := \
   ltp_rt_sigaction01 \
   ltp_rt_sigaction02 \
   ltp_rt_sigaction03 \
+  ltp_rt_sigpending02 \
   ltp_rt_sigprocmask01 \
   ltp_rt_sigprocmask02 \
   ltp_rt_sigqueueinfo01 \
   ltp_rt_sigsuspend01 \
   ltp_rt_sigtimedwait01 \
+  ltp_rt_tgsigqueueinfo01 \
   ltp_rtc01 \
   ltp_sbrk01 \
   ltp_sbrk02 \
@@ -1090,9 +1097,21 @@ ltp_packages := \
   ltp_sched_yield01 \
   ltp_sctp_big_chunk \
   ltp_select01 \
+  ltp_select01_SYS__newselect \
+  ltp_select01_SYS_pselect6 \
+  ltp_select01_SYS_select \
   ltp_select02 \
+  ltp_select02_SYS__newselect \
+  ltp_select02_SYS_pselect6 \
+  ltp_select02_SYS_select \
   ltp_select03 \
+  ltp_select03_SYS__newselect \
+  ltp_select03_SYS_pselect6 \
+  ltp_select03_SYS_select \
   ltp_select04 \
+  ltp_select04_SYS__newselect \
+  ltp_select04_SYS_pselect6 \
+  ltp_select04_SYS_select \
   ltp_send01 \
   ltp_sendfile02 \
   ltp_sendfile02_64 \
@@ -1110,6 +1129,7 @@ ltp_packages := \
   ltp_sendfile08_64 \
   ltp_sendfile09 \
   ltp_sendfile09_64 \
+  ltp_sendmmsg01 \
   ltp_sendmsg01 \
   ltp_sendto01 \
   ltp_sendto02 \
@@ -1162,6 +1182,7 @@ ltp_packages := \
   ltp_setpgid03_child \
   ltp_setpgrp01 \
   ltp_setpgrp02 \
+  ltp_setpriority01 \
   ltp_setpriority02 \
   ltp_setregid01 \
   ltp_setregid01_16 \
@@ -1315,6 +1336,7 @@ ltp_packages := \
   ltp_sync01 \
   ltp_sync02 \
   ltp_sync_file_range01 \
+  ltp_syncfs01 \
   ltp_syscall01 \
   ltp_sysconf01 \
   ltp_sysctl01 \
@@ -2215,6 +2237,9 @@ ltp_packages := \
   ltp_testsf_c6 \
   ltp_testsf_s \
   ltp_testsf_s6 \
+  ltp_tgkill01 \
+  ltp_tgkill02 \
+  ltp_tgkill03 \
   ltp_thp01 \
   ltp_thp02 \
   ltp_thp03 \
