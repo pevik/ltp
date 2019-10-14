@@ -60,6 +60,18 @@ Examples of such tests are:
   - serial port tests
   - ...
 
+Exporting test runtime/timeout to the testrunner
+------------------------------------------------
+
+Currently most of the testrunners usually do not know for how long is the test
+supposed to run, this means that we have to guess some upper limit on how long
+a test is supposed to run. The value is usually twice of the maximal runtime
+for all testcases or whole suite or even larger. This means that we are wasting
+time in the case that the test ends up stuck and we could have failed it much
+sooner in most of the cases. This becomes quite important for a kernel
+regression tests that do crash the host, if the information that the test is
+supposed to crash a kernel under a minute is exported to the testrunner we can
+reboot the machine much faster in an event of a crash.
 
 Getting rid of runtest files
 ----------------------------
@@ -87,6 +99,7 @@ For example:
   test that are in the list
 
 * And many more...
+
 
 Implementation
 ==============
