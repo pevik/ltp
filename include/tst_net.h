@@ -31,4 +31,15 @@ void tst_setup_addrinfo(const char *src_addr, const char *port,
 		    const struct addrinfo *hints,
 		    struct addrinfo **addr_info);
 
+#define TST_IPADDR_UN(ai_family, net, host) \
+	(tst_ipaddr_un(ai_family, net, host, 0, 0, 0, 0))
+
+#define TST_IPADDR_UN_HOST(ai_family, net, host, min_host, max_host) \
+	(tst_ipaddr_un(ai_family, net, host, min_host, max_host, 0, 0))
+
+#define TST_IPADDR_UN_NET(ai_family, net, host, min_net, max_net) \
+	(tst_ipaddr_un(ai_family, net, host, 0, 0, min_net, max_net))
+char *tst_ipaddr_un(int ai_family, unsigned int net, unsigned int host, unsigned
+		    int min_host, unsigned int max_host, unsigned int min_net,
+		    unsigned int max_net);
 #endif /* TST_NET_H_ */
