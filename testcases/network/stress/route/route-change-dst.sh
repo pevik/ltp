@@ -9,6 +9,7 @@
 # lhost: 10.0.0.2, rhost: 10.23.x.1
 
 TST_TESTFUNC="test_dst"
+TST_CNT=$NS_TIMES
 . route-lib.sh
 
 setup()
