@@ -15,6 +15,7 @@ zypper --non-interactive install --no-recommends \
 	libacl-devel \
 	libaio-devel \
 	libcap-devel \
+	libmnl-devel \
 	libnuma-devel \
 	libopenssl-devel \
 	libselinux-devel \
