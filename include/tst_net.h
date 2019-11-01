@@ -31,4 +31,6 @@ void tst_setup_addrinfo(const char *src_addr, const char *port,
 		    const struct addrinfo *hints,
 		    struct addrinfo **addr_info);
 
+char *tst_ipaddr_un(int ai_family, unsigned int net, unsigned int host);
+
 #endif /* TST_NET_H_ */

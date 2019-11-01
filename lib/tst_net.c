@@ -13,6 +13,7 @@
 #include "tst_test.h"
 #include "tst_net.h"
 #include "tst_private.h"
+#include "tst_safe_stdio.h"
 
 void tst_print_svar(const char *name, const char *val)
 {
@@ -204,6 +205,47 @@ void tst_init_sockaddr_inet6_bin(struct sockaddr_in6 *sa, const struct in6_addr 
 	sa->sin6_family = AF_INET6;
 	sa->sin6_port = htons(port);
 	memcpy(&sa->sin6_addr, ip_val, sizeof(struct in6_addr));
+}
+
+/*
+ * NOTE: unlike shell implementation this support only:
+ * tst_ipaddr_un NET_ID HOST_ID
+ */
+char *tst_ipaddr_un(int ai_family, unsigned int net, unsigned int host)
+{
+	char *env = "IPV4_NET16_UNUSED";
+	unsigned int max = MAX_IPV4_NET_ID;
+	char *addr, *unused;
+
+	if (ai_family != AF_INET && ai_family != AF_INET6)
+		tst_brk(TCONF, "ai_family must be AF_INET or AF_INET6 (%d)", ai_family);
+
+	if (ai_family == AF_INET6) {
+		env = "IPV6_NET32_UNUSED";
+		max = MAX_IPV6_NET_ID;
+	}
+
+	unused = getenv(env);
+	if (!unused)
+		tst_brk(TCONF, "%s not set (set it with tst_net.sh)", env);
+
+	net %= max;
+	host %= max;
+
+	if (ai_family == AF_INET6) {
+		if (host > 0 && net > 0)
+			SAFE_ASPRINTF(&addr, "%s:%x::%x", unused, net, host);
+		else if (host > 0 && net == 0)
+			SAFE_ASPRINTF(&addr, "%s::%x", unused, host);
+		else if (net > 0 && host == 0)
+			SAFE_ASPRINTF(&addr, "%s:%x::", unused, net);
+		else
+			SAFE_ASPRINTF(&addr, "%s::", unused);
+	} else {
+		SAFE_ASPRINTF(&addr, "%s.%d.%d", unused, net, host);
+	}
+
+	return strdup(addr);
 }
 
 void tst_setup_addrinfo(const char *src_addr, const char *port,

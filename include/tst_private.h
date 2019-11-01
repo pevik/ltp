@@ -14,6 +14,9 @@
 #define MAX_IPV4_PREFIX 32
 #define MAX_IPV6_PREFIX 128
 
+#define MAX_IPV4_NET_ID 255
+#define MAX_IPV6_NET_ID 65535
+
 #define tst_res_comment(...) { \
 	fprintf(stderr, "# "); \
 	tst_res(__VA_ARGS__); } \

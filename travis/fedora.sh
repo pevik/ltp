@@ -11,5 +11,6 @@ yum -y install \
 	findutils \
 	libtirpc \
 	libtirpc-devel \
+	libmnl \
 	pkg-config \
 	redhat-lsb-core

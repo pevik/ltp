@@ -28,6 +28,8 @@ apt install -y --no-install-recommends \
 	libkeyutils-dev \
 	libkeyutils1 \
 	libmm-dev \
+	libmnl0 \
+	libmnl-dev \
 	libnuma-dev \
 	libnuma1 \
 	libselinux1-dev \
