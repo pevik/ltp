@@ -198,7 +198,12 @@ static int parse_array(FILE *f, struct data_node *node)
 		if (!strcmp(token, "{")) {
 			struct data_node *ret = data_node_array();
 			parse_array(f, ret);
-			data_node_array_add(node, ret);
+
+			if (data_node_array_len(ret))
+				data_node_array_add(node, ret);
+			else
+				data_node_free(ret);
+
 			continue;
 		}
 
@@ -347,6 +352,17 @@ static struct implies {
 	{NULL, NULL}
 };
 
+const char *strip_name(char *path)
+{
+	char *name = basename(path);
+	size_t len = strlen(name);
+
+	if (len > 2 && name[len-1] == 'c' && name[len-2] == '.')
+		name[len-2] = '\0';
+
+	return name;
+}
+
 int main(int argc, char *argv[])
 {
 	unsigned int i;
@@ -379,7 +395,7 @@ int main(int argc, char *argv[])
 	}
 
 	data_node_hash_add(res, "fname", data_node_string(argv[1]));
-	printf(" \"%s\": ", basename(argv[1]));
+	printf(" \"%s\": ", strip_name(argv[1]));
 	data_to_json(res, stdout, 1);
 	data_node_free(res);
 
