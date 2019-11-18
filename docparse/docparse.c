@@ -341,6 +341,7 @@ static const char *filter_out[] = {
 	"cleanup",
 	"tcnt",
 	"mntpoint",
+	"bufs",
 	NULL
 };
 
