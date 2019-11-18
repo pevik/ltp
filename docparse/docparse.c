@@ -131,6 +131,16 @@ const char *next_token(FILE *f, struct data_node *doc)
 		if (c == EOF)
 			goto exit;
 
+		if (in_str) {
+			if (c == '"') {
+				if (i == 0 || buf[i-1] != '\\')
+					goto exit;
+			}
+
+			buf[i++] = c;
+			continue;
+		}
+
 		switch (c) {
 		case '{':
 		case '}':
@@ -142,10 +152,6 @@ const char *next_token(FILE *f, struct data_node *doc)
 		case '[':
 		case ']':
 		case '-':
-			if (in_str) {
-				buf[i++] = c;
-				continue;
-			}
 			if (i) {
 				ungetc(c, f);
 				goto exit;
@@ -164,8 +170,6 @@ const char *next_token(FILE *f, struct data_node *doc)
 			maybe_comment(f, doc);
 		break;
 		case '"':
-			if (in_str)
-				goto exit;
 			in_str = 1;
 		break;
 		case ' ':
