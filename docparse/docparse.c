@@ -400,8 +400,8 @@ int main(int argc, char *argv[])
 	}
 
 	data_node_hash_add(res, "fname", data_node_string(argv[1]));
-	printf(" \"%s\": ", strip_name(argv[1]));
-	data_to_json(res, stdout, 1);
+	printf("  \"%s\": ", strip_name(argv[1]));
+	data_to_json(res, stdout, 2);
 	data_node_free(res);
 
 	return 0;
