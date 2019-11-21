@@ -217,6 +217,9 @@ static int parse_array(FILE *f, struct data_node *node)
 		if (!strcmp(token, ","))
 			continue;
 
+		if (!strcmp(token, "NULL"))
+			continue;
+
 		struct data_node *str = data_node_string(token);
 
 		data_node_array_add(node, str);
