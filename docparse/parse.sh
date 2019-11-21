@@ -3,7 +3,16 @@
 
 cd ..
 
-echo "{"
+version=$(git describe)
+
+echo '{'
+echo ' "testsuite": "Linux Test Project",'
+echo ' "testsuite_short": "LTP",'
+echo ' "url": "https://github.com/linux-test-project/ltp/",'
+echo ' "scm_url_base": "https://github.com/linux-test-project/ltp/tree/master/",'
+echo ' "timeout": 300,'
+echo " \"version\": \"$version\","
+echo ' "tests": {'
 
 first=1
 
@@ -19,4 +28,5 @@ for test in `find testcases/ -name '*.c'`; do
 done
 
 echo
-echo "}"
+echo ' }'
+echo '}'
