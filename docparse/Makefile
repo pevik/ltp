@@ -14,4 +14,7 @@ docparse: data_storage.h
 metadata.json: docparse
 	./parse.sh > metadata.json
 
+validate:
+	jsonschema metadata.schema.json -i metadata.json
+
 include $(top_srcdir)/include/mk/generic_leaf_target.mk
