@@ -151,7 +151,6 @@ const char *next_token(FILE *f, struct data_node *doc)
 		case ',':
 		case '[':
 		case ']':
-		case '-':
 			if (i) {
 				ungetc(c, f);
 				goto exit;
@@ -164,6 +163,7 @@ const char *next_token(FILE *f, struct data_node *doc)
 		case 'A' ... 'Z':
 		case '.':
 		case '_':
+		case '-':
 			buf[i++]=c;
 		break;
 		case '/':
