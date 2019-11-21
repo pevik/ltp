@@ -1,0 +1,391 @@
+<html>
+ <head>
+  <meta charset="utf-8">
+  <title>Test Catalog</title>
+  <style>
+   body {
+    background-color: #ccc;
+    padding-left: 124pt;
+    font: 100% Verdana;
+   }
+   a, a:visited {
+    color: #339;
+   }
+   a:hover {
+    color: OrangeRed;
+    text-decoration: none;
+   }
+   #test-list {
+    -webkit-columns: 4;
+    -moz-columns: 4;
+    columns: 4;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+   }
+   #body {
+    background-color: #eee;
+    padding: 10pt;
+   }
+   #header {
+    text-align: center;
+    border-bottom: 1px solid #aaa;
+   }
+   #footer {
+    text-align: center;
+    border-top: 1px solid #aaa;
+   }
+   .navbar {
+    width: 120pt;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    overflow-x: hidden;
+    height: 100%;
+    background-color: #eee;
+    padding: 3pt;
+   }
+   .navbar a {
+    text-decoration: none;
+   }
+   .navbar ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+   }
+  </style>
+ </head>
+ <body>
+  <div id="body">
+   <div id="header">
+   </div>
+   <div id="content">
+   </div>
+   <div id="footer">
+   </div>
+  </div>
+  <script>
+   function load_metadata() {
+	var request = new XMLHttpRequest();
+	request.open("GET", "metadata.json", false);
+	request.overrideMimeType("application/json");
+	request.send(null);
+	var metadata = JSON.parse(request.responseText);
+	return metadata;
+   }
+
+   function get_linux_git_commit(hash) {
+	var request = new XMLHttpRequest();
+        request.open("GET", "https://api.github.com/repos/torvalds/linux/commits/" + hash, false);
+	request.overrideMimeType("application/json");
+	request.send(null);
+	return JSON.parse(request.responseText);
+   }
+
+   function test_info_link(test, link) {
+	return "<a href=?test=" + test + ">" + link + "</a>"
+   }
+
+   function render_tests_by_name(metadata) {
+	var keys = [];
+	var html = "";
+	var tests = metadata["tests"];
+	var html_header = "<h2>Tests by name</h2><div>";
+
+	html_header += "Total " + Object.keys(tests).length + " tests<br><br>";
+
+        for (var key in tests)
+	   keys.push(key);
+
+	keys = keys.sort();
+
+	var last_letter = null;
+
+	html += "<ul id=\"test-list\">"
+
+        for (var key in keys) {
+		if (keys[key].charAt(0) != last_letter) {
+			last_letter = keys[key].charAt(0);
+			html += "<li><a id=\"" + last_letter + "\">" + last_letter + "</a></li>";
+			html_header += "<a href=\"#" + last_letter + "\">" + last_letter + "</a>" + "&nbsp;";
+		}
+
+		html += "<li>" + test_info_link(keys[key], keys[key]) + "</li>";
+	}
+
+	html += "</ul>"
+	html_header += "</div>";
+
+	return html_header + "<br>" + html;
+   }
+
+   function tests_by_keys_tags(metadata) {
+	var tests = metadata["tests"];
+	var by_tags = {};
+	var by_keys = {};
+
+	for (var key in tests) {
+		var tdata = tests[key];
+		var tags = tdata["tags"];
+
+		for (var attr in tdata) {
+			if (!by_keys[attr])
+				by_keys[attr] = [];
+			by_keys[attr].push([key, tdata[attr]]);
+		}
+
+		if (!tags)
+			continue;
+
+		for (var i in tags) {
+			var tag = tags[i][0];
+			if (!by_tags[tag])
+				by_tags[tag] = [];
+			by_tags[tag].push([key, tags[i][1]]);
+		}
+	}
+
+        return [by_keys, by_tags];
+   }
+
+   function tests_by_attr_vals(metadata, attr, attr_desc) {
+	var html = "";
+	var by_keys = tests_by_keys_tags(metadata)[0];
+	var attrs={};
+	var by_attrs = by_keys[attr];
+
+	for (var i in by_attrs) {
+		var test_name = by_attrs[i][0];
+		var test_attr_val = by_attrs[i][1];
+
+		if (Array.isArray(test_attr_val)) {
+			for (var j in test_attr_val) {
+				var val = test_attr_val[j];
+				if (!attrs[val])
+					attrs[val] = [];
+				attrs[val].push(test_name);
+			}
+		} else {
+			if (!attrs[test_attr_val])
+				attrs[test_attr_val] = [];
+			attrs[test_attr_val].push(test_name);
+		}
+	}
+
+	html += "<h2>Tests " + attr_desc + "</h2>";
+	for (var attr in attrs) {
+		if (Object.keys(attrs).length > 1)
+			html += "<h3>" + attr + "</h3>";
+	        html += "<ul id=\"test-list\">";
+		for (var i in attrs[attr]) {
+			var test = attrs[attr][i];
+			html += "<li>" + test_info_link(test, test) + "</li>";
+		}
+	        html += "</ul>";
+	}
+
+	return html;
+   }
+
+   function render_tests_by_tags(metadata) {
+	var html = "";
+	var tests = metadata["tests"];
+	var by_tags_keys = tests_by_keys_tags(metadata);
+	var by_keys = by_tags_keys[0];
+	var by_tags = by_tags_keys[1];
+
+	for (var key in by_tags) {
+		var tag_keys = by_tags[key];
+		html += "<h2>Tests by " + key + "</h2>";
+		html += "<ul id=\"test-list\">";
+		for (var i in tag_keys) {
+			var tag_val = tag_keys[i][1];
+			if (key == "CVE")
+				tag_val = "CVE-" + tag_val;
+			html += "<li>" + test_info_link(tag_keys[i][0], tag_val) + "</li>";
+		}
+		html += "</ul>";
+	}
+
+	return html;
+   }
+
+   function render_tests(metadata, sort) {
+	   if (sort == "names")
+		   return render_tests_by_name(metadata);
+	   if (sort == "tags")
+		   return render_tests_by_tags(metadata);
+	   if (sort == "drivers")
+		   return tests_by_attr_vals(metadata, "needs_drivers", "by drivers");
+	   if (sort == "kver")
+		   return tests_by_attr_vals(metadata, "min_kver", "by minimal kernel version");
+	   if (sort == "fs")
+		   return tests_by_attr_vals(metadata, "dev_fs_type", "by filesystem type");
+	   if (sort == "root")
+		   return tests_by_attr_vals(metadata, "needs_root", "that needs root");
+	   if (sort == "device")
+		   return tests_by_attr_vals(metadata, "needs_device", "that needs device");
+   }
+
+   function render_menu() {
+	   var html = "<div class=\"navbar\">";
+	   html += "<h3>Test listing</h3>";
+	   html += "<ul>";
+	   html += "<li><a href=\"?\">About testsuite</a></li>";
+	   html += "<li><a href=\"?sort=names\">Tests by names</a></li>";
+	   html += "<li><a href=\"?sort=tags\">Tests by tags</a></li>";
+	   html += "<li><a href=\"?sort=kver\">Tests by min kver</a></li>";
+	   html += "<li><a href=\"?sort=drivers\">Tests by drivers</a></li>";
+	   html += "<li><a href=\"?sort=fs\">Tests by filesystem</a></li>";
+	   html += "<li><a href=\"?sort=root\">Tests needs root</a></li>";
+	   html += "<li><a href=\"?sort=device\">Tests needs device</a></li>";
+	   html += "</ul>";
+           html += "</div>";
+	   return html;
+   }
+
+   function tag_url(metadata, tag, value) {
+	if (tag == "CVE")
+	   return "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-" + value;
+	if (tag == "linux-git")
+	   return "https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=" + value;
+	if (tag == "fname")
+	   return metadata["scm_url_base"] + value;
+   }
+
+   function render_test_info(metadata, test) {
+	var test_data = metadata["tests"][test];
+	var html = "<h1><a href=\"" + tag_url(metadata, "fname", test_data["fname"]) + "\">" + test + "</a></h1>";
+	var doc = test_data["doc"];
+
+	if (doc) {
+		for (i in doc)
+			html += doc[i] + "<br>";
+		html += "<br>";
+	}
+
+	if (test_data["timeout"]) {
+		if (test_data["timeout"] == -1)
+			html += "Test timeout is disabled<br>";
+		else
+			html += "Test timeout is " + test_data["timeout"] + " seconds<br>";
+	} else {
+		html += "Tests timeout defaults to " + metadata["timeout"] + " seconds<br>";
+	}
+
+        html += "<table><tr><th>Key</th><th>Value</th></tr>";
+	for (key in test_data) {
+
+		if (key == "tags" || key == "fname" || key == "doc")
+			continue;
+
+		html += "<tr>";
+		html += "<td>" + key + "</td>";
+		html += "<td>" + test_data[key] + "</td>";
+		html += "</tr>";
+	}
+	html += "</table>";
+
+	var tags = test_data["tags"];
+
+	if (tags) {
+		html += "<table><tr><th>Tags</th><th>Info</th></tr>";
+		for (i in tags) {
+			html += "<tr>";
+			html += "<td><a href=\"" + tag_url(metadata, tags[i][0], tags[i][1]) + "\">" + tags[i][0] + "-" + tags[i][1] + "</a></td>";
+
+			if (tags[i][0] == "linux-git") {
+				commit = get_linux_git_commit(tags[i][1]);
+				message = commit["commit"]["message"].split("\n");
+				html += "<td>" + message[0] + "</td>";
+			}
+
+			html += "</tr>";
+		}
+		html += "</table>";
+	}
+
+	return html;
+   }
+
+   function render_header(metadata) {
+	var tsuite;
+
+	if (metadata["testsuite_short"])
+		tsuite = metadata["testsuite_short"];
+	else
+		tsuite = metadata["testsuite"];
+
+        var html = "<h1>" + tsuite + " test catalog</h1>";
+
+	document.getElementById("header").innerHTML = html;
+   }
+
+   function render_footer(metadata) {
+	var html = "";
+	var version = metadata["version"];
+
+	if (version)
+		html += metadata["testsuite"] + "&nbsp;" + version + "&nbsp;";
+
+	if (metadata["url"])
+		html += "";
+
+	document.getElementById("footer").innerHTML = html;
+   }
+
+   function render_about(metadata) {
+	var url = metadata["url"];
+	var html = "<h2>";
+
+	if (url)
+		html += "<a href=\"" + url + "\">";
+
+	html += metadata["testsuite"]
+
+	if (url)
+		html += "</a>";
+
+	html += "</h2>";
+
+	if (metadata["version"])
+		html += "<b>Version:</b> " + metadata["version"] + "<br>";
+
+	if (metadata["timeout"])
+		html += "<b>Default timeout:</b> " + metadata["timeout"] + " seconds<br>";
+
+	return html;
+   }
+
+   var urlParams = new URLSearchParams(window.location.search);
+   var test;
+   var sort;
+
+   for (pair of urlParams.entries()) {
+	if (pair[0] == "test")
+		test = pair[1];
+	if (pair[0] == "sort")
+		sort = pair[1];
+   }
+
+   var metadata = load_metadata();
+
+   render_footer(metadata);
+   render_header(metadata);
+
+   var html = render_menu();
+
+   if (test)
+	html += render_test_info(metadata, test);
+   else if (sort)
+	html += render_tests(metadata, sort);
+   else
+	html += render_about(metadata);
+
+   document.getElementById("content").innerHTML = html;
+
+   console.log(window.location.href);
+  </script>
+ </body>
+</html>
