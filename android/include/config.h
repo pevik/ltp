@@ -251,7 +251,7 @@
 #define HAVE_RENAMEAT 1
 
 /* Define to 1 if you have the `renameat2' function. */
-/* #undef HAVE_RENAMEAT2 */
+#define HAVE_RENAMEAT2 1
 
 /* Define to 1 if you have the <selinux/selinux.h> header file. */
 #define HAVE_SELINUX_SELINUX_H 1
@@ -266,7 +266,7 @@
 #define HAVE_SPLICE 1
 
 /* Define to 1 if you have the `statx' function. */
-/* #undef HAVE_STATX */
+#define HAVE_STATX 1
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #define HAVE_STDINT_H 1
