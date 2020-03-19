@@ -14,6 +14,7 @@
 #define TST_NO_DEFAULT_MAIN
 #include "tst_test.h"
 #include "tst_safe_macros.h"
+#include "tst_safe_ptrace.h"
 #include "lapi/personality.h"
 
 int safe_setpgid(const char *file, const int lineno, pid_t pid, pid_t pgid)
@@ -201,4 +202,22 @@ void safe_unshare(const char *file, const int lineno, int flags)
 				 "unshare(%d) failed", flags);
 		}
 	}
+}
+
+long tst_safe_ptrace(const char *file, const int lineno,
+	int req, pid_t pid, void *addr, void *data)
+{
+	long ret;
+
+	errno = 0;
+	ret = ptrace(req, pid, addr, data);
+
+	if (ret == -1) {
+		tst_brk_(file, lineno, TBROK | TERRNO, "ptrace() failed");
+	} else if (ret) {
+		tst_brk_(file, lineno, TBROK | TERRNO,
+			"Invalid ptrace() return value %ld", ret);
+	}
+
+	return ret;
 }
