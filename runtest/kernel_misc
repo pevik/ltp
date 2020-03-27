@@ -13,3 +13,8 @@ zram01 zram01.sh
 zram02 zram02.sh
 zram03 zram03
 umip_basic_test umip_basic_test
+uart01_9600 uart01 -b 9600
+uart01_19200 uart01 -b 19200
+uart01_38400 uart01 -b 38400
+uart01_57600 uart01 -b 57600
+uart01_115200 uart01 -b 115200
