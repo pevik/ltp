@@ -463,6 +463,22 @@ static void print_test_tags(void)
 	printf("\n");
 }
 
+static void print_test_devices(void)
+{
+	const char *const *devices = tst_test->needs_devices;
+	int i;
+
+	if (!devices)
+		return;
+
+	printf("\nNeeded devices\n--------------\n");
+
+	for (i = 0; devices[i]; i++)
+		printf("%s\n", devices[i]);
+
+	printf("\n");
+}
+
 static void check_option_collision(void)
 {
 	unsigned int i, j;
@@ -542,6 +558,7 @@ static void parse_opts(int argc, char *argv[])
 		case 'h':
 			print_help();
 			print_test_tags();
+			print_test_devices();
 			exit(0);
 		case 'i':
 			iterations = atoi(optarg);
@@ -887,6 +904,21 @@ static void do_setup(int argc, char *argv[])
 		for (i = 0; (name = tst_test->needs_drivers[i]); ++i)
 			if (tst_check_driver(name))
 				tst_brk(TCONF, "%s driver not available", name);
+	}
+
+	if (tst_test->needs_devices) {
+		int i;
+		const char *name;
+		int exit = 0;
+
+		for (i = 0; (name = tst_test->needs_devices[i]); i++) {
+			if (!getenv(name)) {
+				tst_res(TINFO, "%s device env variable mising", name);
+				exit = 1;
+			}
+		}
+		if (exit)
+			tst_brk(TCONF, "Device(s) not passed to the test");
 	}
 
 	if (tst_test->format_device)
