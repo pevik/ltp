@@ -15,6 +15,37 @@
 #include <sys/time.h>
 #include <time.h>
 
+#ifndef __kernel_timespec
+typedef long __kernel_long_t;
+typedef __kernel_long_t	__kernel_old_time_t;
+
+struct __kernel_old_timespec {
+	__kernel_old_time_t	tv_sec;		/* seconds */
+	long			tv_nsec;	/* nanoseconds */
+};
+
+typedef long long __kernel_time64_t;
+
+struct __kernel_timespec {
+	__kernel_time64_t       tv_sec;                 /* seconds */
+	long long               tv_nsec;                /* nanoseconds */
+};
+#endif
+
+static inline int tst_timespec_updated_32(void *data)
+{
+	struct timespec *spec = data;
+
+	return (spec->tv_nsec != 0 || spec->tv_sec != 0) ? 1 : 0;
+}
+
+static inline int tst_timespec_updated_64(void *data)
+{
+	struct __kernel_timespec *spec = data;
+
+	return (spec->tv_nsec != 0 || spec->tv_sec != 0) ? 1 : 0;
+}
+
 static inline long long tst_timespec_to_ns(struct timespec t)
 {
 	return t.tv_sec * 1000000000 + t.tv_nsec;
