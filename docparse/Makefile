@@ -13,6 +13,7 @@ docparse: data_storage.h
 
 metadata.json: docparse
 	./parse.sh > metadata.json
+	./make_data.sh metadata.json > metadata.js
 
 validate:
 	jsonschema metadata.schema.json -i metadata.json
