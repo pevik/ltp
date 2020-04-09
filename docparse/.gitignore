@@ -1,2 +1,3 @@
-docparse
-metadata.json
+/docparse
+/metadata.json
+/*.html
