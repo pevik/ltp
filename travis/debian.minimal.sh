@@ -4,6 +4,7 @@ set -ex
 
 apt remove -y \
 	asciidoc \
+	asciidoctor \
 	libacl1-dev \
 	libaio-dev \
 	libaio1 \
