@@ -1,0 +1,111 @@
+body {
+	background-color: #ccc;
+	font: 100% Verdana;
+	padding: 0 0 0 154pt;
+	margin: 0;
+}
+
+a, a:visited {
+	color: #339;
+}
+
+a:hover {
+	color: OrangeRed;
+	text-decoration: none;
+}
+
+#content div {
+	padding-top: 5pt;
+}
+
+#content table {
+	padding: 5pt 0 10pt 0;
+}
+
+#content #crumbs {
+	padding: 10pt 0;
+}
+
+#content .letter {
+	text-transform: uppercase;
+	font-size: 1.2em;
+	font-weight: bold;
+}
+
+#content ul {
+	-webkit-columns: 4;
+	-moz-columns: 4;
+	columns: 4;
+	list-style-type: none;
+	margin: 0;
+	padding: 0 0 10pt 0;
+	color: red;
+}
+
+#version {
+	padding-bottom: 10pt;
+}
+
+#body {
+	background-color: #eee;
+	padding: 10pt;
+}
+
+#header {
+	text-align: center;
+	border-bottom: 1px solid #aaa;
+}
+
+#footer {
+	text-align: center;
+	border-top: 1px solid #aaa;
+	padding-top: 10pt;
+}
+
+#navbar {
+	width: 150pt;
+	position: fixed;
+	z-index: 1;
+	top: 0;
+	left: 0;
+	overflow-x: hidden;
+	height: 100%;
+	background-color: #eee;
+	padding: 3pt;
+}
+
+#navbar div {
+	font-size: 1.17em;
+	margin: 1em 0 1em 0;
+	font-weight: bold;
+}
+
+#navbar a {
+	display: block;
+	text-decoration: none;
+	padding: 2pt 5pt;
+}
+#navbar a:hover {
+	background-color: #b2b2b2;
+	border-radius: 2px;
+}
+
+#navbar ul {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+}
+
+.anchor:link, .anchor:visited {
+	border: none;
+	text-decoration: none;
+	font-size: .8em;
+	vertical-align: text-top;
+}
+* > .anchor:link, * > .anchor:visited {
+	visibility: hidden;
+	text-decoration: none;
+}
+h2:hover .anchor {
+	visibility: visible;
+}
