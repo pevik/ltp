@@ -6,6 +6,7 @@ apt="apt remove -y"
 
 $apt \
 	asciidoc \
+	asciidoctor \
 	libacl1-dev \
 	libaio-dev \
 	libaio1 \
