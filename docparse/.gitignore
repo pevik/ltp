@@ -1,2 +1,6 @@
-docparse
-metadata.json
+/*.txt
+/docbook-xsl.css
+/docparse
+/metadata.json
+/metadata.html
+/metadata.pdf
