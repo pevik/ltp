@@ -1,8 +1,8 @@
 #!/usr/bin/perl
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
+# Copyright (c) 2020 Petr Vorel <pvorel@suse.cz>
 # Copyright (c) 2019 Cyril Hrubis <chrubis@suse.cz>
-#
 
 use strict;
 use warnings;
