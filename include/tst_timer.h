@@ -39,6 +39,34 @@ struct __kernel_timespec {
 #endif
 
 /*
+ * timespec_updated routines return:
+ * 0: On success, i.e. timespec updated correctly.
+ * -1: Error, timespec not updated.
+ * -2: Error, tv_nsec is corrupted.
+ */
+static inline int tst_timespec_updated_32(void *data)
+{
+	struct timespec *spec = data;
+
+	return (spec->tv_nsec != 0 || spec->tv_sec != 0) ? 0 : -1;
+}
+
+static inline int tst_timespec_updated_64(void *data)
+{
+	struct __kernel_timespec *spec = data;
+
+	if (spec->tv_nsec != 0 || spec->tv_sec != 0) {
+		/* Upper 32 bits of tv_nsec should be cleared */
+		if (spec->tv_nsec >> 32)
+			return -2;
+		else
+			return 0;
+	} else {
+		return -1;
+	}
+}
+
+/*
  * Converts timeval to microseconds.
  */
 static inline long long tst_timeval_to_us(struct timeval t)
