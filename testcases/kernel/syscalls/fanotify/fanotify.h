@@ -41,6 +41,9 @@ static long fanotify_mark(int fd, unsigned int flags, uint64_t mask,
 #ifndef FAN_REPORT_TID
 #define FAN_REPORT_TID		0x00000100
 #endif
+#ifndef FAN_REPORT_FID
+#define FAN_REPORT_FID		0x00000200
+#endif
 
 #ifndef FAN_MARK_INODE
 #define FAN_MARK_INODE		0
@@ -79,9 +82,8 @@ static long fanotify_mark(int fd, unsigned int flags, uint64_t mask,
 #ifndef FAN_OPEN_EXEC_PERM
 #define FAN_OPEN_EXEC_PERM	0x00040000
 #endif
-
-#ifndef FAN_REPORT_FID
-#define FAN_REPORT_FID		0x00000200
+#ifndef FAN_DIR_MODIFY
+#define FAN_DIR_MODIFY		0x00080000
 #endif
 
 /*
@@ -105,6 +107,13 @@ typedef struct {
 } lapi_fsid_t;
 #define __kernel_fsid_t lapi_fsid_t
 #endif /* __kernel_fsid_t */
+
+#ifndef FAN_EVENT_INFO_TYPE_FID
+#define FAN_EVENT_INFO_TYPE_FID		1
+#endif
+#ifndef FAN_EVENT_INFO_TYPE_DFID_NAME
+#define FAN_EVENT_INFO_TYPE_DFID_NAME	2
+#endif
 
 #ifndef HAVE_STRUCT_FANOTIFY_EVENT_INFO_HEADER
 struct fanotify_event_info_header {
