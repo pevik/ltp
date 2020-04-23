@@ -37,6 +37,11 @@ matrix:
           env: DISTRO=debian:stable VARIANT=minimal TREE=out
           compiler: clang
 
+        # 32 bit build with minimal dependencies
+        - os: linux
+          env: DISTRO=debian:stable VARIANT=minimal BUILD=32
+          compiler: gcc
+
         # native non-intel
         - os: linux
           arch: ppc64le
@@ -100,7 +105,9 @@ script:
     - INSTALL="${INSTALL%%/*}"
     - if [ "$MAKE_INSTALL" = 1 ]; then INSTALL_OPT="-i"; fi
     - if [ ! "$TREE" ]; then TREE="in"; fi
-    - case $VARIANT in cross-compile*) BUILD="cross";; i386) BUILD="32";; *) BUILD="native";; esac
+    - echo BUILD before $BUILD
+    - case $VARIANT in cross-compile*) BUILD="cross";; i386) BUILD="32";; *) [ "$BUILD" ] || BUILD="native";; esac
+    - echo BUILD after $BUILD
 
     # Tumbleweed requires newer Docker version
     - >
