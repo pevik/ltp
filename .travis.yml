@@ -96,11 +96,16 @@ before_install:
     - docker build -t ltp .
 
 script:
-    - INSTALL="${DISTRO%%:*}"
-    - INSTALL="${INSTALL%%/*}"
-    - if [ "$MAKE_INSTALL" = 1 ]; then INSTALL_OPT="-i"; fi
-    - if [ ! "$TREE" ]; then TREE="in"; fi
-    - case $VARIANT in cross-compile*) BUILD="cross";; i386) BUILD="32";; *) BUILD="native";; esac
+    - >
+        INSTALL="${DISTRO%%:*}"
+        INSTALL="${INSTALL%%/*}"
+        if [ "$MAKE_INSTALL" = 1 ]; then INSTALL_OPT="-i"; fi
+        if [ ! "$TREE" ]; then TREE="in"; fi
+        case $VARIANT in
+        cross-compile*) BUILD="cross";;
+        i386) BUILD="32";;
+        *) BUILD="native";;
+        esac
 
     # Tumbleweed requires newer Docker version
     - >
