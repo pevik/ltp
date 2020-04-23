@@ -42,6 +42,14 @@ matrix:
           env: DISTRO=debian:stable VARIANT=minimal BUILD=32
           compiler: gcc
 
+        - os: linux
+          env: DISTRO=opensuse/tumbleweed VARIANT=minimal BUILD=32
+          compiler: gcc
+
+        - os: linux
+          env: DISTRO=fedora:33 VARIANT=minimal BUILD=32
+          compiler: gcc
+
         # native non-intel
         - os: linux
           arch: ppc64le
