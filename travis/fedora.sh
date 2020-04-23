@@ -2,6 +2,10 @@
 # Copyright (c) 2018-2020 Petr Vorel <pvorel@suse.cz>
 set -ex
 
+[ -z "$MINIMAL" ] && EXTRA_PKG="
+	libtirpc
+	libtirpc-devel"
+
 yum -y install \
 	autoconf \
 	automake \
@@ -9,7 +13,6 @@ yum -y install \
 	clang \
 	gcc \
 	findutils \
-	libtirpc \
-	libtirpc-devel \
 	pkg-config \
-	redhat-lsb-core
+	redhat-lsb-core \
+	$EXTRA_PKG

@@ -8,34 +8,36 @@ grep -v oldstable-updates /etc/apt/sources.list > /tmp/sources.list && mv /tmp/s
 
 apt update
 
+[ -z "$MINIMAL" ] && EXTRA_PKG="
+	acl-dev
+	libacl1
+	libacl1-dev
+	libaio-dev
+	libaio1
+	libcap-dev
+	libcap2
+	libkeyutils-dev
+	libkeyutils1
+	libmm-dev
+	libnuma-dev
+	libnuma1
+	libselinux1-dev
+	libsepol1-dev
+	libssl-dev
+	libtirpc-dev"
+
 apt install -y --no-install-recommends \
-	acl-dev \
 	autoconf \
 	automake \
 	build-essential \
+	clang \
 	debhelper \
 	devscripts \
-	clang \
 	gcc \
-	libacl1 \
-	libacl1-dev \
-	libaio-dev \
-	libaio1 \
-	libcap-dev \
-	libcap2 \
-	libc6 \
 	libc6-dev \
-	libkeyutils-dev \
-	libkeyutils1 \
-	libmm-dev \
-	libnuma-dev \
-	libnuma1 \
-	libselinux1-dev \
-	libsepol1-dev \
-	libssl-dev \
-	libtirpc-dev \
 	linux-libc-dev \
 	lsb-release \
-	pkg-config
+	pkg-config \
+	$EXTRA_PKG
 
 df -hT

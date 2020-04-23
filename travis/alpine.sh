@@ -4,25 +4,28 @@ set -ex
 
 apk update
 
+[ -z "$MINIMAL" ] && EXTRA_PKG="
+	acl-dev
+	keyutils-dev
+	libaio-dev
+	libacl
+	libcap-dev
+	libselinux-dev
+	libsepol-dev
+	libtirpc-dev
+	numactl-dev
+	openssl-dev"
+
 apk add \
-	acl-dev \
 	autoconf \
 	automake \
 	clang \
 	gcc \
-	keyutils-dev \
-	libaio-dev \
-	libacl \
-	libcap-dev \
-	libselinux-dev \
-	libsepol-dev \
-	libtirpc-dev \
 	linux-headers \
 	make \
 	musl-dev \
-	numactl-dev \
-	openssl-dev \
-	pkgconfig
+	pkgconfig \
+	$EXTRA_PKG
 
 cat /etc/os-release
 
