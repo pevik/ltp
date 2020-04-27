@@ -31,7 +31,6 @@ cd ..
 rm -rfv \
 	testcases/kernel/sched/process_stress/process.c \
 	testcases/kernel/syscalls/confstr/confstr01.c \
-	testcases/kernel/syscalls/fmtmsg/fmtmsg01.c \
 	testcases/kernel/syscalls/getcontext/getcontext01.c \
 	testcases/kernel/syscalls/getdents/getdents01.c \
 	testcases/kernel/syscalls/getdents/getdents02.c \
