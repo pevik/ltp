@@ -15,6 +15,7 @@ apt install -y --no-install-recommends \
 	build-essential \
 	debhelper \
 	devscripts \
+	dialog \
 	clang \
 	gcc \
 	libacl1 \
