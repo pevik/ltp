@@ -7,6 +7,14 @@ services:
 
 matrix:
     include:
+        - os: linux
+          env: DISTRO=ubuntu:latest TREE=out
+          compiler: gcc
+
+        - os: linux
+          env: DISTRO=ubuntu:xenial
+          compiler: gcc
+
         # 32 bit build
         - os: linux
           env: DISTRO=debian:stable VARIANT=i386
@@ -25,13 +33,6 @@ matrix:
           env: DISTRO=debian:stable VARIANT=cross-compile ARCH=s390x TREE=out
           compiler: s390x-linux-gnu-gcc
 
-        # musl (native)
-        - os: linux
-          # Message: WARNING: xsltproc: cannot process http://docbook.sourceforge.net/release/xsl-ns/current/manpages/docbook.xsl
-          # doc/meson.build:70:1: ERROR: Problem encountered: Docs cannot be built: xsltproc does not work correctly
-          env: DISTRO=alpine:latest
-          compiler: gcc
-
         # build with minimal dependencies
         - os: linux
           env: DISTRO=debian:stable VARIANT=minimal TREE=out
@@ -43,15 +44,6 @@ matrix:
           compiler: gcc
           env: DISTRO=debian:testing
 
-        # other builds
-        - os: linux
-          env: DISTRO=fedora:33 MAKE_INSTALL=1
-          compiler: clang
-
-        - os: linux
-          env: DISTRO=centos:6 TREE=out
-          compiler: gcc
-
         - os: linux
           env: DISTRO=debian:testing
           compiler: gcc
@@ -61,32 +53,12 @@ matrix:
           compiler: clang
 
         - os: linux
-          env: DISTRO=opensuse/tumbleweed
-          compiler: gcc
-
-        - os: linux
-          env: DISTRO=opensuse/leap
-          compiler: gcc
-
-        - os: linux
           env: DISTRO=debian:oldstable
           compiler: gcc
 
         - os: linux
           env: DISTRO=debian:testing
           compiler: clang
-
-        - os: linux
-          env: DISTRO=ubuntu:latest TREE=out
-          compiler: gcc
-
-        - os: linux
-          env: DISTRO=ubuntu:xenial
-          compiler: gcc
-
-        - os: linux
-          env: DISTRO=centos:latest
-          compiler: gcc
 
 before_install:
     - df -hT
