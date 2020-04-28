@@ -21,10 +21,10 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include "tst_test.h"
-#include "fanotify.h"
 
 #if defined(HAVE_SYS_FANOTIFY_H)
 #include <sys/fanotify.h>
+#include "fanotify.h"
 
 #define EVENT_MAX 1024
 #define EVENT_SIZE (sizeof (struct fanotify_event_metadata))
@@ -139,7 +139,7 @@ static int setup_mark(unsigned int n)
 
 	for (; i < ARRAY_SIZE(files); i++) {
 		/* Setup normal mark on object */
-		if (fanotify_mark(fd_notify, FAN_MARK_ADD | mark->flag,
+		if (do_fanotify_mark(fd_notify, FAN_MARK_ADD | mark->flag,
 					tc->mask, AT_FDCWD, files[i]) < 0) {
 			if (errno == EINVAL && tc->mask & FAN_OPEN_EXEC) {
 				tst_res(TCONF,
@@ -163,7 +163,7 @@ static int setup_mark(unsigned int n)
 
 		/* Setup ignore mark on object */
 		if (tc->ignore_mask) {
-			if (fanotify_mark(fd_notify, FAN_MARK_ADD | mark->flag
+			if (do_fanotify_mark(fd_notify, FAN_MARK_ADD | mark->flag
 						| FAN_MARK_IGNORED_MASK,
 						tc->ignore_mask, AT_FDCWD,
 						files[i]) < 0) {
@@ -180,7 +180,7 @@ static int setup_mark(unsigned int n)
 						"kernel?");
 				} else {
 					tst_brk(TBROK | TERRNO,
-						"fanotify_mark (%d, "
+						"fanotify_mark(%d, "
 						"FAN_MARK_ADD | %s "
 						"| FAN_MARK_IGNORED_MASK, "
 						"%llx, AT_FDCWD, %s) failed",
@@ -253,6 +253,8 @@ cleanup:
 
 static void do_setup(void)
 {
+	tst_res(TINFO, "Testing variant: %s", variant_desc[tst_variant]);
+
 	sprintf(fname, "fname_%d", getpid());
 	SAFE_FILE_PRINTF(fname, "1");
 }
@@ -275,7 +277,8 @@ static struct tst_test test = {
 	.cleanup = do_cleanup,
 	.forks_child = 1,
 	.needs_root = 1,
-	.resource_files = resource_files
+	.resource_files = resource_files,
+	.test_variants = TEST_VARIANTS,
 };
 #else
 	TST_TEST_TCONF("System does not contain required fanotify support");

@@ -12,12 +12,12 @@
  */
 #define _GNU_SOURCE
 #include "tst_test.h"
-#include "fanotify.h"
 
 #include <errno.h>
 
 #if defined(HAVE_SYS_FANOTIFY_H)
 #include <sys/fanotify.h>
+#include "fanotify.h"
 
 #define MNTPOINT "mntpoint"
 #define FILE1 MNTPOINT"/file1"
@@ -96,7 +96,7 @@ static void do_test(unsigned int number)
 		goto out;
 	}
 
-	ret = fanotify_mark(fanotify_fd, FAN_MARK_ADD | tc->mark_flags,
+	ret = do_fanotify_mark(fanotify_fd, FAN_MARK_ADD | tc->mark_flags,
 				tc->mask, AT_FDCWD, FILE1);
 	if (ret < 0) {
 		/*
@@ -146,6 +146,8 @@ static void do_setup(void)
 {
 	int fd;
 
+	tst_res(TINFO, "Testing variant: %s", variant_desc[tst_variant]);
+
 	/* Check for kernel fanotify support */
 	fd = SAFE_FANOTIFY_INIT(FAN_CLASS_NOTIF, O_RDONLY);
 	SAFE_CLOSE(fd);
@@ -168,7 +170,8 @@ static struct tst_test test = {
 	.cleanup = do_cleanup,
 	.mount_device = 1,
 	.mntpoint = MNTPOINT,
-	.all_filesystems = 1
+	.all_filesystems = 1,
+	.test_variants = TEST_VARIANTS,
 };
 
 #else

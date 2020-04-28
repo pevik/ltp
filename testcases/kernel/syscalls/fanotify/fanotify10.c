@@ -30,10 +30,10 @@
 #include <sys/mount.h>
 #include <sys/syscall.h>
 #include "tst_test.h"
-#include "fanotify.h"
 
 #if defined(HAVE_SYS_FANOTIFY_H)
 #include <sys/fanotify.h>
+#include "fanotify.h"
 
 #define EVENT_MAX 1024
 /* size of the event structure, not counting name */
@@ -213,7 +213,7 @@ static int create_fanotify_groups(unsigned int n)
 							     O_RDONLY);
 
 			/* Add mark for each group */
-			ret = fanotify_mark(fd_notify[p][i],
+			ret = do_fanotify_mark(fd_notify[p][i],
 					    FAN_MARK_ADD | mark->flag,
 					    tc->expected_mask_without_ignore,
 					    AT_FDCWD, tc->mark_path);
@@ -241,7 +241,7 @@ static int create_fanotify_groups(unsigned int n)
 			/* Add ignore mark for groups with higher priority */
 			if (p == 0)
 				continue;
-			ret = fanotify_mark(fd_notify[p][i],
+			ret = do_fanotify_mark(fd_notify[p][i],
 					    FAN_MARK_ADD | ignore_mark->flag |
 					    FAN_MARK_IGNORED_MASK |
 					    FAN_MARK_IGNORED_SURV_MODIFY,
@@ -408,6 +408,8 @@ cleanup:
 
 static void setup(void)
 {
+	tst_res(TINFO, "Testing variant: %s", variant_desc[tst_variant]);
+
 	/* Create another bind mount at another path for generating events */
 	SAFE_MKDIR(MNT2_PATH, 0755);
 	SAFE_MOUNT(MOUNT_PATH, MNT2_PATH, "none", MS_BIND, NULL);
@@ -443,6 +445,7 @@ static struct tst_test test = {
 	.needs_root = 1,
 	.forks_child = 1,
 	.resource_files = resource_files,
+	.test_variants = TEST_VARIANTS,
 	.tags = (const struct tst_tag[]) {
 		{"linux-git", "9bdda4e9cf2d"},
 		{}

@@ -25,10 +25,10 @@
 #include <errno.h>
 #include <unistd.h>
 #include "tst_test.h"
-#include "fanotify.h"
 
 #if defined(HAVE_SYS_FANOTIFY_H)
 #include <sys/fanotify.h>
+#include "fanotify.h"
 
 #define PATH_LEN 128
 #define BUF_SIZE 256
@@ -121,7 +121,7 @@ static int setup_marks(unsigned int fd, struct test_case_t *tc)
 	struct fanotify_mark_type *mark = &tc->mark;
 
 	for (i = 0; i < ARRAY_SIZE(objects); i++) {
-		if (fanotify_mark(fd, FAN_MARK_ADD | mark->flag, tc->mask,
+		if (do_fanotify_mark(fd, FAN_MARK_ADD | mark->flag, tc->mask,
 					AT_FDCWD, objects[i].path) == -1) {
 			if (errno == EINVAL &&
 				mark->flag & FAN_MARK_FILESYSTEM) {
@@ -167,7 +167,7 @@ static void do_test(unsigned int number)
 		"Test #%d: FAN_REPORT_FID with mark flag: %s",
 		number, mark->name);
 
-	fanotify_fd = fanotify_init(FAN_CLASS_NOTIF | FAN_REPORT_FID, O_RDONLY);
+	fanotify_fd = do_fanotify_init(FAN_CLASS_NOTIF | FAN_REPORT_FID, O_RDONLY);
 	if (fanotify_fd == -1) {
 		if (errno == EINVAL) {
 			tst_res(TCONF,
@@ -285,6 +285,8 @@ out:
 
 static void do_setup(void)
 {
+	tst_res(TINFO, "Testing variant: %s", variant_desc[tst_variant]);
+
 	/* Check for kernel fanotify support */
 	nofid_fd = SAFE_FANOTIFY_INIT(FAN_CLASS_NOTIF, O_RDONLY);
 
@@ -296,7 +298,7 @@ static void do_setup(void)
 	 * uninitialized connector->fsid cache. This mark remains for all test
 	 * cases and is not expected to get any events (no writes in this test).
 	 */
-	if (fanotify_mark(nofid_fd, FAN_MARK_ADD, FAN_CLOSE_WRITE, AT_FDCWD,
+	if (do_fanotify_mark(nofid_fd, FAN_MARK_ADD, FAN_CLOSE_WRITE, AT_FDCWD,
 			  FILE_PATH_ONE) == -1) {
 		tst_brk(TBROK | TERRNO,
 			"fanotify_mark(%d, FAN_MARK_ADD, FAN_CLOSE_WRITE, "
@@ -325,6 +327,7 @@ static struct tst_test test = {
 	.mount_device = 1,
 	.mntpoint = MOUNT_PATH,
 	.all_filesystems = 1,
+	.test_variants = TEST_VARIANTS,
 	.tags = (const struct tst_tag[]) {
 		{"linux-git", "c285a2f01d69"},
 		{}

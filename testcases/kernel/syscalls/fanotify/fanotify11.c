@@ -29,10 +29,10 @@
 #include <linux/limits.h>
 #include "tst_test.h"
 #include "tst_safe_pthread.h"
-#include "fanotify.h"
 
 #if defined(HAVE_SYS_FANOTIFY_H)
 #include <sys/fanotify.h>
+#include "fanotify.h"
 
 #define gettid() syscall(SYS_gettid)
 static int tid;
@@ -65,7 +65,7 @@ void test01(unsigned int i)
 			i, (tcases[i] & FAN_REPORT_TID) ? "with" : "without",
 			tgid, tid, event.pid);
 
-	fd_notify = fanotify_init(tcases[i], 0);
+	fd_notify = do_fanotify_init(tcases[i], 0);
 	if (fd_notify < 0) {
 		if (errno == EINVAL && (tcases[i] & FAN_REPORT_TID)) {
 			tst_res(TCONF,
@@ -76,7 +76,7 @@ void test01(unsigned int i)
 				tcases[i]);
 	}
 
-	ret = fanotify_mark(fd_notify, FAN_MARK_ADD,
+	ret = do_fanotify_mark(fd_notify, FAN_MARK_ADD,
 			FAN_ALL_EVENTS | FAN_EVENT_ON_CHILD, AT_FDCWD, ".");
 	if (ret != 0)
 		tst_brk(TBROK, "fanotify_mark FAN_MARK_ADD fail ret=%d", ret);
@@ -102,6 +102,8 @@ static void setup(void)
 {
 	int fd;
 
+	tst_res(TINFO, "Testing variant: %s", variant_desc[tst_variant]);
+
 	fd = SAFE_FANOTIFY_INIT(FAN_CLASS_NOTIF, O_RDONLY);
 	SAFE_CLOSE(fd);
 }
@@ -112,6 +114,7 @@ static struct tst_test test = {
 	.tcnt =  ARRAY_SIZE(tcases),
 	.needs_tmpdir = 1,
 	.needs_root = 1,
+	.test_variants = TEST_VARIANTS,
 };
 
 #else

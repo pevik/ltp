@@ -18,10 +18,10 @@
 #include <string.h>
 #include <sys/syscall.h>
 #include "tst_test.h"
-#include "fanotify.h"
 
 #if defined(HAVE_SYS_FANOTIFY_H)
 #include <sys/fanotify.h>
+#include "fanotify.h"
 
 #define EVENT_MAX 1024
 /* size of the event structure, not counting name */
@@ -88,7 +88,7 @@ static void test_fanotify(unsigned int n)
 
 	tst_res(TINFO, "Test #%d: %s", n, tc->tname);
 
-	fd_notify = fanotify_init(tc->init_flags, O_RDONLY);
+	fd_notify = do_fanotify_init(tc->init_flags, O_RDONLY);
 	if (fd_notify < 0) {
 		if (errno == EINVAL &&
 		    (tc->init_flags & FAN_REPORT_FID)) {
@@ -97,11 +97,11 @@ static void test_fanotify(unsigned int n)
 			return;
 		}
 		tst_brk(TBROK | TERRNO,
-			"fanotify_init (0x%x, O_RDONLY) "
+			"fanotify_init(0x%x, O_RDONLY) "
 			"failed", tc->init_flags);
 	}
 
-	if (fanotify_mark(fd_notify, FAN_MARK_ADD | mark->flag,
+	if (do_fanotify_mark(fd_notify, FAN_MARK_ADD | mark->flag,
 			  FAN_ACCESS | FAN_MODIFY | FAN_CLOSE | FAN_OPEN,
 			  AT_FDCWD, fname) < 0) {
 		if (errno == EINVAL && mark->flag == FAN_MARK_FILESYSTEM) {
@@ -110,7 +110,7 @@ static void test_fanotify(unsigned int n)
 			return;
 		}
 		tst_brk(TBROK | TERRNO,
-			"fanotify_mark (%d, FAN_MARK_ADD, FAN_ACCESS | %s | "
+			"fanotify_mark(%d, FAN_MARK_ADD, FAN_ACCESS | %s | "
 			"FAN_MODIFY | FAN_CLOSE | FAN_OPEN, AT_FDCWD, %s) "
 			"failed", fd_notify, mark->name, fname);
 	}
@@ -161,11 +161,11 @@ static void test_fanotify(unsigned int n)
 	 */
 
 	/* Ignore access events */
-	if (fanotify_mark(fd_notify,
+	if (do_fanotify_mark(fd_notify,
 			  FAN_MARK_ADD | mark->flag | FAN_MARK_IGNORED_MASK,
 			  FAN_ACCESS, AT_FDCWD, fname) < 0) {
 		tst_brk(TBROK | TERRNO,
-			"fanotify_mark (%d, FAN_MARK_ADD | %s | "
+			"fanotify_mark(%d, FAN_MARK_ADD | %s | "
 			"FAN_MARK_IGNORED_MASK, FAN_ACCESS, AT_FDCWD, %s) "
 			"failed", fd_notify, mark->name, fname);
 	}
@@ -211,11 +211,11 @@ static void test_fanotify(unsigned int n)
 	 * Now ignore open & close events regardless of file
 	 * modifications
 	 */
-	if (fanotify_mark(fd_notify, FAN_MARK_ADD | mark->flag |
+	if (do_fanotify_mark(fd_notify, FAN_MARK_ADD | mark->flag |
 			  FAN_MARK_IGNORED_MASK | FAN_MARK_IGNORED_SURV_MODIFY,
 			  FAN_OPEN | FAN_CLOSE, AT_FDCWD, fname) < 0) {
 		tst_brk(TBROK | TERRNO,
-			"fanotify_mark (%d, FAN_MARK_ADD | %s | "
+			"fanotify_mark(%d, FAN_MARK_ADD | %s | "
 			"FAN_MARK_IGNORED_MASK | FAN_MARK_IGNORED_SURV_MODIFY, "
 			"FAN_OPEN | FAN_CLOSE, AT_FDCWD, %s) failed",
 			fd_notify, mark->name, fname);
@@ -240,11 +240,11 @@ static void test_fanotify(unsigned int n)
 	len += ret;
 
 	/* Now remove open and close from ignored mask */
-	if (fanotify_mark(fd_notify,
+	if (do_fanotify_mark(fd_notify,
 			  FAN_MARK_REMOVE | mark->flag | FAN_MARK_IGNORED_MASK,
 			  FAN_OPEN | FAN_CLOSE, AT_FDCWD, fname) < 0) {
 		tst_brk(TBROK | TERRNO,
-			"fanotify_mark (%d, FAN_MARK_REMOVE | %s | "
+			"fanotify_mark(%d, FAN_MARK_REMOVE | %s | "
 			"FAN_MARK_IGNORED_MASK, FAN_OPEN | FAN_CLOSE, "
 			"AT_FDCWD, %s) failed", fd_notify,
 			mark->name, fname);
@@ -344,11 +344,11 @@ pass:
 
 	}
 	/* Remove mark to clear FAN_MARK_IGNORED_SURV_MODIFY */
-	if (fanotify_mark(fd_notify, FAN_MARK_REMOVE | mark->flag,
+	if (do_fanotify_mark(fd_notify, FAN_MARK_REMOVE | mark->flag,
 			  FAN_ACCESS | FAN_MODIFY | FAN_CLOSE | FAN_OPEN,
 			  AT_FDCWD, fname) < 0) {
 		tst_brk(TBROK | TERRNO,
-			"fanotify_mark (%d, FAN_MARK_REMOVE | %s, FAN_ACCESS | "
+			"fanotify_mark(%d, FAN_MARK_REMOVE | %s, FAN_ACCESS | "
 			"FAN_MODIFY | FAN_CLOSE | FAN_OPEN, AT_FDCWD, %s) "
 			"failed", fd_notify, mark->name, fname);
 	}
@@ -359,6 +359,8 @@ pass:
 static void setup(void)
 {
 	int fd;
+
+	tst_res(TINFO, "Testing variant: %s", variant_desc[tst_variant]);
 
 	/* Check for kernel fanotify support */
 	fd = SAFE_FANOTIFY_INIT(FAN_CLASS_NOTIF, O_RDONLY);
@@ -382,6 +384,7 @@ static struct tst_test test = {
 	.needs_root = 1,
 	.mount_device = 1,
 	.mntpoint = MOUNT_PATH,
+	.test_variants = TEST_VARIANTS,
 };
 
 #else

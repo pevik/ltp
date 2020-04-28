@@ -18,10 +18,10 @@
 #include <string.h>
 #include <sys/syscall.h>
 #include "tst_test.h"
-#include "fanotify.h"
 
 #if defined(HAVE_SYS_FANOTIFY_H)
 #include <sys/fanotify.h>
+#include "fanotify.h"
 
 #define EVENT_MAX 1024
 /* size of the event structure, not counting name */
@@ -46,12 +46,12 @@ void test01(void)
 
 	int tst_count = 0;
 
-	if (fanotify_mark(fd_notify, FAN_MARK_ADD, FAN_ACCESS |
+	if (do_fanotify_mark(fd_notify, FAN_MARK_ADD, FAN_ACCESS |
 			  FAN_MODIFY | FAN_CLOSE | FAN_OPEN |
 			  FAN_EVENT_ON_CHILD | FAN_ONDIR, AT_FDCWD,
 			  ".") < 0) {
 		tst_brk(TBROK | TERRNO,
-			"fanotify_mark (%d, FAN_MARK_ADD, FAN_ACCESS | "
+			"fanotify_mark(%d, FAN_MARK_ADD, FAN_ACCESS | "
 			"FAN_MODIFY | FAN_CLOSE | FAN_OPEN | "
 			"FAN_EVENT_ON_CHILD | FAN_ONDIR, AT_FDCWD, '.') "
 			"failed", fd_notify);
@@ -102,10 +102,10 @@ void test01(void)
 	/*
 	 * now remove child mark
 	 */
-	if (fanotify_mark(fd_notify, FAN_MARK_REMOVE,
+	if (do_fanotify_mark(fd_notify, FAN_MARK_REMOVE,
 			  FAN_EVENT_ON_CHILD, AT_FDCWD, ".") < 0) {
 		tst_brk(TBROK | TERRNO,
-			"fanotify_mark (%d, FAN_MARK REMOVE, "
+			"fanotify_mark(%d, FAN_MARK REMOVE, "
 			"FAN_EVENT_ON_CHILD, AT_FDCWD, '.') failed",
 			fd_notify);
 	}
@@ -190,6 +190,8 @@ void test01(void)
 
 static void setup(void)
 {
+	tst_res(TINFO, "Testing variant: %s", variant_desc[tst_variant]);
+
 	sprintf(fname, "fname_%d", getpid());
 	fd_notify = SAFE_FANOTIFY_INIT(FAN_CLASS_NOTIF, O_RDONLY);
 }
@@ -205,7 +207,8 @@ static struct tst_test test = {
 	.setup = setup,
 	.cleanup = cleanup,
 	.needs_tmpdir = 1,
-	.needs_root = 1
+	.needs_root = 1,
+	.test_variants = TEST_VARIANTS,
 };
 
 #else

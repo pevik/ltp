@@ -24,10 +24,10 @@
 #include <sys/types.h>
 
 #include "tst_test.h"
-#include "fanotify.h"
 
 #if defined(HAVE_SYS_FANOTIFY_H)
 #include <sys/fanotify.h>
+#include "fanotify.h"
 
 #define EVENT_MAX 10
 
@@ -88,7 +88,7 @@ static void do_test(unsigned int number)
 		number, mark->name);
 
 
-	if (fanotify_mark(fanotify_fd, FAN_MARK_ADD | mark->flag, tc->mask |
+	if (do_fanotify_mark(fanotify_fd, FAN_MARK_ADD | mark->flag, tc->mask |
 				FAN_CREATE | FAN_DELETE | FAN_MOVE |
 				FAN_MODIFY | FAN_ONDIR,
 				AT_FDCWD, TEST_DIR) == -1) {
@@ -296,6 +296,8 @@ static void do_setup(void)
 {
 	int fd;
 
+	tst_res(TINFO, "Testing variant: %s", variant_desc[tst_variant]);
+
 	/* Check kernel for fanotify support */
 	fd = SAFE_FANOTIFY_INIT(FAN_CLASS_NOTIF, O_RDONLY);
 	SAFE_CLOSE(fd);
@@ -327,6 +329,7 @@ static struct tst_test test = {
 	.tcnt = ARRAY_SIZE(test_cases),
 	.setup = do_setup,
 	.cleanup = do_cleanup,
+	.test_variants = TEST_VARIANTS,
 	.tags = (const struct tst_tag[]) {
 		{"linux-git", "f367a62a7cad"},
 		{}

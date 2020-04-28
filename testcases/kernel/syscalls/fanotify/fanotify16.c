@@ -19,11 +19,11 @@
 #include <sys/mount.h>
 #include <sys/syscall.h>
 #include "tst_test.h"
-#include "fanotify.h"
 
 #if defined(HAVE_SYS_FANOTIFY_H)
 #include <sys/fanotify.h>
 #include <sys/inotify.h>
+#include "fanotify.h"
 
 #define EVENT_MAX 10
 
@@ -114,7 +114,7 @@ static void do_test(unsigned int number)
 		number, mark->name);
 
 
-	fd_notify = fanotify_init(FAN_REPORT_FID, 0);
+	fd_notify = do_fanotify_init(FAN_REPORT_FID, 0);
 	if (fd_notify == -1) {
 		if (errno == EINVAL)
 			tst_brk(TCONF,
@@ -127,14 +127,14 @@ static void do_test(unsigned int number)
 	/*
 	 * Watch dir modify events with name in filesystem/dir
 	 */
-	if (fanotify_mark(fd_notify, FAN_MARK_ADD | mark->flag, tc->mask,
+	if (do_fanotify_mark(fd_notify, FAN_MARK_ADD | mark->flag, tc->mask,
 			  AT_FDCWD, MOUNT_PATH) < 0) {
 		if (errno == EINVAL)
 			tst_brk(TCONF,
 				"FAN_DIR_MODIFY not supported by kernel");
 
 		tst_brk(TBROK | TERRNO,
-		    "fanotify_mark (%d, FAN_MARK_ADD | %s, "
+		    "fanotify_mark(%d, FAN_MARK_ADD | %s, "
 		    "FAN_DIR_MODIFY, AT_FDCWD, '"MOUNT_PATH"') "
 		    "failed", fd_notify, mark->name);
 	}
@@ -154,10 +154,10 @@ static void do_test(unsigned int number)
 	save_fid(dname1, &dir_fid);
 
 	if (tc->sub_mask &&
-	    fanotify_mark(fd_notify, FAN_MARK_ADD | sub_mark->flag, tc->sub_mask,
+	    do_fanotify_mark(fd_notify, FAN_MARK_ADD | sub_mark->flag, tc->sub_mask,
 			  AT_FDCWD, dname1) < 0) {
 		tst_brk(TBROK | TERRNO,
-		    "fanotify_mark (%d, FAN_MARK_ADD | %s, "
+		    "fanotify_mark(%d, FAN_MARK_ADD | %s, "
 		    "FAN_DIR_MODIFY | FAN_DELETE_SELF | FAN_ONDIR, "
 		    "AT_FDCWD, '%s') "
 		    "failed", fd_notify, sub_mark->name, dname1);
@@ -411,6 +411,8 @@ static void do_test(unsigned int number)
 
 static void setup(void)
 {
+	tst_res(TINFO, "Testing variant: %s", variant_desc[tst_variant]);
+
 	sprintf(dname1, "%s/%s", MOUNT_PATH, DIR_NAME1);
 	sprintf(dname2, "%s/%s", MOUNT_PATH, DIR_NAME2);
 	sprintf(fname1, "%s/%s", dname1, FILE_NAME1);
@@ -433,7 +435,8 @@ static struct tst_test test = {
 	.mntpoint = MOUNT_PATH,
 	.all_filesystems = 1,
 	.needs_tmpdir = 1,
-	.needs_root = 1
+	.needs_root = 1,
+	.test_variants = TEST_VARIANTS,
 };
 
 #else

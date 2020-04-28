@@ -33,10 +33,10 @@
 #include <sys/syscall.h>
 #include <stdint.h>
 #include "tst_test.h"
-#include "fanotify.h"
 
 #if defined(HAVE_SYS_FANOTIFY_H)
 #include <sys/fanotify.h>
+#include "fanotify.h"
 
 #define EVENT_MAX 1024
 /* size of the event structure, not counting name */
@@ -50,6 +50,7 @@
 static char fname[BUF_SIZE];
 static char symlnk[BUF_SIZE];
 static char fdpath[BUF_SIZE];
+static char mntpoint[BUF_SIZE];
 static int fd_notify[NUM_GROUPS];
 
 static char event_buf[EVENT_BUF_LEN];
@@ -96,7 +97,7 @@ static void create_fanotify_groups(unsigned int ondir)
 
 		/* Add mount mark for each group without MODIFY event */
 		onchild = (i == 0) ? FAN_EVENT_ON_CHILD | ondir : 0;
-		ret = fanotify_mark(fd_notify[i],
+		ret = do_fanotify_mark(fd_notify[i],
 				    FAN_MARK_ADD | FAN_MARK_MOUNT,
 				    FAN_CLOSE_NOWRITE | onchild,
 				    AT_FDCWD, ".");
@@ -114,7 +115,7 @@ static void create_fanotify_groups(unsigned int ondir)
 		 * setting the DCACHE_FSNOTIFY_PARENT_WATCHED dentry
 		 * flag.
 		 */
-		ret = fanotify_mark(fd_notify[i], FAN_MARK_ADD,
+		ret = do_fanotify_mark(fd_notify[i], FAN_MARK_ADD,
 				    FAN_MODIFY | ondir | onchild,
 				    AT_FDCWD, ".");
 		if (ret < 0) {
@@ -256,10 +257,13 @@ static void test_fanotify(unsigned int n)
 
 static void setup(void)
 {
-	SAFE_MKDIR(MOUNT_NAME, 0755);
-	SAFE_MOUNT(MOUNT_NAME, MOUNT_NAME, "none", MS_BIND, NULL);
+	tst_res(TINFO, "Testing variant: %s", variant_desc[tst_variant]);
+
+	sprintf(mntpoint, "%s_%d", MOUNT_NAME, tst_variant);
+	SAFE_MKDIR(mntpoint, 0755);
+	SAFE_MOUNT(mntpoint, mntpoint, "none", MS_BIND, NULL);
 	mount_created = 1;
-	SAFE_CHDIR(MOUNT_NAME);
+	SAFE_CHDIR(mntpoint);
 	SAFE_MKDIR(DIR_NAME, 0755);
 
 	sprintf(fname, "tfile_%d", getpid());
@@ -272,7 +276,7 @@ static void cleanup(void)
 
 	SAFE_CHDIR("../");
 
-	if (mount_created && tst_umount(MOUNT_NAME) < 0)
+	if (mount_created && tst_umount(mntpoint) < 0)
 		tst_brk(TBROK | TERRNO, "umount failed");
 }
 
@@ -283,6 +287,7 @@ static struct tst_test test = {
 	.cleanup = cleanup,
 	.needs_tmpdir = 1,
 	.needs_root = 1,
+	.test_variants = TEST_VARIANTS,
 	.tags = (const struct tst_tag[]) {
 		{"linux-git", "54a307ba8d3c"},
 		{"linux-git", "b469e7e47c8a"},

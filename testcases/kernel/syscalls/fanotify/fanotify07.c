@@ -30,10 +30,10 @@
 #include <sys/syscall.h>
 #include "tst_test.h"
 #include "lapi/syscalls.h"
-#include "fanotify.h"
 
 #if defined(HAVE_SYS_FANOTIFY_H)
 #include <sys/fanotify.h>
+#include "fanotify.h"
 
 #define BUF_SIZE 256
 static char fname[BUF_SIZE];
@@ -103,7 +103,7 @@ static int setup_instance(void)
 
 	fd = SAFE_FANOTIFY_INIT(FAN_CLASS_CONTENT, O_RDONLY);
 
-	if (fanotify_mark(fd, FAN_MARK_ADD, FAN_ACCESS_PERM, AT_FDCWD,
+	if (do_fanotify_mark(fd, FAN_MARK_ADD, FAN_ACCESS_PERM, AT_FDCWD,
 			  fname) < 0) {
 		close(fd);
 		if (errno == EINVAL) {
@@ -112,7 +112,7 @@ static int setup_instance(void)
 				"configured in kernel?");
 		} else {
 			tst_brk(TBROK | TERRNO,
-				"fanotify_mark (%d, FAN_MARK_ADD, FAN_ACCESS_PERM, "
+				"fanotify_mark(%d, FAN_MARK_ADD, FAN_ACCESS_PERM, "
 				"AT_FDCWD, %s) failed.", fd, fname);
 		}
 	}
@@ -195,6 +195,8 @@ static void test_fanotify(void)
 
 static void setup(void)
 {
+	tst_res(TINFO, "Testing variant: %s", variant_desc[tst_variant]);
+
 	sprintf(fname, "fname_%d", getpid());
 	SAFE_FILE_PRINTF(fname, "%s", fname);
 }
@@ -212,6 +214,7 @@ static struct tst_test test = {
 	.needs_tmpdir = 1,
 	.forks_child = 1,
 	.needs_root = 1,
+	.test_variants = TEST_VARIANTS,
 };
 
 #else

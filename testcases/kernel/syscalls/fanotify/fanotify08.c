@@ -18,10 +18,10 @@
 #include <string.h>
 #include <sys/syscall.h>
 #include "tst_test.h"
-#include "fanotify.h"
 
 #if defined(HAVE_SYS_FANOTIFY_H)
 #include <sys/fanotify.h>
+#include "fanotify.h"
 
 static int fd_notify;
 
@@ -41,6 +41,11 @@ static void test_init_bit(unsigned int fan_bit,
 	}
 
 	SAFE_CLOSE(fd_notify);
+}
+
+static void setup(void)
+{
+	tst_res(TINFO, "Testing variant: %s", variant_desc[tst_variant]);
 }
 
 static void run(unsigned int i)
@@ -64,8 +69,10 @@ static void cleanup(void)
 static struct tst_test test = {
 	.test = run,
 	.tcnt = 2,
+	.setup = setup,
 	.cleanup = cleanup,
 	.needs_root = 1,
+	.test_variants = TEST_VARIANTS,
 };
 
 #else

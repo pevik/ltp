@@ -19,10 +19,10 @@
 #include <string.h>
 #include <sys/syscall.h>
 #include "tst_test.h"
-#include "fanotify.h"
 
 #if defined(HAVE_SYS_FANOTIFY_H)
 #include <sys/fanotify.h>
+#include "fanotify.h"
 
 #define EVENT_MAX 1024
 /* size of the event structure, not counting name */
@@ -58,15 +58,15 @@ static char *expect_str_pass(int expect)
 static void check_mark(char *file, unsigned long long flag, char *flagstr,
 		       int expect, void (*test_event)(char *))
 {
-	if (fanotify_mark(fd_notify, FAN_MARK_ADD | flag, FAN_OPEN, AT_FDCWD,
+	if (do_fanotify_mark(fd_notify, FAN_MARK_ADD | flag, FAN_OPEN, AT_FDCWD,
 			  file) != expect) {
 		tst_res(TFAIL,
-			"fanotify_mark (%d, FAN_MARK_ADD | %s, FAN_OPEN, "
+			"fanotify_mark(%d, FAN_MARK_ADD | %s, FAN_OPEN, "
 			"AT_FDCWD, '%s') %s", fd_notify, flagstr, file,
 			expect_str_fail(expect));
 	} else {
 		tst_res(TPASS,
-			"fanotify_mark (%d, FAN_MARK_ADD | %s, FAN_OPEN, "
+			"fanotify_mark(%d, FAN_MARK_ADD | %s, FAN_OPEN, "
 			"AT_FDCWD, '%s') %s", fd_notify, flagstr, file,
 			expect_str_pass(expect));
 
@@ -77,10 +77,10 @@ static void check_mark(char *file, unsigned long long flag, char *flagstr,
 		if (test_event)
 			test_event(file);
 
-		if (fanotify_mark(fd_notify, FAN_MARK_REMOVE | flag,
+		if (do_fanotify_mark(fd_notify, FAN_MARK_REMOVE | flag,
 				  FAN_OPEN, AT_FDCWD, file) < 0) {
 			tst_brk(TBROK | TERRNO,
-				"fanotify_mark (%d, FAN_MARK_REMOVE | %s, "
+				"fanotify_mark(%d, FAN_MARK_REMOVE | %s, "
 				"FAN_OPEN, AT_FDCWD, '%s') failed",
 				fd_notify, flagstr, file);
 		}
@@ -191,16 +191,16 @@ void test01(void)
 	CHECK_MARK(sname, 0, 0, test_open_file);
 
 	/* Verify FAN_MARK_FLUSH destroys all inode marks */
-	if (fanotify_mark(fd_notify, FAN_MARK_ADD,
+	if (do_fanotify_mark(fd_notify, FAN_MARK_ADD,
 			  FAN_OPEN, AT_FDCWD, fname) < 0) {
 		tst_brk(TBROK | TERRNO,
-			"fanotify_mark (%d, FAN_MARK_ADD, FAN_OPEN, "
+			"fanotify_mark(%d, FAN_MARK_ADD, FAN_OPEN, "
 			"AT_FDCWD, '%s') failed", fd_notify, fname);
 	}
-	if (fanotify_mark(fd_notify, FAN_MARK_ADD,
+	if (do_fanotify_mark(fd_notify, FAN_MARK_ADD,
 			  FAN_OPEN | FAN_ONDIR, AT_FDCWD, dir) < 0) {
 		tst_brk(TBROK | TERRNO,
-			"fanotify_mark (%d, FAN_MARK_ADD, FAN_OPEN | "
+			"fanotify_mark(%d, FAN_MARK_ADD, FAN_OPEN | "
 			"FAN_ONDIR, AT_FDCWD, '%s') failed", fd_notify,
 			dir);
 	}
@@ -208,10 +208,10 @@ void test01(void)
 	verify_event(S_IFREG);
 	open_dir(dir);
 	verify_event(S_IFDIR);
-	if (fanotify_mark(fd_notify, FAN_MARK_FLUSH,
+	if (do_fanotify_mark(fd_notify, FAN_MARK_FLUSH,
 			  0, AT_FDCWD, ".") < 0) {
 		tst_brk(TBROK | TERRNO,
-			"fanotify_mark (%d, FAN_MARK_FLUSH, 0, "
+			"fanotify_mark(%d, FAN_MARK_FLUSH, 0, "
 			"AT_FDCWD, '.') failed", fd_notify);
 	}
 
@@ -222,6 +222,8 @@ void test01(void)
 static void setup(void)
 {
 	int fd;
+
+	tst_res(TINFO, "Testing variant: %s", variant_desc[tst_variant]);
 
 	sprintf(fname, "fname_%d", getpid());
 	fd = SAFE_OPEN(fname, O_RDWR | O_CREAT, 0644);
@@ -248,7 +250,8 @@ static struct tst_test test = {
 	.setup = setup,
 	.cleanup = cleanup,
 	.needs_tmpdir = 1,
-	.needs_root = 1
+	.needs_root = 1,
+	.test_variants = TEST_VARIANTS,
 };
 
 #else
