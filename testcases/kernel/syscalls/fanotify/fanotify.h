@@ -8,55 +8,60 @@
 #define	__FANOTIFY_H__
 
 #include "config.h"
-#include <sys/statfs.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <errno.h>
 #include <fcntl.h>
-
-#if defined(HAVE_SYS_FANOTIFY_H)
-
 #include <sys/fanotify.h>
-
-#else /* HAVE_SYS_FANOTIFY_H */
-
-/* fanotify(7) wrappers */
-
+#include <sys/stat.h>
+#include <sys/statfs.h>
+#include <sys/types.h>
 #include <stdint.h>
 #include "lapi/syscalls.h"
 
-static int fanotify_init(unsigned int flags, unsigned int event_f_flags)
+#define TEST_VARIANTS 2
+
+static const char *variant_desc[] = {
+	"libc fanotify",
+	"fanotify syscall"
+};
+
+static inline int do_fanotify_init(unsigned int flags, unsigned int event_f_flags)
 {
-	return syscall(__NR_fanotify_init, flags, event_f_flags);
+	switch (tst_variant) {
+	case 0:
+		return fanotify_init(flags, event_f_flags);
+	case 1:
+		return syscall(__NR_fanotify_init, flags, event_f_flags);
+	}
+	return -1;
 }
 
-static long fanotify_mark(int fd, unsigned int flags, uint64_t mask,
+static inline long do_fanotify_mark(int fd, unsigned int flags, uint64_t mask,
                      int dfd, const char *pathname)
 {
-	return syscall(__NR_fanotify_mark, fd, flags, mask, dfd, pathname);
+	switch (tst_variant) {
+	case 0:
+		return fanotify_mark(fd, flags, mask, dfd, pathname);
+	case 1:
+		return syscall(__NR_fanotify_mark, fd, flags, mask, dfd, pathname);
+	}
+	return -1;
 }
-
-#endif /* HAVE_SYS_FANOTIFY_H */
 
 int safe_fanotify_init(const char *file, const int lineno,
 	unsigned int flags, unsigned int event_f_flags)
 {
 	int rval;
 
-#ifdef HAVE_SYS_FANOTIFY_H
-	rval = fanotify_init(flags, event_f_flags);
+	rval = do_fanotify_init(flags, event_f_flags);
 
 	if (rval == -1) {
-		if (errno == ENOSYS) {
+		if (errno == ENOSYS)
 			tst_brk(TCONF,
-				"fanotify is not configured in this kernel.");
-		}
+				"fanotify is not configured in this kernel");
+
 		tst_brk(TBROK | TERRNO,
 			"%s:%d: fanotify_init() failed", file, lineno);
 	}
-#else
-	tst_brk(TCONF, "Header <sys/fanotify.h> is not present");
-#endif /* HAVE_SYS_FANOTIFY_H */
 
 	return rval;
 }

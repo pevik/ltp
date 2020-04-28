@@ -104,13 +104,15 @@ void test01(void)
 
 static void setup(void)
 {
+	tst_res(TINFO, "Testing variant: %s", variant_desc[tst_variant]);
+
 	fd_notify = SAFE_FANOTIFY_INIT(FAN_CLASS_NOTIF | FAN_NONBLOCK,
 			O_RDONLY);
 
-	if (fanotify_mark(fd_notify, FAN_MARK_MOUNT | FAN_MARK_ADD, FAN_OPEN,
+	if (do_fanotify_mark(fd_notify, FAN_MARK_MOUNT | FAN_MARK_ADD, FAN_OPEN,
 			  AT_FDCWD, MOUNT_PATH) < 0) {
 		tst_brk(TBROK | TERRNO,
-			"fanotify_mark (%d, FAN_MARK_MOUNT | FAN_MARK_ADD, "
+			"fanotify_mark(%d, FAN_MARK_MOUNT | FAN_MARK_ADD, "
 			"FAN_OPEN, AT_FDCWD, \".\") failed",
 			fd_notify);
 	}
@@ -129,6 +131,7 @@ static struct tst_test test = {
 	.needs_root = 1,
 	.mount_device = 1,
 	.mntpoint = MOUNT_PATH,
+	.test_variants = TEST_VARIANTS,
 };
 #else
 	TST_TEST_TCONF("system doesn't have required fanotify support");
