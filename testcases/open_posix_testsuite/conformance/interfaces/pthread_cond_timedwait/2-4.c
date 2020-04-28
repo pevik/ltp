@@ -252,7 +252,6 @@ int main(void)
 	pthread_t child_th;
 
 	long pshared, monotonic, cs, mf;
-	struct timespec wait_timeout_ts = {0, 100000};
 
 	output_init();
 	pshared = sysconf(_SC_THREAD_PROCESS_SHARED);
@@ -541,7 +540,7 @@ int main(void)
 			}
 
 			/* Let the child leave the wait function if something is broken */
-			nanosleep(&wait_timeout_ts, NULL);
+			usleep(100);
 
 			if (td->ctrl != 1) {
 				FAILED

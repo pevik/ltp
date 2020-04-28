@@ -72,7 +72,7 @@ int main(void)
  * f1()
  *
  * *************************/
-void *f1(void *parm LTP_ATTRIBUTE_UNUSED)
+void *f1(void *parm)
 {
 	struct timespec timeout;
 

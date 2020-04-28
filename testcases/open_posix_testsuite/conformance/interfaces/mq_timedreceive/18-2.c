@@ -37,7 +37,7 @@
 #define TIMEOUT	3
 
 int blocking;
-void exit_handler(int signo LTP_ATTRIBUTE_UNUSED)
+void exit_handler(int signo)
 {
 	printf("FAIL: the case is blocking, exit anyway\n");
 	blocking = 1;

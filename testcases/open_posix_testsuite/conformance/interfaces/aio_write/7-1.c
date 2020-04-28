@@ -92,12 +92,7 @@ int main(void)
 
 	printf("Failed at %d\n", last_req);
 
-	/*
-	 * XXX (ngie): this check seems incorrect, given the
-	 *             requirements/description for the API and test,
-	 *             respectively.
-	 */
-	if (ret != -1 && errno != EAGAIN) {
+	if ((ret != -1) && (errno != EAGAIN)) {
 		printf(TNAME " failed with code %d: %s\n", errno,
 		       strerror(errno));
 		close(fd);

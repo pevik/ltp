@@ -34,7 +34,7 @@
 
 static int handler_called;
 
-static void myhandler(int signo LTP_ATTRIBUTE_UNUSED)
+static void myhandler(int signo)
 {
 	handler_called = 1;
 }

@@ -20,13 +20,13 @@
 
 int SIGSYS_count = 0;
 
-void SIGSYS_handler(int signo LTP_ATTRIBUTE_UNUSED)
+void SIGSYS_handler(int signo)
 {
 	SIGSYS_count++;
 	printf("Caught SIGSYS\n");
 }
 
-void SIGTRAP_handler(int signo LTP_ATTRIBUTE_UNUSED)
+void SIGTRAP_handler(int signo)
 {
 	printf("Caught SIGTRAP\n");
 	raise(SIGSYS);

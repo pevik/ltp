@@ -38,7 +38,6 @@
 #include <stdio.h>
 #include <limits.h>
 #include <sys/param.h>
-#include "lapi/abisize.h"
 #include "hugetlb.h"
 
 static struct tst_option options[] = {
@@ -71,7 +70,7 @@ static void test_hugemmap(void)
 	huge_pagesize = SAFE_READ_MEMINFO("Hugepagesize:");
 	tst_res(TINFO, "Size of huge pages is %d KB", huge_pagesize);
 
-#ifdef TST_ABI32
+#if __WORDSIZE == 32
 	tst_res(TINFO, "Total amount of free huge pages is %d",
 			freepages);
 	tst_res(TINFO, "Max number allowed for 1 mmap file in"
@@ -115,8 +114,6 @@ void setup(void)
 
 	if (nr_opt)
 		hugepages = SAFE_STRTOL(nr_opt, 0, LONG_MAX);
-
-	limit_hugepages(&hugepages);
 	set_sys_tune("nr_hugepages", hugepages, 1);
 
 	snprintf(TEMPFILE, sizeof(TEMPFILE), "%s/mmapfile%d", Hopt, getpid());

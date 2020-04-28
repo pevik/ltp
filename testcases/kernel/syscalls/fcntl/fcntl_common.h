@@ -1,5 +1,4 @@
 #include "lapi/syscalls.h"
-#include "lapi/abisize.h"
 
 /*
  * glibc commit:
@@ -17,7 +16,7 @@
  * So, to support both version, on 32-bit we use fcntl64 syscall
  * directly with struct flock64.
  */
-#if defined(TST_ABI64) || _FILE_OFFSET_BITS == 64
+#if __WORDSIZE == 64 || _FILE_OFFSET_BITS == 64
 static int my_fcntl(int fd, int cmd, void *lck)
 {
 	return SAFE_FCNTL(fd, cmd, lck);

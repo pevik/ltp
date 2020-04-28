@@ -24,7 +24,7 @@
 
 #define SIGTOTEST SIGALRM
 
-void handler(int signo LTP_ATTRIBUTE_UNUSED)
+void handler(int signo)
 {
 	printf("OK to be in once\n");
 }

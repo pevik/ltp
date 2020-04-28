@@ -23,7 +23,7 @@
 
 #define NUM_THREADS	5
 
-void *a_thread_func(void *attr LTP_ATTRIBUTE_UNUSED)
+void *a_thread_func(void *attr)
 {
 	pthread_exit(NULL);
 	return NULL;

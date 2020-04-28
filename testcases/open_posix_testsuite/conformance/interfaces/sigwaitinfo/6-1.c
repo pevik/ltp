@@ -25,9 +25,7 @@
 #include <sys/wait.h>
 #include "posixtest.h"
 
-void myhandler(int signo LTP_ATTRIBUTE_UNUSED,
-	siginfo_t *info LTP_ATTRIBUTE_UNUSED,
-	void *context LTP_ATTRIBUTE_UNUSED)
+void myhandler(int signo, siginfo_t * info, void *context)
 {
 	printf("Inside handler\n");
 }

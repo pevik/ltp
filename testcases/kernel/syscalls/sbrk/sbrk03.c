@@ -46,12 +46,11 @@
 
 #include <stdio.h>
 #include <unistd.h>
-#include "lapi/abisize.h"
 #include "tst_test.h"
 
 static void sbrk_test(void)
 {
-#if defined(__s390__) && defined(TST_ABI32)
+#if defined(__s390__) && __WORDSIZE == 32
 	void *ret1, *ret2;
 
 	/* set bkr to 0x10000000 */

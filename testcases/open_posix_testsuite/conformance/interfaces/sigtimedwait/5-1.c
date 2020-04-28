@@ -39,7 +39,7 @@
 #include <sys/wait.h>
 #include "posixtest.h"
 
-void myhandler(int signo LTP_ATTRIBUTE_UNUSED)
+void myhandler(int signo)
 {
 	printf
 	    ("Test FAILED: %d seconds have elapsed and sigtimedwait() has not yet returned.\n",

@@ -25,7 +25,7 @@
 #include "tst_test.h"
 #include "lapi/syscalls.h"
 
-#ifndef __ANDROID__
+#ifndef ANDROID
 #define SI_SIGVAL si_sigval
 #else
 #define SI_SIGVAL _sigval

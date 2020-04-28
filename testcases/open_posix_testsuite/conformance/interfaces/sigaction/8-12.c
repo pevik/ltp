@@ -20,13 +20,13 @@
 
 int SIGQUIT_count = 0;
 
-void SIGQUIT_handler(int signo LTP_ATTRIBUTE_UNUSED)
+void SIGQUIT_handler(int signo)
 {
 	SIGQUIT_count++;
 	printf("Caught SIGQUIT\n");
 }
 
-void SIGSEGV_handler(int signo LTP_ATTRIBUTE_UNUSED)
+void SIGSEGV_handler(int signo)
 {
 	printf("Caught SIGSEGV\n");
 	raise(SIGQUIT);

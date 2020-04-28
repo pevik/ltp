@@ -20,12 +20,12 @@
 
 int SIGUSR2_count = 0;
 
-void SIGUSR2_handler(int signo LTP_ATTRIBUTE_UNUSED)
+void SIGUSR2_handler(int signo)
 {
 	SIGUSR2_count++;
 }
 
-void SIGUSR1_handler(int signo LTP_ATTRIBUTE_UNUSED)
+void SIGUSR1_handler(int signo)
 {
 	raise(SIGUSR2);
 	if (SIGUSR2_count) {

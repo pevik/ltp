@@ -20,13 +20,13 @@
 
 int SIGSEGV_count = 0;
 
-void SIGSEGV_handler(int signo LTP_ATTRIBUTE_UNUSED)
+void SIGSEGV_handler(int signo)
 {
 	SIGSEGV_count++;
 	printf("Caught SIGSEGV\n");
 }
 
-void SIGTERM_handler(int signo LTP_ATTRIBUTE_UNUSED)
+void SIGTERM_handler(int signo)
 {
 	printf("Caught SIGTERM\n");
 	raise(SIGSEGV);

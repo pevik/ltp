@@ -69,7 +69,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
-#include "lapi/abisize.h"
 #include "mem.h"
 
 #define DEFAULT_OVER_RATIO	50L
@@ -147,7 +146,7 @@ static void cleanup(void)
 static void overcommit_memory_test(void)
 {
 
-#ifdef TST_ABI32
+#if __WORDSIZE == 32
 	tst_brk(TCONF, "test is not designed for 32-bit system.");
 #endif
 	/* start to test overcommit_memory=2 */

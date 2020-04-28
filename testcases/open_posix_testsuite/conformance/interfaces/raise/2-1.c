@@ -34,7 +34,7 @@
 #define LEAVINGHANDLER 3
 int globalStatus = BEFOREHANDLER;
 
-void handler(int signo LTP_ATTRIBUTE_UNUSED)
+void handler(int signo)
 {
 	globalStatus = INHANDLER;
 	printf("Caught signal being tested!\n");

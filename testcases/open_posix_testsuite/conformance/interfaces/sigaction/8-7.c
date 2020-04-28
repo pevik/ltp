@@ -20,13 +20,13 @@
 
 int SIGFPE_count = 0;
 
-void SIGFPE_handler(int signo LTP_ATTRIBUTE_UNUSED)
+void SIGFPE_handler(int signo)
 {
 	SIGFPE_count++;
 	printf("Caught SIGFPE\n");
 }
 
-void SIGHUP_handler(int signo LTP_ATTRIBUTE_UNUSED)
+void SIGHUP_handler(int signo)
 {
 	printf("Caught SIGHUP\n");
 	raise(SIGFPE);

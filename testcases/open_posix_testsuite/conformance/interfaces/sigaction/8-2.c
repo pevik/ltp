@@ -20,13 +20,13 @@
 
 int SIGABRT_count = 0;
 
-void SIGABRT_handler(int signo LTP_ATTRIBUTE_UNUSED)
+void SIGABRT_handler(int signo)
 {
 	SIGABRT_count++;
 	printf("Caught SIGABRT\n");
 }
 
-void SIGUSR2_handler(int signo LTP_ATTRIBUTE_UNUSED)
+void SIGUSR2_handler(int signo)
 {
 	printf("Caught SIGUSR2\n");
 	raise(SIGABRT);

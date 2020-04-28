@@ -20,13 +20,13 @@
 
 int SIGBUS_count = 0;
 
-void SIGBUS_handler(int signo LTP_ATTRIBUTE_UNUSED)
+void SIGBUS_handler(int signo)
 {
 	SIGBUS_count++;
 	printf("Caught SIGBUS\n");
 }
 
-void SIGCHLD_handler(int signo LTP_ATTRIBUTE_UNUSED)
+void SIGCHLD_handler(int signo)
 {
 	printf("Caught SIGCHLD\n");
 	raise(SIGBUS);

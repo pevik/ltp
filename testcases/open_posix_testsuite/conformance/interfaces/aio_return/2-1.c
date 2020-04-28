@@ -29,7 +29,6 @@
 #include <string.h>
 #include <unistd.h>
 #include "posixtest.h"
-#include <time.h>
 
 #define TNAME "aio_return/2-1.c"
 #define BUF_SIZE 111
@@ -40,7 +39,6 @@ int main(void)
 	char buf[BUF_SIZE];
 	struct aiocb aiocb;
 	int fd, retval;
-	struct timespec completion_wait_ts = {0, 10000000};
 
 	if (sysconf(_SC_ASYNCHRONOUS_IO) < 200112L)
 		return PTS_UNSUPPORTED;
@@ -71,7 +69,7 @@ int main(void)
 	}
 
 	do {
-		nanosleep(&completion_wait_ts, NULL);
+		usleep(10000);
 		retval = aio_error(&aiocb);
 	} while (retval == EINPROGRESS);
 

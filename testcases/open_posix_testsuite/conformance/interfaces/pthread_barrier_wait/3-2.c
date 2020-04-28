@@ -51,7 +51,7 @@ void sig_handler()
 	}
 }
 
-static void *fn_chld(void *arg LTP_ATTRIBUTE_UNUSED)
+static void *fn_chld(void *arg)
 {
 	int rc = 0;
 	struct sigaction act;

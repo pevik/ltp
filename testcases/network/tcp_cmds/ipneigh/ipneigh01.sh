@@ -38,7 +38,7 @@ do_setup()
 			tst_brk TCONF "'arp' doesn't support IPv6"
 		fi
 		SHOW_CMD="arp -a"
-		DEL_CMD="arp -d $(tst_ipaddr rhost) -i $(tst_iface)"
+		DEL_CMD="arp -d $(tst_ipaddr rhost)"
 		;;
 	*)
 		tst_brk TBROK "unknown or missing command, use -c [ arp | ip ]"
@@ -69,7 +69,7 @@ do_test()
 
 	for i in $(seq 1 $NUMLOOPS); do
 
-		ping$TST_IPV6 -q -c1 $(tst_ipaddr rhost) -I $(tst_iface) > /dev/null || \
+		ping$TST_IPV6 -q -c1 $(tst_ipaddr rhost) > /dev/null || \
 			tst_brk TFAIL "cannot ping $(tst_ipaddr rhost)"
 
 		local k

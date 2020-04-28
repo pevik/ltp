@@ -133,7 +133,7 @@ void *sendsig(void *arg)
 
 /* Next are the signal handlers. */
 /* This one is registered for signal SIGUSR1 */
-void sighdl1(int sig LTP_ATTRIBUTE_UNUSED)
+void sighdl1(int sig)
 {
 #ifdef WITH_SYNCHRO
 
@@ -144,7 +144,7 @@ void sighdl1(int sig LTP_ATTRIBUTE_UNUSED)
 }
 
 /* This one is registered for signal SIGUSR2 */
-void sighdl2(int sig LTP_ATTRIBUTE_UNUSED)
+void sighdl2(int sig)
 {
 #ifdef WITH_SYNCHRO
 

@@ -82,8 +82,6 @@ const char *tst_fs_type_name(long f_type)
 		return "NILFS";
 	case TST_EXOFS_MAGIC:
 		return "EXOFS";
-	case TST_OVERLAYFS_MAGIC:
-		return "OVERLAYFS";
 	default:
 		return "Unknown";
 	}

@@ -24,6 +24,6 @@ top_srcdir		?= ../../../../..
 
 include $(top_srcdir)/include/mk/env_pre.mk
 
-SUBDIRS			:= datafiles src tests
+SUBDIRS			:= policy src tests
 
 include $(top_srcdir)/include/mk/generic_trunk_target.mk

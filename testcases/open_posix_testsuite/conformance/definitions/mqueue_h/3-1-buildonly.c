@@ -13,8 +13,5 @@ void test_mq_getattr_prototype(void)
 	struct mq_attr mqs;
 	int err;
 
-	mqdes = 0;
-
 	err = mq_getattr(mqdes, &mqs);
-	(void)err;
 }

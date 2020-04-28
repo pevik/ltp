@@ -4,16 +4,15 @@
   line 9687 of the Base Definitions document
 */
 
-#include <fcntl.h>
 #include <mqueue.h>
 #include "posixtest.h"
 
 void test_mq_open_prototype(void)
 {
 	mqd_t res;
-	int oflag = O_RDONLY;
-	const char *name = "bogus";
+	int oflag;
+	const char *name;
 
 	res = mq_open(name, oflag);
-	(void)res;
+
 }

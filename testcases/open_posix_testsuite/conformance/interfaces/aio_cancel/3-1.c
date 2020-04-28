@@ -37,7 +37,6 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <aio.h>
-#include <time.h>
 
 #include "posixtest.h"
 
@@ -49,8 +48,7 @@
 static volatile int countdown = BUF_NB;
 static volatile int canceled;
 
-void sig_handler(int signum LTP_ATTRIBUTE_UNUSED, siginfo_t *info,
-    void *context LTP_ATTRIBUTE_UNUSED)
+void sig_handler(int signum, siginfo_t *info, void *context)
 {
 	struct aiocb *a = info->si_value.sival_ptr;
 
@@ -69,7 +67,6 @@ int main(void)
 	struct aiocb *aiocb_list[BUF_NB];
 	struct aiocb *aiocb;
 	struct sigaction action;
-	struct timespec processing_completion_ts = {0, 10000000};
 	int i;
 
 	if (sysconf(_SC_ASYNCHRONOUS_IO) < 200112L) {
@@ -147,7 +144,7 @@ int main(void)
 	close(fd);
 
 	while (countdown)
-		nanosleep(&processing_completion_ts, NULL);
+		usleep(10000);
 
 	if (!canceled)
 		return PTS_UNRESOLVED;

@@ -44,7 +44,7 @@
 
 #define NAMESIZE	50
 
-int parent_process(char *mqname, int read_pipe, int write_pipe, pid_t child_pid);
+int parent_process(char *mqname, int read_pipe, int write_pipe, int child_pid);
 int child_process(char *mqname, int read_pipe, int write_pipe);
 int send_receive(int read_pipe, int write_pipe, char send, char *reply);
 
@@ -93,15 +93,14 @@ int main(void)
 	}
 }
 
-int parent_process(char *mqname, int read_pipe, int write_pipe,
-	pid_t child_pid LTP_ATTRIBUTE_UNUSED)
+int parent_process(char *mqname, int read_pipe, int write_pipe, int child_pid)
 {
 	mqd_t mqdes;
 	char reply;
 	int rval;
 
 	mqdes = mq_open(mqname, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR, 0);
-	if (mqdes == (mqd_t)-1) {
+	if (mqdes == (mqd_t) - 1) {
 		perror(ERROR_PREFIX "mq_open");
 		return PTS_UNRESOLVED;
 	}
@@ -116,7 +115,7 @@ int parent_process(char *mqname, int read_pipe, int write_pipe,
 	}
 	if (mq_unlink(mqname) == 0) {
 		if (mq_open(mqname, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR, 0) ==
-		    (mqd_t)-1) {
+		    -1) {
 			printf
 			    ("mq_open to recreate the message	mqueue may fail until all references to the message queue have been closed, or until the message queue is actually removed. \n");
 			printf("Test PASSED\n");
@@ -151,7 +150,7 @@ int child_process(char *mqname, int read_pipe, int write_pipe)
 		return PTS_UNRESOLVED;
 	}
 	mqdes = mq_open(mqname, O_RDWR, 0, 0);
-	if (mqdes == (mqd_t)-1) {
+	if (mqdes == (mqd_t) - 1) {
 		perror(ERROR_PREFIX "mq_open");
 		return PTS_UNRESOLVED;
 	}

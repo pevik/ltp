@@ -34,12 +34,10 @@
 #include <errno.h>
 #include "posixtest.h"
 
-static int return_val = 1;
-static volatile int handler_called;
+int return_val = 1;
+int handler_called = 0;
 
-void myhandler(int signo LTP_ATTRIBUTE_UNUSED,
-	siginfo_t *info LTP_ATTRIBUTE_UNUSED,
-	void *context LTP_ATTRIBUTE_UNUSED)
+void myhandler(int signo, siginfo_t * info, void *context)
 {
 	handler_called = 1;
 	if (return_val != 1) {

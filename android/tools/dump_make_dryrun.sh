@@ -15,16 +15,13 @@
 # limitations under the License.
 #
 
-set -e
-
-[ -z $TOOLS_DIR ] && TOOLS_DIR=$(realpath $(dirname $0))
-[ -z $LTP_ROOT ] && LTP_ROOT=$(realpath $TOOLS_DIR/../..)
+TOOLS_DIR=$(realpath $(dirname $0))
+LTP_ROOT=$(realpath $TOOLS_DIR/../..)
 
 if ! [ -f $LTP_ROOT/include/config.h ]; then
-  echo "LTP has not been configured."
-  echo "Executing \"cd $LTP_ROOT; make autotools; ./configure\""
-  (cd $LTP_ROOT; make autotools)
-  (cd $LTP_ROOT; ./configure)
+  echo "LTP has not been configured!"
+  echo "Please run \"cd $LTP_ROOT; make autotools; ./configure\" first"
+  exit 1
 fi
 
 OUTPUT=$TOOLS_DIR/make_dry_run.dump

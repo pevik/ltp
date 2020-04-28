@@ -20,5 +20,3 @@ include $(top_srcdir)/include/mk/testcases.mk
 CFLAGS			+= -D_GNU_SOURCE
 
 include $(top_srcdir)/include/mk/generic_leaf_target.mk
-
-af_alg02: CFLAGS += -pthread

@@ -20,13 +20,13 @@
 
 int SIGXCPU_count = 0;
 
-void SIGXCPU_handler(int signo LTP_ATTRIBUTE_UNUSED)
+void SIGXCPU_handler(int signo)
 {
 	SIGXCPU_count++;
 	printf("Caught SIGXCPU\n");
 }
 
-void SIGXFSZ_handler(int signo LTP_ATTRIBUTE_UNUSED)
+void SIGXFSZ_handler(int signo)
 {
 	printf("Caught SIGXFSZ\n");
 	raise(SIGXCPU);

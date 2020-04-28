@@ -99,7 +99,7 @@ struct _scenar {
 int main(void)
 {
 	int ret;
-	unsigned int i, j;
+	int i, j;
 	pthread_mutex_t mtx;
 	pthread_mutexattr_t ma[NSCENAR + 1];
 	pthread_mutexattr_t *pma[NSCENAR + 2];

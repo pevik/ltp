@@ -84,10 +84,9 @@
 /***************************    Test case   ***********************************/
 /******************************************************************************/
 
-static volatile sig_atomic_t latest;
+sig_atomic_t latest = 0;
 
-void handler(int sig LTP_ATTRIBUTE_UNUSED, siginfo_t *info,
-	void *context LTP_ATTRIBUTE_UNUSED)
+void handler(int sig, siginfo_t * info, void *context)
 {
 	if (info->si_signo != SIGRTMAX) {
 		output("Received unexpected signal %d\n", info->si_signo);

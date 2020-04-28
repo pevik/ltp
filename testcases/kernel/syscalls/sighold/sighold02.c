@@ -49,7 +49,6 @@
 #include <sys/wait.h>
 #include "test.h"
 #include "safe_macros.h"
-#include "lapi/signal.h"
 
 /* _XOPEN_SOURCE disables NSIG */
 #ifndef NSIG

@@ -24,7 +24,7 @@
 
 stack_t alt_ss;
 
-void handler(int signo LTP_ATTRIBUTE_UNUSED)
+void handler(int signo)
 {
 	stack_t ss;
 

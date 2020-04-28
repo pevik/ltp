@@ -1869,7 +1869,7 @@ int lio_wait4asyncio(int method, int fd, struct aiocb *aiocbp)
 		cnt = 0;
 		while (1) {
 			ret = aio_error(aiocbp);
-			if (ret != EINPROGRESS) {
+			if ((ret == 0) || (ret != EINPROGRESS)) {
 				break;
 			}
 			++cnt;

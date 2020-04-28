@@ -7,7 +7,6 @@ zypper --non-interactive install --no-recommends \
 	automake \
 	clang \
 	gcc \
-	gzip \
 	make \
 	kernel-default-devel \
 	keyutils-devel \

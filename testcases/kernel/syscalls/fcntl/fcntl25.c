@@ -144,14 +144,9 @@ int main(int ac, char **av)
 
 		/* check return code */
 		if (TEST_RETURN == -1) {
-			if (type == TST_OVERLAYFS_MAGIC && TEST_ERRNO == EAGAIN) {
-				tst_resm(TINFO | TTERRNO,
-					 "fcntl(F_SETLEASE, F_WRLCK) failed on overlapfs as expected");
-			} else {
-				tst_resm(TFAIL,
-					 "fcntl(%s, F_SETLEASE, F_WRLCK) Failed, errno=%d : %s",
-					 fname, TEST_ERRNO, strerror(TEST_ERRNO));
-			}
+			tst_resm(TFAIL,
+				 "fcntl(%s, F_SETLEASE, F_WRLCK) Failed, errno=%d : %s",
+				 fname, TEST_ERRNO, strerror(TEST_ERRNO));
 		} else {
 			TEST(fcntl(fd, F_GETLEASE));
 			if (TEST_RETURN != F_WRLCK)

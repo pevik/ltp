@@ -85,7 +85,7 @@ doing
 The test cases will be located at /data/nativetest{64,}/ltp/testcases/bin.
 
 Sometimes you need to perform this step after syncing:
-* `external/ltp$ git clean -x -f -d`
+* `external/ltp$ make distclean`
 Otherwise, build will fail.
 
 In order to simulate the exact environment that VTS will be creating for each
@@ -129,9 +129,8 @@ and then update the Android-specific build files for LTP, mentioned above:
 * `external/ltp/gen.bp`, for LTP modules built in soong
 * `external/ltp/android/ltp_package_list.mk`, which lists all LTP modules that get pulled into VTS
 
-Update these files by running the script located at
-external/ltp/android/tools/gen_android_build.sh. Instructions for the script
-are in external/ltp/android/how-to-update.txt.
+You can update these files manually, or you can run a script which regenerates
+these files from scratch, external/ltp/android/tools/gen_android_build.sh.
 
 How do I enable or disable tests from VTS LTP?
 ----------------------------------------------

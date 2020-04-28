@@ -27,12 +27,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "lapi/abisize.h"
 #include "mem.h"
 
 static void verify_oom(void)
 {
-#ifdef TST_ABI32
+#if __WORDSIZE == 32
 	tst_brk(TCONF, "test is not designed for 32-bit system.");
 #endif
 

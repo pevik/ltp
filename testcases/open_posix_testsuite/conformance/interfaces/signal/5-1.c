@@ -22,12 +22,12 @@
 #include <stdlib.h>
 #include "posixtest.h"
 
-void SIGUSR1_handler(int signo LTP_ATTRIBUTE_UNUSED)
+void SIGUSR1_handler(int signo)
 {
 	printf("do nothing useful\n");
 }
 
-void SIGUSR2_handler(int signo LTP_ATTRIBUTE_UNUSED)
+void SIGUSR2_handler(int signo)
 {
 	printf("do nothing useful\n");
 }

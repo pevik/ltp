@@ -20,13 +20,13 @@
 
 int SIGVTALRM_count = 0;
 
-void SIGVTALRM_handler(int signo LTP_ATTRIBUTE_UNUSED)
+void SIGVTALRM_handler(int signo)
 {
 	SIGVTALRM_count++;
 	printf("Caught SIGVTALRM\n");
 }
 
-void SIGXCPU_handler(int signo LTP_ATTRIBUTE_UNUSED)
+void SIGXCPU_handler(int signo)
 {
 	printf("Caught SIGXCPU\n");
 	raise(SIGVTALRM);

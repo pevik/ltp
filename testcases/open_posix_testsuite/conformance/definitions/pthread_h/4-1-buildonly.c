@@ -12,9 +12,8 @@
    */
 
 #include <pthread.h>
-#include "posixtest.h"
 
-void *thread_function(void *arg LTP_ATTRIBUTE_UNUSED)
+void *thread_function(void *arg)
 {
 	return NULL;
 }

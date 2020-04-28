@@ -35,8 +35,3 @@ int tst_clock_gettime(clockid_t clk_id, struct timespec *ts)
 {
 	return syscall(SYS_clock_gettime, clk_id, ts);
 }
-
-int tst_clock_settime(clockid_t clk_id, struct timespec *ts)
-{
-	return syscall(SYS_clock_settime, clk_id, ts);
-}

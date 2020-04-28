@@ -35,9 +35,8 @@
  *
  */
 
-#ifdef	__linux__
-#define	_GNU_SOURCE
-#endif
+#warning "Contains Linux-isms that need fixing."
+
 #include <errno.h>
 #include <pthread.h>
 #include <sched.h>
@@ -47,7 +46,6 @@
 #include <time.h>
 #include <unistd.h>
 #include "test.h"
-#include "posixtest.h"
 #include "pitest.h"
 
 int cpus;
@@ -100,17 +98,16 @@ void *thread_fn(void *param)
 	struct thread_param *tp = param;
 	struct timespec ts;
 	int rc;
-
-#if __linux__
 	unsigned long mask = 1 << tp->cpu;
 
+#if __linux__
 	rc = sched_setaffinity(0, sizeof(mask), &mask);
+#endif
 	if (rc < 0) {
 		EPRINTF("UNRESOLVED: Thread %s index %d: Can't set affinity: "
 			"%d %s", tp->name, tp->index, rc, strerror(rc));
 		exit(UNRESOLVED);
 	}
-#endif
 	test_set_priority(pthread_self(), SCHED_FIFO, tp->priority);
 	DPRINTF(stdout, "#EVENT %f Thread %s Started\n",
 		seconds_read() - base_time, tp->name);
@@ -137,24 +134,23 @@ void *thread_fn(void *param)
 void *thread_tl(void *param)
 {
 	struct thread_param *tp = param;
-
-#if __linux__
 	unsigned long mask = 1 << tp->cpu;
 	int rc;
 
+#if __linux__
 	rc = sched_setaffinity((pid_t) 0, sizeof(mask), &mask);
-	if (rc < 0) {
-		EPRINTF
-		    ("UNRESOLVED: Thread %s index %d: Can't set affinity: %d %s",
-		     tp->name, tp->index, rc, strerror(rc));
-		exit(UNRESOLVED);
-	}
 #endif
 	test_set_priority(pthread_self(), SCHED_FIFO, tp->priority);
 
 	DPRINTF(stdout, "#EVENT %f Thread TL Started\n",
 		seconds_read() - base_time);
 	DPRINTF(stderr, "Thread %s index %d: started\n", tp->name, tp->index);
+	if (rc < 0) {
+		EPRINTF
+		    ("UNRESOLVED: Thread %s index %d: Can't set affinity: %d %s",
+		     tp->name, tp->index, rc, strerror(rc));
+		exit(UNRESOLVED);
+	}
 	tp->progress = 0;
 	pthread_mutex_lock(&mutex);
 	while (!tp->stop) {
@@ -166,7 +162,7 @@ void *thread_tl(void *param)
 	return NULL;
 }
 
-void *thread_sample(void *arg LTP_ATTRIBUTE_UNUSED)
+void *thread_sample(void *arg)
 {
 	char buffer[1024];
 	struct timespec ts;

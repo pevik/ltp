@@ -20,13 +20,13 @@
 
 int SIGUSR2_count = 0;
 
-void SIGUSR2_handler(int signo LTP_ATTRIBUTE_UNUSED)
+void SIGUSR2_handler(int signo)
 {
 	SIGUSR2_count++;
 	printf("Caught SIGUSR2\n");
 }
 
-void SIGBUS_handler(int signo LTP_ATTRIBUTE_UNUSED)
+void SIGBUS_handler(int signo)
 {
 	printf("Caught SIGBUS\n");
 	raise(SIGUSR2);

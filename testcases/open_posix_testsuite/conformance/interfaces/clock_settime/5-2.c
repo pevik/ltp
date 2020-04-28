@@ -117,7 +117,7 @@ int main(void)
 		return PTS_FAIL;
 	}
 
-	if (labs(tsleft.tv_sec - SLEEPDELTA) <= ACCEPTABLEDELTA) {
+	if (abs(tsleft.tv_sec - SLEEPDELTA) <= ACCEPTABLEDELTA) {
 		printf("Test PASSED\n");
 		tsreset.tv_sec += TIMERSEC;
 		setBackTime(tsreset);

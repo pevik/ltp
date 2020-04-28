@@ -31,7 +31,7 @@ struct testdata {
 int start_num = 0;
 int waken_num = 0;
 
-void *thr_func(void *arg LTP_ATTRIBUTE_UNUSED)
+void *thr_func(void *arg)
 {
 	int rc;
 	struct timespec timeout;
@@ -95,7 +95,6 @@ void *thr_func(void *arg LTP_ATTRIBUTE_UNUSED)
 
 int main(void)
 {
-	struct timespec completion_wait_ts = {0, 100000};
 	int i;
 	pthread_t thread[THREAD_NUM];
 	pthread_mutexattr_t ma;
@@ -125,7 +124,7 @@ int main(void)
 		}
 	}
 	while (start_num < THREAD_NUM)	/* waiting for all threads started */
-		nanosleep(&completion_wait_ts, NULL);
+		usleep(100);
 
 	sleep(1);
 

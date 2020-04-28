@@ -29,11 +29,9 @@
 #include <errno.h>
 #include "posixtest.h"
 
-static volatile int counter;
+int counter = 0;
 
-void myhandler(int signo LTP_ATTRIBUTE_UNUSED,
-	siginfo_t *info LTP_ATTRIBUTE_UNUSED,
-	void *context LTP_ATTRIBUTE_UNUSED)
+void myhandler(int signo, siginfo_t * info, void *context)
 {
 	counter++;
 }

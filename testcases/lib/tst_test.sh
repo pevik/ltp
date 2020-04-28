@@ -34,7 +34,6 @@ export TST_TMPDIR_RHOST=0
 export TST_LIB_LOADED=1
 
 . tst_ansi_color.sh
-. tst_security.sh
 
 # default trap function
 trap "tst_brk TBROK 'test interrupted'" INT
@@ -80,10 +79,6 @@ _tst_do_exit()
 
 	if [ $TST_CONF -gt 0 ]; then
 		ret=$((ret|32))
-	fi
-
-	if [ $TST_BROK -gt 0 -o $TST_FAIL -gt 0 -o $TST_WARN -gt 0 ]; then
-		_tst_check_security_modules
 	fi
 
 	echo
@@ -235,28 +230,6 @@ TST_RTNL_CHK()
 	tst_brk TBROK "$@ failed: $output"
 }
 
-tst_mount()
-{
-	local mnt_opt mnt_err
-
-	if [ -n "$TST_FS_TYPE" ]; then
-		mnt_opt="-t $TST_FS_TYPE"
-		mnt_err=" $TST_FS_TYPE type"
-	fi
-
-	ROD_SILENT mkdir -p $TST_MNTPOINT
-	mount $mnt_opt $TST_DEVICE $TST_MNTPOINT $TST_MNT_PARAMS
-	local ret=$?
-
-	if [ $ret -eq 32 ]; then
-		tst_brk TCONF "Cannot mount${mnt_err}, missing driver?"
-	fi
-
-	if [ $ret -ne 0 ]; then
-		tst_brk TBROK "Failed to mount device${mnt_err}: mount exit = $ret"
-	fi
-}
-
 tst_umount()
 {
 	local device="$1"
@@ -286,10 +259,9 @@ tst_umount()
 
 tst_mkfs()
 {
-	local fs_type=${1:-$TST_FS_TYPE}
-	local device=${2:-$TST_DEVICE}
-	[ $# -ge 1 ] && shift
-	[ $# -ge 1 ] && shift
+	local fs_type=$1
+	local device=$2
+	shift 2
 	local fs_opts="$@"
 
 	if [ -z "$fs_type" ]; then
@@ -300,9 +272,8 @@ tst_mkfs()
 		tst_brk TBROK "No device specified"
 	fi
 
-	tst_test_cmds mkfs.$fs_type
-
 	tst_res TINFO "Formatting $device with $fs_type extra opts='$fs_opts'"
+
 	ROD_SILENT mkfs.$fs_type $fs_opts $device
 }
 
@@ -405,11 +376,6 @@ _tst_setup_timer()
 	_tst_setup_timer_pid=$!
 }
 
-_tst_require_root()
-{
-	[ "$(id -ru)" != 0 ] && tst_brk TCONF "Must be super/root for this test!"
-}
-
 tst_run()
 {
 	local _tst_i
@@ -420,15 +386,13 @@ tst_run()
 	if [ -n "$TST_TEST_PATH" ]; then
 		for _tst_i in $(grep TST_ "$TST_TEST_PATH" | sed 's/.*TST_//; s/[="} \t\/:`].*//'); do
 			case "$_tst_i" in
-			DISABLE_APPARMOR|DISABLE_SELINUX);;
 			SETUP|CLEANUP|TESTFUNC|ID|CNT|MIN_KVER);;
 			OPTS|USAGE|PARSE_ARGS|POS_ARGS);;
 			NEEDS_ROOT|NEEDS_TMPDIR|TMPDIR|NEEDS_DEVICE|DEVICE);;
 			NEEDS_CMDS|NEEDS_MODULE|MODPATH|DATAROOT);;
-			NEEDS_DRIVERS|FS_TYPE|MNTPOINT|MNT_PARAMS);;
+			NEEDS_DRIVERS);;
 			IPV6|IPVER|TEST_DATA|TEST_DATA_IFS);;
 			RETRY_FUNC|RETRY_FN_EXP_BACKOFF);;
-			NET_MAX_PKT);;
 			*) tst_res TWARN "Reserved variable TST_$_tst_i used!";;
 			esac
 		done
@@ -457,10 +421,11 @@ tst_run()
 		tst_brk TBROK "Number of iterations (-i) must be > 0"
 	fi
 
-	[ "$TST_NEEDS_ROOT" = 1 ] && _tst_require_root
-
-	[ "$TST_DISABLE_APPARMOR" = 1 ] && tst_disable_apparmor
-	[ "$TST_DISABLE_SELINUX" = 1 ] && tst_disable_selinux
+	if [ "$TST_NEEDS_ROOT" = 1 ]; then
+		if [ "$(id -ru)" != 0 ]; then
+			tst_brk TCONF "Must be super/root for this test!"
+		fi
+	fi
 
 	tst_test_cmds $TST_NEEDS_CMDS
 	tst_test_drivers $TST_NEEDS_DRIVERS
@@ -486,7 +451,6 @@ tst_run()
 		cd "$TST_TMPDIR"
 	fi
 
-	TST_MNTPOINT="${TST_MNTPOINT:-mntpoint}"
 	if [ "$TST_NEEDS_DEVICE" = 1 ]; then
 		if [ -z ${TST_TMPDIR} ]; then
 			tst_brk TBROK "Use TST_NEEDS_TMPDIR must be set for TST_NEEDS_DEVICE"

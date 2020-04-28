@@ -33,7 +33,6 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <aio.h>
-#include <time.h>
 
 #include "posixtest.h"
 
@@ -78,8 +77,7 @@ int main(void)
 		return PTS_FAIL;
 	case AIO_NOTCANCELED:
 		do {
-			struct timespec completion_wait_ts = {0, 10000000};
-			nanosleep(&completion_wait_ts, NULL);
+			usleep(10000);
 			err = aio_error(&aiocb);
 		} while (err == EINPROGRESS);
 	}

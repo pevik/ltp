@@ -107,7 +107,7 @@ void check_param(pthread_t thread, int policy, int priority)
 }
 
 /* thread function */
-void *threaded(void *arg LTP_ATTRIBUTE_UNUSED)
+void *threaded(void *arg)
 {
 	int ret = 0;
 

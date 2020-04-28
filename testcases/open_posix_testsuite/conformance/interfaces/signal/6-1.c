@@ -17,7 +17,7 @@
 #include <errno.h>
 #include "posixtest.h"
 
-void myhandler(int signo LTP_ATTRIBUTE_UNUSED)
+void myhandler(int signo)
 {
 	printf("handler does nothing useful.\n");
 }

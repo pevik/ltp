@@ -85,7 +85,7 @@ int n_awaken = 0;
 sigset_t setusr;
 
 /* Thread function */
-void *threaded(void *arg LTP_ATTRIBUTE_UNUSED)
+void *threaded(void *arg)
 {
 	int ret;
 	int sig;

@@ -96,7 +96,7 @@ void child(void)
 }
 
 /* Thread function */
-void *threaded(void *arg LTP_ATTRIBUTE_UNUSED)
+void *threaded(void *arg)
 {
 	int ret, status;
 	pid_t child, ctl;

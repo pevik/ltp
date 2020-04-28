@@ -34,10 +34,11 @@ cc_defaults {
 
         "-Wall",
         "-Werror",
-        // These warnings should be checked and fixed upstream
-        "-Wno-absolute-value",
-        "-Wno-uninitialized",
-        "-Wno-user-defined-warnings",
+        // Keep some warnings to check later
+        "-Wno-error=absolute-value",
+        "-Wno-error=undefined-internal",
+        "-Wno-error=uninitialized",
+        "-Wno-error=user-defined-warnings",
         // Silence noisy warnings
         "-Wno-constant-conversion",
         "-Wno-deprecated",

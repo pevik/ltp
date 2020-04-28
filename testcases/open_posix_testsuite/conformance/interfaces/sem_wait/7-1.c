@@ -27,7 +27,7 @@
 #define CHILDPASS 1
 #define CHILDFAIL 0
 
-void handler(int signo LTP_ATTRIBUTE_UNUSED)
+void handler(int signo)
 {
 	printf("In handler\n");
 }
@@ -36,7 +36,7 @@ int main(void)
 {
 	sem_t *mysemp;
 	char semname[28];
-	pid_t pid;
+	int pid, status;
 
 	sprintf(semname, "/" FUNCTION "_" TEST "_%d", getpid());
 
@@ -78,7 +78,7 @@ int main(void)
 	} else {		// parent to send a signal to child
 		int i;
 		sleep(1);
-		(void)kill(pid, SIGABRT);	// send signal to child
+		status = kill(pid, SIGABRT);	// send signal to child
 		if (wait(&i) == -1) {
 			perror("Error waiting for child to exit\n");
 			return PTS_UNRESOLVED;

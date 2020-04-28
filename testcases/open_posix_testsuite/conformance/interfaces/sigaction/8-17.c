@@ -20,13 +20,13 @@
 
 int SIGTTOU_count = 0;
 
-void SIGTTOU_handler(int signo LTP_ATTRIBUTE_UNUSED)
+void SIGTTOU_handler(int signo)
 {
 	SIGTTOU_count++;
 	printf("Caught SIGTTOU\n");
 }
 
-void SIGUSR1_handler(int signo LTP_ATTRIBUTE_UNUSED)
+void SIGUSR1_handler(int signo)
 {
 	printf("Caught SIGUSR1\n");
 	raise(SIGTTOU);

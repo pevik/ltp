@@ -21,13 +21,10 @@
  */
 #include <unistd.h>
 #include <errno.h>
-#include <sys/time.h>
-#include <sys/types.h>
 #include <fcntl.h>
 
 #include "tst_timer_test.h"
-
-#include "select_var.h"
+#include "select.h"
 
 static int fds[2];
 
@@ -41,7 +38,7 @@ static int sample_fn(int clk_id, long long usec)
 	FD_SET(fds[0], &sfds);
 
 	tst_timer_start(clk_id);
-	TEST(do_select(1, &sfds, NULL, NULL, &timeout));
+	TEST(select(1, &sfds, NULL, NULL, &timeout));
 	tst_timer_stop();
 	tst_timer_sample();
 
@@ -55,8 +52,6 @@ static int sample_fn(int clk_id, long long usec)
 
 static void setup(void)
 {
-	select_info();
-
 	SAFE_PIPE(fds);
 }
 
@@ -70,9 +65,8 @@ static void cleanup(void)
 }
 
 static struct tst_test test = {
-	.scall = "select()",
+	.scall = str_expand(SELECT_TEST_SYSCALL) "()",
 	.sample = sample_fn,
 	.setup = setup,
-	.test_variants = TEST_VARIANTS,
 	.cleanup = cleanup,
 };

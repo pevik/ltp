@@ -30,7 +30,6 @@
 #include <numa.h>
 #endif
 
-#include "lapi/abisize.h"
 #include "numa_helper.h"
 #include "mem.h"
 
@@ -40,7 +39,7 @@ static int cpuset_mounted;
 
 static void verify_oom(void)
 {
-#ifdef TST_ABI32
+#if __WORDSIZE == 32
 	tst_brk(TCONF, "test is not designed for 32-bit system.");
 #endif
 

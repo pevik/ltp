@@ -34,7 +34,7 @@
 
 #define TNAME "munmap/1-1.c"
 
-void sigsegv_handler(int signum LTP_ATTRIBUTE_UNUSED)
+void sigsegv_handler(int signum)
 {
 	printf("Got SIGSEGV\n");
 	printf("Test PASSED\n");

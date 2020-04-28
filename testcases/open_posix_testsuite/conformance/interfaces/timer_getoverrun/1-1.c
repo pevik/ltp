@@ -27,7 +27,7 @@
 
 int madeit = 0;
 
-void handler(int signo LTP_ATTRIBUTE_UNUSED)
+void handler(int signo)
 {
 	madeit++;
 	if (madeit > 1) {

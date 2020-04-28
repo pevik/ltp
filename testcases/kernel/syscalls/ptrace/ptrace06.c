@@ -38,7 +38,7 @@
 char *TCID = "ptrace06";
 
 struct test_case_t {
-	int request;
+	enum __ptrace_request request;
 	long addr;
 	long data;
 } test_cases[] = {

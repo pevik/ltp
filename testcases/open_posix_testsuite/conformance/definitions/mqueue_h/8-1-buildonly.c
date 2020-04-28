@@ -14,8 +14,6 @@ void test_mq_setattr_prototype(void)
 	struct mq_attr mqs, omqs;
 	int err;
 
-	mqdes = 0;
-
 	err = mq_setattr(mqdes, &mqs, &omqs);
-	(void)err;
+
 }

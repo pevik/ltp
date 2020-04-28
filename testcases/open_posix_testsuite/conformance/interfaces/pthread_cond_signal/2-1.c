@@ -32,7 +32,7 @@ int start_num = 0;
 int waken_num = 0;
 
 /* Alarm handler */
-void alarm_handler(int signo LTP_ATTRIBUTE_UNUSED)
+void alarm_handler(int signo)
 {
 	int i;
 	printf("Error: failed to wakeup all threads\n");
@@ -43,7 +43,7 @@ void alarm_handler(int signo LTP_ATTRIBUTE_UNUSED)
 	exit(PTS_UNRESOLVED);
 }
 
-void *thr_func(void *arg LTP_ATTRIBUTE_UNUSED)
+void *thr_func(void *arg)
 {
 	int rc;
 	pthread_t self = pthread_self();
@@ -96,7 +96,6 @@ void *thr_func(void *arg LTP_ATTRIBUTE_UNUSED)
 
 int main(void)
 {
-	struct timespec completion_wait_ts = {0, 100000};
 	int i;
 	struct sigaction act;
 	pthread_mutexattr_t ma;
@@ -126,7 +125,7 @@ int main(void)
 		}
 	}
 	while (start_num < THREAD_NUM)	/* waiting for all threads started */
-		nanosleep(&completion_wait_ts, NULL);
+		usleep(100);
 
 	sleep(1);
 
@@ -144,7 +143,7 @@ int main(void)
 				"Main failed to signal the condition\n");
 			return PTS_UNRESOLVED;
 		}
-		nanosleep(&completion_wait_ts, NULL);
+		usleep(100);
 	}
 
 	for (i = 0; i < THREAD_NUM; i++) {

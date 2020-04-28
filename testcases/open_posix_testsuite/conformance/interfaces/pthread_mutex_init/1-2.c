@@ -92,14 +92,14 @@ int canceled = 0;
 sem_t semA, semB;
 
 /***** Cancelation handlers  *****/
-void cleanup_deadlk(void *arg LTP_ATTRIBUTE_UNUSED)
+void cleanup_deadlk(void *arg)
 {
 	canceled = 1;
 	pthread_mutex_unlock(p_mtx);
 }
 
 /***** Threads functions *****/
-void *deadlk_issue(void *arg LTP_ATTRIBUTE_UNUSED)
+void *deadlk_issue(void *arg)
 {
 	int ret, tmp;
 
@@ -131,7 +131,7 @@ void *deadlk_issue(void *arg LTP_ATTRIBUTE_UNUSED)
 	return NULL;
 }
 
-void *unlock_issue(void *arg LTP_ATTRIBUTE_UNUSED)
+void *unlock_issue(void *arg)
 {
 	int ret;
 

@@ -243,7 +243,6 @@ void *tf(void *arg)
 
 int main(void)
 {
-	struct timespec wait_ts;
 	int ret;
 	unsigned int i;
 	pthread_mutexattr_t ma;
@@ -259,9 +258,6 @@ int main(void)
 	pthread_t child_th;
 
 	long pshared, monotonic, cs, mf;
-
-	wait_ts.tv_sec = 0;
-	wait_ts.tv_nsec = TIMEOUT * 1000;
 
 	output_init();
 	pshared = sysconf(_SC_THREAD_PROCESS_SHARED);
@@ -547,7 +543,7 @@ int main(void)
 #endif
 
 			/* Let the child leave the wait function if something is broken */
-			nanosleep(&wait_ts, NULL);
+			usleep(TIMEOUT);
 
 			if (td->ctrl != 1) {
 				FAILED

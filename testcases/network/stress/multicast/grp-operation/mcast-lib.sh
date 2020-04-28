@@ -122,7 +122,7 @@ do_multicast_test_multiple_join()
 
 do_multicast_test_join_leave()
 {
-	local cnt define_src_addr filter params pid pids ret
+	local cnt define_src_addr filter params ret
 	local max="$1"
 	local maddr="$MCAST_IPV4_ADDR"
 	[ "$TST_IPV6" ] && maddr="$MCAST_IPV6_ADDR"
@@ -145,11 +145,10 @@ do_multicast_test_join_leave()
 		fi
 
 		$MCAST_LCMD -l $NS_TIMES -a $maddr $params &
-		pids="$! $pids"
 		cnt=$((cnt + 1))
 	done
 
-	for pid in $pids; do wait $pid; done
+	wait
 
 	tst_res TPASS "test is finished successfully"
 }

@@ -31,11 +31,10 @@
 #include <errno.h>
 #include "posixtest.h"
 
-static int last_signal;
-static volatile int test_failed;
+int last_signal = 0;
+int test_failed = 0;
 
-void myhandler(int signo, siginfo_t *info LTP_ATTRIBUTE_UNUSED,
-	void *context LTP_ATTRIBUTE_UNUSED)
+void myhandler(int signo, siginfo_t * info, void *context)
 {
 	printf("%d, ", signo);
 	if (last_signal >= signo) {

@@ -22,7 +22,7 @@
 #define SIGTOTEST SIGALRM
 #define TIMEREXPIRE 3
 
-void handler(int signo LTP_ATTRIBUTE_UNUSED)
+void handler(int signo)
 {
 	printf("Incorrectly in signal handler\n");
 	printf("Test FAILED\n");

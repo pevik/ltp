@@ -19,7 +19,6 @@
 #ifndef __LAPI_SOCKET_H__
 #define __LAPI_SOCKET_H__
 
-#include "config.h"
 #include <sys/socket.h>
 
 #ifndef MSG_ZEROCOPY
@@ -28,10 +27,6 @@
 
 #ifndef MSG_FASTOPEN
 # define MSG_FASTOPEN	0x20000000 /* Send data in TCP SYN */
-#endif
-
-#ifndef SO_REUSEPORT
-# define SO_REUSEPORT	15
 #endif
 
 #ifndef SO_BUSY_POLL
@@ -50,10 +45,6 @@
 # define SOCK_CLOEXEC 02000000
 #endif
 
-#ifndef AF_ALG
-# define AF_ALG		38
-#endif
-
 #ifndef SOL_SCTP
 # define SOL_SCTP	132
 #endif
@@ -64,17 +55,6 @@
 
 #ifndef SOL_DCCP
 # define SOL_DCCP		269
-#endif
-
-#ifndef SOL_ALG
-# define SOL_ALG		279
-#endif
-
-#ifndef HAVE_STRUCT_MMSGHDR
-struct mmsghdr {
-	struct msghdr msg_hdr;
-	unsigned int msg_len;
-};
 #endif
 
 #endif /* __LAPI_SOCKET_H__ */

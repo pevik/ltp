@@ -30,7 +30,6 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <aio.h>
-#include <time.h>
 
 #include "posixtest.h"
 
@@ -70,10 +69,9 @@ int main(void)
 	aiocb.aio_nbytes = BUF_SIZE;
 
 	if (aio_read(&aiocb) != -1) {
-		struct timespec completion_wait_ts = {0, 10000000};
 		int err;
 		do {
-			nanosleep(&completion_wait_ts, NULL);
+			usleep(10000);
 			err = aio_error(&aiocb);
 		} while (err == EINPROGRESS);
 

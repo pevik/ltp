@@ -34,7 +34,7 @@
 
 #define LONGSLEEPTIME 10
 
-void handler(int signo LTP_ATTRIBUTE_UNUSED)
+void handler(int signo)
 {
 	printf("Caught signal\n");
 	printf("Test PASSED\n");

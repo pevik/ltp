@@ -69,7 +69,7 @@ int main(void)
 	return PTS_PASS;
 }
 
-void *f1(void *parm LTP_ATTRIBUTE_UNUSED)
+void *f1(void *parm)
 {
 	int i, tmp;
 	int rc = 0;
@@ -77,8 +77,6 @@ void *f1(void *parm LTP_ATTRIBUTE_UNUSED)
 
 	/* Loopd M times to acquire the mutex, increase the value,
 	   and then release the mutex. */
-
-	struct timespec lock_wait_ts = {0, 1000000};
 
 	for (i = 0; i < LOOPS; ++i) {
 		rc = pthread_mutex_lock(&mutex);
@@ -91,7 +89,7 @@ void *f1(void *parm LTP_ATTRIBUTE_UNUSED)
 		tmp = value;
 		tmp = tmp + 1;
 		fprintf(stderr, "Thread(0x%p) holds the mutex\n", (void *)self);
-		nanosleep(&lock_wait_ts, NULL);	/* delay the increasement operation */
+		usleep(1000);	/* delay the increasement operation */
 		value = tmp;
 
 		rc = pthread_mutex_unlock(&mutex);

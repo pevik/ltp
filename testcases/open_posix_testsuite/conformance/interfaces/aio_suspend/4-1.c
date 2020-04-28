@@ -29,7 +29,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <unistd.h>
 
 #include "posixtest.h"
@@ -69,7 +68,6 @@ int main(void)
 	struct timespec ts = {0, 10};
 	int errors = 0;
 	int ret, err, i, rval, fd;
-	struct timespec processing_completion_ts = {0, 50000000};
 
 	if (sysconf(_SC_ASYNCHRONOUS_IO) < 200112L)
 		return PTS_UNSUPPORTED;
@@ -186,7 +184,7 @@ int main(void)
 
 	/* Wait for list processing completion */
 	while (!received_all && retries-- > 0)
-		nanosleep(&processing_completion_ts, NULL);
+		usleep(50000);
 
 	if (retries <= 0) {
 		printf(TNAME " timeouted while waiting for I/O completion");

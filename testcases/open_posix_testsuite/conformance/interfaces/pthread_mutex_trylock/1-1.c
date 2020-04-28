@@ -84,7 +84,7 @@ int main(void)
 	return PTS_PASS;
 }
 
-void *func(void *parm LTP_ATTRIBUTE_UNUSED)
+void *func(void *parm)
 {
 	int rc;
 

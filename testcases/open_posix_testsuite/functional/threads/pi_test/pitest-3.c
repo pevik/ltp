@@ -35,9 +35,8 @@
  *
  */
 
-#ifdef	__linux__
-#define	_GNU_SOURCE
-#endif
+#warning "Contains Linux-isms that need fixing."
+
 #include <pthread.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -47,7 +46,6 @@
 #include <sched.h>
 #include <errno.h>
 #include "test.h"
-#include "posixtest.h"
 #include "pitest.h"
 
 int cpus;
@@ -101,10 +99,9 @@ void *thread_fn(void *param)
 	struct thread_param *tp = param;
 	struct timespec ts;
 	int rc;
-
-#if __linux__
 	unsigned long mask = 1 << tp->cpu;
 
+#if __linux__
 	rc = sched_setaffinity(0, sizeof(mask), &mask);
 	if (rc < 0) {
 		EPRINTF("UNRESOLVED: Thread %s index %d: Can't set affinity: "
@@ -141,11 +138,10 @@ void *thread_fn(void *param)
 void *thread_tl(void *param)
 {
 	struct thread_param *tp = param;
+	unsigned long mask = 1 << tp->cpu;
+	int rc;
 
 #if __linux__
-	int rc;
-	unsigned long mask = 1 << tp->cpu;
-
 	rc = sched_setaffinity((pid_t) 0, sizeof(mask), &mask);
 	if (rc < 0) {
 		EPRINTF
@@ -174,7 +170,7 @@ void *thread_tl(void *param)
 	return NULL;
 }
 
-void *thread_sample(void *arg LTP_ATTRIBUTE_UNUSED)
+void *thread_sample(void *arg)
 {
 	char buffer[1024];
 	struct timespec ts;

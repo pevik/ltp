@@ -27,11 +27,7 @@ cve-2016-7117:	CFLAGS += -pthread
 cve-2016-7117:	LDLIBS += -lrt
 
 cve-2014-0196:  CFLAGS += -pthread
-cve-2014-0196:  LDLIBS += -lrt
-
-ifneq ($(ANDROID),1)
-cve-2014-0196:  LDLIBS += -lutil
-endif
+cve-2014-0196:  LDLIBS += -lrt -lutil
 
 cve-2017-2671:	CFLAGS += -pthread
 cve-2017-2671:	LDLIBS += -lrt

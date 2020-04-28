@@ -15,13 +15,12 @@
 
 #include <signal.h>
 #include <stdio.h>
-#include <time.h>
 #include <unistd.h>
 #include "posixtest.h"
 
 static int handler_called = 0;
 
-static void handler(int signo LTP_ATTRIBUTE_UNUSED)
+static void handler(int signo)
 {
 	handler_called = 1;
 }
@@ -29,7 +28,6 @@ static void handler(int signo LTP_ATTRIBUTE_UNUSED)
 int main(void)
 {
 	struct sigaction act;
-	struct timespec signal_wait_ts = {0, 100000000};
 
 	act.sa_handler = handler;
 	act.sa_flags = 0;
@@ -52,7 +50,7 @@ int main(void)
 		return PTS_UNRESOLVED;
 	}
 
-	nanosleep(&signal_wait_ts, NULL);
+	usleep(100000);
 
 	if (handler_called) {
 		printf("FAIL: Signal was not blocked\n");

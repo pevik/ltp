@@ -115,16 +115,10 @@ static void do_test(unsigned int i)
 
 	TEST(fcntl(fd, F_SETLEASE, test_cases[i].lease_type));
 	if (TST_RET == -1) {
-		if (type == TST_OVERLAYFS_MAGIC && TST_ERR == EAGAIN) {
-			tst_res(TINFO | TTERRNO,
-				"fcntl(F_SETLEASE, F_WRLCK) failed on overlapfs as expected");
-		} else {
-			tst_res(TFAIL | TTERRNO, "fcntl() failed to set lease");
-		}
+		tst_res(TFAIL | TTERRNO, "fcntl() failed to set lease");
 		goto exit;
 	}
 
-	TST_CHECKPOINT_WAKE(0);
 	/* Wait for SIGIO caused by lease breaker. */
 	TEST(sigtimedwait(&newset, NULL, &timeout));
 	if (TST_RET == -1) {
@@ -175,7 +169,7 @@ static void do_child(unsigned int i)
 {
 	long long elapsed_ms;
 
-	TST_CHECKPOINT_WAIT(0);
+	TST_PROCESS_STATE_WAIT(getppid(), 'S');
 
 	tst_timer_start(CLOCK_MONOTONIC);
 
@@ -226,7 +220,6 @@ static struct tst_test test = {
 	.forks_child = 1,
 	.needs_root = 1,
 	.needs_tmpdir = 1,
-	.needs_checkpoints = 1,
 	.tcnt = ARRAY_SIZE(test_cases),
 	.setup = setup,
 	.test = do_test,

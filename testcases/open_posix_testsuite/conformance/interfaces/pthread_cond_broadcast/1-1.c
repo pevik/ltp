@@ -27,7 +27,7 @@ struct testdata {
 static int start_num;
 static int waken_num;
 
-static void *thr_func(void *arg LTP_ATTRIBUTE_UNUSED)
+static void *thr_func(void *arg)
 {
 	int rc;
 	pthread_t self = pthread_self();
@@ -63,7 +63,6 @@ static void *thr_func(void *arg LTP_ATTRIBUTE_UNUSED)
 
 int main(void)
 {
-	struct timespec completion_wait_ts = {0, 100000};
 	int i, rc;
 	pthread_t thread[THREAD_NUM];
 
@@ -84,7 +83,7 @@ int main(void)
 	}
 
 	while (start_num < THREAD_NUM)
-		nanosleep(&completion_wait_ts, NULL);
+		usleep(100);
 
 	/*
 	 * Acquire the mutex to make sure that all waiters are currently

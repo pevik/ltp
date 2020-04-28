@@ -26,11 +26,11 @@
 
 #include "safe_net_fn.h"
 
+#define TST_GETSOCKPORT(sockfd) \
+	tst_getsockport(__FILE__, __LINE__, sockfd)
+
 #define SAFE_SOCKET(domain, type, protocol) \
 	safe_socket(__FILE__, __LINE__, NULL, domain, type, protocol)
-
-#define SAFE_SOCKETPAIR(domain, type, protocol, sv) \
-	safe_socketpair(__FILE__, __LINE__, domain, type, protocol, sv)
 
 #define SAFE_GETSOCKOPT(fd, level, optname, optval, optlen) \
 	safe_getsockopt(__FILE__, __LINE__, fd, level, optname, optval, optlen)
@@ -73,11 +73,5 @@
 
 #define SAFE_GETHOSTNAME(name, size) \
 	safe_gethostname(__FILE__, __LINE__, name, size)
-
-#define TST_GETSOCKPORT(sockfd) \
-	tst_getsockport(__FILE__, __LINE__, sockfd)
-
-#define TST_GET_UNUSED_PORT(family, type) \
-	tst_get_unused_port(__FILE__, __LINE__, NULL, family, type)
 
 #endif /* TST_SAFE_NET_H__ */

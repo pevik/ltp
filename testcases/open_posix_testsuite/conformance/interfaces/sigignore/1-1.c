@@ -20,7 +20,7 @@ signal is ever raised.
 
 static int handler_called = 0;
 
-static void handler(int signo LTP_ATTRIBUTE_UNUSED)
+static void handler(int signo)
 {
 	handler_called = 1;
 }

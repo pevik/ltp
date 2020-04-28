@@ -20,13 +20,13 @@
 
 int SIGTSTP_count = 0;
 
-void SIGTSTP_handler(int signo LTP_ATTRIBUTE_UNUSED)
+void SIGTSTP_handler(int signo)
 {
 	SIGTSTP_count++;
 	printf("Caught SIGTSTP\n");
 }
 
-void SIGTTIN_handler(int signo LTP_ATTRIBUTE_UNUSED)
+void SIGTTIN_handler(int signo)
 {
 	printf("Caught SIGTTIN\n");
 	raise(SIGTSTP);

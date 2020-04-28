@@ -32,7 +32,7 @@ sem_t r_lock, w_lock;
 int reader_count = 0;
 int data = 0;
 
-int read_fun(int ID LTP_ATTRIBUTE_UNUSED)
+int read_fun(int ID)
 {
 	printf("read the board, data=%d \n", data);
 	return 0;

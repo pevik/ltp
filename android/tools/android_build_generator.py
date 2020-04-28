@@ -220,33 +220,6 @@ class BuildGenerator(object):
         target_bp.append('')
         self._bp_result[target_name] = target_bp
 
-    def BuildShellScript(self, install_target, local_src_file):
-        '''Build a shell script.
-
-        Args:
-            install_target: string
-            local_src_file: string
-        '''
-        base_name = os.path.basename(install_target)
-        bp_result = []
-
-        module = 'ltp_%s' % install_target.replace('/', '_')
-        self._packages.append(module)
-
-        module_dir = os.path.dirname(install_target)
-        module_stem = os.path.basename(install_target)
-
-        bp_result.append('sh_test {')
-        bp_result.append('    name: "%s",' % module)
-        bp_result.append('    src: "%s",' % local_src_file)
-        bp_result.append('    sub_dir: "ltp/%s",' % module_dir)
-        bp_result.append('    filename: "%s",' % module_stem)
-        bp_result.append('    compile_multilib: "both",')
-        bp_result.append('}')
-        bp_result.append('')
-
-        self._bp_result[module] = bp_result
-
     def BuildPrebuilt(self, install_target, local_src_file):
         '''Build a prebuild module.
 
@@ -321,12 +294,6 @@ class BuildGenerator(object):
         # All libraries used by the LTP tests we actually build
         ltp_libs_used = set()
         ltp_names_used = set()
-
-        # Remove -Wno-error from cflags, we don't want to print warnings.
-        # Silence individual warnings in ltp_defaults or fix them.
-        for target in cc_flags:
-            if '-Wno-error' in cc_flags[target]:
-                cc_flags[target].remove('-Wno-error')
 
         print(
             "Disabled lib tests: Test cases listed here are"
@@ -451,10 +418,7 @@ class BuildGenerator(object):
             local_src_files = install[target]
             assert len(local_src_files) == 1
 
-            if target.startswith("testcases/bin/"):
-                self.BuildShellScript(target, local_src_files[0])
-            else:
-                self.BuildPrebuilt(target, local_src_files[0])
+            self.BuildPrebuilt(target, local_src_files[0])
 
     def WriteAndroidBp(self, output_path):
         '''Write parse result to blueprint file.

@@ -15,8 +15,6 @@
 # limitations under the License.
 #
 
-set -e
-
 TOOLS_DIR=$(realpath $(dirname $0))
 LTP_ANDROID_DIR=$(realpath $TOOLS_DIR/..)
 LTP_ROOT=$(realpath $LTP_ANDROID_DIR/..)
@@ -25,7 +23,13 @@ OUTPUT_MK=$LTP_ANDROID_DIR/Android.ltp.mk
 OUTPUT_PLIST=$LTP_ANDROID_DIR/ltp_package_list.mk
 OUTPUT_BP=$LTP_ROOT/gen.bp
 
-export PYTHONDONTWRITEBYTECODE=1
+if ! [ -f $LTP_ROOT/include/config.h ]; then
+  echo "LTP has not been configured."
+  echo "Executing \"cd $LTP_ROOT; make autotools; ./configure\""
+  cd $LTP_ROOT
+  make autotools
+  $LTP_ROOT/configure
+fi
 
 cd $TOOLS_DIR
 
@@ -33,6 +37,7 @@ case $1 in
   -u|--update)
     echo "Update option enabled. Regenerating..."
     rm -rf *.dump
+    ./dump_make_dryrun.sh
     ;;
   -h|--help)
     echo "Generate Android.ltp.mk / gen.bp."
@@ -42,17 +47,8 @@ case $1 in
 esac
 
 if ! [ -f $TOOLS_DIR/make_dry_run.dump ]; then
-  DOCKER_USERNAME=$(id -un)
-  DOCKER_UID=$(id -u)
-  DOCKER_GID=$(id -g)
-
   echo "LTP make dry_run not dumped. Dumping..."
-  echo ""
-  echo "This may need your sudo password in order to access docker:"
-  set -x
-  sudo docker build --build-arg userid=$DOCKER_UID --build-arg groupid=$DOCKER_GID --build-arg username=$DOCKER_USERNAME --build-arg ltproot=$LTP_ROOT -t android-gen-ltp .
-  sudo docker run -it --rm -v $LTP_ROOT:/src -w /src/android/tools android-gen-ltp
-  set +x
+  ./dump_make_dryrun.sh
 fi
 
 cat $LTP_ANDROID_DIR/AOSP_license_text.txt > $OUTPUT_MK

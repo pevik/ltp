@@ -36,7 +36,6 @@
 #include <unistd.h>
 #include "test.h"
 #include "safe_macros.h"
-#include "lapi/abisize.h"
 
 char *TCID = "mmap15";
 int TST_TOTAL = 1;
@@ -57,7 +56,7 @@ int main(int ac, char **av)
 	int lc, fd;
 	void *addr;
 
-#ifdef TST_ABI32
+#if __WORDSIZE == 32
 	tst_brkm(TCONF, NULL, "This test is only for 64bit");
 #endif
 

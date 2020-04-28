@@ -19,7 +19,7 @@
 #define CHILDSUCCESS 1
 #define CHILDFAILURE 0
 
-void handler(int signo LTP_ATTRIBUTE_UNUSED)
+void handler(int signo)
 {
 	printf("In handler\n");
 }

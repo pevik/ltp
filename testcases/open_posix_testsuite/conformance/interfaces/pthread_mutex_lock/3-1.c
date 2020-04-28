@@ -122,7 +122,7 @@ void *sendsig(void *arg)
 }
 
 /* Next are the signal handlers. */
-void sighdl1(int sig LTP_ATTRIBUTE_UNUSED)
+void sighdl1(int sig)
 {
 #ifdef WITH_SYNCHRO
 	if ((sem_post(&semsig1))) {
@@ -131,7 +131,7 @@ void sighdl1(int sig LTP_ATTRIBUTE_UNUSED)
 #endif
 }
 
-void sighdl2(int sig LTP_ATTRIBUTE_UNUSED)
+void sighdl2(int sig)
 {
 #ifdef WITH_SYNCHRO
 	if ((sem_post(&semsig2))) {
@@ -143,7 +143,7 @@ void sighdl2(int sig LTP_ATTRIBUTE_UNUSED)
 /* The following function loops on init/destroy some mutex (with different attributes)
  * it does check that no error code of EINTR is returned */
 
-void *threaded(void *arg LTP_ATTRIBUTE_UNUSED)
+void *threaded(void *arg)
 {
 	pthread_mutexattr_t ma[4], *pma[5];
 	pthread_mutex_t m[5];

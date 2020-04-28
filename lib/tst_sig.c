@@ -72,7 +72,6 @@
 #include <signal.h>
 #include <unistd.h>
 #include "test.h"
-#include "lapi/signal.h"
 
 #define MAXMESG 150		/* size of mesg string sent to tst_res */
 

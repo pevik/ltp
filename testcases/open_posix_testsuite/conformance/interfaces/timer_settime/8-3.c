@@ -59,7 +59,7 @@ int main(void)
 		return PTS_UNRESOLVED;
 	}
 
-	if (labs(oits.it_value.tv_sec - TIMELEFT) <= ACCEPTABLEDELTA) {
+	if (abs(oits.it_value.tv_sec - TIMELEFT) <= ACCEPTABLEDELTA) {
 		printf("Test PASSED\n");
 		return PTS_PASS;
 	}

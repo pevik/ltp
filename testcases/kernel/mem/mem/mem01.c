@@ -2,7 +2,7 @@
  * mem01.c - Basic memory and swapper stress test
  *
  * Copyright (C) 2001 Stephane Fillod <f4cfe@free.fr>
- * Original idea from Rene Cougnenc
+ * 	Original idea from Rene Cougnenc (on t'a pas oublié mec)
  *
  * Copyright (C) 2012 Cyril Hrubis <chrubis@suse.cz>
  *
@@ -39,7 +39,6 @@
 #include <time.h>
 #include <limits.h>
 
-#include "lapi/abisize.h"
 #include "test.h"
 
 /* in KB */
@@ -115,13 +114,13 @@ size_t get_memsize(void)
 	res = res + freeswap;
 
 	tst_resm(TINFO, "Total Free:\t%llu Mb", res / 1024 / 1024);
-#if defined(__s390__)
+#if defined (__s390__)
 	if (res > 1 * 1024 * 1024 * 1024)
 		res = 500 * 1024 * 1024;	/* s390's unique 31bit architecture needs smaller default */
-#elif defined(TST_ABI32)
+#elif __WORDSIZE == 32
 	if (res > 1 * 1024 * 1024 * 1024)
 		res = 1 * 1024 * 1024 * 1024;
-#elif defined(TST_ABI64)
+#elif __WORDSIZE == 64
 	if (res > (unsigned long long)3 * 1024 * 1024 * 1024)
 		res = (unsigned long long)3 *1024 * 1024 * 1024;
 #endif

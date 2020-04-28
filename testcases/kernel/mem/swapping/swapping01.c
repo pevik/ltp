@@ -44,7 +44,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include "lapi/abisize.h"
 #include "mem.h"
 
 /* allow swapping 1 * phy_mem in maximum */
@@ -64,7 +63,7 @@ static pid_t pid;
 
 static void test_swapping(void)
 {
-#ifdef TST_ABI32
+#if __WORDSIZE == 32
 	tst_brk(TCONF, "test is not designed for 32-bit system.");
 #endif
 

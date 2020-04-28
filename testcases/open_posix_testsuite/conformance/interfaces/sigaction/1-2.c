@@ -23,9 +23,9 @@
 #include <stdio.h>
 #include "posixtest.h"
 
-static volatile int handler_called;
+int handler_called = 0;
 
-void handler(int signo LTP_ATTRIBUTE_UNUSED)
+void handler(int signo)
 {
 	handler_called = 1;
 }

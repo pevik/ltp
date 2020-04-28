@@ -78,7 +78,7 @@
 /***************************    Test case   ***********************************/
 /******************************************************************************/
 
-static volatile int handler_called;
+int handler_called = 0;
 pthread_t ch;
 
 /* Signal handler */
@@ -93,7 +93,7 @@ void handler(int sig)
 }
 
 /* Thread function */
-void *threaded(void *arg LTP_ATTRIBUTE_UNUSED)
+void *threaded(void *arg)
 {
 	int rebours = 3;
 

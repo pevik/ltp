@@ -22,7 +22,7 @@
 
 stack_t current;
 
-void handler(int signo LTP_ATTRIBUTE_UNUSED)
+void handler(int signo)
 {
 	stack_t oss;
 

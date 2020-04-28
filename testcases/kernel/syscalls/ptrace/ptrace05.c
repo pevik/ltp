@@ -38,7 +38,6 @@
 #include "ptrace.h"
 
 #include "test.h"
-#include "lapi/signal.h"
 
 char *TCID = "ptrace05";
 int TST_TOTAL = 0;

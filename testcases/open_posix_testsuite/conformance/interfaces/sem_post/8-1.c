@@ -122,7 +122,6 @@ int main(void)
 	pid_t c_1, c_2, c_3, ret_pid;
 	int retval = PTS_UNRESOLVED;
 	int status;
-	struct timespec sync_wait_ts = {0, 100000};
 
 	snprintf(semname, sizeof(semname), "/" TEST "_%d", getpid());
 
@@ -183,11 +182,11 @@ int main(void)
 
 	/* Make sure the two children has been waiting */
 	do {
-		nanosleep(&sync_wait_ts, NULL);
+		usleep(100);
 		sem_getvalue(sem_1, &val);
 	} while (val != 1);
-	tst_process_state_wait3(c_1, 'S', 2);
-	tst_process_state_wait3(c_2, 'S', 2);
+	tst_process_state_wait3(c_1, 'S', 2000);
+	tst_process_state_wait3(c_2, 'S', 2000);
 
 	c_3 = fork();
 	switch (c_3) {
@@ -204,10 +203,10 @@ int main(void)
 
 	/* Make sure child 3 has been waiting for the lock */
 	do {
-		nanosleep(&sync_wait_ts, NULL);
+		usleep(100);
 		sem_getvalue(sem_1, &val);
 	} while (val != 0);
-	tst_process_state_wait3(c_3, 'S', 2);
+	tst_process_state_wait3(c_3, 'S', 2000);
 
 	/* Ok, let's release the lock */
 	fprintf(stderr, "P: release lock\n");

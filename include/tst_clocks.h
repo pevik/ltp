@@ -26,6 +26,4 @@ int tst_clock_getres(clockid_t clk_id, struct timespec *res);
 
 int tst_clock_gettime(clockid_t clk_id, struct timespec *ts);
 
-int tst_clock_settime(clockid_t clk_id, struct timespec *ts);
-
 #endif /* TST_CLOCKS__ */

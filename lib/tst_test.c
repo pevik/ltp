@@ -35,9 +35,7 @@
 #include "tst_timer_test.h"
 #include "tst_clocks.h"
 #include "tst_timer.h"
-#include "tst_wallclock.h"
 #include "tst_sys_conf.h"
-#include "tst_kconfig.h"
 
 #include "old_resource.h"
 #include "old_device.h"
@@ -698,7 +696,7 @@ static void assert_test_fn(void)
 		tst_brk(TBROK, "You can define only one test function");
 
 	if (tst_test->test && !tst_test->tcnt)
-		tst_brk(TBROK, "Number of tests (tcnt) must be > 0");
+		tst_brk(TBROK, "Number of tests (tcnt) must not be > 0");
 
 	if (!tst_test->test && tst_test->tcnt)
 		tst_brk(TBROK, "You can define tcnt only for test()");
@@ -771,9 +769,6 @@ static void do_setup(int argc, char *argv[])
 
 	if (tst_test->tconf_msg)
 		tst_brk(TCONF, "%s", tst_test->tconf_msg);
-
-	if (tst_test->needs_kconfigs)
-		tst_kconfig_check(tst_test->needs_kconfigs);
 
 	assert_test_fn();
 
@@ -873,9 +868,6 @@ static void do_setup(int argc, char *argv[])
 
 	if (tst_test->resource_files)
 		copy_resources();
-
-	if (tst_test->restore_wallclock)
-		tst_wallclock_save();
 }
 
 static void do_test_setup(void)
@@ -907,9 +899,6 @@ static void do_cleanup(void)
 		tst_sys_conf_restore(0);
 
 	cleanup_ipc();
-
-	if (tst_test->restore_wallclock)
-		tst_wallclock_restore();
 }
 
 static void run_tests(void)
@@ -1180,12 +1169,9 @@ static int run_tcases_per_fs(void)
 	return ret;
 }
 
-unsigned int tst_variant;
-
 void tst_run_tcases(int argc, char *argv[], struct tst_test *self)
 {
-	int ret = 0;
-	unsigned int test_variants = 1;
+	int ret;
 
 	lib_pid = getpid();
 	tst_test = self;
@@ -1197,20 +1183,11 @@ void tst_run_tcases(int argc, char *argv[], struct tst_test *self)
 	SAFE_SIGNAL(SIGALRM, alarm_handler);
 	SAFE_SIGNAL(SIGUSR1, heartbeat_handler);
 
-	if (tst_test->test_variants)
-		test_variants = tst_test->test_variants;
+	if (tst_test->all_filesystems)
+		ret = run_tcases_per_fs();
+	else
+		ret = fork_testrun();
 
-	for (tst_variant = 0; tst_variant < test_variants; tst_variant++) {
-		if (tst_test->all_filesystems)
-			ret |= run_tcases_per_fs();
-		else
-			ret |= fork_testrun();
-
-		if (ret & ~(TCONF))
-			goto exit;
-	}
-
-exit:
 	do_exit(ret);
 }
 

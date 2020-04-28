@@ -32,7 +32,7 @@
 #include <stdlib.h>
 #include "posixtest.h"
 
-void handler(int signo LTP_ATTRIBUTE_UNUSED)
+void handler(int signo)
 {
 	sigset_t pendingset;
 

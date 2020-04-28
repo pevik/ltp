@@ -42,16 +42,29 @@ EOF
 
 parse_args()
 {
-	TST_FS_TYPE="$2"
+	FS_TYPE="$2"
 }
 
 setup()
 {
-	if [ -n "$TST_FS_TYPE" ]; then
-		tst_test_cmds mkfs.${TST_FS_TYPE}
+	if [ -n "$FS_TYPE" ]; then
+		tst_test_cmds mkfs.${FS_TYPE}
 	fi
 
 	ROD_SILENT mkdir -p mntpoint
+}
+
+mkfs_mount()
+{
+	mount ${TST_DEVICE} mntpoint
+	local ret=$?
+	if [ $ret -eq 32 ]; then
+		tst_brk TCONF "Cannot mount ${FS_TYPE}, missing driver?"
+	fi
+
+	if [ $ret -ne 0 ]; then
+		tst_brk TBROK "Failed to mount device: mount exit = $ret"
+	fi
 }
 
 mkfs_verify_type()
@@ -69,7 +82,7 @@ mkfs_verify_type()
 
 mkfs_verify_size()
 {
-	tst_mount
+	mkfs_mount
 	local blocknum=`df -P -B 1k mntpoint | tail -n1 | awk '{print $2}'`
 	tst_umount "$TST_DEVICE"
 
@@ -158,17 +171,17 @@ mkfs_test()
 
 test1()
 {
-	mkfs_test "" "$TST_FS_TYPE" "" "$TST_DEVICE"
+	mkfs_test "" "$FS_TYPE" "" "$TST_DEVICE"
 }
 
 test2()
 {
-	mkfs_test "" "$TST_FS_TYPE" "" "$TST_DEVICE" "16000"
+	mkfs_test "" "$FS_TYPE" "" "$TST_DEVICE" "16000"
 }
 
 test3()
 {
-	mkfs_test "" "$TST_FS_TYPE" "-c" "$TST_DEVICE"
+	mkfs_test "" "$FS_TYPE" "-c" "$TST_DEVICE"
 }
 
 test4()

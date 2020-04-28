@@ -36,19 +36,15 @@
 #define NUM_AIOCBS	10
 #define BUF_SIZE	1024
 
-static volatile int num_received;
-static volatile int received_all;
+int num_received = 0;
+int received_all = 0;
 
-void sigrt1_handler(int signum LTP_ATTRIBUTE_UNUSED,
-	siginfo_t *info LTP_ATTRIBUTE_UNUSED,
-	void *context LTP_ATTRIBUTE_UNUSED)
+void sigrt1_handler(int signum, siginfo_t * info, void *context)
 {
 	num_received++;
 }
 
-void sigrt2_handler(int signum LTP_ATTRIBUTE_UNUSED,
-	siginfo_t *info LTP_ATTRIBUTE_UNUSED,
-	void *context LTP_ATTRIBUTE_UNUSED)
+void sigrt2_handler(int signum, siginfo_t * info, void *context)
 {
 	received_all = 1;
 }
@@ -95,7 +91,7 @@ int main(void)
 	for (i = 0; i < NUM_AIOCBS; i++) {
 
 		aiocbs[i] = (struct aiocb *)calloc(sizeof(struct aiocb), 1);
-		if (aiocbs[i] == NULL) {
+		if (aiocbs == NULL) {
 			printf(TNAME " Error at malloc(): %s\n",
 			       strerror(errno));
 			free(bufs);

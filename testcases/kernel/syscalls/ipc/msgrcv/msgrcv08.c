@@ -42,22 +42,21 @@
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include "test.h"
-#include "lapi/abisize.h"
 
 const char *TCID = "msgrcv08";
 const int TST_TOTAL = 1;
 
-#ifdef TST_ABI32
+#if __WORDSIZE == 32
 
-struct mbuf {
+struct msgbuf {
 	long mtype;     /* message type, must be > 0 */
 	char mtext[16]; /* message data */
 };
 
 static void msr(int msqid)
 {
-	struct mbuf msbs;
-	struct mbuf msbr;
+	struct msgbuf msbs;
+	struct msgbuf msbr;
 	ssize_t sret;
 	long mtype = 121;
 

@@ -134,7 +134,7 @@ void *sendsig(void *arg)
 
 /* Next are the signal handlers. */
 /* This one is registered for signal SIGUSR1 */
-void sighdl1(int sig LTP_ATTRIBUTE_UNUSED)
+void sighdl1(int sig)
 {
 #ifdef WITH_SYNCHRO
 	if (sem_post(&semsig1)) {
@@ -144,7 +144,7 @@ void sighdl1(int sig LTP_ATTRIBUTE_UNUSED)
 }
 
 /* This one is registered for signal SIGUSR2 */
-void sighdl2(int sig LTP_ATTRIBUTE_UNUSED)
+void sighdl2(int sig)
 {
 #ifdef WITH_SYNCHRO
 	if (sem_post(&semsig2)) {
@@ -155,7 +155,7 @@ void sighdl2(int sig LTP_ATTRIBUTE_UNUSED)
 
 /* The following function will wait on the cond
  * it does check that no error code of EINTR is returned */
-void *waiter(void *arg LTP_ATTRIBUTE_UNUSED)
+void *waiter(void *arg)
 {
 	int ret;
 
@@ -191,7 +191,7 @@ void *waiter(void *arg LTP_ATTRIBUTE_UNUSED)
 }
 
 /* The next function will signal the condition */
-void *worker(void *arg LTP_ATTRIBUTE_UNUSED)
+void *worker(void *arg)
 {
 	int ret = 0;
 

@@ -15,7 +15,6 @@
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <errno.h>
-#include <stdlib.h>
 #include "tst_test.h"
 #include "tst_safe_stdio.h"
 #include "lapi/syscalls.h"
