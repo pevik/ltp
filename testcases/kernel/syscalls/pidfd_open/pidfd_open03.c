@@ -27,11 +27,9 @@ static void run(void)
 		exit(EXIT_SUCCESS);
 	}
 
-	TEST(pidfd_open(pid, 0));
-
-	fd = TST_RET;
+	fd = pidfd_open(pid, 0);
 	if (fd == -1)
-		tst_brk(TFAIL | TTERRNO, "pidfd_open() failed");
+		tst_brk(TFAIL | TERRNO, "pidfd_open() failed");
 
 	TST_CHECKPOINT_WAKE(0);
 
@@ -49,8 +47,14 @@ static void run(void)
 		tst_res(TPASS, "pidfd_open() passed");
 }
 
+static void setup(void)
+{
+	// Check if pidfd_open(2) is not supported
+	tst_syscall(__NR_pidfd_open, -1, 0);
+}
+
 static struct tst_test test = {
-	.min_kver = "5.3",
+	.setup = setup,
 	.test_all = run,
 	.forks_child = 1,
 	.needs_checkpoints = 1,
