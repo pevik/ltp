@@ -102,13 +102,11 @@ script:
     - if [ ! "$TREE" ]; then TREE="in"; fi
     - case $VARIANT in cross-compile*) BUILD="cross";; i386) BUILD="32";; *) BUILD="native";; esac
 
-    # Tumbleweed requires newer Docker version
+    # update to the newest Docker
     - >
-        if [ "${DISTRO//*\/}" = "tumbleweed" ]; then
-            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-            sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-            sudo apt-get update
-            sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
-        fi
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -;
+        sudo add-apt-repository "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable";
+        sudo apt-get update;
+        sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce;
 
     - docker run -t ltp /bin/sh -c "cd travis && ./$INSTALL.sh && if [ \"$VARIANT\" ]; then ARCH=\"$ARCH\" ./$INSTALL.$VARIANT.sh; fi && ../build.sh -o $TREE -t $BUILD -c $CC $INSTALL_OPT"
