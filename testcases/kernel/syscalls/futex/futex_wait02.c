@@ -26,80 +26,85 @@
 #include <sys/wait.h>
 #include <errno.h>
 
-#include "test.h"
-#include "safe_macros.h"
 #include "futextest.h"
-
-const char *TCID="futex_wait02";
-const int TST_TOTAL=1;
+#include "futex_utils.h"
+#include "lapi/abisize.h"
 
 static futex_t *futex;
 
+static struct test_variants {
+	enum futex_fn_type fntype;
+	char *desc;
+} variants[] = {
+#if defined(TST_ABI32)
+	{ .fntype = FUTEX_FN_FUTEX, .desc = "syscall with kernel spec32"},
+#endif
+
+#if defined(TST_ABI64)
+	{ .fntype = FUTEX_FN_FUTEX, .desc = "syscall with kernel spec64"},
+#endif
+
+#if (__NR_futex_time64 != __LTP__NR_INVALID_SYSCALL)
+	{ .fntype = FUTEX_FN_FUTEX64, .desc = "syscall time64 with kernel spec64"},
+#endif
+};
+
 static void do_child(void)
 {
+	struct test_variants *tv = &variants[tst_variant];
 	int ret;
 
-	tst_process_state_wait2(getppid(), 'S');
+	process_state_wait2(getppid(), 'S');
 
-	ret = futex_wake(futex, 1, 0);
+	ret = futex_wake(tv->fntype, futex, 1, 0);
 
 	if (ret != 1)
-		tst_brkm(TFAIL, NULL, "futex_wake() returned %i", ret);
+		tst_res(TFAIL | TTERRNO, "futex_wake() failed");
 
-	exit(TPASS);
+	exit(0);
 }
 
-static void verify_futex_wait(void)
+static void run(void)
 {
-	int res;
-	int pid;
+	struct test_variants *tv = &variants[tst_variant];
+	int res, pid;
 
-	pid = tst_fork();
+	pid = SAFE_FORK();
 
 	switch (pid) {
 	case 0:
 		do_child();
-	break;
-	case -1:
-		tst_brkm(TBROK | TERRNO, NULL, "fork() failed");
-	break;
 	default:
-	break;
+		break;
 	}
 
-	res = futex_wait(futex, *futex, NULL, 0);
-
+	res = futex_wait(tv->fntype, futex, *futex, NULL, 0);
 	if (res) {
-		tst_resm(TFAIL, "futex_wait() returned %i, errno %s",
-		         res, tst_strerrno(errno));
+		tst_res(TFAIL | TTERRNO, "futex_wait() failed");
+		return;
 	}
 
-	SAFE_WAIT(NULL, &res);
+	SAFE_WAIT(&res);
 
 	if (WIFEXITED(res) && WEXITSTATUS(res) == TPASS)
-		tst_resm(TPASS, "futex_wait() woken up");
+		tst_res(TPASS, "futex_wait() woken up");
 	else
-		tst_resm(TFAIL, "child failed");
+		tst_res(TFAIL, "child failed");
 }
 
 static void setup(void)
 {
-	futex = SAFE_MMAP(NULL, NULL, sizeof(*futex), PROT_READ | PROT_WRITE,
+	tst_res(TINFO, "Testing variant: %s", variants[tst_variant].desc);
+
+	futex = SAFE_MMAP(NULL, sizeof(*futex), PROT_READ | PROT_WRITE,
 			  MAP_ANONYMOUS | MAP_SHARED, -1, 0);
 
 	*futex = FUTEX_INITIALIZER;
 }
 
-int main(int argc, char *argv[])
-{
-	int lc;
-
-	tst_parse_opts(argc, argv, NULL, NULL);
-
-	setup();
-
-	for (lc = 0; TEST_LOOPING(lc); lc++)
-		verify_futex_wait();
-
-	tst_exit();
-}
+static struct tst_test test = {
+	.setup = setup,
+	.test_all = run,
+	.test_variants = ARRAY_SIZE(variants),
+	.forks_child = 1,
+};

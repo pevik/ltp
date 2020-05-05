@@ -18,6 +18,7 @@
 
 #include "tst_test.h"
 #include "futextest.h"
+#include "lapi/abisize.h"
 
 static futex_t *futexes;
 
@@ -32,12 +33,30 @@ static struct tcase {
 	{1, 1, FUTEX_INITIALIZER + 1, EAGAIN},
 };
 
+static struct test_variants {
+	enum futex_fn_type fntype;
+	char *desc;
+} variants[] = {
+#if defined(TST_ABI32)
+	{ .fntype = FUTEX_FN_FUTEX, .desc = "syscall with kernel spec32"},
+#endif
+
+#if defined(TST_ABI64)
+	{ .fntype = FUTEX_FN_FUTEX, .desc = "syscall with kernel spec64"},
+#endif
+
+#if (__NR_futex_time64 != __LTP__NR_INVALID_SYSCALL)
+	{ .fntype = FUTEX_FN_FUTEX64, .desc = "syscall time64 with kernel spec64"},
+#endif
+};
+
 static void verify_futex_cmp_requeue(unsigned int n)
 {
+	struct test_variants *tv = &variants[tst_variant];
 	struct tcase *tc = &tcases[n];
 
-	TEST(futex_cmp_requeue(&futexes[0], tc->exp_val, &futexes[1],
-	     tc->set_wakes, tc->set_requeues, 0));
+	TEST(futex_cmp_requeue(tv->fntype, &futexes[0], tc->exp_val,
+			&futexes[1], tc->set_wakes, tc->set_requeues, 0));
 	if (TST_RET != -1) {
 		tst_res(TFAIL, "futex_cmp_requeue() succeeded unexpectedly");
 		return;
@@ -55,6 +74,7 @@ static void verify_futex_cmp_requeue(unsigned int n)
 
 static void setup(void)
 {
+	tst_res(TINFO, "Testing variant: %s", variants[tst_variant].desc);
 	futexes = SAFE_MMAP(NULL, sizeof(futex_t) * 2, PROT_READ | PROT_WRITE,
 			    MAP_ANONYMOUS | MAP_SHARED, -1, 0);
 
@@ -73,6 +93,7 @@ static struct tst_test test = {
 	.cleanup = cleanup,
 	.test = verify_futex_cmp_requeue,
 	.tcnt = ARRAY_SIZE(tcases),
+	.test_variants = ARRAY_SIZE(variants),
 	.tags = (const struct tst_tag[]) {
 		{"CVE", "2018-6927"},
 		{"linux-git", "fbe0e839d1e2"},

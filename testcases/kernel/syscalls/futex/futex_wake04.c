@@ -42,53 +42,63 @@
 #include <sys/time.h>
 #include <string.h>
 
-#include "test.h"
-#include "safe_macros.h"
 #include "futextest.h"
 #include "futex_utils.h"
 #include "lapi/mmap.h"
+#include "lapi/abisize.h"
+#include "tst_safe_stdio.h"
 
 #define PATH_MEMINFO "/proc/meminfo"
 #define PATH_NR_HUGEPAGES "/proc/sys/vm/nr_hugepages"
 #define PATH_HUGEPAGES	"/sys/kernel/mm/hugepages/"
 
-const char *TCID = "futex_wake04";
-const int TST_TOTAL = 1;
-
 static futex_t *futex1, *futex2;
 
-static struct timespec to = {.tv_sec = 30, .tv_nsec = 0};
+static struct tst_ts to;
 
 static long orig_hugepages;
 
+static struct test_variants {
+	enum futex_fn_type fntype;
+	enum tst_ts_type tstype;
+	char *desc;
+} variants[] = {
+#if defined(TST_ABI32)
+	{ .fntype = FUTEX_FN_FUTEX, .tstype = TST_KERN_OLD_TIMESPEC, .desc = "syscall with kernel spec32"},
+#endif
+
+#if defined(TST_ABI64)
+	{ .fntype = FUTEX_FN_FUTEX, .tstype = TST_KERN_TIMESPEC, .desc = "syscall with kernel spec64"},
+#endif
+
+#if (__NR_futex_time64 != __LTP__NR_INVALID_SYSCALL)
+	{ .fntype = FUTEX_FN_FUTEX64, .tstype = TST_KERN_TIMESPEC, .desc = "syscall time64 with kernel spec64"},
+#endif
+};
+
 static void setup(void)
 {
-	tst_require_root();
+	struct test_variants *tv = &variants[tst_variant];
 
-	if ((tst_kvercmp(2, 6, 32)) < 0) {
-		tst_brkm(TCONF, NULL, "This test can only run on kernels "
-			"that are 2.6.32 or higher");
-	}
+	tst_res(TINFO, "Testing variant: %s", tv->desc);
+
+	to.type = tv->tstype;
+	tst_ts_set_sec(&to, 30);
+	tst_ts_set_nsec(&to, 0);
 
 	if (access(PATH_HUGEPAGES, F_OK))
-		tst_brkm(TCONF, NULL, "Huge page is not supported.");
+		tst_brk(TCONF, "Huge page is not supported.");
 
-	tst_tmpdir();
-
-	SAFE_FILE_SCANF(NULL, PATH_NR_HUGEPAGES, "%ld", &orig_hugepages);
+	SAFE_FILE_SCANF(PATH_NR_HUGEPAGES, "%ld", &orig_hugepages);
 
 	if (orig_hugepages <= 0)
-		SAFE_FILE_PRINTF(NULL, PATH_NR_HUGEPAGES, "%d", 1);
-
-	TEST_PAUSE;
+		SAFE_FILE_PRINTF(PATH_NR_HUGEPAGES, "%d", 1);
 }
 
 static void cleanup(void)
 {
 	if (orig_hugepages <= 0)
-		SAFE_FILE_PRINTF(NULL, PATH_NR_HUGEPAGES, "%ld", orig_hugepages);
-
-	tst_rmdir();
+		SAFE_FILE_PRINTF(PATH_NR_HUGEPAGES, "%ld", orig_hugepages);
 }
 
 static int read_hugepagesize(void)
@@ -97,60 +107,64 @@ static int read_hugepagesize(void)
 	char line[BUFSIZ], buf[BUFSIZ];
 	int val;
 
-	fp = SAFE_FOPEN(cleanup, PATH_MEMINFO, "r");
+	fp = SAFE_FOPEN(PATH_MEMINFO, "r");
 	while (fgets(line, BUFSIZ, fp) != NULL) {
 		if (sscanf(line, "%64s %d", buf, &val) == 2)
 			if (strcmp(buf, "Hugepagesize:") == 0) {
-				SAFE_FCLOSE(cleanup, fp);
+				SAFE_FCLOSE(fp);
 				return 1024 * val;
 			}
 	}
 
-	SAFE_FCLOSE(cleanup, fp);
-	tst_brkm(TBROK, NULL, "can't find \"%s\" in %s",
-			"Hugepagesize:", PATH_MEMINFO);
+	SAFE_FCLOSE(fp);
+	tst_res(TFAIL, "can't find \"%s\" in %s", "Hugepagesize:",
+		PATH_MEMINFO);
+	return 0;
 }
 
 static void *wait_thread1(void *arg LTP_ATTRIBUTE_UNUSED)
 {
-	futex_wait(futex1, *futex1, &to, 0);
+	struct test_variants *tv = &variants[tst_variant];
+
+	futex_wait(tv->fntype, futex1, *futex1, &to, 0);
 
 	return NULL;
 }
 
 static void *wait_thread2(void *arg LTP_ATTRIBUTE_UNUSED)
 {
+	struct test_variants *tv = &variants[tst_variant];
 	int res;
 
-	res = futex_wait(futex2, *futex2, &to, 0);
+	res = futex_wait(tv->fntype, futex2, *futex2, &to, 0);
 	if (!res)
-		tst_resm(TPASS, "Hi hydra, thread2 awake!");
+		tst_res(TPASS, "Hi hydra, thread2 awake!");
 	else
-		tst_resm(TFAIL, "Bug: wait_thread2 did not wake after 30 secs.");
+		tst_res(TFAIL | TTERRNO, "Bug: wait_thread2 did not wake after 30 secs.");
 
 	return NULL;
 }
 
 static void wakeup_thread2(void)
 {
+	struct test_variants *tv = &variants[tst_variant];
 	void *addr;
 	int hpsz, pgsz, res;
 	pthread_t th1, th2;
 
 	hpsz = read_hugepagesize();
-	tst_resm(TINFO, "Hugepagesize %i", hpsz);
+	tst_res(TINFO, "Hugepagesize %i", hpsz);
 
 	/*allocate some shared memory*/
 	addr = mmap(NULL, hpsz, PROT_WRITE | PROT_READ,
 	            MAP_SHARED | MAP_ANONYMOUS | MAP_HUGETLB, -1, 0);
 
 	if (addr == MAP_FAILED) {
-		if (errno == ENOMEM) {
-			tst_brkm(TCONF, NULL,
-				 "Cannot allocate hugepage, memory too fragmented?");
-		}
+		if (errno == ENOMEM)
+			tst_res(TCONF, "Cannot allocate hugepage, memory too fragmented?");
 
-		tst_brkm(TBROK | TERRNO, NULL, "Cannot allocate hugepage");
+		tst_res(TFAIL | TERRNO, "Cannot allocate hugepage");
+		return;
 	}
 
 	pgsz = getpagesize();
@@ -165,45 +179,47 @@ static void wakeup_thread2(void)
 	/*thread1 block on futex1 first,then thread2 block on futex2*/
 	res = pthread_create(&th1, NULL, wait_thread1, NULL);
 	if (res) {
-		tst_brkm(TBROK, NULL, "pthread_create(): %s",
-				tst_strerrno(res));
+		tst_res(TFAIL | TTERRNO, "pthread_create() failed");
+		return;
 	}
 
 	res = pthread_create(&th2, NULL, wait_thread2, NULL);
 	if (res) {
-		tst_brkm(TBROK, NULL, "pthread_create(): %s",
-				tst_strerrno(res));
+		tst_res(TFAIL | TTERRNO, "pthread_create() failed");
+		return;
 	}
 
 	while (wait_for_threads(2))
 		usleep(1000);
 
-	futex_wake(futex2, 1, 0);
+	futex_wake(tv->fntype, futex2, 1, 0);
 
 	res = pthread_join(th2, NULL);
-	if (res)
-		tst_brkm(TBROK, NULL, "pthread_join(): %s", tst_strerrno(res));
+	if (res) {
+		tst_res(TFAIL | TTERRNO, "pthread_join() failed");
+		return;
+	}
 
-	futex_wake(futex1, 1, 0);
+	futex_wake(tv->fntype, futex1, 1, 0);
 
 	res = pthread_join(th1, NULL);
 	if (res)
-		tst_brkm(TBROK, NULL, "pthread_join(): %s", tst_strerrno(res));
+		tst_res(TFAIL | TTERRNO, "pthread_join() failed");
 
-	SAFE_MUNMAP(NULL, addr, hpsz);
+	SAFE_MUNMAP(addr, hpsz);
 }
 
-int main(int argc, char *argv[])
+static void run(void)
 {
-	int lc;
-
-	tst_parse_opts(argc, argv, NULL, NULL);
-
-	setup();
-
-	for (lc = 0; TEST_LOOPING(lc); lc++)
-		wakeup_thread2();
-
-	cleanup();
-	tst_exit();
+	wakeup_thread2();
 }
+
+static struct tst_test test = {
+	.setup = setup,
+	.cleanup = cleanup,
+	.test_all = run,
+	.test_variants = ARRAY_SIZE(variants),
+	.needs_root = 1,
+	.min_kver = "2.6.32",
+	.needs_tmpdir = 1,
+};

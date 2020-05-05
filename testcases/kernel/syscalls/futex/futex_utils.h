@@ -20,10 +20,13 @@
 #ifndef FUTEX_UTILS_H__
 #define FUTEX_UTILS_H__
 
+#include <stdio.h>
+#include <stdlib.h>
+
 /*
  * Wait for nr_threads to be sleeping
  */
-static int wait_for_threads(unsigned int nr_threads)
+static inline int wait_for_threads(unsigned int nr_threads)
 {
 	char thread_state, name[1024];
 	DIR *dir;
@@ -32,34 +35,63 @@ static int wait_for_threads(unsigned int nr_threads)
 
 	snprintf(name, sizeof(name), "/proc/%i/task/", getpid());
 
-	dir = SAFE_OPENDIR(NULL, name);
+	dir = SAFE_OPENDIR(name);
 
-	while ((dent = SAFE_READDIR(NULL, dir))) {
+	while ((dent = SAFE_READDIR(dir))) {
 		/* skip ".", ".." and the main thread */
 		if (atoi(dent->d_name) == getpid() || atoi(dent->d_name) == 0)
 			continue;
 
 		snprintf(name, sizeof(name), "/proc/%i/task/%s/stat",
-		         getpid(), dent->d_name);
+			 getpid(), dent->d_name);
 
-		SAFE_FILE_SCANF(NULL, name, "%*i %*s %c", &thread_state);
+		SAFE_FILE_SCANF(name, "%*i %*s %c", &thread_state);
 
 		if (thread_state != 'S') {
-			tst_resm(TINFO, "Thread %s not sleeping yet", dent->d_name);
-			SAFE_CLOSEDIR(NULL, dir);
+			tst_res(TINFO, "Thread %s not sleeping yet", dent->d_name);
+			SAFE_CLOSEDIR(dir);
 			return 1;
 		}
 		cnt++;
 	}
 
-	SAFE_CLOSEDIR(NULL, dir);
+	SAFE_CLOSEDIR(dir);
 
 	if (cnt != nr_threads) {
-		tst_resm(TINFO, "%u threads sleeping, expected %u",
-	                  cnt, nr_threads);
+		tst_res(TINFO, "%u threads sleeping, expected %u", cnt,
+			nr_threads);
 	}
 
 	return 0;
+}
+
+static inline int process_state_wait2(pid_t pid, const char state)
+{
+	char proc_path[128], cur_state;
+
+	snprintf(proc_path, sizeof(proc_path), "/proc/%i/stat", pid);
+
+	for (;;) {
+		FILE *f = fopen(proc_path, "r");
+		if (!f) {
+			tst_res(TFAIL, "Failed to open '%s': %s\n", proc_path,
+				strerror(errno));
+			return 1;
+		}
+
+		if (fscanf(f, "%*i %*s %c", &cur_state) != 1) {
+			fclose(f);
+			tst_res(TFAIL, "Failed to read '%s': %s\n", proc_path,
+				strerror(errno));
+			return 1;
+		}
+		fclose(f);
+
+		if (state == cur_state)
+			return 0;
+
+		usleep(10000);
+	}
 }
 
 #endif /* FUTEX_UTILS_H__ */

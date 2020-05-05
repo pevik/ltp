@@ -18,6 +18,7 @@
 #include "tst_timer_test.h"
 #include "tst_test.h"
 #include "futextest.h"
+#include "lapi/abisize.h"
 
 struct shared_data {
 	futex_t futexes[2];
@@ -42,14 +43,33 @@ static struct tcase {
 	{1000, 300, 500},
 };
 
+static struct test_variants {
+	enum futex_fn_type fntype;
+	enum tst_ts_type tstype;
+	char *desc;
+} variants[] = {
+#if defined(TST_ABI32)
+	{ .fntype = FUTEX_FN_FUTEX, .tstype = TST_KERN_OLD_TIMESPEC, .desc = "syscall with kernel spec32"},
+#endif
+
+#if defined(TST_ABI64)
+	{ .fntype = FUTEX_FN_FUTEX, .tstype = TST_KERN_TIMESPEC, .desc = "syscall with kernel spec64"},
+#endif
+
+#if (__NR_futex_time64 != __LTP__NR_INVALID_SYSCALL)
+	{ .fntype = FUTEX_FN_FUTEX64, .tstype = TST_KERN_TIMESPEC, .desc = "syscall time64 with kernel spec64"},
+#endif
+};
+
 static void do_child(void)
 {
+	struct test_variants *tv = &variants[tst_variant];
+	struct tst_ts usec = tst_ts_from_ms(tv->tstype, max_sleep_ms);
 	int slept_for_ms = 0;
-	struct timespec usec = tst_timespec_from_ms(max_sleep_ms);
 	int pid = getpid();
 	int ret = 0;
 
-	if (futex_wait(&sd->futexes[0], sd->futexes[0], &usec, 0) == -1) {
+	if (futex_wait(tv->fntype, &sd->futexes[0], sd->futexes[0], &usec, 0) == -1) {
 		if (errno == EAGAIN) {
 			/* spurious wakeup or signal */
 			tst_atomic_inc(&sd->spurious);
@@ -72,6 +92,7 @@ static void do_child(void)
 
 static void verify_futex_cmp_requeue(unsigned int n)
 {
+	struct test_variants *tv = &variants[tst_variant];
 	int num_requeues = 0, num_waits = 0, num_total = 0;
 	int i, status, spurious, woken_up;
 	struct tcase *tc = &tcases[n];
@@ -104,8 +125,8 @@ static void verify_futex_cmp_requeue(unsigned int n)
 	 * specifies an upper limit on the number of waiters that are requeued.
 	 * Returns the total number of waiters that were woken up or requeued.
 	 */
-	TEST(futex_cmp_requeue(&sd->futexes[0], sd->futexes[0], &sd->futexes[1],
-		tc->set_wakes, tc->set_requeues, 0));
+	TEST(futex_cmp_requeue(tv->fntype, &sd->futexes[0], sd->futexes[0],
+			&sd->futexes[1], tc->set_wakes, tc->set_requeues, 0));
 
 	/* Fail if more than requested wakes + requeues were returned */
 	if (TST_RET > exp_ret) {
@@ -115,8 +136,8 @@ static void verify_futex_cmp_requeue(unsigned int n)
 		tst_res(TINFO, "futex_cmp_requeue() returned %ld", TST_RET);
 	}
 
-	num_requeues = futex_wake(&sd->futexes[1], tc->num_waiters, 0);
-	num_waits = futex_wake(&sd->futexes[0], tc->num_waiters, 0);
+	num_requeues = futex_wake(tv->fntype, &sd->futexes[1], tc->num_waiters, 0);
+	num_waits = futex_wake(tv->fntype, &sd->futexes[0], tc->num_waiters, 0);
 
 	tst_atomic_store(1, &sd->test_done);
 	for (i = 0; i < tc->num_waiters; i++) {
@@ -178,6 +199,7 @@ static void verify_futex_cmp_requeue(unsigned int n)
 
 static void setup(void)
 {
+	tst_res(TINFO, "Testing variant: %s", variants[tst_variant].desc);
 	max_sleep_ms = tst_multiply_timeout(5000);
 
 	sd = SAFE_MMAP(NULL, sizeof(*sd), PROT_READ | PROT_WRITE,
@@ -198,5 +220,6 @@ static struct tst_test test = {
 	.cleanup = cleanup,
 	.tcnt = ARRAY_SIZE(tcases),
 	.test = verify_futex_cmp_requeue,
+	.test_variants = ARRAY_SIZE(variants),
 	.forks_child = 1,
 };
