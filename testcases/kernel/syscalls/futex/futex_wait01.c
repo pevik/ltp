@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * Copyright (C) 2015 Cyril Hrubis <chrubis@suse.cz>
  *
@@ -5,33 +6,15 @@
  * written by Darren Hart <dvhltc@us.ibm.com>
  *            Gowrishankar <gowrishankar.m@in.ibm.com>
  *
- * Licensed under the GNU GPLv2 or later.
- * This program is free software;  you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY;  without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See
- * the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program;  if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ * 1. Block on a futex and wait for timeout.
+ * 2. Test if FUTEX_WAIT op returns -EWOULDBLOCK if the futex value differs
+ *    from the expected one.
  */
- /*
-  * 1. Block on a futex and wait for timeout.
-  * 2. Test if FUTEX_WAIT op returns -EWOULDBLOCK if the futex value differs
-  *    from the expected one.
-  */
 
 #include <errno.h>
 
-#include "test.h"
 #include "futextest.h"
-
-const char *TCID="futex_wait01";
+#include "lapi/abisize.h"
 
 struct testcase {
 	futex_t *f_addr;
@@ -41,7 +24,6 @@ struct testcase {
 };
 
 static futex_t futex = FUTEX_INITIALIZER;
-static struct timespec to = {.tv_sec = 0, .tv_nsec = 10000};
 
 static struct testcase testcases[] = {
 	{&futex, FUTEX_INITIALIZER, 0, ETIMEDOUT},
@@ -50,38 +32,59 @@ static struct testcase testcases[] = {
 	{&futex, FUTEX_INITIALIZER+1, FUTEX_PRIVATE_FLAG, EWOULDBLOCK},
 };
 
-const int TST_TOTAL=ARRAY_SIZE(testcases);
+static struct test_variants {
+	enum futex_fn_type fntype;
+	enum tst_ts_type tstype;
+	char *desc;
+} variants[] = {
+#if defined(TST_ABI32)
+	{ .fntype = FUTEX_FN_FUTEX, .tstype = TST_KERN_OLD_TIMESPEC, .desc = "syscall with kernel spec32"},
+#endif
 
-static void verify_futex_wait(struct testcase *tc)
+#if defined(TST_ABI64)
+	{ .fntype = FUTEX_FN_FUTEX, .tstype = TST_KERN_TIMESPEC, .desc = "syscall with kernel spec64"},
+#endif
+
+#if (__NR_futex_time64 != __LTP__NR_INVALID_SYSCALL)
+	{ .fntype = FUTEX_FN_FUTEX64, .tstype = TST_KERN_TIMESPEC, .desc = "syscall time64 with kernel spec64"},
+#endif
+};
+
+static void run(unsigned int n)
 {
+	struct test_variants *tv = &variants[tst_variant];
+	struct testcase *tc = &testcases[n];
+	static struct tst_ts to;
 	int res;
 
-	res = futex_wait(tc->f_addr, tc->f_val, &to, tc->opflags);
+	to.type = tv->tstype;
+	tst_ts_set_sec(&to, 0);
+	tst_ts_set_nsec(&to, 10000);
+
+	res = futex_wait(tv->fntype, tc->f_addr, tc->f_val, &to, tc->opflags);
 
 	if (res != -1) {
-		tst_resm(TFAIL, "futex_wait() returned %i, expected -1", res);
+		tst_res(TFAIL, "futex_wait() succeeded unexpectedly");
 		return;
 	}
 
 	if (errno != tc->exp_errno) {
-		tst_resm(TFAIL | TERRNO, "expected errno=%s",
+		tst_res(TFAIL | TTERRNO, "futex_wait() failed with incorrect error, expected errno=%s",
 		         tst_strerrno(tc->exp_errno));
 		return;
 	}
 
-	tst_resm(TPASS | TERRNO, "futex_wait()");
+	tst_res(TPASS | TERRNO, "futex_wait() passed");
 }
 
-int main(int argc, char *argv[])
+static void setup(void)
 {
-	int lc, i;
-
-	tst_parse_opts(argc, argv, NULL, NULL);
-
-	for (lc = 0; TEST_LOOPING(lc); lc++) {
-		for (i = 0; i < TST_TOTAL; i++)
-			verify_futex_wait(testcases + i);
-	}
-
-	tst_exit();
+	tst_res(TINFO, "Testing variant: %s", variants[tst_variant].desc);
 }
+
+static struct tst_test test = {
+	.setup = setup,
+	.test = run,
+	.tcnt = ARRAY_SIZE(testcases),
+	.test_variants = ARRAY_SIZE(variants),
+};

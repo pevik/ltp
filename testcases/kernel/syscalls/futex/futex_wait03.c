@@ -1,87 +1,88 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * Copyright (C) 2015 Cyril Hrubis <chrubis@suse.cz>
  *
- * Licensed under the GNU GPLv2 or later.
- * This program is free software;  you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * Block on a futex and wait for wakeup.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY;  without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See
- * the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program;  if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ * This tests uses private mutexes with threads.
  */
- /*
-  * Block on a futex and wait for wakeup.
-  *
-  * This tests uses private mutexes with threads.
-  */
 
 #include <errno.h>
 #include <pthread.h>
 
-#include "test.h"
 #include "futextest.h"
-
-const char *TCID="futex_wait03";
-const int TST_TOTAL=1;
+#include "futex_utils.h"
+#include "lapi/abisize.h"
 
 static futex_t futex = FUTEX_INITIALIZER;
 
+static struct test_variants {
+	enum futex_fn_type fntype;
+	char *desc;
+} variants[] = {
+#if defined(TST_ABI32)
+	{ .fntype = FUTEX_FN_FUTEX, .desc = "syscall with kernel spec32"},
+#endif
+
+#if defined(TST_ABI64)
+	{ .fntype = FUTEX_FN_FUTEX, .desc = "syscall with kernel spec64"},
+#endif
+
+#if (__NR_futex_time64 != __LTP__NR_INVALID_SYSCALL)
+	{ .fntype = FUTEX_FN_FUTEX64, .desc = "syscall time64 with kernel spec64"},
+#endif
+};
+
 static void *threaded(void *arg LTP_ATTRIBUTE_UNUSED)
 {
+	struct test_variants *tv = &variants[tst_variant];
 	long ret;
 
-	tst_process_state_wait2(getpid(), 'S');
+	process_state_wait2(getpid(), 'S');
 
-	ret = futex_wake(&futex, 1, FUTEX_PRIVATE_FLAG);
+	ret = futex_wake(tv->fntype, &futex, 1, FUTEX_PRIVATE_FLAG);
 
 	return (void*)ret;
 }
 
-static void verify_futex_wait(void)
+static void run(void)
 {
-	long ret;
-	int res;
+	struct test_variants *tv = &variants[tst_variant];
+	long ret, res;
 	pthread_t t;
 
 	res = pthread_create(&t, NULL, threaded, NULL);
 	if (res) {
-		tst_brkm(TBROK, NULL, "pthread_create(): %s",
-	                 tst_strerrno(res));
+		tst_res(TFAIL | TTERRNO, "pthread_create() failed");
+		return;
 	}
 
-	res = futex_wait(&futex, futex, NULL, FUTEX_PRIVATE_FLAG);
+	res = futex_wait(tv->fntype, &futex, futex, NULL, FUTEX_PRIVATE_FLAG);
 	if (res) {
-		tst_resm(TFAIL, "futex_wait() returned %i, errno %s",
-	                 res, tst_strerrno(errno));
+		tst_res(TFAIL | TTERRNO, "futex_wait() failed");
 		pthread_join(t, NULL);
 		return;
 	}
 
 	res = pthread_join(t, (void*)&ret);
-	if (res)
-		tst_brkm(TBROK, NULL, "pthread_join(): %s", tst_strerrno(res));
+	if (res) {
+		tst_res(TFAIL | TTERRNO, "pthread_join() failed");
+		return;
+	}
 
 	if (ret != 1)
-		tst_resm(TFAIL, "futex_wake() returned %li", ret);
+		tst_res(TFAIL, "futex_wake() returned %li", ret);
 	else
-		tst_resm(TPASS, "futex_wait() woken up");
+		tst_res(TPASS, "futex_wait() woken up");
 }
 
-int main(int argc, char *argv[])
+static void setup(void)
 {
-	int lc;
-
-	tst_parse_opts(argc, argv, NULL, NULL);
-
-	for (lc = 0; TEST_LOOPING(lc); lc++)
-		verify_futex_wait();
-
-	tst_exit();
+	tst_res(TINFO, "Testing variant: %s", variants[tst_variant].desc);
 }
+
+static struct tst_test test = {
+	.setup = setup,
+	.test_all = run,
+	.test_variants = ARRAY_SIZE(variants),
+};

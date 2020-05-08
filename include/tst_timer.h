@@ -243,6 +243,18 @@ static inline int sys_clock_nanosleep64(clockid_t clk_id, int flags,
 			   request, remain);
 }
 
+static inline int sys_futex(int *uaddr, int futex_op, int val, void *to,
+			    int *uaddr2, int val3)
+{
+	return tst_syscall(__NR_futex, uaddr, futex_op, val, to, uaddr2, val3);
+}
+
+static inline int sys_futex_time64(int *uaddr, int futex_op, int val, void *to,
+				   int *uaddr2, int val3)
+{
+	return tst_syscall(__NR_futex_time64, uaddr, futex_op, val, to, uaddr2, val3);
+}
+
 static inline int libc_sched_rr_get_interval(pid_t pid, void *ts)
 {
 	return sched_rr_get_interval(pid, ts);
