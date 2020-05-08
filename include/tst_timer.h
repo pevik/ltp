@@ -264,6 +264,54 @@ static inline int sys_timer_settime64(kernel_timer_t timerid, int flags,
 	return tst_syscall(__NR_timer_settime64, timerid, flags, its, old_its);
 }
 
+static inline int sys_timerfd_gettime(int fd, void *its)
+{
+	return tst_syscall(__NR_timerfd_gettime, fd, its);
+}
+
+static inline int sys_timerfd_gettime64(int fd, void *its)
+{
+	return tst_syscall(__NR_timerfd_gettime64, fd, its);
+}
+
+static inline int sys_timerfd_settime(int fd, int flags, void *its,
+				      void *old_its)
+{
+	return tst_syscall(__NR_timerfd_settime, fd, flags, its, old_its);
+}
+
+static inline int sys_timerfd_settime64(int fd, int flags, void *its,
+				      void *old_its)
+{
+	return tst_syscall(__NR_timerfd_settime64, fd, flags, its, old_its);
+}
+
+static inline long long tst_its_get_val_sec(struct tst_its its)
+{
+	switch (its.type) {
+	case TST_LIBC_TIMESPEC:
+		return its.ts.libc_its.it_value.tv_sec;
+	case TST_KERN_TIMESPEC:
+		return its.ts.kern_its.it_value.tv_sec;
+	default:
+		tst_brk(TBROK, "Invalid type: %d", its.type);
+		return -1;
+	}
+}
+
+static inline long long tst_its_get_val_nsec(struct tst_its its)
+{
+	switch (its.type) {
+	case TST_LIBC_TIMESPEC:
+		return its.ts.libc_its.it_value.tv_nsec;
+	case TST_KERN_TIMESPEC:
+		return its.ts.kern_its.it_value.tv_nsec;
+	default:
+		tst_brk(TBROK, "Invalid type: %d", its.type);
+		return -1;
+	}
+}
+
 static inline void tst_its_set_time(struct tst_its *its, long long value_sec,
 				long long value_nsec, long long interval_sec,
 				long long interval_nsec)
