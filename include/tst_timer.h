@@ -15,6 +15,7 @@
 #include <sys/time.h>
 #include <time.h>
 #include "tst_test.h"
+#include "lapi/common_timers.h"
 #include "lapi/syscalls.h"
 
 /*
@@ -112,6 +113,11 @@ struct __kernel_timespec {
 	__kernel_time64_t       tv_sec;                 /* seconds */
 	long long               tv_nsec;                /* nanoseconds */
 };
+
+struct __kernel_itimerspec {
+	struct __kernel_timespec it_interval;    /* timer period */
+	struct __kernel_timespec it_value;       /* timer expiration */
+};
 #endif
 
 enum tst_ts_type {
@@ -129,6 +135,14 @@ struct tst_ts {
 	} ts;
 };
 
+struct tst_its {
+	enum tst_ts_type type;
+	union {
+		struct itimerspec libc_its;
+		struct __kernel_itimerspec kern_its;
+	} ts;
+};
+
 static inline void *tst_ts_get(struct tst_ts *t)
 {
 	if (!t)
@@ -141,6 +155,22 @@ static inline void *tst_ts_get(struct tst_ts *t)
 		return &t->ts.kern_old_ts;
 	case TST_KERN_TIMESPEC:
 		return &t->ts.kern_ts;
+	default:
+		tst_brk(TBROK, "Invalid type: %d", t->type);
+		return NULL;
+	}
+}
+
+static inline void *tst_its_get(struct tst_its *t)
+{
+	if (!t)
+		return NULL;
+
+	switch (t->type) {
+	case TST_LIBC_TIMESPEC:
+		return &t->ts.libc_its;
+	case TST_KERN_TIMESPEC:
+		return &t->ts.kern_its;
 	default:
 		tst_brk(TBROK, "Invalid type: %d", t->type);
 		return NULL;
@@ -210,6 +240,16 @@ static inline int sys_clock_nanosleep64(clockid_t clk_id, int flags,
 {
 	return tst_syscall(__NR_clock_nanosleep_time64, clk_id, flags,
 			   request, remain);
+}
+
+static inline int sys_timer_gettime(kernel_timer_t timerid, void *its)
+{
+	return tst_syscall(__NR_timer_gettime, timerid, its);
+}
+
+static inline int sys_timer_gettime64(kernel_timer_t timerid, void *its)
+{
+	return tst_syscall(__NR_timer_gettime64, timerid, its);
 }
 
 /*
