@@ -12,6 +12,7 @@
 #ifndef TST_TIMER
 #define TST_TIMER
 
+#include <sched.h>
 #include <sys/time.h>
 #include <time.h>
 #include "tst_test.h"
@@ -240,6 +241,21 @@ static inline int sys_clock_nanosleep64(clockid_t clk_id, int flags,
 {
 	return tst_syscall(__NR_clock_nanosleep_time64, clk_id, flags,
 			   request, remain);
+}
+
+static inline int libc_sched_rr_get_interval(pid_t pid, void *ts)
+{
+	return sched_rr_get_interval(pid, ts);
+}
+
+static inline int sys_sched_rr_get_interval(pid_t pid, void *ts)
+{
+	return tst_syscall(__NR_sched_rr_get_interval, pid, ts);
+}
+
+static inline int sys_sched_rr_get_interval64(pid_t pid, void *ts)
+{
+	return tst_syscall(__NR_sched_rr_get_interval_time64, pid, ts);
 }
 
 static inline int sys_timer_gettime(kernel_timer_t timerid, void *its)
