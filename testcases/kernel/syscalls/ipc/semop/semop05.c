@@ -1,21 +1,5 @@
-/*
- *
- *   Copyright (c) International Business Machines  Corp., 2001
- *
- *   This program is free software;  you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License as published by
- *   the Free Software Foundation; either version 2 of the License, or
- *   (at your option) any later version.
- *
- *   This program is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY;  without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See
- *   the GNU General Public License for more details.
- *
- *   You should have received a copy of the GNU General Public License
- *   along with this program;  if not, write to the Free Software
- *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
- */
+// SPDX-License-Identifier: GPL-2.0-or-later
+/* Copyright (c) International Business Machines  Corp., 2001 */
 
 /*
  * NAME
@@ -60,18 +44,18 @@
  *	none
  */
 
-#include "ipcsem.h"
-
+#include <stdio.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include "safe_macros.h"
+#include <sys/sem.h>
+#include "tst_test.h"
+#include "libnewipc.h"
+#include "lapi/semun.h"
 
-char *TCID = "semop05";
-int TST_TOTAL = 4;
-
-int sem_id_1 = -1;
-
-struct sembuf s_buf;
+static key_t semkey;
+static int sem_id = -1;
+static struct sembuf s_buf;
 
 struct test_case_t {
 	union semun semunptr;
@@ -79,7 +63,7 @@ struct test_case_t {
 	short flg;
 	short num;
 	int error;
-} TC[] = {
+} tc[] = {
 	/* EIRDM sem_op = 0 */
 	{ {
 	1}, 0, 0, 2, EIDRM},
@@ -96,131 +80,141 @@ struct test_case_t {
 
 #ifdef UCLINUX
 #define PIPE_NAME	"semop05"
-void do_child_uclinux();
+static void do_child_uclinux();
 static int i_uclinux;
 #endif
 
-int main(int ac, char **av)
+static inline int process_state_wait2(pid_t pid, const char state)
 {
-	int lc;
-	int i;
-	pid_t pid;
-	void do_child();
+	char proc_path[128], cur_state;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	snprintf(proc_path, sizeof(proc_path), "/proc/%i/stat", pid);
 
-#ifdef UCLINUX
-	maybe_run_child(&do_child_uclinux, "dd", &i_uclinux, &sem_id_1);
-#endif
-
-	setup();		/* global setup */
-
-	/* The following loop checks looping state if -i option given */
-
-	for (lc = 0; TEST_LOOPING(lc); lc++) {
-		/* reset tst_count in case we are looping */
-		tst_count = 0;
-
-		for (i = 0; i < TST_TOTAL; i++) {
-
-			/* initialize the s_buf buffer */
-			s_buf.sem_op = TC[i].op;
-			s_buf.sem_flg = TC[i].flg;
-			s_buf.sem_num = TC[i].num;
-
-			/* initialize all of the primitive semaphores */
-			if (semctl(sem_id_1, TC[i].num, SETVAL, TC[i].semunptr)
-			    == -1) {
-				tst_brkm(TBROK, cleanup, "semctl() failed");
-			}
-
-			if ((pid = FORK_OR_VFORK()) == -1) {
-				tst_brkm(TBROK, cleanup, "could not fork");
-			}
-
-			if (pid == 0) {	/* child */
-
-#ifdef UCLINUX
-				if (self_exec(av[0], "dd", i, sem_id_1) < 0) {
-					tst_brkm(TBROK, cleanup,
-						 "could not self_exec");
-				}
-#else
-				do_child(i);
-#endif
-			} else {
-				TST_PROCESS_STATE_WAIT(cleanup, pid, 'S');
-
-				/*
-				 * If we are testing for EIDRM then remove
-				 * the semaphore, else send a signal that
-				 * must be caught as we are testing for
-				 * EINTR.
-				 */
-				if (TC[i].error == EIDRM) {
-					/* remove the semaphore resource */
-					rm_sema(sem_id_1);
-				} else {
-					SAFE_KILL(cleanup, pid, SIGHUP);
-				}
-
-				/* let the child carry on */
-				waitpid(pid, NULL, 0);
-			}
-
-			/*
-			 * recreate the semaphore resource if needed
-			 */
-			if (TC[i].error == EINTR) {
-				continue;
-			}
-
-			if ((sem_id_1 = semget(semkey, PSEMS, IPC_CREAT |
-					       IPC_EXCL | SEM_RA)) == -1) {
-				tst_brkm(TBROK, cleanup, "couldn't recreate "
-					 "semaphore");
-			}
+	for (;;) {
+		FILE *f = fopen(proc_path, "r");
+		if (!f) {
+			tst_res(TFAIL, "Failed to open '%s': %s\n", proc_path,
+				strerror(errno));
+			return 1;
 		}
+
+		if (fscanf(f, "%*i %*s %c", &cur_state) != 1) {
+			fclose(f);
+			tst_res(TFAIL, "Failed to read '%s': %s\n", proc_path,
+				strerror(errno));
+			return 1;
+		}
+		fclose(f);
+
+		if (state == cur_state)
+			return 0;
+
+		usleep(10000);
 	}
-
-	cleanup();
-
-	tst_exit();
 }
 
-/*
- * do_child()
- */
-void do_child(int i)
+static void do_child(int i)
 {
-	/*
-	 * make the call with the TEST macro
-	 */
-
-	TEST(semop(sem_id_1, &s_buf, 1));
-
-	if (TEST_RETURN != -1) {
-		tst_resm(TFAIL, "call succeeded when error expected");
+	TEST(semop(sem_id, &s_buf, 1));
+	if (TST_RET != -1) {
+		tst_res(TFAIL, "call succeeded when error expected");
 		exit(-1);
 	}
 
-	if (TEST_ERRNO == TC[i].error) {
-		tst_resm(TPASS, "expected failure - errno = %d"
-			 " : %s", TEST_ERRNO, strerror(TEST_ERRNO));
-	} else {
-		tst_resm(TFAIL, "unexpected error - "
-			 "%d : %s", TEST_ERRNO, strerror(TEST_ERRNO));
-	}
+	if (TST_ERR == tc[i].error)
+		tst_res(TPASS | TTERRNO, "expected failure");
+	else
+		tst_res(TFAIL | TTERRNO, "unexpected failure");
 
 	exit(0);
 }
 
-void sighandler(int sig)
+static void sighandler(int sig)
 {
-	if (sig == SIGHUP)
+	if (sig != SIGHUP)
+		tst_brk(TBROK, "unexpected signal %d received", sig);
+}
+
+static void setup(void)
+{
+	SAFE_SIGNAL(SIGHUP, sighandler);
+
+	/* get an IPC resource key */
+	semkey = GETIPCKEY();
+
+	/*
+	 * create a semaphore set with read and alter permissions and PSEMS
+	 * "primitive" semaphores.
+	 */
+	if ((sem_id = semget(semkey, PSEMS, IPC_CREAT | IPC_EXCL | SEM_RA)) ==
+	    -1)
+		tst_brk(TBROK | TERRNO, "couldn't create semaphore in setup");
+}
+
+static void cleanup(void)
+{
+	union semun arr;
+
+	if (sem_id != -1) {
+		if (semctl(sem_id, 0, IPC_RMID, arr) == -1)
+			tst_res(TINFO, "WARNING: semaphore deletion failed.");
+	}
+}
+
+static void run(unsigned int i)
+{
+	pid_t pid;
+
+#ifdef UCLINUX
+	maybe_run_child(&do_child_uclinux, "dd", &i_uclinux, &sem_id);
+#endif
+	/* initialize the s_buf buffer */
+	s_buf.sem_op = tc[i].op;
+	s_buf.sem_flg = tc[i].flg;
+	s_buf.sem_num = tc[i].num;
+
+	/* initialize all of the primitive semaphores */
+	if (semctl(sem_id, tc[i].num, SETVAL, tc[i].semunptr) == -1)
+		tst_brk(TBROK | TERRNO, "semctl() failed");
+
+	pid = SAFE_FORK();
+
+	if (pid == 0) {	/* child */
+#ifdef UCLINUX
+		if (self_exec(av[0], "dd", i, sem_id) < 0)
+			tst_brk(TBROK, "could not self_exec");
+#else
+		do_child(i);
+#endif
+	} else {
+		process_state_wait2(pid, 'S');
+
+		/*
+		 * If we are testing for EIDRM then remove
+		 * the semaphore, else send a signal that
+		 * must be caught as we are testing for
+		 * EINTR.
+		 */
+		if (tc[i].error == EIDRM) {
+			/* remove the semaphore resource */
+			cleanup();
+		} else {
+			SAFE_KILL(pid, SIGHUP);
+		}
+
+		/* let the child carry on */
+		waitpid(pid, NULL, 0);
+	}
+
+	/*
+	 * recreate the semaphore resource if needed
+	 */
+	if (tc[i].error == EINTR)
 		return;
-	else
-		tst_brkm(TBROK, NULL, "unexpected signal %d received", sig);
+
+	if ((sem_id = semget(semkey, PSEMS, IPC_CREAT | IPC_EXCL | SEM_RA)) ==
+	    -1)
+		tst_brk(TBROK | TERRNO, "couldn't recreate semaphore");
 }
 
 #ifdef UCLINUX
@@ -228,57 +222,24 @@ void sighandler(int sig)
  * do_child_uclinux() - capture signals, re-initialize s_buf then call do_child
  *                      with the appropriate argument
  */
-void do_child_uclinux(void)
+static void do_child_uclinux(void)
 {
 	int i = i_uclinux;
 
-	tst_sig(FORK, sighandler, cleanup);
-
 	/* initialize the s_buf buffer */
-	s_buf.sem_op = TC[i].op;
-	s_buf.sem_flg = TC[i].flg;
-	s_buf.sem_num = TC[i].num;
+	s_buf.sem_op = tc[i].op;
+	s_buf.sem_flg = tc[i].flg;
+	s_buf.sem_num = tc[i].num;
 
 	do_child(i);
 }
 #endif
 
-/*
- * setup() - performs all the ONE TIME setup for this test.
- */
-void setup(void)
-{
-
-	tst_sig(FORK, sighandler, cleanup);
-
-	TEST_PAUSE;
-
-	/*
-	 * Create a temporary directory and cd into it.
-	 * This helps to ensure that a unique msgkey is created.
-	 * See ../lib/libipc.c for more information.
-	 */
-	tst_tmpdir();
-
-	/* get an IPC resource key */
-	semkey = getipckey();
-
-	/* create a semaphore set with read and alter permissions */
-	/* and PSEMS "primitive" semaphores                       */
-	if ((sem_id_1 =
-	     semget(semkey, PSEMS, IPC_CREAT | IPC_EXCL | SEM_RA)) == -1) {
-		tst_brkm(TBROK, cleanup, "couldn't create semaphore in setup");
-	}
-}
-
-/*
- * cleanup() - performs all the ONE TIME cleanup for this test at completion
- *	       or premature exit.
- */
-void cleanup(void)
-{
-	/* if it exists, remove the semaphore resource */
-	rm_sema(sem_id_1);
-
-	tst_rmdir();
-}
+static struct tst_test test = {
+	.test = run,
+	.tcnt = ARRAY_SIZE(tc),
+	.setup = setup,
+	.cleanup = cleanup,
+	.needs_tmpdir = 1,
+	.forks_child = 1,
+};

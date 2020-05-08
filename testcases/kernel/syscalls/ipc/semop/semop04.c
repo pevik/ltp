@@ -1,21 +1,5 @@
-/*
- *
- *   Copyright (c) International Business Machines  Corp., 2001
- *
- *   This program is free software;  you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License as published by
- *   the Free Software Foundation; either version 2 of the License, or
- *   (at your option) any later version.
- *
- *   This program is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY;  without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See
- *   the GNU General Public License for more details.
- *
- *   You should have received a copy of the GNU General Public License
- *   along with this program;  if not, write to the Free Software
- *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
- */
+// SPDX-License-Identifier: GPL-2.0-or-later
+/* Copyright (c) International Business Machines  Corp., 2001 */
 
 /*
  * NAME
@@ -50,22 +34,24 @@
  *	none
  */
 
-#include "ipcsem.h"
+#include <sys/sem.h>
+#include "tst_test.h"
+#include "libnewipc.h"
+#include "lapi/semun.h"
 
-char *TCID = "semop04";
-int TST_TOTAL = 2;
+static int sem_id = -1;
+static int val; /* value for SETVAL */
 
-int sem_id_1 = -1;
+static key_t semkey;
+static struct sembuf s_buf;
 
-struct sembuf s_buf;
-
-struct test_case_t {
+static struct test_case_t {
 	union semun get_arr;
 	short op;
 	short flg;
 	short num;
 	int error;
-} TC[] = {
+} tc[] = {
 	/* EAGAIN sem_op = 0 */
 	{ {
 	1}, 0, IPC_NOWAIT, 2, EAGAIN},
@@ -74,104 +60,61 @@ struct test_case_t {
 	0}, -1, IPC_NOWAIT, 2, EAGAIN}
 };
 
-int main(int ac, char **av)
+static void run(unsigned int i)
 {
-	int lc;
-	int val;		/* value for SETVAL */
+	/* initialize the s_buf buffer */
+	s_buf.sem_op = tc[i].op;
+	s_buf.sem_flg = tc[i].flg;
+	s_buf.sem_num = tc[i].num;
 
-	int i;
+	/* initialize all the primitive semaphores */
+	tc[i].get_arr.val = val--;
+	if (semctl(sem_id, tc[i].num, SETVAL, tc[i].get_arr) == -1)
+		tst_brk(TBROK | TERRNO, "semctl() failed");
 
-	tst_parse_opts(ac, av, NULL, NULL);
-
-	setup();		/* global setup */
-
-	/* The following loop checks looping state if -i option given */
-
-	for (lc = 0; TEST_LOOPING(lc); lc++) {
-		/* reset tst_count in case we are looping */
-		tst_count = 0;
-
-		val = 1;
-		for (i = 0; i < TST_TOTAL; i++) {
-
-			/* initialize the s_buf buffer */
-			s_buf.sem_op = TC[i].op;
-			s_buf.sem_flg = TC[i].flg;
-			s_buf.sem_num = TC[i].num;
-
-			/* initialize all the primitive semaphores */
-			TC[i].get_arr.val = val--;
-			if (semctl(sem_id_1, TC[i].num, SETVAL, TC[i].get_arr)
-			    == -1) {
-				tst_brkm(TBROK, cleanup, "semctl() failed");
-			}
-
-			/*
-			 * make the call with the TEST macro
-			 */
-
-			TEST(semop(sem_id_1, &s_buf, 1));
-
-			if (TEST_RETURN != -1) {
-				tst_resm(TFAIL, "call succeeded unexpectedly");
-				continue;
-			}
-
-			if (TEST_ERRNO == TC[i].error) {
-				tst_resm(TPASS,
-					 "expected failure - errno = %d"
-					 " : %s", TEST_ERRNO,
-					 strerror(TEST_ERRNO));
-			} else {
-				tst_resm(TFAIL, "unexpected error - "
-					 "%d : %s", TEST_ERRNO,
-					 strerror(TEST_ERRNO));
-			}
-		}
+	TEST(semop(sem_id, &s_buf, 1));
+	if (TST_RET != -1) {
+		tst_res(TFAIL, "call succeeded unexpectedly");
+		return;
 	}
 
-	cleanup();
-
-	tst_exit();
+	if (TST_ERR == tc[i].error)
+		tst_res(TPASS | TTERRNO, "expected failure");
+	else
+		tst_res(TFAIL | TTERRNO, "unexpected failure");
 }
 
-/*
- * setup() - performs all the ONE TIME setup for this test.
- */
-void setup(void)
+static void setup(void)
 {
-
-	tst_sig(NOFORK, DEF_HANDLER, cleanup);
-
-	TEST_PAUSE;
-
-	/*
-	 * Create a temporary directory and cd into it.
-	 * This helps to ensure that a unique msgkey is created.
-	 * See ../lib/libipc.c for more information.
-	 */
-	tst_tmpdir();
+	val = 1;
 
 	/* get an IPC resource key */
-	semkey = getipckey();
+	semkey = GETIPCKEY();
 
-	/* create a semaphore set with read and alter permissions */
-	/* and PSEMS "primitive" semaphores                       */
-	if ((sem_id_1 =
-	     semget(semkey, PSEMS, IPC_CREAT | IPC_EXCL | SEM_RA)) == -1) {
-		tst_brkm(TBROK, cleanup, "couldn't create semaphore in setup");
+	/*
+	 * create a semaphore set with read and alter permissions and PSEMS
+	 * "primitive" semaphores.
+	 */
+	if ((sem_id = semget(semkey, PSEMS, IPC_CREAT | IPC_EXCL | SEM_RA)) ==
+	     -1) {
+		tst_brk(TBROK | TERRNO, "couldn't create semaphore in setup");
 	}
 }
 
-/*
- * cleanup() - performs all the ONE TIME cleanup for this test at completion
- * 	       or premature exit.
- */
-void cleanup(void)
+static void cleanup(void)
 {
-	/* if it exists, remove the semaphore resource */
-	rm_sema(sem_id_1);
+	union semun arr;
 
-	tst_rmdir();
-
+	if (sem_id != -1) {
+		if (semctl(sem_id, 0, IPC_RMID, arr) == -1)
+			tst_res(TINFO, "WARNING: semaphore deletion failed.");
+	}
 }
+
+static struct tst_test test = {
+	.test = run,
+	.tcnt = ARRAY_SIZE(tc),
+	.setup = setup,
+	.cleanup = cleanup,
+	.needs_tmpdir = 1,
+};

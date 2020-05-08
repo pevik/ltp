@@ -1,21 +1,5 @@
-/*
- *
- *   Copyright (c) International Business Machines  Corp., 2001
- *
- *   This program is free software;  you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License as published by
- *   the Free Software Foundation; either version 2 of the License, or
- *   (at your option) any later version.
- *
- *   This program is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY;  without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See
- *   the GNU General Public License for more details.
- *
- *   You should have received a copy of the GNU General Public License
- *   along with this program;  if not, write to the Free Software
- *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
- */
+// SPDX-License-Identifier: GPL-2.0-or-later
+/* Copyright (c) International Business Machines  Corp., 2001 */
 
 /*
  * NAME
@@ -52,92 +36,73 @@
  *	none
  */
 
-#include "ipcsem.h"
+#include <stdlib.h>
+#include <sys/sem.h>
+#include "tst_test.h"
+#include "libnewipc.h"
+#include "lapi/semun.h"
 
 #define NSEMS	4		/* the number of primitive semaphores to test */
 
-char *TCID = "semop01";
-int TST_TOTAL = 1;
+static int sem_id = -1;		/* a semaphore set with read & alter permissions */
+static key_t semkey;
 
-int sem_id_1 = -1;		/* a semaphore set with read & alter permissions */
+static union semun get_arr;
+static struct sembuf sops[PSEMS];
 
-union semun get_arr;
-struct sembuf sops[PSEMS];
-
-int main(int ac, char **av)
+static void run(void)
 {
-	int lc;
-	int i;
+	union semun arr = { .val = 0 };
 	int fail = 0;
+	int i;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	TEST(semop(sem_id, sops, NSEMS));
 
-	setup();
-
-	for (lc = 0; TEST_LOOPING(lc); lc++) {
-		tst_count = 0;
-
-		TEST(semop(sem_id_1, sops, NSEMS));
-
-		if (TEST_RETURN == -1) {
-			tst_resm(TFAIL, "%s call failed - errno = %d : %s",
-				 TCID, TEST_ERRNO, strerror(TEST_ERRNO));
-		} else {
-			/* get the values and make sure they */
-			/* are the same as what was set      */
-			if (semctl(sem_id_1, 0, GETALL, get_arr) == -1) {
-				tst_brkm(TBROK, cleanup,
-					 "semctl() failed in functional test");
-			}
-
-			for (i = 0; i < NSEMS; i++) {
-				if (get_arr.array[i] != i * i) {
-					fail = 1;
-				}
-			}
-			if (fail)
-				tst_resm(TFAIL,
-					 "semaphore values are wrong");
-			else
-				tst_resm(TPASS,
-					 "semaphore values are correct");
-		}
-
+	if (TST_RET == -1) {
+		tst_res(TFAIL | TTERRNO, "semop() failed");
+	} else {
 		/*
-		 * clean up things in case we are looping
+		 * Get the values and make sure they are the same as what was
+		 * set
 		 */
-		union semun set_arr;
-		set_arr.val = 0;
+		if (semctl(sem_id, 0, GETALL, get_arr) == -1) {
+			tst_brk(TBROK | TERRNO, "semctl() failed in functional test");
+		}
+
 		for (i = 0; i < NSEMS; i++) {
-			if (semctl(sem_id_1, i, SETVAL, set_arr) == -1) {
-				tst_brkm(TBROK, cleanup, "semctl failed");
+			if (get_arr.array[i] != i * i) {
+				fail = 1;
 			}
 		}
+		if (fail)
+			tst_res(TFAIL | TERRNO, "semaphore values are wrong");
+		else
+			tst_res(TPASS, "semaphore values are correct");
 	}
 
-	cleanup();
-	tst_exit();
+	/*
+	 * clean up things in case we are looping
+	 */
+	for (i = 0; i < NSEMS; i++) {
+		if (semctl(sem_id, i, SETVAL, arr) == -1) {
+			tst_brk(TBROK | TERRNO, "semctl failed");
+		}
+	}
 }
 
-void setup(void)
+static void setup(void)
 {
 	int i;
-
-	tst_sig(NOFORK, DEF_HANDLER, cleanup);
-
-	TEST_PAUSE;
-
-	tst_tmpdir();
 
 	get_arr.array = malloc(sizeof(unsigned short int) * PSEMS);
 	if (get_arr.array == NULL)
-		tst_brkm(TBROK, cleanup, "malloc failed");
+		tst_brk(TBROK, "malloc failed");
 
-	semkey = getipckey();
+	semkey = GETIPCKEY();
 
-	sem_id_1 = semget(semkey, PSEMS, IPC_CREAT | IPC_EXCL | SEM_RA);
-	if (sem_id_1 == -1)
-		tst_brkm(TBROK, cleanup, "couldn't create semaphore in setup");
+	sem_id = semget(semkey, PSEMS, IPC_CREAT | IPC_EXCL | SEM_RA);
+	if (sem_id == -1)
+		tst_brk(TBROK | TERRNO, "couldn't create semaphore in setup");
 
 	for (i = 0; i < NSEMS; i++) {
 		sops[i].sem_num = i;
@@ -146,11 +111,20 @@ void setup(void)
 	}
 }
 
-void cleanup(void)
+static void cleanup(void)
 {
-	rm_sema(sem_id_1);
+	union semun arr;
 
+	if (sem_id != -1) {
+		if (semctl(sem_id, 0, IPC_RMID, arr) == -1)
+			tst_res(TINFO, "WARNING: semaphore deletion failed.");
+	}
 	free(get_arr.array);
-
-	tst_rmdir();
 }
+
+static struct tst_test test = {
+	.test_all = run,
+	.setup = setup,
+	.cleanup = cleanup,
+	.needs_tmpdir = 1,
+};
