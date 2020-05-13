@@ -132,14 +132,9 @@ enum fsconfig_command {
 
 void fsopen_supported_by_kernel(void)
 {
-	if ((tst_kvercmp(5, 2, 0)) < 0) {
-		/* Check if the syscall is backported on an older kernel */
-		TEST(syscall(__NR_fsopen, NULL, 0));
-		if (TST_RET != -1)
-			SAFE_CLOSE(TST_RET);
-		else if (TST_ERR == ENOSYS)
-			tst_brk(TCONF, "Test not supported on kernel version < v5.2");
-	}
+	TEST(tst_syscall(__NR_fsopen, NULL, 0));
+	if (TST_RET != -1)
+		SAFE_CLOSE(TST_RET);
 }
 
 #endif /* FSMOUNT_H__ */
