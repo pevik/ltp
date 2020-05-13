@@ -7,6 +7,10 @@ services:
 
 matrix:
     include:
+        - os: linux
+          env: DISTRO=centos:6 TREE=out
+          compiler: gcc
+
         # 32 bit build
         - os: linux
           env: DISTRO=debian:stable VARIANT=i386
@@ -47,10 +51,6 @@ matrix:
         - os: linux
           env: DISTRO=fedora:rawhide MAKE_INSTALL=1
           compiler: clang
-
-        - os: linux
-          env: DISTRO=centos:6 TREE=out
-          compiler: gcc
 
         - os: linux
           env: DISTRO=debian:testing
