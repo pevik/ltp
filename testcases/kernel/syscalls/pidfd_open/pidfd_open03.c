@@ -49,8 +49,18 @@ static void run(void)
 		tst_res(TPASS, "pidfd_open() passed");
 }
 
+static void setup(void)
+{
+	int pidfd = -1;
+
+	// Check if pidfd_open(2) is not supported
+	pidfd = tst_syscall(__NR_pidfd_open, getpid(), 0);
+	if (pidfd != -1)
+		SAFE_CLOSE(pidfd);
+}
+
 static struct tst_test test = {
-	.min_kver = "5.3",
+	.setup = setup,
 	.test_all = run,
 	.forks_child = 1,
 	.needs_checkpoints = 1,
