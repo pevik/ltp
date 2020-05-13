@@ -11,12 +11,19 @@
 
 static void run(void)
 {
-	TEST(pidfd_open(getpid(), 0));
+	int pidfd, flag;
+
+	TEST(pidfd = pidfd_open(getpid(), 0));
 
 	if (TST_RET == -1)
 		tst_brk(TFAIL | TTERRNO, "pidfd_open(getpid(), 0) failed");
 
+	flag = SAFE_FCNTL(pidfd, F_GETFD);
+
 	SAFE_CLOSE(TST_RET);
+
+	if (!(flag & FD_CLOEXEC))
+		tst_brk(TFAIL, "pidfd_open(getpid(), 0) didn't set close-on-exec flag");
 
 	tst_res(TPASS, "pidfd_open(getpid(), 0) passed");
 }
