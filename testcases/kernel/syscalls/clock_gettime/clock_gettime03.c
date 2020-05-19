@@ -43,16 +43,13 @@ static int parent_ns;
 static struct test_variants {
 	int (*func)(clockid_t clk_id, void *ts);
 	enum tst_ts_type type;
-	char *desc;
 } variants[] = {
-	{ .func = libc_clock_gettime, .type = TST_LIBC_TIMESPEC, .desc = "vDSO or syscall with libc spec"},
-
+	{ .func = libc_clock_gettime, .type = TST_LIBC_TIMESPEC},
 #if (__NR_clock_gettime != __LTP__NR_INVALID_SYSCALL)
-	{ .func = sys_clock_gettime, .type = TST_KERN_OLD_TIMESPEC, .desc = "syscall with old kernel spec"},
+	{ .func = sys_clock_gettime, .type = TST_KERN_OLD_TIMESPEC},
 #endif
-
 #if (__NR_clock_gettime64 != __LTP__NR_INVALID_SYSCALL)
-	{ .func = sys_clock_gettime64, .type = TST_KERN_TIMESPEC, .desc = "syscall time64 with kernel spec"},
+	{ .func = sys_clock_gettime64, .type = TST_KERN_TIMESPEC},
 #endif
 };
 
@@ -120,7 +117,6 @@ static void setup(void)
 	struct test_variants *tv = &variants[tst_variant];
 
 	now.type = then.type = parent_then.type = tv->type;
-	tst_res(TINFO, "Testing variant: %s", variants[tst_variant].desc);
 	parent_ns = SAFE_OPEN("/proc/self/ns/time_for_children", O_RDONLY);
 }
 
@@ -134,7 +130,16 @@ static struct tst_test test = {
 	.cleanup = cleanup,
 	.tcnt = ARRAY_SIZE(tcases),
 	.test = verify_ns_clock,
-	.test_variants = ARRAY_SIZE(variants),
+	.test_variants = (const char *[]) {
+		"vDSO or syscall with libc spec",
+#if (__NR_clock_gettime != __LTP__NR_INVALID_SYSCALL)
+		"syscall with old kernel spec",
+#endif
+#if (__NR_clock_gettime64 != __LTP__NR_INVALID_SYSCALL)
+		"syscall time64 with kernel spec",
+#endif
+		NULL
+	},
 	.needs_root = 1,
 	.forks_child = 1,
 	.needs_kconfigs = (const char *[]) {

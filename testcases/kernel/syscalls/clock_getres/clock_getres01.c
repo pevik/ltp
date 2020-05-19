@@ -40,26 +40,22 @@ static struct test_variants {
 	int (*func)(clockid_t clk_id, void *ts);
 	enum tst_ts_type type;
 	struct tst_ts **spec;
-	char *desc;
 } variants[] = {
-	{ .func = libc_clock_getres, .type = TST_LIBC_TIMESPEC, .spec = &tspec, .desc = "vDSO or syscall with libc spec"},
-	{ .func = libc_clock_getres, .type = TST_LIBC_TIMESPEC, .spec = &nspec, .desc = "vDSO or syscall with libc spec with NULL res"},
-
+	{ .func = libc_clock_getres, .type = TST_LIBC_TIMESPEC, .spec = &tspec},
+	{ .func = libc_clock_getres, .type = TST_LIBC_TIMESPEC, .spec = &nspec},
 #if (__NR_clock_getres != __LTP__NR_INVALID_SYSCALL)
-	{ .func = sys_clock_getres, .type = TST_KERN_OLD_TIMESPEC, .spec = &tspec, .desc = "syscall with old kernel spec"},
-	{ .func = sys_clock_getres, .type = TST_KERN_OLD_TIMESPEC, .spec = &nspec, .desc = "syscall with old kernel spec with NULL res"},
+	{ .func = sys_clock_getres, .type = TST_KERN_OLD_TIMESPEC, .spec = &tspec},
+	{ .func = sys_clock_getres, .type = TST_KERN_OLD_TIMESPEC, .spec = &nspec},
 #endif
-
 #if (__NR_clock_getres_time64 != __LTP__NR_INVALID_SYSCALL)
-	{ .func = sys_clock_getres64, .type = TST_KERN_TIMESPEC, .spec = &tspec, .desc = "syscall time64 with kernel spec"},
-	{ .func = sys_clock_getres64, .type = TST_KERN_TIMESPEC, .spec = &nspec, .desc = "syscall time64 with kernel spec with NULL res"},
+	{ .func = sys_clock_getres64, .type = TST_KERN_TIMESPEC, .spec = &tspec},
+	{ .func = sys_clock_getres64, .type = TST_KERN_TIMESPEC, .spec = &nspec},
 #endif
 };
 
 static void setup(void)
 {
 	tspec->type = variants[tst_variant].type;
-	tst_res(TINFO, "Testing variant: %s", variants[tst_variant].desc);
 }
 
 static void do_test(unsigned int i)
@@ -91,7 +87,19 @@ static void do_test(unsigned int i)
 static struct tst_test test = {
 	.test = do_test,
 	.tcnt = ARRAY_SIZE(tcase),
-	.test_variants = ARRAY_SIZE(variants),
+	.test_variants = (const char *[]) {
+		"vDSO or syscall with libc spec",
+		"vDSO or syscall with libc spec with NULL res",
+#if (__NR_clock_getres != __LTP__NR_INVALID_SYSCALL)
+		"syscall with old kernel spec",
+		"syscall with old kernel spec with NULL res",
+#endif
+#if (__NR_clock_getres_time64 != __LTP__NR_INVALID_SYSCALL)
+		"syscall time64 with kernel spec",
+		"syscall time64 with kernel spec with NULL res",
+#endif
+		NULL
+	},
 	.setup = setup,
 	.bufs = (struct tst_buffers []) {
 		{&tspec, .size = sizeof(*tspec)},

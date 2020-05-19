@@ -42,8 +42,6 @@ static int sample_fn(int clk_id, long long usec)
 
 static void setup(void)
 {
-	select_info();
-
 	SAFE_PIPE(fds);
 }
 
@@ -60,6 +58,6 @@ static struct tst_test test = {
 	.scall = "select()",
 	.sample = sample_fn,
 	.setup = setup,
-	.test_variants = TEST_VARIANTS,
+	.test_variants = variant_desc,
 	.cleanup = cleanup,
 };

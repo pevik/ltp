@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
  * Copyright (c) International Business Machines  Corp., 2002
- * Copyright (c) Linux Test Project, 2009-2019
+ * Copyright (c) Linux Test Project, 2009-2020
  *
  * AUTHORS
  * Paul Larson
@@ -17,21 +17,6 @@
 #include "tst_test.h"
 #include "ltp_signal.h"
 #include "lapi/syscalls.h"
-
-static void sigpending_info(void)
-{
-	switch (tst_variant) {
-	case 0:
-		tst_res(TINFO, "Testing libc sigpending()");
-	break;
-	case 1:
-		tst_res(TINFO, "Testing __NR_sigpending syscall");
-	break;
-	case 2:
-		tst_res(TINFO, "Testing __NR_rt_sigpending syscall");
-	break;
-	}
-}
 
 static int tested_sigpending(sigset_t *sigset)
 {
@@ -156,12 +141,16 @@ static void test_efault_on_invalid_sigset(void)
 
 static void run(void)
 {
-	sigpending_info();
 	test_sigpending();
 	test_efault_on_invalid_sigset();
 }
 
 static struct tst_test test = {
 	.test_all = run,
-	.test_variants = 3,
+	.test_variants = (const char *[]) {
+		"libc sigpending()",
+		"__NR_sigpending syscall",
+		"__NR_rt_sigpending syscall",
+		NULL
+	},
 };

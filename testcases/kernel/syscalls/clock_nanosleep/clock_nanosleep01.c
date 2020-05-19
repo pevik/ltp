@@ -86,23 +86,19 @@ static struct tst_ts *rm;
 static struct test_variants {
 	int (*func)(clockid_t clock_id, int flags, void *request, void *remain);
 	enum tst_ts_type type;
-	char *desc;
 } variants[] = {
-	{ .func = libc_clock_nanosleep, .type = TST_LIBC_TIMESPEC, .desc = "vDSO or syscall with libc spec"},
-
+	{ .func = libc_clock_nanosleep, .type = TST_LIBC_TIMESPEC},
 #if (__NR_clock_nanosleep != __LTP__NR_INVALID_SYSCALL)
-	{ .func = sys_clock_nanosleep, .type = TST_KERN_OLD_TIMESPEC, .desc = "syscall with old kernel spec"},
+	{ .func = sys_clock_nanosleep, .type = TST_KERN_OLD_TIMESPEC},
 #endif
-
 #if (__NR_clock_nanosleep_time64 != __LTP__NR_INVALID_SYSCALL)
-	{ .func = sys_clock_nanosleep64, .type = TST_KERN_TIMESPEC, .desc = "syscall time64 with kernel spec"},
+	{ .func = sys_clock_nanosleep64, .type = TST_KERN_TIMESPEC},
 #endif
 };
 
 void setup(void)
 {
 	rq->type = variants[tst_variant].type;
-	tst_res(TINFO, "Testing variant: %s", variants[tst_variant].desc);
 	SAFE_SIGNAL(SIGINT, sighandler);
 }
 
@@ -183,7 +179,16 @@ static void do_test(unsigned int i)
 static struct tst_test test = {
 	.tcnt = ARRAY_SIZE(tcase),
 	.test = do_test,
-	.test_variants = ARRAY_SIZE(variants),
+	.test_variants = (const char *[]) {
+		"vDSO or syscall with libc spec",
+#if (__NR_clock_nanosleep != __LTP__NR_INVALID_SYSCALL)
+		"syscall with old kernel spec",
+#endif
+#if (__NR_clock_nanosleep_time64 != __LTP__NR_INVALID_SYSCALL)
+		"syscall time64 with kernel spec",
+#endif
+		NULL
+	},
 	.setup = setup,
 	.forks_child = 1,
 	.bufs = (struct tst_buffers []) {

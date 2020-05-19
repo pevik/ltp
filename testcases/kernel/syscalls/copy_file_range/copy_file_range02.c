@@ -182,7 +182,6 @@ static void cleanup(void)
 
 static void setup(void)
 {
-	syscall_info();
 	char dev_path[1024];
 
 	cross_sup = verify_cross_fs_copy_support(FILE_SRC_PATH, FILE_MNTED_PATH);
@@ -248,5 +247,5 @@ static struct tst_test test = {
 	.mount_device = 1,
 	.mntpoint = MNTPOINT,
 	.needs_root = 1,
-	.test_variants = TEST_VARIANTS,
+	.test_variants = variant_desc,
 };

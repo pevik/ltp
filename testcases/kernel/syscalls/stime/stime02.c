@@ -47,8 +47,6 @@ static void setup(void)
 	time_t curr_time;
 	struct passwd *ltpuser;
 
-	stime_info();
-
 	ltpuser = SAFE_GETPWNAM("nobody");
 	SAFE_SETUID(ltpuser->pw_uid);
 
@@ -62,5 +60,5 @@ static struct tst_test test = {
 	.test_all = run,
 	.setup = setup,
 	.needs_root = 1,
-	.test_variants = TEST_VARIANTS,
+	.test_variants = variant_desc,
 };

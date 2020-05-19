@@ -59,24 +59,12 @@ static int do_select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *except
 	return -1;
 }
 
-static void select_info(void)
-{
-	switch (tst_variant) {
-	case 0:
-		tst_res(TINFO, "Testing libc select()");
-	break;
-	case 1:
-		tst_res(TINFO, "Testing SYS_select syscall");
-	break;
-	case 2:
-		tst_res(TINFO, "Testing SYS_pselect6 syscall");
-	break;
-	case 3:
-		tst_res(TINFO, "Testing SYS__newselect syscall");
-	break;
-	}
-}
-
-#define TEST_VARIANTS 4
+static const char *variant_desc[] = {
+	"libc select()",
+	"SYS_select syscall",
+	"SYS_pselect6 syscall",
+	"SYS__newselect syscall",
+	NULL
+};
 
 #endif /* SELECT_VAR__ */

@@ -50,5 +50,5 @@ static struct tst_test test = {
 	.setup = setup,
 	.cleanup = cleanup,
 	.test = verify_setdomainname,
-	.test_variants = TEST_VARIANTS,
+	.test_variants = variant_desc,
 };

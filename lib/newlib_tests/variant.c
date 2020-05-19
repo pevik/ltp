@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * Copyright (c) 2019 Cyril Hrubis <chrubis@suse.cz>
+ * Copyright (c) 2020 Petr Vorel <pvorel@suse.cz>
  */
 
 #include "tst_test.h"
@@ -25,23 +26,6 @@ static void do_test(void)
 	tst_res(TINFO, "test() function exitting normaly");
 }
 
-static void setup(void)
-{
-	tst_res(TINFO, "Running test setup()");
-
-	switch (tst_variant) {
-	case 0:
-		tst_res(TINFO, "Starting tst_brk(TCONF) test");
-	break;
-	case 1:
-		tst_res(TINFO, "Starting tst_res(TPASS) test");
-	break;
-	case 2:
-		tst_res(TINFO, "Starting tst_brk(TBROK) test");
-	break;
-	}
-}
-
 static void cleanup(void)
 {
 	tst_res(TINFO, "Running test cleanup()");
@@ -49,7 +33,11 @@ static void cleanup(void)
 
 static struct tst_test test = {
 	.test_all = do_test,
-	.test_variants = 3,
-	.setup = setup,
+	.test_variants = (const char *[]) {
+		"tst_brk(TCONF)",
+		"tst_res(TPASS)",
+		"tst_brk(TBROK)",
+		NULL
+	},
 	.cleanup = cleanup,
 };

@@ -89,21 +89,17 @@ static struct tst_ts spec;
 static struct test_variants {
 	int (*func)(clockid_t clk_id, void *ts);
 	enum tst_ts_type type;
-	char *desc;
 } variants[] = {
 #if (__NR_clock_gettime != __LTP__NR_INVALID_SYSCALL)
-	{ .func = sys_clock_gettime, .type = TST_KERN_OLD_TIMESPEC, .desc = "syscall with old kernel spec"},
+	{ .func = sys_clock_gettime, .type = TST_KERN_OLD_TIMESPEC},
 #endif
-
 #if (__NR_clock_gettime64 != __LTP__NR_INVALID_SYSCALL)
-	{ .func = sys_clock_gettime64, .type = TST_KERN_TIMESPEC, .desc = "syscall time64 with kernel spec"},
+	{ .func = sys_clock_gettime64, .type = TST_KERN_TIMESPEC},
 #endif
 };
 
 static void setup(void)
 {
-	tst_res(TINFO, "Testing variant: %d: %s", tst_variant, variants[tst_variant].desc);
-
 	bad_addr = tst_get_bad_addr(NULL);
 }
 
@@ -141,7 +137,15 @@ static void verify_clock_gettime(unsigned int i)
 static struct tst_test test = {
 	.test = verify_clock_gettime,
 	.tcnt = ARRAY_SIZE(tc),
-	.test_variants = ARRAY_SIZE(variants),
+	.test_variants = (const char *[]) {
+#if (__NR_clock_gettime != __LTP__NR_INVALID_SYSCALL)
+		"syscall with old kernel spec",
+#endif
+#if (__NR_clock_gettime64 != __LTP__NR_INVALID_SYSCALL)
+		"syscall time64 with kernel spec",
+#endif
+		NULL
+	},
 	.setup = setup,
 	.needs_root = 1,
 };

@@ -11,8 +11,6 @@
 #include "lapi/syscalls.h"
 #include "lapi/fs.h"
 
-#define TEST_VARIANTS	2
-
 #define MNTPOINT	"mnt_point"
 #define FILE_SRC_PATH   "file_src"
 #define FILE_DEST_PATH  "file_dest"
@@ -29,16 +27,11 @@
 #define CONTSIZE	(sizeof(CONTENT) - 1)
 #define MIN_OFF   65537
 
-static void syscall_info(void)
-{
-	switch (tst_variant) {
-	case 0:
-		tst_res(TINFO, "Testing libc copy_file_range()");
-		break;
-	case 1:
-		tst_res(TINFO, "Testing __NR_copy_file_range syscall");
-	}
-}
+static const char *variant_desc[] = {
+	"libc copy_file_range()",
+	"__NR_copy_file_range syscall",
+	NULL
+};
 
 static int sys_copy_file_range(int fd_in, loff_t *off_in,
 		int fd_out, loff_t *off_out, size_t len, unsigned int flags)

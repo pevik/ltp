@@ -95,8 +95,6 @@ static void setup(void)
 	rcv_msg[0].msg_hdr.msg_iovlen = 1;
 	rcv_msg[1].msg_hdr.msg_iov = rcv2;
 	rcv_msg[1].msg_hdr.msg_iovlen = 1;
-
-	test_info();
 }
 
 static void cleanup(void)
@@ -111,7 +109,7 @@ static struct tst_test test = {
 	.test_all = run,
 	.setup = setup,
 	.cleanup = cleanup,
-	.test_variants = TEST_VARIANTS,
+	.test_variants = variant_desc,
 	.bufs = (struct tst_buffers []) {
 		{&snd1, .iov_sizes = (int[]){3, 3, -1}},
 		{&snd2, .iov_sizes = (int[]){6, -1}},

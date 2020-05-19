@@ -38,19 +38,11 @@ static int do_stime(time_t *ntime)
 	return -1;
 }
 
-static void stime_info(void)
-{
-	switch (tst_variant) {
-	case 0:
-		tst_res(TINFO, "Testing libc stime()");
-	break;
-	case 1:
-		tst_res(TINFO, "Testing SYS_stime syscall");
-	break;
-	case 2:
-		tst_res(TINFO, "Testing SYS_settimeofday syscall");
-	break;
-	}
-}
+static const char *variant_desc[] = {
+	"libc stime()",
+	"SYS_stime syscall",
+	"SYS_settimeofday syscall",
+	NULL
+};
 
 #endif /* STIME_VAR__ */

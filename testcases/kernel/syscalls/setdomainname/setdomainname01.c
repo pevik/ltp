@@ -31,5 +31,5 @@ static struct tst_test test = {
 	.setup = setup,
 	.cleanup = cleanup,
 	.test_all = do_test,
-	.test_variants = TEST_VARIANTS,
+	.test_variants = variant_desc,
 };

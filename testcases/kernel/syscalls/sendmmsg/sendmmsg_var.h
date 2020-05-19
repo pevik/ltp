@@ -18,7 +18,7 @@ static int do_sendmmsg(int sockfd, struct mmsghdr *msgvec, unsigned int vlen,
 #ifdef HAVE_SENDMMSG
 		return sendmmsg(sockfd, msgvec, vlen, flags);
 #else
-		tst_brk(TCONF, "libc sendmmsg not present");
+		tst_brk(TCONF, "libc sendmmsg() not present");
 #endif
 	}
 
@@ -36,25 +36,17 @@ static int do_recvmmsg(int sockfd, struct mmsghdr *msgvec, unsigned int vlen,
 #ifdef HAVE_RECVMMSG
 		return recvmmsg(sockfd, msgvec, vlen, flags, timeout);
 #else
-		tst_brk(TCONF, "libc recvmmsg not present");
+		tst_brk(TCONF, "libc recvmmsg() not present");
 #endif
 	}
 
 	return -1;
 }
 
-static void test_info(void)
-{
-	switch (tst_variant) {
-	case 0:
-		tst_res(TINFO, "Testing direct sendmmsg and recvmmsg syscalls");
-		break;
-	case 1:
-		tst_res(TINFO, "Testing libc sendmmsg and recvmmsg syscalls");
-		break;
-	}
-}
-
-#define TEST_VARIANTS 2
+static const char *variant_desc[] = {
+	"raw sendmmsg() and recvmmsg() syscalls",
+	"libc sendmmsg() and recvmmsg()",
+	NULL
+};
 
 #endif /* SENDMMSG_VAR__ */

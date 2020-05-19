@@ -213,7 +213,6 @@ static void copy_file_range_verify(unsigned int n)
 
 static void setup(void)
 {
-	syscall_info();
 	page_size = getpagesize();
 	cross_sup = verify_cross_fs_copy_support(FILE_SRC_PATH, FILE_MNTED_PATH);
 }
@@ -231,5 +230,5 @@ static struct tst_test test = {
 	.mntpoint = MNTPOINT,
 	.all_filesystems = 1,
 	.test = copy_file_range_verify,
-	.test_variants = TEST_VARIANTS,
+	.test_variants = variant_desc,
 };

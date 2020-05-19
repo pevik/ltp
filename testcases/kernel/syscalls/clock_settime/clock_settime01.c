@@ -27,23 +27,19 @@ static struct test_variants {
 	int (*gettime)(clockid_t clk_id, void *ts);
 	int (*settime)(clockid_t clk_id, void *ts);
 	enum tst_ts_type type;
-	char *desc;
 } variants[] = {
-	{ .gettime = libc_clock_gettime, .settime = libc_clock_settime, .type = TST_LIBC_TIMESPEC, .desc = "vDSO or syscall with libc spec"},
-
+	{ .gettime = libc_clock_gettime, .settime = libc_clock_settime, .type = TST_LIBC_TIMESPEC},
 #if (__NR_clock_settime != __LTP__NR_INVALID_SYSCALL)
-	{ .gettime = sys_clock_gettime, .settime = sys_clock_settime, .type = TST_KERN_OLD_TIMESPEC, .desc = "syscall with old kernel spec"},
+	{ .gettime = sys_clock_gettime, .settime = sys_clock_settime, .type = TST_KERN_OLD_TIMESPEC},
 #endif
-
 #if (__NR_clock_settime64 != __LTP__NR_INVALID_SYSCALL)
-	{ .gettime = sys_clock_gettime64, .settime = sys_clock_settime64, .type = TST_KERN_TIMESPEC, .desc = "syscall time64 with kernel spec"},
+	{ .gettime = sys_clock_gettime64, .settime = sys_clock_settime64, .type = TST_KERN_TIMESPEC},
 #endif
 };
 
 static void setup(void)
 {
 	begin->type = change->type = end->type = variants[tst_variant].type;
-	tst_res(TINFO, "Testing variant: %s", variants[tst_variant].desc);
 }
 
 static void do_clock_gettime(struct test_variants *tv, struct tst_ts *ts)
@@ -105,7 +101,16 @@ static void verify_clock_settime(void)
 
 static struct tst_test test = {
 	.test_all = verify_clock_settime,
-	.test_variants = ARRAY_SIZE(variants),
+	.test_variants = (const char *[]) {
+		"vDSO or syscall with libc spec",
+#if (__NR_clock_settime != __LTP__NR_INVALID_SYSCALL)
+		"syscall with old kernel spec",
+#endif
+#if (__NR_clock_settime64 != __LTP__NR_INVALID_SYSCALL)
+		"syscall time64 with kernel spec",
+#endif
+		NULL
+	},
 	.setup = setup,
 	.needs_root = 1,
 	.restore_wallclock = 1,

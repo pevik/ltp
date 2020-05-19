@@ -1304,7 +1304,13 @@ static int run_tcases_per_fs(void)
 
 	for (i = 0; filesystems[i]; i++) {
 
-		tst_res(TINFO, "Testing on %s", filesystems[i]);
+		if (tst_test->all_filesystems)
+			tst_res(TINFO, "Testing on %s (variant: %s)",
+				filesystems[i],
+				tst_test->test_variants[tst_variant]);
+		else
+			tst_res(TINFO, "Testing on %s", filesystems[i]);
+
 		tdev.fs_type = filesystems[i];
 
 		prepare_device();
@@ -1347,10 +1353,17 @@ void tst_run_tcases(int argc, char *argv[], struct tst_test *self)
 	SAFE_SIGNAL(SIGALRM, alarm_handler);
 	SAFE_SIGNAL(SIGUSR1, heartbeat_handler);
 
-	if (tst_test->test_variants)
-		test_variants = tst_test->test_variants;
+	if (tst_test->test_variants) {
+		test_variants--;
+		while (tst_test->test_variants[test_variants])
+			test_variants++;
+	}
 
 	for (tst_variant = 0; tst_variant < test_variants; tst_variant++) {
+		if (tst_test->test_variants)
+			tst_res(TINFO, "Testing variant: %s",
+					tst_test->test_variants[tst_variant]);
+
 		if (tst_test->all_filesystems)
 			ret |= run_tcases_per_fs();
 		else

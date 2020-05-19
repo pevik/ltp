@@ -27,19 +27,11 @@
 
 static char backup[_UTSNAME_DOMAIN_LENGTH];
 
-#define TEST_VARIANTS 2
-
-static void setdomainname_info(void)
-{
-	switch (tst_variant) {
-	case 0:
-		tst_res(TINFO, "Testing libc set" SYSCALL_NAME "()");
-		break;
-	case 1:
-		tst_res(TINFO, "Testing __NR_set" SYSCALL_NAME " syscall");
-		break;
-	}
-}
+static const char *variant_desc[] = {
+	"libc set" SYSCALL_NAME "()",
+	"__NR_set" SYSCALL_NAME " syscall",
+	NULL
+};
 
 static int do_setdomainname(char *new, size_t len)
 {
@@ -56,7 +48,6 @@ static int do_setdomainname(char *new, size_t len)
 
 static void setup(void)
 {
-	setdomainname_info();
 	if ((GET_SYSCALL(backup, sizeof(backup))) < 0)
 		tst_brk(TBROK | TERRNO, "get" SYSCALL_NAME "() failed");
 }

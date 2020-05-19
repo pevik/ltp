@@ -52,15 +52,9 @@ static void run(void)
 	}
 }
 
-static void setup(void)
-{
-	stime_info();
-}
-
 static struct tst_test test = {
 	.test_all = run,
 	.needs_root = 1,
 	.restore_wallclock = 1,
-	.setup = setup,
-	.test_variants = TEST_VARIANTS,
+	.test_variants = variant_desc,
 };

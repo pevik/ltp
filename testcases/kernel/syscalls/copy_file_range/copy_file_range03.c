@@ -58,8 +58,6 @@ static void cleanup(void)
 
 static void setup(void)
 {
-	syscall_info();
-
 	fd_dest = SAFE_OPEN(FILE_DEST_PATH, O_RDWR | O_CREAT, 0664);
 	fd_src  = SAFE_OPEN(FILE_SRC_PATH,  O_RDWR | O_CREAT, 0664);
 	SAFE_WRITE(1, fd_src,  CONTENT,  CONTSIZE);
@@ -73,5 +71,5 @@ static struct tst_test test = {
 	.setup = setup,
 	.cleanup = cleanup,
 	.needs_tmpdir = 1,
-	.test_variants = TEST_VARIANTS,
+	.test_variants = variant_desc,
 };

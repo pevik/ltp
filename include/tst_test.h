@@ -167,14 +167,15 @@ struct tst_test {
 	unsigned long request_hugepages;
 
 	/*
-	 * If set non-zero denotes number of test variant, the test is executed
-	 * variants times each time with tst_variant set to different number.
+	 * NULL terminated array of descriptions for test variants. The test is
+	 * executed variants times each time with tst_variant set to different
+	 * number.
 	 *
 	 * This allows us to run the same test for different settings. The
 	 * intended use is to test different syscall wrappers/variants but the
 	 * API is generic and does not limit the usage in any way.
 	 */
-	unsigned int test_variants;
+	const char * const *test_variants;
 
 	/* Minimal device size in megabytes */
 	unsigned int dev_min_size;

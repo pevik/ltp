@@ -25,11 +25,6 @@
 
 #define PORT_NUM 33333
 
-static const char *variant_desc[] = {
-	"libc accept4()",
-	"__NR_accept4 syscall",
-	"__NR_socketcall SYS_ACCEPT4 syscall"};
-
 static struct sockaddr_in *conn_addr, *accept_addr;
 static int listening_fd;
 
@@ -69,8 +64,6 @@ static int create_listening_socket(void)
 
 static void setup(void)
 {
-	tst_res(TINFO, "Testing variant: %s", variant_desc[tst_variant]);
-
 	memset(conn_addr, 0, sizeof(*conn_addr));
 	conn_addr->sin_family = AF_INET;
 	conn_addr->sin_addr.s_addr = htonl(INADDR_LOOPBACK);
@@ -158,7 +151,12 @@ static struct tst_test test = {
 	.tcnt = ARRAY_SIZE(tcases),
 	.setup = setup,
 	.cleanup = cleanup,
-	.test_variants = 3,
+	.test_variants = (const char *[]) {
+		"libc accept4()",
+		"__NR_accept4 syscall",
+		"__NR_socketcall SYS_ACCEPT4 syscall",
+		NULL
+	},
 	.test = verify_accept4,
 	.bufs = (struct tst_buffers []) {
 		{&conn_addr, .size = sizeof(*conn_addr)},
