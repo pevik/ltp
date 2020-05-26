@@ -23,6 +23,7 @@ test1()
 	# IMA boot aggregate
 	read line < $ima_measurements
 	boot_hash=$(echo $line | awk '{print $(NF-1)}' | cut -d':' -f2)
+	tst_res TINFO "boot hash: '$boot_hash'"
 
 	if [ ! -f "$tpm_bios" ]; then
 		tst_res TINFO "TPM Hardware Support not enabled in kernel or no TPM chip found"
@@ -30,14 +31,15 @@ test1()
 		if [ "${boot_hash}" = "${zero}" ]; then
 			tst_res TPASS "bios boot aggregate is 0"
 		else
-			tst_res TFAIL "bios boot aggregate is not 0"
+			tst_res TFAIL "bios boot aggregate is not 0 ($boot_hash)"
 		fi
 	else
 		boot_aggregate=$(ima_boot_aggregate $tpm_bios | grep "boot_aggregate:" | cut -d':' -f2)
+		tst_res TINFO "boot aggregate: '$boot_aggregate'"
 		if [ "${boot_hash}" = "${boot_aggregate}" ]; then
 			tst_res TPASS "bios aggregate matches IMA boot aggregate"
 		else
-			tst_res TFAIL "bios aggregate does not match IMA boot aggregate"
+			tst_res TFAIL "bios aggregate does not match IMA boot aggregate ($boot_aggregate)"
 		fi
 	fi
 }
