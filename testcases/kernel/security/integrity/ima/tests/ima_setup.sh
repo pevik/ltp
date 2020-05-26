@@ -112,6 +112,69 @@ ima_cleanup()
 	fi
 }
 
+set_digest_index()
+{
+	DIGEST_INDEX=
+
+	local template="$(tail -1 $ASCII_MEASUREMENTS | cut -d' ' -f 3)"
+	local i word
+
+	# parse digest index
+	# https://www.kernel.org/doc/html/latest/security/IMA-templates.html#use
+	case "$template" in
+	ima|ima-ng|ima-sig) DIGEST_INDEX=4 ;;
+	*)
+		# using ima_template_fmt kernel parameter
+		local IFS="|"
+		i=4
+		for word in $template; do
+			if [ "$word" = 'd' -o "$word" = 'd-ng' ]; then
+				DIGEST_INDEX=$i
+				break
+			fi
+			i=$((i+1))
+		done
+	esac
+
+	[ -z "$DIGEST_INDEX" ] && tst_brk TCONF \
+		"Cannot find digest index (template: '$template')"
+}
+
+get_algorithm_digest()
+{
+	local line="$1"
+	local delimiter=':'
+
+	tst_res TINFO "measurement record: '$line'"
+
+	DIGEST=$(echo "$line" | cut -d' ' -f $DIGEST_INDEX)
+	if [ -z "$DIGEST" ]; then
+		tst_res TFAIL "cannot find digest (index: $DIGEST_INDEX)"
+		return
+	fi
+
+	if [ "${DIGEST#*$delimiter}" != "$DIGEST" ]; then
+		ALGORITHM=$(echo "$DIGEST" | cut -d $delimiter -f 1)
+		DIGEST=$(echo "$DIGEST" | cut -d $delimiter -f 2)
+	else
+		case "${#DIGEST}" in
+		32) ALGORITHM="md5" ;;
+		40) ALGORITHM="sha1" ;;
+		*)
+			tst_res TFAIL "algorithm must be either md5 or sha1 (digest: '$DIGEST')"
+			return ;;
+		esac
+	fi
+	if [ -z "$ALGORITHM" ]; then
+		tst_res TFAIL "cannot find algorithm"
+		return
+	fi
+	if [ -z "$DIGEST" ]; then
+		tst_res TFAIL "cannot find digest"
+		return
+	fi
+}
+
 # loop device is needed to use only for tmpfs
 TMPDIR="${TMPDIR:-/tmp}"
 if [ "$(df -T $TMPDIR | tail -1 | awk '{print $2}')" != "tmpfs" -a -n "$TST_NEEDS_DEVICE" ]; then

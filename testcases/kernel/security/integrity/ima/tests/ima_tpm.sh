@@ -7,6 +7,7 @@
 # Verify the boot and PCR aggregates.
 
 TST_CNT=2
+TST_SETUP="set_digest_index"
 TST_NEEDS_CMDS="awk cut ima_boot_aggregate"
 
 . ima_setup.sh
@@ -15,29 +16,32 @@ test1()
 {
 	tst_res TINFO "verify boot aggregate"
 
-	local zero="0000000000000000000000000000000000000000"
 	local tpm_bios="$SECURITYFS/tpm0/binary_bios_measurements"
 	local ima_measurements="$ASCII_MEASUREMENTS"
-	local boot_aggregate boot_hash line
+	local boot_aggregate line zero
 
 	# IMA boot aggregate
 	read line < $ima_measurements
-	boot_hash=$(echo $line | awk '{print $(NF-1)}' | cut -d':' -f2)
+
+	get_algorithm_digest "$line"
 
 	if [ ! -f "$tpm_bios" ]; then
 		tst_res TINFO "TPM Hardware Support not enabled in kernel or no TPM chip found"
 
-		if [ "$boot_hash" = "$zero" ]; then
-			tst_res TPASS "bios boot aggregate is 0"
+		zero=$(echo $DIGEST | awk '{gsub(/./, "0")}; {print}')
+		if [ "$DIGEST" = "$zero" ]; then
+			tst_res TPASS "bios boot aggregate is $zero"
 		else
-			tst_res TFAIL "bios boot aggregate is not 0"
+			tst_res TFAIL "bios boot aggregate is not $zero ($DIGEST)"
 		fi
 	else
 		boot_aggregate=$(ima_boot_aggregate $tpm_bios | grep "boot_aggregate:" | cut -d':' -f2)
-		if [ "$boot_hash" = "$boot_aggregate" ]; then
-			tst_res TPASS "bios aggregate matches IMA boot aggregate"
+		tst_res TINFO "IMA boot aggregate: '$boot_aggregate'"
+
+		if [ "$DIGEST" = "$boot_aggregate" ]; then
+			tst_res TPASS "bios boot aggregate matches IMA boot aggregate"
 		else
-			tst_res TFAIL "bios aggregate does not match IMA boot aggregate"
+			tst_res TFAIL "bios boot aggregate does not match IMA boot aggregate ($DIGEST)"
 		fi
 	fi
 }
