@@ -130,31 +130,40 @@ init_ltp_netspace()
 	tst_restore_ipaddr rhost
 }
 
+tst_net_debug()
+{
+	echo "DEBUG: $@" >&2
+}
+
 # Run command on remote host.
 # tst_rhost_run -c CMD [-b] [-s] [-u USER]
 # Options:
 # -b run in background
 # -c CMD specify command to run (this must be binary, not shell builtin/function)
+# -d debug mode (print whole command into stderr, including rsh/ssh/netns handling)
 # -s safe option, if something goes wrong, will exit with TBROK
 # -u USER for ssh/rsh (default root)
+# -v print CMD parameter
 # RETURN: 0 on success, 1 on failure
 tst_rhost_run()
 {
 	local post_cmd=' || echo RTERR'
 	local user="root"
 	local ret=0
-	local cmd out output pre_cmd safe
+	local cmd debug out output pre_cmd sh_cmd rcmd safe use verbose
 
 	local OPTIND
-	while getopts :bsc:u: opt; do
+	while getopts :bc:dsu:v opt; do
 		case "$opt" in
 		b) [ "${TST_USE_NETNS:-}" ] && pre_cmd= || pre_cmd="nohup"
 		   post_cmd=" > /dev/null 2>&1 &"
 		   out="1> /dev/null"
 		;;
 		c) cmd="$OPTARG" ;;
+		d) debug=1 ;;
 		s) safe=1 ;;
 		u) user="$OPTARG" ;;
+		v) verbose=1 ;;
 		*) tst_brk_ TBROK "tst_rhost_run: unknown option: $OPTARG" ;;
 		esac
 	done
@@ -166,15 +175,22 @@ tst_rhost_run()
 		return 1
 	fi
 
-	if [ -n "${TST_USE_SSH:-}" ]; then
-		output=`ssh -n -q $user@$RHOST "sh -c \
-			'$pre_cmd $cmd $post_cmd'" $out 2>&1 || echo 'RTERR'`
-	elif [ -n "${TST_USE_NETNS:-}" ]; then
-		output=`$LTP_NETNS sh -c \
-			"$pre_cmd $cmd $post_cmd" $out 2>&1 || echo 'RTERR'`
+	[ "$verbose" ] && tst_res_ TINFO "tst_rhost_run: cmd: $cmd"
+
+	sh_cmd="$pre_cmd $cmd $post_cmd"
+	if [ -n "${TST_USE_SSH:-}" -o -z "${TST_USE_NETNS:-}" ]; then
+		use="RSH"
+		rcmd="rsh -n -l $user $RHOST"
+		if [ -n "${TST_USE_SSH:-}" ]; then
+			use="SSH"
+			rcmd="ssh -n -q $user@$RHOST"
+		fi
+		[ "$debug" ] && tst_net_debug "$use: $rcmd \"sh -c '$sh_cmd'\""
+		output=`$rcmd "sh -c '$sh_cmd'" $out 2>&1 || echo 'RTERR'`
 	else
-		output=`rsh -n -l $user $RHOST "sh -c \
-			'$pre_cmd $cmd $post_cmd'" $out 2>&1 || echo 'RTERR'`
+		rcmd="$LTP_NETNS"
+		[ "$debug" ] && tst_net_debug "NETNS: $rcmd sh -c \"$sh_cmd\""
+		output=`$rcmd sh -c "$sh_cmd" $out 2>&1 || echo 'RTERR'`
 	fi
 	echo "$output" | grep -q 'RTERR$' && ret=1
 	if [ $ret -eq 1 ]; then
