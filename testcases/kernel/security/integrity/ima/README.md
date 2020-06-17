@@ -1,8 +1,6 @@
-IMA + EVM testing
-=================
+# IMA + EVM testing
 
-IMA tests
----------
+## IMA tests
 
 `ima_measurements.sh` require builtin IMA tcb policy to be loaded
 (`ima_policy=tcb` kernel parameter).
@@ -16,8 +14,24 @@ CONFIG_INTEGRITY=y
 CONFIG_IMA=y
 ```
 
-EVM tests
----------
+### IMA Key Import tests
+
+`ima_keys.sh` requires a x509 public key, by default in `/etc/keys/x509_ima.der`.
+The key must be signed by the private key you generate. Follow these instructions:
+https://manpages.ubuntu.com/manpages/disco/man1/evmctl.1.html#generate%20trusted%20keys.
+
+The test cannot be set-up automatically because the kernel must be built
+with one of the keys you generate.
+
+As well as what's required for the IMA tests, the following are also required
+in the kernel configuration:
+```
+CONFIG_IMA_READ_POLICY=y
+CONFIG_SYSTEM_TRUSTED_KEYRING=y
+CONFIG_SYSTEM_TRUSTED_KEYS="/etc/keys/ima-local-ca.pem"
+```
+
+## EVM tests
 
 `evm_overlay.sh` requires a builtin IMA appraise tcb policy (e.g. `ima_policy=appraise_tcb`
 kernel parameter) which appraises the integrity of all files owned by root and EVM setup.
