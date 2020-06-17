@@ -855,7 +855,15 @@ tst_default_max_pkt()
 }
 
 # Management Link
-[ -z "$RHOST" ] && TST_USE_NETNS="yes"
+if [ -z "$RHOST" ]; then
+	TST_USE_NETNS="yes"
+	[ -n "${TST_USE_SSH:-}" ] && \
+		tst_brk_ TCONF "ssh setup requires setting RHOST variable"
+else
+	[ -n "${TST_USE_SSH:-}" ] && tst_require_cmds ssh || \
+		tst_require_cmds rsh
+fi
+
 export RHOST="$RHOST"
 export PASSWD="${PASSWD:-}"
 # Don't use it in new tests, use tst_rhost_run() from tst_net.sh instead.
