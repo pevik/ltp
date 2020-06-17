@@ -150,12 +150,14 @@ tst_rhost_run()
 	local post_cmd=' || echo RTERR'
 	local user="root"
 	local ret=0
-	local cmd debug out output pre_cmd sh_cmd rcmd safe use verbose
+	local cmd debug netns out output pre_cmd sh_cmd rcmd safe use verbose
+
+	[ -z "${TST_USE_SSH:-}" -a "${TST_USE_NETNS:-}" ] && netns=1
 
 	local OPTIND
 	while getopts :bc:dsu:v opt; do
 		case "$opt" in
-		b) [ "${TST_USE_NETNS:-}" ] && pre_cmd= || pre_cmd="nohup"
+		b) [ "$netns" ] && pre_cmd= || pre_cmd="nohup"
 		   post_cmd=" > /dev/null 2>&1 &"
 		   out="1> /dev/null"
 		;;
@@ -177,8 +179,13 @@ tst_rhost_run()
 
 	[ "$verbose" ] && tst_res_ TINFO "tst_rhost_run: cmd: $cmd"
 
+	[ -z "$netns" ] && cmd=$(echo "$cmd" | sed s/"'"/'"'/g);
 	sh_cmd="$pre_cmd $cmd $post_cmd"
-	if [ -n "${TST_USE_SSH:-}" -o -z "${TST_USE_NETNS:-}" ]; then
+	if [ "$netns" ]; then
+		rcmd="$LTP_NETNS"
+		[ "$debug" ] && tst_net_debug "NETNS: $rcmd sh -c \"$sh_cmd\""
+		output=`$rcmd sh -c "$sh_cmd" $out 2>&1 || echo 'RTERR'`
+	else
 		use="RSH"
 		rcmd="rsh -n -l $user $RHOST"
 		if [ -n "${TST_USE_SSH:-}" ]; then
@@ -187,10 +194,6 @@ tst_rhost_run()
 		fi
 		[ "$debug" ] && tst_net_debug "$use: $rcmd \"sh -c '$sh_cmd'\""
 		output=`$rcmd "sh -c '$sh_cmd'" $out 2>&1 || echo 'RTERR'`
-	else
-		rcmd="$LTP_NETNS"
-		[ "$debug" ] && tst_net_debug "NETNS: $rcmd sh -c \"$sh_cmd\""
-		output=`$rcmd sh -c "$sh_cmd" $out 2>&1 || echo 'RTERR'`
 	fi
 	echo "$output" | grep -q 'RTERR$' && ret=1
 	if [ $ret -eq 1 ]; then
