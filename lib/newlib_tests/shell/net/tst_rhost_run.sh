@@ -10,14 +10,14 @@ do_test()
 {
 	local file="/etc/fstab"
 
-	tst_rhost_run -c 'which grep > /dev/null' || \
+	tst_rhost_run -d -c 'which grep > /dev/null' || \
 		tst_res TCONF "grep not found on rhost"
 
-	tst_rhost_run -c "[ -f $file ]" || \
+	tst_rhost_run -d -c "[ -f $file ]" || \
 		tst_res TCONF "$file not found on rhost"
 
-	tst_rhost_run -s -c "grep -q \"[^ ]\" $file"
-	tst_rhost_run -s -c "grep -q '[^ ]' $file"
+	tst_rhost_run -ds -c "grep -q \"[^ ]\" $file"
+	tst_rhost_run -ds -c "grep -q '[^ ]' $file"
 
 	tst_res TPASS "tst_rhost_run is working"
 }
