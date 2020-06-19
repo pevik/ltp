@@ -1,5 +1,8 @@
 # LTP Network Tests
 
+Both single and two host configurations support debugging via
+`TST_NET_RHOST_RUN_DEBUG=1` environment variable.
+
 ## Single Host Configuration
 
 It is the default configuration (if the `RHOST` environment variable is not
