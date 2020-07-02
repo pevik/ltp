@@ -24,3 +24,7 @@ Running
 - kexec cmdline measurement
     1. `IMAGE=<path to kernel image> testcases/kexec/cmdline.sh start`
     2. Runtime logs will be emitted in `testcases/kexec/kexec_cmdline.log`.
+
+- kexec ima buffer passing
+    1. `IMAGE=<path to kernel image> testcases/kexec/ima_buffer.sh start`
+    2. Runtime logs will be emitted in `testcases/kexec/kexec_ima_buffer.log`.
