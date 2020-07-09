@@ -40,7 +40,7 @@ static struct tcase {
 static void verify_iopl(unsigned int i)
 {
 	if (i == 1) {
-		/* setup Non super-user for second test */
+		/* set Non super-user for second test */
 		struct passwd *pw;
 		pw = SAFE_GETPWNAM("nobody");
 		if (seteuid(pw->pw_uid) == -1) {
