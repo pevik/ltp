@@ -16,6 +16,28 @@ CONFIG_INTEGRITY=y
 CONFIG_IMA=y
 ```
 
+IMA Key Import test
+-------------
+`ima_keys.sh` requires an x509 certificate to be signed by a key on one
+of the trusted keyrings. The x509 certificate must be placed at
+`/etc/keys/x509_ima.der` for this test or the path must be passed in
+the CERT_FILE env var.
+
+The x509 public key key must be signed by the private key you generate.
+Follow these instructions:
+https://manpages.ubuntu.com/manpages/disco/man1/evmctl.1.html#generate%20trusted%20keys.
+
+The test cannot be set-up automatically because the x509 public key must be
+built into the kernel and loaded onto a trusted keyring.
+
+As well as what's required for the IMA tests, the following are also required
+in the kernel configuration:
+```
+CONFIG_IMA_READ_POLICY=y
+CONFIG_SYSTEM_TRUSTED_KEYRING=y
+CONFIG_SYSTEM_TRUSTED_KEYS="/etc/keys/ima-local-ca.pem"
+```
+
 EVM tests
 ---------
 
