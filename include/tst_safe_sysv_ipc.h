@@ -10,6 +10,10 @@
 #include <sys/msg.h>
 #include <sys/shm.h>
 
+#ifndef SHM_STAT_ANY
+# define SHM_STAT_ANY	15
+#endif
+
 int safe_msgget(const char *file, const int lineno, key_t key, int msgflg);
 #define SAFE_MSGGET(key, msgflg) \
 	safe_msgget(__FILE__, __LINE__, (key), (msgflg))
