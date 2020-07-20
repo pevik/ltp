@@ -17,8 +17,6 @@
 /nfs/nfs_stress/nfs05_make_tree
 /nfs/nfslock01/nfs_flock
 /nfs/nfslock01/nfs_flock_dgen
-/nfsv4/acl/acl1
-/nfsv4/locks/locktests
 /rpc/basic_tests/rpc01/rpc1
 /rpc/basic_tests/rpc01/rpc_server
 /sctp/sctp_big_chunk
