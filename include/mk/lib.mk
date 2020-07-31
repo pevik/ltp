@@ -63,7 +63,7 @@ LIBSRCS		:= $(filter-out $(FILTER_OUT_LIBSRCS),$(LIBSRCS))
 LIBOBJS		:= $(LIBSRCS:.c=.o)
 
 $(LIB): $(notdir $(LIBOBJS))
-	if [ -z "$(strip $^)" ] ; then \
+	@if [ -z "$(strip $^)" ] ; then \
 		echo "Cowardly refusing to create empty archive"; \
 		exit 1; \
 	fi
