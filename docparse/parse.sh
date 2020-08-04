@@ -1,9 +1,15 @@
 #!/bin/sh
 # SPDX-License-Identifier: GPL-2.0-or-later
+set -e
 
 cd ..
 
-version=$(git describe)
+srcdir="$(dirname $0)/.."
+
+version=$(cat $srcdir/VERSION)
+if [ -d .git ]; then
+	version=$(git describe 2>/dev/null) || version=$(cat $srcdir/VERSION).GIT-UNKNOWN
+fi
 
 echo '{'
 echo ' "testsuite": "Linux Test Project",'
@@ -16,7 +22,7 @@ echo ' "tests": {'
 
 first=1
 
-for test in `find testcases/ -name '*.c'`; do
+for test in `find $srcdir/testcases/ -name '*.c'`; do
 	a=$(./docparse/docparse "$test")
 	if [ -n "$a" ]; then
 		if [ -z "$first" ]; then
