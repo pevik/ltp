@@ -635,11 +635,13 @@ if [ -z "$TST_ID" ]; then
 fi
 export TST_ID="$TST_ID"
 
-if [ -z "$LTPROOT" ]; then
-	export LTPROOT="$PWD"
-	export TST_DATAROOT="$LTPROOT/datafiles"
-else
-	export TST_DATAROOT="$LTPROOT/testcases/data/$TST_ID"
+if [ -z "$TST_DATAROOT" ]; then
+	if [ -z "$LTPROOT" ]; then
+		export LTPROOT="$PWD"
+		export TST_DATAROOT="$LTPROOT/datafiles"
+	else
+		export TST_DATAROOT="$LTPROOT/testcases/data/$TST_ID"
+	fi
 fi
 
 if [ -z "$TST_NO_DEFAULT_RUN" ]; then
