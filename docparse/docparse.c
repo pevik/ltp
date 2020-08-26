@@ -19,15 +19,18 @@ static void oneline_comment(FILE *f)
 	} while (c != '\n');
 }
 
-static const char *eat_asterisk(const char *c)
+static const char *eat_asterisk_space(const char *c)
 {
 	unsigned int i = 0;
 
 	while (isspace(c[i]))
 		i++;
 
-	if (c[i] == '*')
+	if (c[i] == '*') {
+		while (isspace(c[i+1]))
+			i++;
 		return &c[i+1];
+	}
 
 	return c;
 }
@@ -46,7 +49,7 @@ static void multiline_comment(FILE *f, struct data_node *doc)
 			if (c == '\n') {
 				struct data_node *line;
 				buf[bufp] = 0;
-				line = data_node_string(eat_asterisk(buf));
+				line = data_node_string(eat_asterisk_space(buf));
 				data_node_array_add(doc, line);
 				bufp = 0;
 				continue;
