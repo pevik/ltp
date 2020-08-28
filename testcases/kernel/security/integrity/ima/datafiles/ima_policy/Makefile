@@ -7,5 +7,6 @@ include	$(top_srcdir)/include/mk/env_pre.mk
 
 INSTALL_DIR		:= testcases/data/ima_policy
 INSTALL_TARGETS	:= *.policy-invalid *.policy
+#MAKE_TARGETS :=
 
 include $(top_srcdir)/include/mk/generic_leaf_target.mk
