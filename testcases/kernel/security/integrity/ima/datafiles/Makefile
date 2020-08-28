@@ -24,8 +24,11 @@
 
 top_srcdir	?= ../../../../../..
 
+mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
+current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
+
 include	$(top_srcdir)/include/mk/env_pre.mk
 
-SUBDIRS	:= ima_*
+SUBDIRS	:= $(current_dir)/ima_*
 
 include $(top_srcdir)/include/mk/generic_trunk_target.mk
