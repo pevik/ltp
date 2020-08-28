@@ -24,8 +24,10 @@
 
 top_srcdir	?= ../../../../../..
 
+curdir := $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
+
 include	$(top_srcdir)/include/mk/env_pre.mk
 
-SUBDIRS	:= ima_*
+SUBDIRS	:= $(shell cd $(curdir); ls ima_*)
 
 include $(top_srcdir)/include/mk/generic_trunk_target.mk
