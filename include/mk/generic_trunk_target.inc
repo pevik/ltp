@@ -85,7 +85,7 @@ else
 	    $(MAKE) --no-print-directory -C "$$dir" -f "$(abs_srcdir)/$$dir/Makefile" $@; \
 	done
 endif
-ifneq ($(abs_builddir),$(abs_srcdir))
+ifneq ($(abs_builddir:/=),$(abs_srcdir:/=))
 	$(RM) -Rf $(SUBDIRS)
 endif
 
