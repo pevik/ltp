@@ -10,7 +10,7 @@ matrix:
     include:
         # 32 bit build
         - os: linux
-          env: DISTRO=debian:stable VARIANT=i386
+          env: DISTRO=debian:stable VARIANT=i386 TREE=out MAKE_INSTALL=1
           compiler: gcc
 
         # cross compilation builds
@@ -19,72 +19,72 @@ matrix:
           compiler: powerpc64le-linux-gnu-gcc
 
         - os: linux
-          env: DISTRO=debian:stable VARIANT=cross-compile ARCH=arm64 TREE=out
+          env: DISTRO=debian:stable VARIANT=cross-compile ARCH=arm64 TREE=out MAKE_INSTALL=1
           compiler: aarch64-linux-gnu-gcc
 
         - os: linux
-          env: DISTRO=debian:stable VARIANT=cross-compile ARCH=s390x TREE=out
+          env: DISTRO=debian:stable VARIANT=cross-compile ARCH=s390x TREE=out MAKE_INSTALL=1
           compiler: s390x-linux-gnu-gcc
 
         # musl (native)
         - os: linux
           # Message: WARNING: xsltproc: cannot process http://docbook.sourceforge.net/release/xsl-ns/current/manpages/docbook.xsl
           # doc/meson.build:70:1: ERROR: Problem encountered: Docs cannot be built: xsltproc does not work correctly
-          env: DISTRO=alpine:latest
+          env: DISTRO=alpine:latest TREE=out MAKE_INSTALL=1
           compiler: gcc
 
         # build with minimal dependencies
         - os: linux
-          env: DISTRO=debian:stable VARIANT=minimal TREE=out
+          env: DISTRO=debian:stable VARIANT=minimal TREE=out MAKE_INSTALL=1
           compiler: clang
 
         # other builds
         - os: linux
-          env: DISTRO=fedora:rawhide MAKE_INSTALL=1
+          env: DISTRO=fedora:rawhide TREE=out MAKE_INSTALL=1
           compiler: clang
 
         - os: linux
-          env: DISTRO=centos:6 TREE=out
+          env: DISTRO=centos:6 TREE=out MAKE_INSTALL=1
           compiler: gcc
 
         - os: linux
-          env: DISTRO=centos:7 TREE=out
+          env: DISTRO=centos:7 TREE=out MAKE_INSTALL=1
           compiler: gcc
 
         - os: linux
-          env: DISTRO=debian:testing
+          env: DISTRO=debian:testing TREE=out MAKE_INSTALL=1
           compiler: gcc
 
         - os: linux
-          env: DISTRO=debian:oldstable
+          env: DISTRO=debian:oldstable TREE=out MAKE_INSTALL=1
           compiler: clang
 
         - os: linux
-          env: DISTRO=opensuse/tumbleweed
+          env: DISTRO=opensuse/tumbleweed TREE=out MAKE_INSTALL=1
           compiler: gcc
 
         - os: linux
-          env: DISTRO=opensuse/leap
+          env: DISTRO=opensuse/leap TREE=out MAKE_INSTALL=1
           compiler: gcc
 
         - os: linux
-          env: DISTRO=debian:oldstable
+          env: DISTRO=debian:oldstable TREE=out MAKE_INSTALL=1
           compiler: gcc
 
         - os: linux
-          env: DISTRO=debian:testing
+          env: DISTRO=debian:testing TREE=out MAKE_INSTALL=1
           compiler: clang
 
         - os: linux
-          env: DISTRO=ubuntu:eoan TREE=out
+          env: DISTRO=ubuntu:eoan TREE=out MAKE_INSTALL=1
           compiler: gcc
 
         - os: linux
-          env: DISTRO=ubuntu:xenial
+          env: DISTRO=ubuntu:xenial TREE=out MAKE_INSTALL=1
           compiler: gcc
 
         - os: linux
-          env: DISTRO=centos:latest
+          env: DISTRO=centos:latest TREE=out MAKE_INSTALL=1
           compiler: gcc
 
 before_install:
