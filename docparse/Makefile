@@ -10,7 +10,7 @@ INSTALL_DIR = metadata
 .PHONY: metadata.json
 
 metadata.json: docparse
-	./parse.sh > metadata.json
+	$(abs_srcdir)/parse.sh > metadata.json
 
 validate:
 	jsonschema metadata.schema.json -i metadata.json
