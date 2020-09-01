@@ -7,8 +7,6 @@ MAKE_TARGETS		:= metadata.json docparse
 
 INSTALL_DIR = metadata
 
-docparse: data_storage.h
-
 .PHONY: metadata.json
 
 metadata.json: docparse
