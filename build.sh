@@ -118,8 +118,20 @@ run_configure()
 		exit 1
 	fi
 
+	# FIXME: debug
+	echo "==== config.log ===="
+	cat config.log
+	# FIXME: debug
+
 	echo "== include/config.h =="
 	cat include/config.h
+
+	# FIXME: debug
+	echo "==== include/mk/config.mk ===="
+	cat include/mk/config.mk
+	echo "exit 5"
+	exit 5
+	# FIXME: debug
 }
 
 usage()
