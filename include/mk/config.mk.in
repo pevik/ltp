@@ -31,6 +31,11 @@ RANLIB			:= @RANLIB@
 STRIP			:= @STRIP@
 YACC			:= @YACC@
 
+HOSTCC			:= @target_alias@
+ifeq ($(strip $(HOSTCC)),)
+HOSTCC := $(CC)
+endif
+
 AIO_LIBS		:= @AIO_LIBS@
 CAP_LIBS		:= @CAP_LIBS@
 ACL_LIBS		:= @ACL_LIBS@
