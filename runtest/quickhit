@@ -179,14 +179,8 @@ rename02 rename02
 sbrk01 sbrk01
 # Basic test for sbrk(2)
 select01 select01
-# select to a file
-#    TEST CASES
-#      1.) select(2) to a fd of regular file with no I/O and small timeout
-select02 select02
-# select of system pipe fds
-select03 select03
+# Basic select tests
 select04 select04
-# select of fd of a named-pipe (FIFO)
 setgid01 setgid01
 # Basic test for setgid(2)
 setpgid01 setpgid01
