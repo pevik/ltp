@@ -25,25 +25,32 @@ static struct select_info {
 	int *nfds;
 	fd_set *readfds;
 	fd_set *writefds;
+	int *writefd;
 	char *desc;
 } tests[] = {
-	{&fd_reg, &readfds_reg, NULL, "with regular file"},
-	{&fds_pipe[1], &readfds_pipe, &writefds_pipe, "with system pipe"},
-	{&fd_npipe, &readfds_npipe, &writefds_npipe, "with named pipe (FIFO)"},
+	{&fd_reg, &readfds_reg, NULL, NULL, "with regular file"},
+	{&fds_pipe[1], &readfds_pipe, &writefds_pipe, &fds_pipe[1], "with system pipe"},
+	{&fd_npipe, &readfds_npipe, &writefds_npipe, &fd_npipe, "with named pipe (FIFO)"},
 };
 
 static void run(unsigned int n)
 {
 	struct select_info *tc = &tests[n];
 	struct timeval timeout;
+	char buf;
 
 	timeout.tv_sec = 0;
 	timeout.tv_usec = 100000;
+
+	if (tc->writefd)
+		SAFE_WRITE(0, *tc->writefd, &buf, sizeof(buf));
 
 	TEST(do_select(*tc->nfds + 1, tc->readfds, tc->writefds, 0, &timeout));
 
 	if (TST_RET == -1)
 		tst_res(TFAIL | TTERRNO, "select() failed %s", tc->desc);
+	else if (!TST_RET)
+		tst_res(TFAIL, "select() timed out %s", tc->desc);
 	else
 		tst_res(TPASS, "select() passed %s", tc->desc);
 }
