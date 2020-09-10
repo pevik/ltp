@@ -508,8 +508,8 @@ static void test_fanotify(unsigned int n)
 					"zero length read from fanotify fd");
 			}
 			if (ret > 0) {
-				tst_res(TFAIL, "group %d (%x) with %s and "
-					"%s ignore mask got event",
+				tst_res((tst_kvercmp(5, 9, 0)) < 0 ? TCONF : TFAIL,
+					"group %d (%x) with %s and %s ignore mask got event",
 					i, fanotify_class[p], mark->name, ignore_mark->name);
 				if (event->fd != FAN_NOFD)
 					SAFE_CLOSE(event->fd);
