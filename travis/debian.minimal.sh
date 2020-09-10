@@ -2,7 +2,10 @@
 # Copyright (c) 2018-2020 Petr Vorel <pvorel@suse.cz>
 set -ex
 
-apt remove -y \
+apt="apt remove -y"
+
+$apt \
+	asciidoc \
 	libacl1-dev \
 	libaio-dev \
 	libaio1 \
@@ -17,3 +20,5 @@ apt remove -y \
 	libsepol1-dev \
 	libssl-dev \
 	libtirpc-dev
+
+$apt asciidoc-base ruby-asciidoctor || true
