@@ -3,6 +3,8 @@
 set -ex
 
 zypper --non-interactive install --force-resolution --no-recommends \
+	asciidoc \
+	asciidoctor \
 	autoconf \
 	automake \
 	clang \
@@ -23,4 +25,5 @@ zypper --non-interactive install --force-resolution --no-recommends \
 	libtirpc-devel \
 	linux-glibc-devel \
 	lsb-release \
+	perl-JSON \
 	pkg-config

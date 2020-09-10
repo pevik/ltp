@@ -3,6 +3,8 @@
 set -ex
 
 yum -y install \
+	asciidoc \
+	asciidoctor \
 	autoconf \
 	automake \
 	make \
@@ -12,6 +14,7 @@ yum -y install \
 	findutils \
 	libtirpc \
 	libtirpc-devel \
+	perl-JSON \
 	pkg-config \
 	redhat-lsb-core
 
