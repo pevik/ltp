@@ -3,6 +3,7 @@
 set -ex
 
 apt remove -y \
+	asciidoc \
 	libacl1-dev \
 	libaio-dev \
 	libaio1 \
@@ -16,4 +17,5 @@ apt remove -y \
 	libselinux1-dev \
 	libsepol1-dev \
 	libssl-dev \
-	libtirpc-dev
+	libtirpc-dev \
+	ruby-asciidoctor

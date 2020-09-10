@@ -10,6 +10,8 @@ apt update
 
 apt install -y --no-install-recommends \
 	acl-dev \
+	asciidoc \
+	asciidoctor \
 	autoconf \
 	automake \
 	build-essential \
@@ -26,6 +28,7 @@ apt install -y --no-install-recommends \
 	libcap2 \
 	libc6 \
 	libc6-dev \
+	libjson-perl \
 	libkeyutils-dev \
 	libkeyutils1 \
 	libmm-dev \
@@ -39,5 +42,7 @@ apt install -y --no-install-recommends \
 	linux-libc-dev \
 	lsb-release \
 	pkg-config
+
+apt install -y --no-install-recommends ruby-asciidoctor-pdf || true
 
 df -hT

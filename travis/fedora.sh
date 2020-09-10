@@ -3,6 +3,7 @@
 set -ex
 
 yum -y install \
+	asciidoc \
 	autoconf \
 	automake \
 	make \
@@ -12,8 +13,10 @@ yum -y install \
 	findutils \
 	libtirpc \
 	libtirpc-devel \
+	perl-JSON \
 	pkg-config \
 	redhat-lsb-core
 
-# CentOS 8 doesn't have libmnl-devel
+# CentOS 8 fixes
 yum -y install libmnl-devel || yum -y install libmnl
+yum -y install asciidoctor || true

@@ -3,6 +3,7 @@
 set -ex
 
 zypper --non-interactive install --force-resolution --no-recommends \
+	asciidoc \
 	autoconf \
 	automake \
 	clang \
@@ -23,4 +24,6 @@ zypper --non-interactive install --force-resolution --no-recommends \
 	libtirpc-devel \
 	linux-glibc-devel \
 	lsb-release \
-	pkg-config
+	perl-JSON \
+	pkg-config \
+	ruby2.7-rubygem-asciidoctor
