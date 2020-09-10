@@ -10,6 +10,7 @@ apt update
 
 apt install -y --no-install-recommends \
 	acl-dev \
+	asciidoc \
 	autoconf \
 	automake \
 	build-essential \
@@ -38,6 +39,9 @@ apt install -y --no-install-recommends \
 	libtirpc-dev \
 	linux-libc-dev \
 	lsb-release \
-	pkg-config
+	pkg-config \
+	ruby-asciidoctor
+
+apt install -y --no-install-recommends ruby-asciidoctor-pdf || true
 
 df -hT

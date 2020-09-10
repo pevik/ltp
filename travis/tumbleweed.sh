@@ -3,6 +3,8 @@
 set -ex
 
 zypper --non-interactive install --force-resolution --no-recommends \
+	asciidoc \
+	asciidoctor \
 	autoconf \
 	automake \
 	clang \

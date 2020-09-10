@@ -3,6 +3,8 @@
 set -ex
 
 yum -y install \
+	asciidoc \
+	asciidoctor \
 	autoconf \
 	automake \
 	make \
