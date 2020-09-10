@@ -554,6 +554,7 @@ static const char *const resource_files[] = {
 };
 
 static struct tst_test test = {
+	.min_kver = "5.9",
 	.test = test_fanotify,
 	.tcnt = ARRAY_SIZE(tcases),
 	.setup = setup,
