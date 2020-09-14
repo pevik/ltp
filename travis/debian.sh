@@ -12,7 +12,6 @@ apt="apt install -y --no-install-recommends"
 
 $apt \
 	acl-dev \
-	asciidoc \
 	asciidoctor \
 	autoconf \
 	automake \

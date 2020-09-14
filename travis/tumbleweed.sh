@@ -5,7 +5,6 @@ set -ex
 zyp="zypper --non-interactive install --force-resolution --no-recommends"
 
 $zyp \
-	asciidoc \
 	autoconf \
 	automake \
 	clang \

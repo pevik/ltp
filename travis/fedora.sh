@@ -5,7 +5,6 @@ set -ex
 yum="yum -y install"
 
 $yum \
-	asciidoc \
 	autoconf \
 	automake \
 	make \
