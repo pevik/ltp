@@ -45,6 +45,4 @@ $apt \
 	lsb-release \
 	pkg-config
 
-$apt ruby-asciidoctor-pdf || true
-
 df -hT

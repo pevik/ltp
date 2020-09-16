@@ -7,7 +7,6 @@ apk update
 apk add \
 	acl-dev \
 	asciidoc \
-	asciidoctor \
 	autoconf \
 	automake \
 	clang \

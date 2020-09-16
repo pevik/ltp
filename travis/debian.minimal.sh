@@ -5,7 +5,6 @@ set -ex
 apt="apt remove -y"
 
 $apt \
-	asciidoc \
 	asciidoctor \
 	libacl1-dev \
 	libaio-dev \
@@ -22,4 +21,4 @@ $apt \
 	libssl-dev \
 	libtirpc-dev
 
-$apt asciidoc-base ruby-asciidoctor || true
+$apt ruby-asciidoctor || true

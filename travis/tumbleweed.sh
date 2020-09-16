@@ -28,5 +28,3 @@ $zyp \
 	lsb-release \
 	perl-JSON \
 	pkg-config
-
-$zyp ruby2.7-rubygem-asciidoctor || $zyp ruby2.5-rubygem-asciidoctor
