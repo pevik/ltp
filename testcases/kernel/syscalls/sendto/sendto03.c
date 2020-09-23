@@ -23,7 +23,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
-#include <linux/if_packet.h>
+#include "lapi/if_packet.h"
 #include <net/if.h>
 #include <net/ethernet.h>
 #include <sched.h>
