@@ -54,6 +54,19 @@ compute_digest()
 	return 1
 }
 
+check_policy_pattern()
+{
+	local pattern="$1"
+	local func="$2"
+	local template="$3"
+
+	if ! grep -E "$pattern" $TST_TMPDIR/policy.txt; then
+		tst_res TCONF "IMA policy must specify $pattern, $func, $template"
+		return 1
+	fi
+	return 0
+}
+
 check_policy_readable()
 {
 	if [ ! -f $IMA_POLICY ]; then
@@ -267,6 +280,55 @@ get_algorithm_digest()
 	fi
 
 	echo "$algorithm|$digest"
+}
+
+test_policy_measurement()
+{
+	local policy_option="$1"
+	local lines=$(cat $2)
+	local input_digest="$3"
+	local test_file="$TST_TMPDIR/test.txt"
+	local grep_file="$TST_TMPDIR/grep.txt"
+	local i sources templates
+
+	tst_require_cmds cut sed xxd
+
+	sources=$(for i in $lines; do echo "$i" | grep "$policy_option" | \
+		sed "s/\./\\\./g" | cut -d'=' -f2; done | sed ':a;N;$!ba;s/\n/|/g')
+	if [ -z "$sources" ]; then
+		tst_res TCONF "IMA policy $policy_option is a key-value specifier, but no values specified"
+		return
+	fi
+
+	templates=$(for i in $lines; do echo "$i" | grep "template" | \
+		cut -d'=' -f2; done | sed ':a;N;$!ba;s/\n/|/g')
+
+	tst_res TINFO "policy sources: '$sources'"
+	tst_res TINFO "templates: '$templates'"
+
+	grep -E "($templates).*($sources)" $ASCII_MEASUREMENTS > $grep_file
+
+	while read line; do
+		local algorithm digest expected_digest src_line
+
+		digest=$(echo "$line" | cut -d' ' -f4 | cut -d':' -f2)
+		algorithm=$(echo "$line" | cut -d' ' -f4 | cut -d':' -f1)
+		src_line=$(echo "$line" | cut -d' ' -f5)
+
+		echo "$line" | cut -d' ' -f6 | xxd -r -p > $test_file
+
+		if ! expected_digest="$(compute_digest $algorithm $test_file)"; then
+			tst_res TCONF "cannot compute digest for $algorithm"
+			return
+		fi
+
+		if [ "$digest" != "$expected_digest" ]; then
+			tst_res TFAIL "incorrect digest was found for $src_line $policy_option"
+			return
+		fi
+	done < $grep_file
+
+	tst_res TPASS "$policy_option measured correctly"
 }
 
 # loop device is needed to use only for tmpfs
