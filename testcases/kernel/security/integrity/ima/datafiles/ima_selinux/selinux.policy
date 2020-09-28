@@ -1,0 +1,1 @@
+measure func=CRITICAL_DATA data_sources=selinux template=ima-buf
