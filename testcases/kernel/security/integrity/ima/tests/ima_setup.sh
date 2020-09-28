@@ -289,7 +289,7 @@ test_policy_measurement()
 	local input_digest="$3"
 	local test_file="$TST_TMPDIR/test.txt"
 	local grep_file="$TST_TMPDIR/grep.txt"
-	local i sources templates
+	local i input_digest_found sources templates
 
 	tst_require_cmds cut sed xxd
 
@@ -326,7 +326,16 @@ test_policy_measurement()
 			tst_res TFAIL "incorrect digest was found for $src_line $policy_option"
 			return
 		fi
+
+		if [ "$input_digest" -a "$digest" = "$input_digest" ]; then
+			input_digest_found=1
+		fi
 	done < $grep_file
+
+	if [ "$input_digest" -a "$input_digest_found" != 1 ]; then
+		tst_res TFAIL "expected digest '$input_digest' not found"
+		return
+	fi
 
 	tst_res TPASS "$policy_option measured correctly"
 }
