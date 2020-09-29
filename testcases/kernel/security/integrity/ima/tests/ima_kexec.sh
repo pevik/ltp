@@ -101,7 +101,7 @@ kexec_test()
 	if ! measure "$cmdline"; then
 		if [ "$policy_readable" != 1 ]; then
 			tst_res TWARN "policy not readable, it might not contain required policy '$REQUIRED_POLICY'"
-			res=TBROK
+			res=TCONF
 		fi
 		tst_brk $res "unable to find a correct measurement"
 	fi
