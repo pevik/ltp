@@ -65,7 +65,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/signal.h>
-#include <sys/sysinfo.h>
+#include "lapi/sysinfo.h"
 #include <stdint.h>
 
 #include "test.h"

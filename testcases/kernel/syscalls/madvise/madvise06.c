@@ -46,7 +46,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <sys/mount.h>
-#include <sys/sysinfo.h>
+#include "lapi/sysinfo.h"
 #include "tst_test.h"
 #include "tst_cgroup.h"
 

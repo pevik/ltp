@@ -11,7 +11,6 @@
 #include <sys/wait.h>
 #include <sys/mount.h>
 #include <sys/xattr.h>
-#include <sys/sysinfo.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <libgen.h>
@@ -23,6 +22,7 @@
 #include <malloc.h>
 #include "test.h"
 #include "safe_macros.h"
+#include "lapi/sysinfo.h"
 
 char *safe_basename(const char *file, const int lineno,
 		    void (*cleanup_fn) (void), char *path)

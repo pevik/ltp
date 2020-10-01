@@ -43,7 +43,7 @@
 #include <sys/wait.h>
 #include <semaphore.h>
 #ifdef	__linux__
-#include <sys/sysinfo.h>
+#include "lapi/sysinfo.h"
 #endif
 
 #include "../testfrmw/testfrmw.h"

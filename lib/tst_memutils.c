@@ -5,11 +5,11 @@
 
 #include <unistd.h>
 #include <limits.h>
-#include <sys/sysinfo.h>
 #include <stdlib.h>
 
 #define TST_NO_DEFAULT_MAIN
 #include "tst_test.h"
+#include "lapi/sysinfo.h"
 
 #define BLOCKSIZE (16 * 1024 * 1024)
 
