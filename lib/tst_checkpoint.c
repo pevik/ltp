@@ -31,6 +31,10 @@
 #include "safe_macros.h"
 #include "lapi/futex.h"
 
+#if !defined(SYS_futex) && defined(SYS_futex_time64)
+#define SYS_futex SYS_futex_time64
+#endif
+
 #define DEFAULT_MSEC_TIMEOUT 10000
 
 futex_t *tst_futexes;

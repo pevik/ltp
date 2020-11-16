@@ -20,6 +20,10 @@
 #include "lapi/futex.h"
 #include "tst_timer.h"
 
+#if !defined(SYS_futex) && defined(SYS_futex_time64)
+#define SYS_futex SYS_futex_time64
+#endif
+
 #define FUTEX_INITIALIZER 0
 
 #ifndef FUTEX_CMP_REQUEUE

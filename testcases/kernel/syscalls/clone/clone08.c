@@ -17,6 +17,10 @@
 #include "clone_platform.h"
 #include "lapi/syscalls.h"
 
+#if !defined(SYS_futex) && defined(SYS_futex_time64)
+#define SYS_futex SYS_futex_time64
+#endif
+
 static pid_t ptid, ctid, tgid;
 static void *child_stack;
 
