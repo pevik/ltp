@@ -139,6 +139,16 @@ tst_net_use_netns()
 	[ -n "$TST_USE_NETNS" ]
 }
 
+reset_ltp_netspace()
+{
+	tst_require_cmds pkill
+
+	rm -f /var/run/netns/ltp_ns
+	pkill ns_create
+	unset LTP_NETNS
+	init_ltp_netspace
+}
+
 # Run command on remote host.
 # tst_rhost_run -c CMD [-b] [-s] [-u USER]
 # Options:
