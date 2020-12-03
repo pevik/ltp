@@ -5,6 +5,7 @@ set -ex
 zyp="zypper --non-interactive install --force-resolution --no-recommends"
 
 $zyp \
+	gcc-32bit glibc-devel-32bit libaio-devel-32bit \
 	asciidoc \
 	autoconf \
 	automake \

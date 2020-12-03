@@ -5,6 +5,7 @@ set -ex
 yum="yum -y install"
 
 $yum \
+	glibc-devel.i686 \
 	asciidoc \
 	autoconf \
 	automake \
