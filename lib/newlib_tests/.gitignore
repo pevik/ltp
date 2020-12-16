@@ -16,6 +16,7 @@ test15
 test16
 tst_capability01
 tst_capability02
+tst_cgroup
 tst_device
 tst_safe_fileops
 tst_res_hexd
