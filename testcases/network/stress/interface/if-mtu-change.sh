@@ -11,7 +11,7 @@ TST_CLEANUP="do_cleanup"
 . if-lib.sh
 
 # The interval of the mtu change [second]
-CHANGE_INTERVAL=${CHANGE_INTERVAL:-5}
+CHANGE_INTERVAL=${CHANGE_INTERVAL:-1}
 
 TST_TIMEOUT=$(((CHANGE_INTERVAL + 30) * MTU_CHANGE_TIMES))
 
