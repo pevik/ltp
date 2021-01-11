@@ -24,25 +24,31 @@
 # http://www.gnu.org/software/hello/manual/autoconf/Particular-Programs.html
 
 # Application specifying variables. You should never have to change these.
-AR			:= @AR@
-CC			:= @CC@
+CROSS_COMPILE		= @CROSS_COMPILE@
+AR			:= @CROSS_COMPILE@@AR@
+CC			:= @CROSS_COMPILE@@CC@
 LEX			:= @LEX@
-RANLIB			:= @RANLIB@
-STRIP			:= @STRIP@
+RANLIB			:= @CROSS_COMPILE@@RANLIB@
+STRIP			:= @CROSS_COMPILE@@STRIP@
 YACC			:= @YACC@
 
 HOSTCC  = @HOSTCC@
 build := @build@
 host := @host@
+
+# detect HOSTCC
 ifeq ($(strip $(HOSTCC)),)
-# native build, respect CC
-ifeq ($(build),$(host))
-HOSTCC := $(CC)
-else
+ifneq ($(strip $(CROSS_COMPILE)),)
 # cross compilation
 HOSTCC := cc
-endif
-endif
+else ifeq ($(build),$(host))
+# native build, respect CC
+HOSTCC := $(CC)
+else
+# probably cross compilation
+HOSTCC := cc
+endif # CROSS_COMPILE
+endif # HOSTCC
 
 AIO_LIBS		:= @AIO_LIBS@
 CAP_LIBS		:= @CAP_LIBS@

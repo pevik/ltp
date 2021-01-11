@@ -14,6 +14,7 @@ AC_CONFIG_FILES([ \
 ])
 
 AC_ARG_VAR(HOSTCC, [The C compiler on the host])
+AC_ARG_VAR(CROSS_COMPILE, [The CROSS_COMPILE variable])
 
 AM_MAINTAINER_MODE([enable])
 
