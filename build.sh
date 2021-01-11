@@ -11,6 +11,7 @@ set -e
 
 CFLAGS="${CFLAGS:--Wformat -Werror=format-security -Werror=implicit-function-declaration -Werror=return-type -fno-common}"
 CC="${CC:-gcc}"
+echo "pev: 1: CC: '$CC'" # FIXME: debug
 
 DEFAULT_PREFIX="$HOME/ltp-install"
 DEFAULT_BUILD="native"
@@ -58,6 +59,9 @@ build_native()
 build_cross()
 {
 	local host=$(basename "${CC%-gcc}")
+	echo "pev: 2: CC: '$CC'" # FIXME: debug
+	$CC --version
+
 	if [ "$host" = "gcc" ]; then
 		echo "Invalid CC variable for cross compilation: $CC (clang not supported)" >&2
 		exit 1
@@ -97,6 +101,7 @@ build_out_tree()
 	run_configure $tree/configure $CONFIGURE_OPTS_OUT_TREE $@
 
 	echo "=== build ==="
+	echo "pev: build_out_tree: CC: '$CC'" # FIXME: debug
 	make $make_opts
 
 	if [ "$install" = 1 ]; then
@@ -115,6 +120,7 @@ build_in_tree()
 	run_configure ./configure $CONFIGURE_OPTS_IN_TREE --prefix=$PREFIX $@
 
 	echo "=== build ==="
+	echo "pev: build_in_tree: CC: '$CC'" # FIXME: debug
 	make $MAKE_OPTS
 
 	if [ "$install" = 1 ]; then
@@ -132,6 +138,7 @@ run_configure()
 
 	export CC CFLAGS LDFLAGS PKG_CONFIG_LIBDIR
 	echo "CC='$CC' CFLAGS='$CFLAGS' LDFLAGS='$LDFLAGS' PKG_CONFIG_LIBDIR='$PKG_CONFIG_LIBDIR'"
+	echo "pev: 1: CC: '$CC'" # FIXME: debug
 
 	echo "=== configure $configure $@ ==="
 	if ! $configure $@; then
@@ -182,7 +189,7 @@ install=0
 
 while getopts "c:hio:p:t:" opt; do
 	case "$opt" in
-	c) CC="$OPTARG";;
+	c) CC="$OPTARG"; echo "pev: -c CC: '$CC'";;
 	h) usage; exit 0;;
 	i) install=1;;
 	o) case "$OPTARG" in
