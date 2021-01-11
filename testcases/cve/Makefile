@@ -21,7 +21,7 @@ CFLAGS			+= -D_GNU_SOURCE
 
 stack_clash:	CFLAGS += -fno-optimize-sibling-calls
 
-cve-2016-7042:	LDLIBS += $(KEYUTILS_LIBS)
+cve-2016-7042:	LDLIBS += $(LIBKEYUTILS_LIBS)
 
 cve-2016-7117:	CFLAGS += -pthread
 cve-2016-7117:	LDLIBS += -lrt
