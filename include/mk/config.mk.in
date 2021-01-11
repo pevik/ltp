@@ -24,11 +24,11 @@
 # http://www.gnu.org/software/hello/manual/autoconf/Particular-Programs.html
 
 # Application specifying variables. You should never have to change these.
-AR			:= @AR@
-CC			:= @CC@
+AR			:= @CROSS_COMPILE@@AR@
+CC			:= @CROSS_COMPILE@@CC@
 LEX			:= @LEX@
-RANLIB			:= @RANLIB@
-STRIP			:= @STRIP@
+RANLIB			:= @CROSS_COMPILE@@RANLIB@
+STRIP			:= @CROSS_COMPILE@@STRIP@
 YACC			:= @YACC@
 
 HOSTCC  = @HOSTCC@
