@@ -6,4 +6,5 @@ ima_violations ima_violations.sh
 ima_keys ima_keys.sh
 ima_kexec ima_kexec.sh
 ima_dm_crypt ima_dm_crypt.sh
+ima_selinux ima_selinux.sh
 evm_overlay evm_overlay.sh

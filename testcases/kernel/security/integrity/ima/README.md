@@ -54,7 +54,26 @@ The following kernel configuration is also required. It enables compiling
 the device-mapper target module dm-crypt, which allows to create a device
 that transparently encrypts the data on it.
 ```
-CONFIG_DM_CRYPT
+CONFIG_DM_CRYPT=y
+```
+
+### IMA SELinux test
+
+To enable IMA to measure SELinux state and policy, `ima_selinux.sh`
+require a readable IMA policy, as well as a loaded measure policy with
+`measure func=CRITICAL_DATA data_sources=selinux template=ima-buf`,
+see example in `selinux.policy`.
+
+As well as what's required for the IMA tests, SELinux tests require reading
+the IMA policy allowed in the kernel configuration:
+```
+CONFIG_IMA_READ_POLICY=y
+```
+
+The following kernel configuration is also required. It enables compiling
+the Linux Security Module (LSM) namely SELinux.
+```
+CONFIG_SECURITY_SELINUX=y
 ```
 
 ## EVM tests
