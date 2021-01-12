@@ -5,6 +5,6 @@ top_srcdir		?= ../../../..
 
 include $(top_srcdir)/include/mk/testcases.mk
 
-LDLIBS  += $(KEYUTILS_LIBS)
+LDLIBS  += $(LIBKEYUTILS_LIBS)
 
 include $(top_srcdir)/include/mk/generic_leaf_target.mk
