@@ -54,6 +54,85 @@ compute_digest()
 	return 1
 }
 
+check_policy_pattern()
+{
+	local pattern="$1"
+	local func="$2"
+	local template="$3"
+
+	if ! grep -E "$pattern" $TST_TMPDIR/policy.txt; then
+		tst_res TCONF "IMA policy must specify $pattern, $func, $template"
+		return 1
+	fi
+	return 0
+}
+
+check_ima_ascii_log_for_policy()
+{
+	local test_file="$TST_TMPDIR/ascii_log_test_file.txt"
+	local grep_file="$TST_TMPDIR/ascii_log_grep_file.txt"
+	local func_lines sources templates i src
+	local input_digest_res=1
+	local policy_option="$1"
+	local input_digest="$3"
+
+	func_lines=$(cat $2)
+
+	sources=$(for i in $func_lines; do echo "$i" | grep "$policy_option" | \
+		sed "s/\./\\\./g" | cut -d'=' -f2; done | sed ':a;N;$!ba;s/\n/|/g')
+	if [ -z "$sources" ]; then
+		tst_res TCONF "IMA policy $policy_option is a key-value specifier, but no values specified"
+		echo "1"
+		return
+	fi
+
+	templates=$(for i in $func_lines; do echo "$i" | grep "template" | \
+		cut -d'=' -f2; done | sed ':a;N;$!ba;s/\n/|/g')
+
+	tst_res TINFO "policy sources: '$sources'"
+	tst_res TINFO "templates: '$templates'"
+
+	grep -E "($templates).*($sources)" $ASCII_MEASUREMENTS > $grep_file
+
+	while read line
+	do
+		local digest expected_digest algorithm
+
+		digest=$(echo "$line" | cut -d' ' -f4 | cut -d':' -f2)
+		algorithm=$(echo "$line" | cut -d' ' -f4 | cut -d':' -f1)
+		src_line=$(echo "$line" | cut -d' ' -f5)
+
+		echo "$line" | cut -d' ' -f6 | xxd -r -p > $test_file
+
+		if ! expected_digest="$(compute_digest $algorithm $test_file)"; then
+			tst_res TCONF "cannot compute digest for $algorithm"
+			echo "1"
+			return
+		fi
+
+		if [ "$digest" != "$expected_digest" ]; then
+			tst_res TINFO "incorrect digest was found for $src_line $policy_option"
+			echo "1"
+			return
+		fi
+
+		if [ "$input_digest" ]; then
+			if [ "$digest" = "$input_digest" ]; then
+				input_digest_res=0
+			fi
+		fi
+
+	done < $grep_file
+
+	if [ "$input_digest" ]; then
+		echo "$input_digest_res"
+		return
+	else
+		echo "0"
+		return
+	fi
+}
+
 check_policy_readable()
 {
 	if [ ! -f $IMA_POLICY ]; then
