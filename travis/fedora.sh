@@ -22,4 +22,5 @@ $yum \
 
 # CentOS 8 fixes
 $yum libmnl-devel || $yum libmnl
+$yum numactl-devel || $yum libnuma-devel
 $yum rubygem-asciidoctor || true
