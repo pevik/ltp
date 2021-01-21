@@ -54,12 +54,16 @@ static inline struct data_node *data_node_string(const char *string)
 {
 	size_t size = sizeof(struct data_node_string) + strlen(string) + 1;
 	struct data_node *node = malloc(size);
+	char *ix = node->string.val;
 
 	if (!node)
 		return NULL;
 
 	node->type = DATA_STRING;
 	strcpy(node->string.val, string);
+
+	while ((ix = strchr(ix, '\t')))
+		*ix++ = ' ';
 
 	return node;
 }
