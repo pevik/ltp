@@ -13,6 +13,7 @@ $yum \
 	gcc \
 	git \
 	findutils \
+	numactl-devel \
 	libtirpc \
 	libtirpc-devel \
 	perl-JSON \
