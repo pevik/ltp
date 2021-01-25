@@ -137,8 +137,7 @@ static void check_swapping(void)
 		i++;
 	}
 
-	swap_free_now = SAFE_READ_MEMINFO("SwapFree:");
-	swapped = swap_free_init - swap_free_now;
+	swapped = SAFE_READ_PROC_STATUS(pid, "VmSwap:");
 	if (swapped > mem_over_max) {
 		kill(pid, SIGCONT);
 		tst_brk(TFAIL, "heavy swapping detected: "
