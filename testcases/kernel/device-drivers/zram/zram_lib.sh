@@ -36,10 +36,12 @@ zram_load()
 {
 	local tmp
 
-	dev_num=0
-	for tmp in $zram_max_streams; do
-		dev_num=$((dev_num+1))
-	done
+	if [ -z "$dev_num" ]; then
+		dev_num=0
+		for tmp in $zram_max_streams; do
+			dev_num=$((dev_num+1))
+		done
+	fi
 
 	tst_res TINFO "create '$dev_num' zram device(s)"
 
@@ -125,6 +127,7 @@ zram_set_disksizes()
 
 		i=$(($i + 1))
 		tst_res TINFO "$sys_path = '$ds' ($i/$dev_num)"
+		[ $i -eq $dev_num ] && break
 	done
 
 	tst_res TPASS "test succeeded"
@@ -151,6 +154,7 @@ zram_set_memlimit()
 
 		i=$(($i + 1))
 		tst_res TINFO "$sys_path = '$ds' ($i/$dev_num)"
+		[ $i -eq $dev_num ] && break
 	done
 
 	tst_res TPASS "test succeeded"
@@ -187,13 +191,10 @@ zram_swapoff()
 
 zram_makefs()
 {
-	tst_require_cmds mkfs
 	local i=0
+	local fs
 
 	for fs in $zram_filesystems; do
-		# if requested fs not supported default it to ext2
-		tst_supported_fs $fs 2> /dev/null || fs=ext2
-
 		tst_res TINFO "make $fs filesystem on /dev/zram$i"
 		mkfs.$fs /dev/zram$i > err.log 2>&1
 		if [ $? -ne 0 ]; then
@@ -202,6 +203,7 @@ zram_makefs()
 		fi
 
 		i=$(($i + 1))
+		[ $i -eq $dev_num ] && break
 	done
 
 	tst_res TPASS "zram_makefs succeeded"

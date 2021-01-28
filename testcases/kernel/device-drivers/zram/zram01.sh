@@ -10,10 +10,12 @@ TST_CNT=7
 TST_TESTFUNC="do_test"
 TST_NEEDS_CMDS="awk bc dd"
 . zram_lib.sh
+TST_SETUP="setup"
 
 # List of parameters for zram devices.
 # For each number the test creates own zram device.
 zram_max_streams="2 3 5 8"
+fallback_filesystem="ext2"
 
 FS_SIZE="402653184"
 FS_TYPE="btrfs"
@@ -22,7 +24,7 @@ RAM_SIZE=$(awk '/MemTotal:/ {print $2}' /proc/meminfo)
 if [ "$RAM_SIZE" -lt 1048576 ]; then
 	tst_res TINFO "not enough space for Btrfs"
 	FS_SIZE="26214400"
-	FS_TYPE="ext2"
+	FS_TYPE="$fallback_filesystem"
 fi
 
 # The zram sysfs node 'disksize' value can be either in bytes,
@@ -35,6 +37,46 @@ fi
 zram_sizes="26214400 26214400 26214400 $FS_SIZE"
 zram_mem_limits="25M 25M 25M $((FS_SIZE/1024/1024))M"
 zram_filesystems="ext3 ext4 xfs $FS_TYPE"
+
+check_fs_support()
+{
+	local fs unsupported
+	local msg="missing kernel support or mkfs for filesystems:"
+	dev_num=0
+
+	for fs in $zram_filesystems; do
+		if tst_supported_fs $fs 2> /dev/null; then
+			dev_num=$((dev_num+1))
+		else
+			unsupported="$unsupported $fs"
+		fi
+	done
+
+	if [ $dev_num -eq 0 -a "$fallback_filesystem" != "$FS_TYPE" ]; then
+		if tst_supported_fs $fallback_filesystem 2> /dev/null; then
+			dev_num=1
+		fi
+	fi
+
+	if [ $dev_num -eq 0 ]; then
+		tst_res TINFO "filesystems on the system"
+		tst_supported_fs > /dev/null
+
+		msg="$msg $zram_filesystems"
+		if [ "$fallback_filesystem" != "$FS_TYPE" ]; then
+			msg="$msg $fallback_filesystem"
+		fi
+		tst_brk TCONF "$msg"
+	fi
+
+	[ "$unsupported" ] && tst_res TINFO "$msg$unsupported"
+}
+
+setup()
+{
+	check_fs_support
+	zram_load
+}
 
 zram_fill_fs()
 {
