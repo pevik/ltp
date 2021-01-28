@@ -85,35 +85,6 @@ zram_max_streams()
 	tst_res TPASS "test succeeded"
 }
 
-zram_compress_alg()
-{
-	if tst_kvcmp -lt "3.15"; then
-		tst_res TCONF "device attribute comp_algorithm is"\
-			"introduced since kernel v3.15, the running kernel"\
-			"does not support it"
-		return
-	fi
-
-	local i=0
-
-	tst_res TINFO "test that we can set compression algorithm"
-	local algs="$(sed 's/[][]//g' /sys/block/zram0/comp_algorithm)"
-	tst_res TINFO "supported algs: $algs"
-
-	local dev_max=$(($dev_num - 1))
-
-	for i in $(seq 0 $dev_max); do
-		for alg in $algs; do
-			local sys_path="/sys/block/zram${i}/comp_algorithm"
-			echo "$alg" >  $sys_path || \
-				tst_brk TFAIL "can't set '$alg' to $sys_path"
-			tst_res TINFO "$sys_path = '$alg' ($i/$dev_max)"
-		done
-	done
-
-	tst_res TPASS "test succeeded"
-}
-
 zram_set_disksizes()
 {
 	local i=0
@@ -158,67 +129,4 @@ zram_set_memlimit()
 	done
 
 	tst_res TPASS "test succeeded"
-}
-
-zram_makeswap()
-{
-	tst_res TINFO "make swap with zram device(s)"
-	tst_require_cmds mkswap swapon swapoff
-	local i=0
-
-	for i in $(seq 0 $(($dev_num - 1))); do
-		ROD mkswap /dev/zram$i
-		ROD swapon /dev/zram$i
-		tst_res TINFO "done with /dev/zram$i"
-		dev_makeswap=$i
-	done
-
-	tst_res TPASS "making zram swap succeeded"
-}
-
-zram_swapoff()
-{
-	tst_require_cmds swapoff
-	local i
-
-	for i in $(seq 0 $dev_makeswap); do
-		ROD swapoff /dev/zram$i
-	done
-	dev_makeswap=-1
-
-	tst_res TPASS "swapoff completed"
-}
-
-zram_makefs()
-{
-	local i=0
-	local fs
-
-	for fs in $zram_filesystems; do
-		tst_res TINFO "make $fs filesystem on /dev/zram$i"
-		mkfs.$fs /dev/zram$i > err.log 2>&1
-		if [ $? -ne 0 ]; then
-			cat err.log
-			tst_brk TFAIL "failed to make $fs on /dev/zram$i"
-		fi
-
-		i=$(($i + 1))
-		[ $i -eq $dev_num ] && break
-	done
-
-	tst_res TPASS "zram_makefs succeeded"
-}
-
-zram_mount()
-{
-	local i=0
-
-	for i in $(seq 0 $(($dev_num - 1))); do
-		tst_res TINFO "mount /dev/zram$i"
-		mkdir zram$i
-		ROD mount /dev/zram$i zram$i
-		dev_mounted=$i
-	done
-
-	tst_res TPASS "mount of zram device(s) succeeded"
 }
