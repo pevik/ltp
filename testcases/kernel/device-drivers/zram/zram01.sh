@@ -6,7 +6,7 @@
 # Test creates several zram devices with different filesystems on them.
 # It fills each device with zeros and checks that compression works.
 
-TST_CNT=7
+TST_CNT=6
 TST_TESTFUNC="do_test"
 TST_NEEDS_CMDS="awk bc dd"
 . zram_lib.sh
@@ -120,12 +120,11 @@ do_test()
 {
 	case $1 in
 	 1) zram_max_streams;;
-	 2) zram_compress_alg;;
-	 3) zram_set_disksizes;;
-	 4) zram_set_memlimit;;
-	 5) zram_makefs;;
-	 6) zram_mount;;
-	 7) zram_fill_fs;;
+	 2) zram_set_disksizes;;
+	 3) zram_set_memlimit;;
+	 4) zram_makefs;;
+	 5) zram_mount;;
+	 6) zram_fill_fs;;
 	esac
 }
 
