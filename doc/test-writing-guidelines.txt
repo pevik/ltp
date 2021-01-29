@@ -2398,7 +2398,10 @@ simply by setting right '$TST_NEEDS_FOO'.
 | 'TST_TIMEOUT'      | Maximum timeout set for the test in sec. Must be int >= 1,
                        or -1 (special value to disable timeout), default is 300.
                        Variable is meant be set in tests, not by user.
-                       It's equivalent of `tst_test.timeout` in C.
+                       It's equivalent of `tst_test.timeout` in C, but (unlike
+                       the C API) it can be set also in the setup function.
+                       This is useful if test length depends on input decided
+                       during setup.
 |=============================================================================
 
 NOTE: Network tests (see testcases/network/README.md) use additional variables
