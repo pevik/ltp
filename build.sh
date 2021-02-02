@@ -9,8 +9,11 @@
 
 set -e
 
-CFLAGS="${CFLAGS:--Wformat -Werror=format-security -Werror=implicit-function-declaration -Werror=return-type -fno-common}"
 CC="${CC:-gcc}"
+
+DEFAULT_CFLAGS='-Wformat -Werror=format-security -Werror=implicit-function-declaration -Werror=return-type -fno-common'
+$CC -fanalyzer 2>&1 | grep -q -- 'error:.*-fanalyzer' || DEFAULT_CFLAGS="$DEFAULT_CFLAGS -fanalyzer"
+CFLAGS="${CFLAGS:-$DEFAULT_CFLAGS}"
 
 DEFAULT_PREFIX="$HOME/ltp-install"
 DEFAULT_BUILD="native"
