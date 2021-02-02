@@ -85,19 +85,25 @@ static void test_update_nonupdatable(const char *type,
 
 	new_session_keyring();
 
+	int is_asymmetric = !strcmp(type, "asymmetric");
+
 	TEST(add_key(type, "desc", payload, plen, KEY_SPEC_SESSION_KEYRING));
 	if (TST_RET < 0) {
+		if (TST_ERR == EINVAL && is_asymmetric && tst_fips_enabled()) {
+			tst_res(TCONF, "key size not allowed in FIPS mode");
+			return;
+		}
 		if (TST_ERR == ENODEV) {
 			tst_res(TCONF, "kernel doesn't support key type '%s'",
 				type);
 			return;
 		}
-		if (TST_ERR == EBADMSG && !strcmp(type, "asymmetric")) {
+		if (TST_ERR == EBADMSG && is_asymmetric) {
 			tst_res(TCONF, "kernel is missing x509 cert parser "
 				"(CONFIG_X509_CERTIFICATE_PARSER)");
 			return;
 		}
-		if (TST_ERR == ENOENT && !strcmp(type, "asymmetric")) {
+		if (TST_ERR == ENOENT && is_asymmetric) {
 			tst_res(TCONF, "kernel is missing crypto algorithms "
 				"needed to parse x509 cert (CONFIG_CRYPTO_RSA "
 				"and/or CONFIG_CRYPTO_SHA256)");
