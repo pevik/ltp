@@ -125,6 +125,10 @@ static void setup(void)
 
 static int check_result(const struct test_case *tc, const char *func, long exp)
 {
+	fprintf(stderr, "%s:%d %s(): tc->fill_fs: %d, tc->no_cow: %d, TST_RET: %ld, TST_ERR: %d\n",
+			__FILE__, __LINE__, __func__,
+			tc->fill_fs, tc->no_cow, TST_RET, TST_ERR); // FIXME: debug
+
 	if (tc->fill_fs && !tc->no_cow && TST_RET < 0) {
 		if (TST_RET != -1) {
 			tst_res(TFAIL, "%s returned unexpected value %ld",
