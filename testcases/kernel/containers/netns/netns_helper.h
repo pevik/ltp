@@ -37,6 +37,7 @@ static void check_iproute(unsigned int spe_ipver)
 	FILE *ipf;
 	int n;
 	unsigned int ipver = 0;
+	char ver;
 
 	ipf = popen("ip -V", "r");
 	if (ipf == NULL)
@@ -44,7 +45,14 @@ static void check_iproute(unsigned int spe_ipver)
 				"Failed while opening pipe for iproute check");
 
 	n = fscanf(ipf, "ip utility, iproute2-ss%u", &ipver);
+	pclose(ipf);
 	if (n < 1) {
+		ipf = popen("ip -V", "r");
+		n = fscanf(ipf, "ip utility, iproute2-%s", &ver);
+		if (n >= 1) {
+			pclose(ipf);
+			return;
+		}
 		tst_brkm(TCONF, NULL,
 			"Failed while obtaining version for iproute check");
 	}
@@ -52,8 +60,6 @@ static void check_iproute(unsigned int spe_ipver)
 		tst_brkm(TCONF, NULL, "The commands in iproute tools do "
 			"not support required objects");
 	}
-
-	pclose(ipf);
 }
 
 static int dummy(void *arg)
