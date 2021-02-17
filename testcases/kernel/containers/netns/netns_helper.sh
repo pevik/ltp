@@ -50,6 +50,15 @@ tst_check_iproute()
 	local cur_ipver="$(ip -V)"
 	local spe_ipver="$1"
 
+	echo $cur_ipver | grep "ip utility, iproute2-ss" > /dev/null
+	ret1=$?
+	echo $cur_ipver | grep "ip utility, iproute2-" > /dev/null
+	ret2=$?
+
+	if [ $ret1 -ne 0 -a $ret2 -eq 0 ]; then
+		return
+	fi
+
 	cur_ipver=${cur_ipver##*s}
 
 	if [ -z "$cur_ipver" -o -z "$spe_ipver" ]; then
