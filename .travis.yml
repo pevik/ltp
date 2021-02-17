@@ -1,6 +1,6 @@
-# Copyright (c) 2017-2020 Petr Vorel <pvorel@suse.cz>
+# Copyright (c) 2017-2021 Petr Vorel <pvorel@suse.cz>
 
-dist: bionic
+dist: focal
 sudo: required
 language: c
 services:
@@ -85,6 +85,7 @@ matrix:
 
 before_install:
     - df -hT
+
     # pull rate limit workaround
     - tmpdaemon=$(mktemp)
     - sudo jq '."registry-mirrors" += ["https://mirror.gcr.io"]' /etc/docker/daemon.json > $tmpdaemon
@@ -92,6 +93,7 @@ before_install:
     - sudo systemctl daemon-reload
     - sudo systemctl restart docker
     - docker system info
+
     # ltp
     - DIR="/usr/src/ltp"
     - printf "FROM $DISTRO\nRUN mkdir -p $DIR\nWORKDIR $DIR\nCOPY . $DIR\n" > Dockerfile
@@ -104,4 +106,14 @@ script:
     - if [ "$MAKE_INSTALL" = 1 ]; then INSTALL_OPT="-i"; fi
     - if [ ! "$TREE" ]; then TREE="in"; fi
     - case $VARIANT in cross-compile*) BUILD="cross";; i386) BUILD="32";; *) BUILD="native";; esac
+
+    # Tumbleweed requires newer Docker version
+    - >
+        if [ "${DISTRO//*\/}" = "tumbleweed" -o "$INSTALL" = "fedora" ]; then
+            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+            sudo add-apt-repository "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+            sudo apt-get update
+            sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
+        fi
+
     - docker run -t ltp /bin/sh -c "cd travis && ./$INSTALL.sh && if [ \"$VARIANT\" ]; then ARCH=\"$ARCH\" ./$INSTALL.$VARIANT.sh; fi && ../build.sh -o $TREE -t $BUILD -c $CC $INSTALL_OPT"
