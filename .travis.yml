@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2020 Petr Vorel <pvorel@suse.cz>
+# Copyright (c) 2017-2021 Petr Vorel <pvorel@suse.cz>
 
 dist: bionic
 sudo: required
@@ -40,6 +40,10 @@ matrix:
 
         # other builds
         - os: linux
+          env: DISTRO=opensuse/tumbleweed
+          compiler: gcc
+
+        - os: linux
           env: DISTRO=fedora:latest MAKE_INSTALL=1
           compiler: clang
 
@@ -79,25 +83,25 @@ matrix:
           env: DISTRO=centos:latest
           compiler: gcc
 
-before_install:
-    - df -hT
-    # pull rate limit workaround
-    - tmpdaemon=$(mktemp)
-    - sudo jq '."registry-mirrors" += ["https://mirror.gcr.io"]' /etc/docker/daemon.json > $tmpdaemon
-    - sudo mv $tmpdaemon /etc/docker/daemon.json
-    - sudo systemctl daemon-reload
-    - sudo systemctl restart docker
-    - docker system info
-    # ltp
-    - DIR="/usr/src/ltp"
-    - printf "FROM $DISTRO\nRUN mkdir -p $DIR\nWORKDIR $DIR\nCOPY . $DIR\n" > Dockerfile
-    - cat Dockerfile
-    - docker build -t ltp .
-
 script:
     - INSTALL="${DISTRO%%:*}"
     - INSTALL="${INSTALL%%/*}"
     - if [ "$MAKE_INSTALL" = 1 ]; then INSTALL_OPT="-i"; fi
     - if [ ! "$TREE" ]; then TREE="in"; fi
     - case $VARIANT in cross-compile*) BUILD="cross";; i386) BUILD="32";; *) BUILD="native";; esac
-    - docker run -t ltp /bin/sh -c "cd travis && ./$INSTALL.sh && if [ \"$VARIANT\" ]; then ARCH=\"$ARCH\" ./$INSTALL.$VARIANT.sh; fi && ../build.sh -o $TREE -t $BUILD -c $CC $INSTALL_OPT"
+
+    # podman
+    - . /etc/os-release
+    - echo "deb [arch=$(dpkg --print-architecture)] https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/testing/xUbuntu_${VERSION_ID}/ /" | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:testing.list
+    - curl -fsSL https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/testing/xUbuntu_${VERSION_ID}/Release.key | sudo apt-key add -
+    - sudo apt-get update
+    - sudo apt-get -y install podman runc
+    - sudo mkdir -p /etc/containers
+    - printf "[registries.search]\nregistries = [\"docker.io\"]\n" | sudo tee /etc/containers/registries.conf
+
+    # ltp
+    - DIR="/usr/src/ltp"
+    - printf "FROM $DISTRO\nRUN mkdir -p $DIR\nWORKDIR $DIR\nCOPY . $DIR\n" > Dockerfile
+    - cat Dockerfile
+    - sudo podman build --security-opt seccomp:unconfined -t ltp .
+    - sudo podman run -t ltp /bin/sh -c "cd travis && ./$INSTALL.sh && if [ \"$VARIANT\" ]; then ARCH=\"$ARCH\" ./$INSTALL.$VARIANT.sh; fi && ../build.sh -o $TREE -t $BUILD -c $CC $INSTALL_OPT"
