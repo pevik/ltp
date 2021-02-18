@@ -33,6 +33,8 @@ AC_PROG_YACC
 m4_ifndef([PKG_CHECK_EXISTS],
 	[m4_fatal([must install pkg-config or pkgconfig and pkg.m4 macro (usual dependency), see INSTALL])])
 
+PKG_PROG_PKG_CONFIG(0.29)
+
 AC_PREFIX_DEFAULT(/opt/ltp)
 
 AC_CHECK_DECLS([IFLA_NET_NS_PID],,,[#include <linux/if_link.h>])
