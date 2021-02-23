@@ -15,6 +15,7 @@
 *
 ***************************************************************************/
 #include "libclone.h"
+#include "test.h"
 
 int do_clone_tests(unsigned long clone_flags,
 		   int (*fn1) (void *arg), void *arg1,
