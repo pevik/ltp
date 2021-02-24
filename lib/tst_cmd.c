@@ -58,7 +58,7 @@ int tst_cmd_fds_(void (cleanup_fn)(void),
 
 	char path[PATH_MAX];
 
-	if (tst_get_path(argv[0], path, sizeof(path))) {
+	if (argv[0][0] != '/' && tst_get_path(argv[0], path, sizeof(path))) {
 		if (flags & TST_CMD_TCONF_ON_MISSING)
 			tst_brkm(TCONF, cleanup_fn, "Couldn't find '%s' in $PATH at %s:%d", argv[0],
 				 __FILE__, __LINE__);
