@@ -8,12 +8,14 @@
  * Tests tst_cgroup.h APIs
  */
 
+#include <stdlib.h>
+
 #include "tst_test.h"
 #include "tst_cgroup.h"
 
-#define PATH_CGROUP1 "/mnt/liwang1"
-#define PATH_CGROUP2 "/mnt/liwang2"
 #define MEMSIZE 1024 * 1024
+
+static const struct tst_cgroup *cg;
 
 static void do_test(void)
 {
@@ -21,41 +23,32 @@ static void do_test(void)
 
 	switch (pid) {
 	case 0:
-		tst_cgroup_move_current(PATH_CGROUP1);
-		tst_cgroup_mem_set_maxbytes(PATH_CGROUP1, MEMSIZE);
-		tst_cgroup_mem_set_maxswap(PATH_CGROUP1, MEMSIZE);
-
-		tst_cgroup_move_current(PATH_CGROUP2);
-
-	break;
+		SAFE_CGROUP_PRINTF(&cg->cgroup.procs, "%d", getpid());
+		SAFE_CGROUP_PRINTF(&cg->memory.max, "%d", MEMSIZE);
+		if (TST_CGROUP_HAS(&cg->memory.swap))
+			SAFE_CGROUP_PRINTF(&cg->memory.swap.max, "%d", MEMSIZE);
+		exit(0);
+		break;
 	default:
-		tst_cgroup_move_current(PATH_TMP_CG_CST);
-
-		tst_cgroup_move_current(PATH_TMP_CG_MEM);
-		tst_cgroup_mem_set_maxbytes(PATH_TMP_CG_MEM, MEMSIZE);
-		tst_cgroup_mem_set_maxswap(PATH_TMP_CG_MEM, MEMSIZE);
+		SAFE_CGROUP_PRINTF(&cg->cgroup.procs, "%d", getpid());
 	break;
 	}
 
-	tst_res(TPASS, "Cgroup mount test");
+	tst_reap_children();
+	tst_res(TPASS, "Cgroup test");
 }
 
 static void setup(void)
 {
-	tst_cgroup_mount(TST_CGROUP_MEMCG, PATH_TMP_CG_MEM);
-	tst_cgroup_mount(TST_CGROUP_MEMCG, PATH_CGROUP1);
-
-	tst_cgroup_mount(TST_CGROUP_CPUSET, PATH_TMP_CG_CST);
-	tst_cgroup_mount(TST_CGROUP_CPUSET, PATH_CGROUP2);
+	/* Omitting the below causes a warning */
+	/* tst_cgroup_require(TST_CGROUP_CPUSET, NULL); */
+	tst_cgroup_require(TST_CGROUP_MEMORY, NULL);
+	cg = tst_cgroup_get_default();
 }
 
 static void cleanup(void)
 {
-	tst_cgroup_umount(PATH_TMP_CG_MEM);
-	tst_cgroup_umount(PATH_CGROUP1);
-
-	tst_cgroup_umount(PATH_TMP_CG_CST);
-	tst_cgroup_umount(PATH_CGROUP2);
+	tst_cgroup_cleanup();
 }
 
 static struct tst_test test = {
