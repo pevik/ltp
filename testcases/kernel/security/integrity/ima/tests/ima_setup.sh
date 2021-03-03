@@ -107,6 +107,22 @@ check_ima_policy_cmdline()
 	return 1
 }
 
+check_policy_template()
+{
+	local template="$1"
+	local func="$2"
+	grep -E "template=" $TST_TMPDIR/policy.txt | while read line
+	do
+		ima_template=$(echo $line | grep $template)
+		if [ -z "$ima_template" ]; then
+			tst_res TCONF "Only $template can be specified for $func"
+			return 1
+		fi
+	done
+
+	return 0
+}
+
 require_ima_policy_cmdline()
 {
 	local policy="$1"
