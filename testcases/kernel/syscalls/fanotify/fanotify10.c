@@ -534,11 +534,6 @@ static void cleanup(void)
 		tst_brk(TBROK | TERRNO, "bind umount failed");
 }
 
-static const char *const resource_files[] = {
-	TEST_APP,
-	NULL
-};
-
 static struct tst_test test = {
 	.test = test_fanotify,
 	.tcnt = ARRAY_SIZE(tcases),
@@ -548,7 +543,10 @@ static struct tst_test test = {
 	.mntpoint = MOUNT_PATH,
 	.needs_root = 1,
 	.forks_child = 1,
-	.resource_files = resource_files,
+	.resource_files = (const char *const []) {
+		TEST_APP,
+		NULL
+	},
 	.tags = (const struct tst_tag[]) {
 		{"linux-git", "9bdda4e9cf2d"},
 		{"linux-git", "2f02fd3fa13e"},
