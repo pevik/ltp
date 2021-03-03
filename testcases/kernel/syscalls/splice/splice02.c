@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * Copyright (c) Jens Axboe <axboe@kernel.dk>, 2009
+ * Copyright (c) 2021 Petr Vorel <pvorel@suse.cz>
  * http://lkml.org/lkml/2009/4/2/55
  */
 
@@ -15,11 +16,27 @@
 #include "lapi/splice.h"
 
 #define SPLICE_SIZE (64*1024)
+#define DEFAULT_NARG 20000
 
-static void splice_test(void)
+static char *narg;
+static int num = DEFAULT_NARG;
+static int pipe_fd[2];
+
+static void setup(void)
+{
+	if (tst_parse_int(narg, &num, 1, INT_MAX))
+		tst_brk(TBROK, "invalid number of input '%s'", narg);
+}
+
+static void do_child(void)
 {
 	int fd;
 
+	SAFE_CLOSE(pipe_fd[1]);
+	close(STDIN_FILENO);
+	SAFE_DUP2(pipe_fd[0], STDIN_FILENO);
+
+	TST_CHECKPOINT_WAIT(0);
 	fd = SAFE_OPEN("splice02-temp", O_WRONLY | O_CREAT | O_TRUNC, 0644);
 
 	TEST(splice(STDIN_FILENO, NULL, fd, NULL, SPLICE_SIZE, 0));
@@ -31,10 +48,40 @@ static void splice_test(void)
 	}
 
 	SAFE_CLOSE(fd);
+
+	exit(0);
+}
+
+static void run(void)
+{
+	int i;
+
+	SAFE_PIPE(pipe_fd);
+
+	if (SAFE_FORK())
+		do_child();
+
+	tst_res(TINFO, "writting %d times", num);
+
+	for (i = 0; i < num; i++)
+		SAFE_WRITE(1, pipe_fd[1], "x", 1);
+
+	TST_CHECKPOINT_WAKE(0);
+	tst_reap_children();
+
+	SAFE_CLOSE(pipe_fd[0]);
+	SAFE_CLOSE(pipe_fd[1]);
 }
 
 static struct tst_test test = {
-	.test_all = splice_test,
+	.test_all = run,
+	.setup = setup,
+	.needs_checkpoints = 1,
 	.needs_tmpdir = 1,
+	.forks_child = 1,
 	.min_kver = "2.6.17",
+	.options = (struct tst_option[]) {
+		{"n:", &narg, "-n x     Number of input"},
+		{}
+	},
 };
