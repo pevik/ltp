@@ -59,9 +59,11 @@
  * @sa tst_fzsync_pair
  */
 
+#define _GNU_SOURCE
+
 #include <math.h>
 #include <pthread.h>
-#include <sched.h>
+#include "lapi/cpuset.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <sys/time.h>
@@ -213,12 +215,26 @@ struct tst_fzsync_pair {
  */
 static void tst_fzsync_pair_init(struct tst_fzsync_pair *pair)
 {
+	long ncpus = tst_ncpus();
+#ifdef CPU_COUNT
+	size_t cpusz = CPU_ALLOC_SIZE(ncpus);
+	cpu_set_t *cpus = CPU_ALLOC(ncpus);
+
+	if (sched_getaffinity(0, cpusz, cpus)) {
+		tst_res(TWARN | TERRNO, "sched_getaffinity(0, %zu, %zx)",
+			cpusz, (size_t)cpus);
+	} else {
+		ncpus = CPU_COUNT(cpus);
+	}
+	free(cpus);
+#endif
+
 	CHK(avg_alpha, 0, 1, 0.25);
 	CHK(min_samples, 20, INT_MAX, 1024);
 	CHK(max_dev_ratio, 0, 1, 0.1);
 	CHK(exec_time_p, 0, 1, 0.5);
 	CHK(exec_loops, 20, INT_MAX, 3000000);
-	CHK(yield_in_wait, 0, 1, (tst_ncpus() <= 1));
+	CHK(yield_in_wait, 0, 1, (ncpus <= 1));
 }
 #undef CHK
 
