@@ -27,6 +27,7 @@
 #include "tst_wallclock.h"
 #include "tst_sys_conf.h"
 #include "tst_kconfig.h"
+#include "tst_hardware.h"
 
 #include "old_resource.h"
 #include "old_device.h"
@@ -499,6 +500,14 @@ static void print_test_tags(void)
 	printf("\n");
 }
 
+static void print_test_hardware(void)
+{
+	if (!tst_test->needs_hardware)
+		return;
+
+	printf("\nNeeded hardware\n--------------\n%s\n\n", tst_test->needs_hardware);
+}
+
 static void check_option_collision(void)
 {
 	unsigned int i, j;
@@ -578,6 +587,7 @@ static void parse_opts(int argc, char *argv[])
 		case 'h':
 			print_help();
 			print_test_tags();
+			print_test_hardware();
 			exit(0);
 		case 'i':
 			iterations = atoi(optarg);
@@ -941,6 +951,21 @@ static void do_setup(int argc, char *argv[])
 			if (tst_check_driver(name))
 				tst_brk(TCONF, "%s driver not available", name);
 	}
+
+	if (tst_test->needs_hardware) {
+		unsigned int cnt = tst_hwlist_discover(tst_test->needs_hardware);
+
+		if (!cnt) {
+			tst_brk(TCONF, "No hardware '%s' discovered",
+				tst_test->needs_hardware);
+		}
+
+		tst_res(TINFO, "Found %u hardware configurations for '%s'",
+			cnt, tst_test->needs_hardware);
+	}
+
+	if (tst_test->format_device)
+		tst_test->needs_device = 1;
 
 	if (tst_test->mount_device)
 		tst_test->format_device = 1;
@@ -1393,6 +1418,11 @@ void tst_run_tcases(int argc, char *argv[], struct tst_test *self)
 	if (tst_test->test_variants)
 		test_variants = tst_test->test_variants;
 
+	if (tst_test->needs_hardware) {
+		test_variants = tst_hwlist_cnt();
+		tst_hwlist_reset();
+	}
+
 	for (tst_variant = 0; tst_variant < test_variants; tst_variant++) {
 		if (tst_test->all_filesystems)
 			ret |= run_tcases_per_fs();
@@ -1401,6 +1431,9 @@ void tst_run_tcases(int argc, char *argv[], struct tst_test *self)
 
 		if (ret & ~(TCONF))
 			goto exit;
+
+		if (tst_test->needs_hardware)
+			tst_hwlist_next();
 	}
 
 exit:
