@@ -65,7 +65,7 @@ tst_apparmor_used_profile()
 # Return 1: enabled in permissive mode or disabled
 tst_selinux_enforced()
 {
-	local f="$(_tst_get_enforce)"
+	local f="$(tst_get_enforce)"
 
 	[ -f "$f" ] && [ "$(cat $f)" = "1" ]
 }
@@ -117,17 +117,37 @@ tst_disable_selinux()
 	tst_res TINFO "trying to disable SELinux (requires super/root)"
 	tst_require_root
 
-	local f="$(_tst_get_enforce)"
+	local f="$(tst_get_enforce)"
 
 	[ -f "$f" ] && cat 0 > $f
 }
 
-# Get SELinux enforce file path
-_tst_get_enforce()
+# Get SELinux directory path
+tst_get_selinux_dir()
 {
 	local dir="/sys/fs/selinux"
 
 	[ -d "$dir" ] || dir="/selinux"
+	[ -d "$dir" ] && echo "$dir"
+}
+
+# Get SELinux enforce file path
+tst_get_enforce()
+{
+	local dir=$(tst_get_selinux_dir)
+	[ -z "$dir" ] || return
+
 	local f="$dir/enforce"
 	[ -f "$f" ] && echo "$f"
+}
+
+tst_update_selinux_state()
+{
+	local cur_val new_val
+	local dir=$(tst_get_selinux_dir)
+	[ -z "$dir" ] || return 1
+
+	cur_val=$(cat $dir/checkreqprot)
+	[ $cur_val = 1 ] && new_val=0 || new_val=1
+	echo $new_val > $dir/checkreqprot
 }
