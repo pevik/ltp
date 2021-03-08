@@ -15,8 +15,7 @@ TST_CLEANUP=cleanup
 . ima_setup.sh
 
 FUNC_KEYCHECK='func=KEY_CHECK'
-TEMPLATE_BUF='template=ima-buf'
-REQUIRED_POLICY="^measure.*($FUNC_KEYCHECK.*$TEMPLATE_BUF|$TEMPLATE_BUF.*$FUNC_KEYCHECK)"
+REQUIRED_POLICY="^measure.*$FUNC_KEYCHECK"
 
 setup()
 {
@@ -33,9 +32,10 @@ check_keys_policy()
 	local pattern="$1"
 
 	if ! grep -E "$pattern" $TST_TMPDIR/policy.txt; then
-		tst_res TCONF "IMA policy must specify $pattern, $FUNC_KEYCHECK, $TEMPLATE_BUF"
+		tst_res TCONF "IMA policy must specify $pattern, $FUNC_KEYCHECK"
 		return 1
 	fi
+
 	return 0
 }
 
@@ -48,6 +48,8 @@ test1()
 	local test_file="file.txt" tmp_file="file2.txt"
 
 	tst_res TINFO "verify key measurement for keyrings and templates specified in IMA policy"
+
+	check_policy_template "template=ima-buf" $FUNC_KEYCHECK || return
 
 	check_keys_policy "$pattern" > $tmp_file || return
 	keycheck_lines=$(cat $tmp_file)
@@ -100,6 +102,8 @@ test2()
 	local temp_file="file.txt"
 
 	tst_res TINFO "verify measurement of certificate imported into a keyring"
+
+	check_policy_template "template=ima-buf" $FUNC_KEYCHECK || return
 
 	check_keys_policy "$pattern" >/dev/null || return
 
