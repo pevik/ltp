@@ -2,8 +2,18 @@
 /*
  * Copyright (c) Jens Axboe <axboe@kernel.dk>, 2009
  * Copyright (c) 2021 Petr Vorel <pvorel@suse.cz>
- * http://lkml.org/lkml/2009/4/2/55
  */
+
+/*\
+ * [DESCRIPTION]
+ * Original reproducer: http://lkml.org/lkml/2009/4/2/55
+ *
+ * [ALGORITHM]
+ * - create pipe
+ * - fork(), child replace stdin with pipe
+ * - parent write to pipe
+ * - child slice from pipe
+\*/
 
 #define _GNU_SOURCE
 
@@ -82,6 +92,10 @@ static struct tst_test test = {
 	.min_kver = "2.6.17",
 	.options = (struct tst_option[]) {
 		{"n:", &narg, "-n x     Number of input"},
+		{}
+	},
+	.tags = (const struct tst_tag[]) {
+		{"linux-git", "bf40d3435caf"},
 		{}
 	},
 };
