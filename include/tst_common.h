@@ -83,4 +83,9 @@
 #define TST_RES_SUPPORTS_TCONF_TFAIL_TINFO_TPASS_TWARN(condition) \
 	TST_BUILD_BUG_ON(condition)
 
+#define tst_container_of(ptr, type, member) ({		     \
+	const typeof( ((type *)0)->member ) *__mptr = (ptr); \
+	(type *)( (char *)__mptr - offsetof(type,member) );  \
+})
+
 #endif /* TST_COMMON_H__ */
