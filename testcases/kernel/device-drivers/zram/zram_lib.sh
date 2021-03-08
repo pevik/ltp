@@ -34,7 +34,23 @@ zram_cleanup()
 
 zram_load()
 {
+	local tmp
+
+	if [ -z "$dev_num" ]; then
+		dev_num=0
+		for tmp in $zram_max_streams; do
+			dev_num=$((dev_num+1))
+		done
+	fi
+
+	if [ $dev_num -le 0 ]; then
+		tst_brk TBROK "dev_num must be > 0"
+	fi
+
+	tst_set_timeout $((dev_num*450))
+
 	tst_res TINFO "create '$dev_num' zram device(s)"
+
 	modprobe zram num_devices=$dev_num || \
 		tst_brk TBROK "failed to insert zram module"
 
@@ -42,9 +58,9 @@ zram_load()
 
 	if [ "$dev_num_created" -ne "$dev_num" ]; then
 		tst_brk TFAIL "unexpected num of devices: $dev_num_created"
-	else
-		tst_res TPASS "test succeeded"
 	fi
+
+	tst_res TPASS "all zram devices successfully created"
 }
 
 zram_max_streams()
@@ -146,69 +162,4 @@ zram_set_memlimit()
 	done
 
 	tst_res TPASS "test succeeded"
-}
-
-zram_makeswap()
-{
-	tst_res TINFO "make swap with zram device(s)"
-	tst_require_cmds mkswap swapon swapoff
-	local i=0
-
-	for i in $(seq 0 $(($dev_num - 1))); do
-		ROD mkswap /dev/zram$i
-		ROD swapon /dev/zram$i
-		tst_res TINFO "done with /dev/zram$i"
-		dev_makeswap=$i
-	done
-
-	tst_res TPASS "making zram swap succeeded"
-}
-
-zram_swapoff()
-{
-	tst_require_cmds swapoff
-	local i
-
-	for i in $(seq 0 $dev_makeswap); do
-		ROD swapoff /dev/zram$i
-	done
-	dev_makeswap=-1
-
-	tst_res TPASS "swapoff completed"
-}
-
-zram_makefs()
-{
-	tst_require_cmds mkfs
-	local i=0
-
-	for fs in $zram_filesystems; do
-		# if requested fs not supported default it to ext2
-		tst_supported_fs $fs 2> /dev/null || fs=ext2
-
-		tst_res TINFO "make $fs filesystem on /dev/zram$i"
-		mkfs.$fs /dev/zram$i > err.log 2>&1
-		if [ $? -ne 0 ]; then
-			cat err.log
-			tst_brk TFAIL "failed to make $fs on /dev/zram$i"
-		fi
-
-		i=$(($i + 1))
-	done
-
-	tst_res TPASS "zram_makefs succeeded"
-}
-
-zram_mount()
-{
-	local i=0
-
-	for i in $(seq 0 $(($dev_num - 1))); do
-		tst_res TINFO "mount /dev/zram$i"
-		mkdir zram$i
-		ROD mount /dev/zram$i zram$i
-		dev_mounted=$i
-	done
-
-	tst_res TPASS "mount of zram device(s) succeeded"
 }
