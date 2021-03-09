@@ -103,7 +103,6 @@ before_install:
         fi
 
     # Docker Hub pull rate limit workaround
-    - conf="/etc/docker/daemon.json"
     - tmpdaemon=$(mktemp)
     - sudo jq '."registry-mirrors" += ["https://mirror.gcr.io"]' $conf > $tmpdaemon
     - sudo mv $tmpdaemon $conf
