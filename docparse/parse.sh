@@ -1,7 +1,7 @@
 #!/bin/sh
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright (c) 2019 Cyril Hrubis <chrubis@suse.cz>
-# Copyright (c) 2020 Petr Vorel <pvorel@suse.cz>
+# Copyright (c) 2020-2021 Petr Vorel <pvorel@suse.cz>
 set -e
 
 top_builddir=$PWD/..
@@ -25,7 +25,7 @@ echo ' "tests": {'
 
 first=1
 
-for test in `find testcases/ -name '*.c'`; do
+for test in ${@:-$(find testcases/ -name '*.c')}; do
 	a=$($top_builddir/docparse/docparse "$test")
 	if [ -n "$a" ]; then
 		if [ -z "$first" ]; then
