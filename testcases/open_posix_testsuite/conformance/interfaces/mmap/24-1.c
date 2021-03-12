@@ -18,6 +18,7 @@
  * 3. Should get ENOMEM.
  */
 
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -29,11 +30,11 @@
 #include <string.h>
 #include <errno.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include "posixtest.h"
 
 int main(void)
 {
-	char tmpfname[256];
 	void *pa;
 	size_t len;
 	int fd;
@@ -43,27 +44,23 @@ int main(void)
 
 	size_t mapped_size = 0;
 
-	snprintf(tmpfname, sizeof(tmpfname), "pts_mmap_25_1_%d", getpid());
+	char buf[100];
 
-	/* Create shared object */
-	shm_unlink(tmpfname);
-	fd = shm_open(tmpfname, O_RDWR | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR);
-	if (fd == -1) {
-		printf("Error at shm_open(): %s\n", strerror(errno));
-		return PTS_UNRESOLVED;
-	}
-	shm_unlink(tmpfname);
-
-	if (ftruncate(fd, shm_size) == -1) {
-		printf("Error at ftruncate(): %s\n", strerror(errno));
-		return PTS_UNRESOLVED;
-	}
+	snprintf(buf, sizeof(buf), "cat /proc/%d/maps", getpid());
 
 	len = shm_size;
 
 	mapped_size = 0;
+	int i = 0;
 	while (mapped_size < SIZE_MAX) {
-		pa = mmap(NULL, len, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+		if (i == 0 || i == 1000) {
+			printf("\n=== %d: %s ===\n", i, buf);
+			fflush(stdout);
+			system(buf);
+		}
+		i++;
+
+		pa = mmap(NULL, len, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_SHARED, -1, 0);
 		if (pa == MAP_FAILED && errno == ENOMEM) {
 			printf("Total mapped size is %lu bytes\n",
 			       (unsigned long)mapped_size);
