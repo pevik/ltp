@@ -9,6 +9,8 @@
  * which they should take it in turns to update.
  */
 
+#define _GNU_SOURCE
+
 #include <stdlib.h>
 #include "tst_test.h"
 #include "tst_safe_pthread.h"
