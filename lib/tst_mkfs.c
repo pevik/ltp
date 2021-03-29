@@ -52,6 +52,16 @@ void tst_mkfs_(const char *file, const int lineno, void (cleanup_fn)(void),
 
 	snprintf(mkfs, sizeof(mkfs), "mkfs.%s", fs_type);
 
+	/*
+	 * Workaround a problem:
+	 * mkfs.vfat: Partitions or virtual mappings on device '/dev/loop0', not
+	 * making filesystem (use -I to override)
+	 */
+	if (!strcmp(fs_type, "vfat")) {
+		argv[pos] = "-I";
+		strcat(fs_opts_str, argv[pos++]);
+	}
+
 	if (fs_opts) {
 		for (i = 0; fs_opts[i]; i++) {
 			argv[pos++] = fs_opts[i];
