@@ -15,6 +15,10 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <sys/ioctl.h>
+#include <sys/mount.h>
+#include <fcntl.h>
+
 #include "test.h"
 #include "ltp_priv.h"
 #include "tst_mkfs.h"
@@ -26,7 +30,7 @@ void tst_mkfs_(const char *file, const int lineno, void (cleanup_fn)(void),
 	       const char *dev, const char *fs_type,
 	       const char *const fs_opts[], const char *const extra_opts[])
 {
-	int i, pos = 1, ret;
+	int fd, i, pos = 1, ret;
 	char mkfs[64];
 	const char *argv[OPTS_MAX] = {mkfs};
 	char fs_opts_str[1024] = "";
@@ -92,6 +96,13 @@ void tst_mkfs_(const char *file, const int lineno, void (cleanup_fn)(void),
 		tst_brkm_(file, lineno, TBROK, cleanup_fn,
 			"tst_clear_device() failed");
 	}
+
+	/* force kernel to reread partition table */
+	fd = open(dev, O_RDONLY);
+	tst_resm_(file, lineno, TINFO, "dev: %s, fd: %d", dev, fd);
+	ret = ioctl(fd, BLKRRPART);
+	tst_resm_(file, lineno, TINFO, "rc: %d", ret);
+	close(fd);
 
 	tst_resm_(file, lineno, TINFO,
 		"Formatting %s with %s opts='%s' extra opts='%s'",
