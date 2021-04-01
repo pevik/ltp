@@ -59,12 +59,14 @@
  * @sa tst_fzsync_pair
  */
 
+#include <math.h>
+#include <pthread.h>
+#include <stdbool.h>
+#include <stdlib.h>
 #include <sys/time.h>
 #include <time.h>
-#include <math.h>
-#include <stdlib.h>
-#include <pthread.h>
 #include "tst_atomic.h"
+#include "tst_cpu.h"
 #include "tst_timer.h"
 #include "tst_safe_pthread.h"
 
@@ -180,6 +182,15 @@ struct tst_fzsync_pair {
 	int exec_loop;
 	/** Internal; The second thread or 0 */
 	pthread_t thread_b;
+	/**
+	 * The flag indicates single core machines or not
+	 *
+	 * If running on single core machines, it would take considerable
+	 * amount of time to run fuzzy sync library.
+	 * Thus call sched_yield to give up cpu to decrease the test time.
+	 */
+	bool yield_in_wait;
+
 };
 
 #define CHK(param, low, hi, def) do {					      \
@@ -201,11 +212,16 @@ struct tst_fzsync_pair {
  */
 static void tst_fzsync_pair_init(struct tst_fzsync_pair *pair)
 {
+	long ncpus = tst_ncpus_available();
+
 	CHK(avg_alpha, 0, 1, 0.25);
 	CHK(min_samples, 20, INT_MAX, 1024);
 	CHK(max_dev_ratio, 0, 1, 0.1);
 	CHK(exec_time_p, 0, 1, 0.5);
 	CHK(exec_loops, 20, INT_MAX, 3000000);
+
+	if (ncpus <= 1)
+		pair->yield_in_wait = 1;
 }
 #undef CHK
 
@@ -289,6 +305,7 @@ static void tst_fzsync_pair_reset(struct tst_fzsync_pair *pair,
 	tst_init_stat(&pair->diff_ab);
 	tst_init_stat(&pair->spins_avg);
 	pair->delay = 0;
+	pair->delay_bias = 0;
 	pair->sampling = pair->min_samples;
 
 	pair->exec_loop = 0;
@@ -517,9 +534,9 @@ static void tst_fzsync_pair_update(struct tst_fzsync_pair *pair)
 			tst_res(TINFO,
 				"Reached deviation ratios < %.2f, introducing randomness",
 				pair->max_dev_ratio);
-			tst_res(TINFO, "Delay range is [-%d, %d]",
-				(int)(pair->diff_sb.avg / per_spin_time) + pair->delay_bias,
-				(int)(pair->diff_sa.avg / per_spin_time) - pair->delay_bias);
+			tst_res(TINFO, "Delay range is [%d, %d]",
+				-(int)(pair->diff_sb.avg / per_spin_time) + pair->delay_bias,
+				(int)(pair->diff_sa.avg / per_spin_time) + pair->delay_bias);
 			tst_fzsync_pair_info(pair);
 			pair->sampling = -1;
 		}
@@ -550,7 +567,8 @@ static void tst_fzsync_pair_update(struct tst_fzsync_pair *pair)
  */
 static inline void tst_fzsync_pair_wait(int *our_cntr,
 					int *other_cntr,
-					int *spins)
+					int *spins,
+					bool yield_in_wait)
 {
 	if (tst_atomic_inc(other_cntr) == INT_MAX) {
 		/*
@@ -560,27 +578,53 @@ static inline void tst_fzsync_pair_wait(int *our_cntr,
 		 * line above before doing that. If we are in rear position
 		 * then our counter may already have been set to zero.
 		 */
-		while (tst_atomic_load(our_cntr) > 0
-		       && tst_atomic_load(our_cntr) < INT_MAX) {
-			if (spins)
-				(*spins)++;
+		if (yield_in_wait) {
+			while (tst_atomic_load(our_cntr) > 0
+			       && tst_atomic_load(our_cntr) < INT_MAX) {
+				if (spins)
+					(*spins)++;
+
+				sched_yield();
+			}
+		} else {
+			while (tst_atomic_load(our_cntr) > 0
+			       && tst_atomic_load(our_cntr) < INT_MAX) {
+				if (spins)
+					(*spins)++;
+			}
 		}
+
 
 		tst_atomic_store(0, other_cntr);
 		/*
 		 * Once both counters have been set to zero the invariant
 		 * is restored and we can continue.
 		 */
-		while (tst_atomic_load(our_cntr) > 1)
-			;
+		if (yield_in_wait) {
+			while (tst_atomic_load(our_cntr) > 1)
+				sched_yield();
+		} else {
+			while (tst_atomic_load(our_cntr) > 1)
+				;
+		}
 	} else {
 		/*
 		 * If our counter is less than the other thread's we are ahead
 		 * of it and need to wait.
 		 */
-		while (tst_atomic_load(our_cntr) < tst_atomic_load(other_cntr)) {
-			if (spins)
-				(*spins)++;
+		if (yield_in_wait) {
+			while (tst_atomic_load(our_cntr) <
+			       tst_atomic_load(other_cntr)) {
+				if (spins)
+					(*spins)++;
+				sched_yield();
+			}
+		} else {
+			while (tst_atomic_load(our_cntr) <
+			       tst_atomic_load(other_cntr)) {
+				if (spins)
+					(*spins)++;
+			}
 		}
 	}
 }
@@ -593,7 +637,7 @@ static inline void tst_fzsync_pair_wait(int *our_cntr,
  */
 static inline void tst_fzsync_wait_a(struct tst_fzsync_pair *pair)
 {
-	tst_fzsync_pair_wait(&pair->a_cntr, &pair->b_cntr, NULL);
+	tst_fzsync_pair_wait(&pair->a_cntr, &pair->b_cntr, NULL, pair->yield_in_wait);
 }
 
 /**
@@ -604,7 +648,7 @@ static inline void tst_fzsync_wait_a(struct tst_fzsync_pair *pair)
  */
 static inline void tst_fzsync_wait_b(struct tst_fzsync_pair *pair)
 {
-	tst_fzsync_pair_wait(&pair->b_cntr, &pair->a_cntr, NULL);
+	tst_fzsync_pair_wait(&pair->b_cntr, &pair->a_cntr, NULL, pair->yield_in_wait);
 }
 
 /**
@@ -694,8 +738,15 @@ static inline void tst_fzsync_start_race_a(struct tst_fzsync_pair *pair)
 	tst_fzsync_wait_a(pair);
 
 	delay = pair->delay;
-	while (delay < 0)
-		delay++;
+	if (pair->yield_in_wait) {
+		while (delay < 0) {
+			sched_yield();
+			delay++;
+		}
+	} else {
+		while (delay < 0)
+			delay++;
+	}
 
 	tst_fzsync_time(&pair->a_start);
 }
@@ -709,7 +760,7 @@ static inline void tst_fzsync_start_race_a(struct tst_fzsync_pair *pair)
 static inline void tst_fzsync_end_race_a(struct tst_fzsync_pair *pair)
 {
 	tst_fzsync_time(&pair->a_end);
-	tst_fzsync_pair_wait(&pair->a_cntr, &pair->b_cntr, &pair->spins);
+	tst_fzsync_pair_wait(&pair->a_cntr, &pair->b_cntr, &pair->spins, pair->yield_in_wait);
 }
 
 /**
@@ -725,8 +776,15 @@ static inline void tst_fzsync_start_race_b(struct tst_fzsync_pair *pair)
 	tst_fzsync_wait_b(pair);
 
 	delay = pair->delay;
-	while (delay > 0)
-		delay--;
+	if (pair->yield_in_wait) {
+		while (delay > 0) {
+			sched_yield();
+			delay--;
+		}
+	} else {
+		while (delay > 0)
+			delay--;
+	}
 
 	tst_fzsync_time(&pair->b_start);
 }
@@ -740,7 +798,7 @@ static inline void tst_fzsync_start_race_b(struct tst_fzsync_pair *pair)
 static inline void tst_fzsync_end_race_b(struct tst_fzsync_pair *pair)
 {
 	tst_fzsync_time(&pair->b_end);
-	tst_fzsync_pair_wait(&pair->b_cntr, &pair->a_cntr, &pair->spins);
+	tst_fzsync_pair_wait(&pair->b_cntr, &pair->a_cntr, &pair->spins, pair->yield_in_wait);
 }
 
 /**
