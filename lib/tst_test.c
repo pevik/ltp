@@ -1051,6 +1051,18 @@ static void do_test_setup(void)
 {
 	main_pid = getpid();
 
+	if (!tst_test->all_filesystems && tst_test->skip_filesystems) {
+		long fs_type = tst_fs_type(".");
+		const char *fs_name = tst_fs_type_name(fs_type);
+
+		if (tst_fs_in_skiplist(fs_name, tst_test->skip_filesystems)) {
+			tst_brk(TCONF, "Skipping %s as requested by the test",
+				fs_name);
+		} else {
+			tst_res(TINFO, "%s is supported by the test", fs_name);
+		}
+	}
+
 	if (tst_test->caps)
 		tst_cap_setup(tst_test->caps, TST_CAP_REQ);
 
@@ -1347,7 +1359,7 @@ static int run_tcases_per_fs(void)
 {
 	int ret = 0;
 	unsigned int i;
-	const char *const *filesystems = tst_get_supported_fs_types(tst_test->dev_fs_flags);
+	const char *const *filesystems = tst_get_supported_fs_types(tst_test->skip_filesystems);
 
 	if (!filesystems[0])
 		tst_brk(TCONF, "There are no supported filesystems");
