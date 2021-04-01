@@ -12,6 +12,12 @@
 TST_NEEDS_CMDS="mkisofs"
 TST_NEEDS_TMPDIR=1
 TST_TESTFUNC=do_test
+which mkisofs >/dev/null 2>&1
+if [ $? -ne 0 ]; then
+       TST_NEEDS_CMDS="genisoimage"
+fi
+MKISOFS_CMD=$TST_NEEDS_CMDS
+
 . tst_test.sh
 
 MAX_DEPTH=3
@@ -56,7 +62,7 @@ do_test() {
 		"-allow-lowercase -allow-multidot -iso-level 3 -f -l -D -J -allow-leading-dots -R"
 	do
 		rm -f isofs.iso
-		EXPECT_PASS mkisofs -o isofs.iso -quiet $mkisofs_opt $make_file_sys_dir 2\> /dev/null \
+		EXPECT_PASS $MKISOFS_CMD -o isofs.iso -quiet $mkisofs_opt $make_file_sys_dir 2\> /dev/null \
 			|| continue
 
 		for mount_opt in \
