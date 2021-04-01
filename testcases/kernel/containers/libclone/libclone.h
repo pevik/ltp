@@ -27,7 +27,6 @@
 #include <sys/syscall.h>
 #include <signal.h>
 #include "lapi/syscalls.h"
-#include "test.h"
 #include "lapi/namespaces_constants.h"
 
 #define T_UNSHARE 0

@@ -21,9 +21,9 @@
 #include <sys/types.h>
 #include <mqueue.h>
 #include "../libclone/libclone.h"
+#include "test.h"
 #include "lapi/syscalls.h"
 #include "safe_macros.h"
-#include "test.h"
 
 static int dummy_child(void *v)
 {
