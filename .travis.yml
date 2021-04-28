@@ -8,84 +8,18 @@ services:
 
 matrix:
     include:
-        # 32 bit build
+        # debug fedora failure
         - os: linux
-          env: DISTRO=debian:stable VARIANT=i386
-          compiler: gcc
-
-        # cross compilation builds
-        - os: linux
-          env: DISTRO=debian:stable VARIANT=cross-compile ARCH=ppc64el TREE=out MAKE_INSTALL=1
-          compiler: powerpc64le-linux-gnu-gcc
-
-        - os: linux
-          env: DISTRO=debian:stable VARIANT=cross-compile ARCH=arm64 TREE=out
-          compiler: aarch64-linux-gnu-gcc
-
-        - os: linux
-          env: DISTRO=debian:stable VARIANT=cross-compile ARCH=s390x TREE=out
-          compiler: s390x-linux-gnu-gcc
-
-        # musl (native)
-        - os: linux
-          # Message: WARNING: xsltproc: cannot process http://docbook.sourceforge.net/release/xsl-ns/current/manpages/docbook.xsl
-          # doc/meson.build:70:1: ERROR: Problem encountered: Docs cannot be built: xsltproc does not work correctly
-          env: DISTRO=alpine:latest
-          compiler: gcc
-
-        # build with minimal dependencies
-        - os: linux
-          env: DISTRO=debian:stable VARIANT=minimal TREE=out
-          compiler: clang
-
-        # other builds
-        - os: linux
-          env: DISTRO=fedora:latest MAKE_INSTALL=1
-          compiler: clang
-
-        - os: linux
-          env: DISTRO=centos:7 TREE=out
-          compiler: gcc
-
-        - os: linux
-          env: DISTRO=debian:testing
-          compiler: gcc
-
-        - os: linux
-          env: DISTRO=debian:oldstable
+          env: DISTRO=fedora:latest MAKE_INSTALL=1 CONTAINER=podman CONTAINER_ARGS="--runtime=/usr/bin/runc"
           compiler: clang
 
         - os: linux
           env: DISTRO=opensuse/tumbleweed CONTAINER=podman CONTAINER_ARGS="--runtime=/usr/bin/runc"
           compiler: gcc
 
-        - os: linux
-          env: DISTRO=opensuse/leap
-          compiler: gcc
-
-        - os: linux
-          env: DISTRO=debian:oldstable
-          compiler: gcc
-
-        - os: linux
-          env: DISTRO=debian:testing
-          compiler: clang
-
-        - os: linux
-          env: DISTRO=ubuntu:groovy TREE=out
-          compiler: gcc
-
-        - os: linux
-          env: DISTRO=ubuntu:xenial
-          compiler: gcc
-
-        - os: linux
-          env: DISTRO=centos:latest
-          compiler: gcc
-
 before_install:
-    # Tumbleweed requires podman and newest runc due docker incompatible with glibc 2.33 (faccessat2)
     - CONTAINER="${CONTAINER:-docker}"
+    # Fedora and Tumbleweed requires podman and newest runc due docker incompatible with glibc 2.33 (faccessat2)
     - >
         if [ "$CONTAINER" = "podman" ]; then
             # podman
