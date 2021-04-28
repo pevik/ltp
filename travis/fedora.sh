@@ -19,6 +19,7 @@ $yum \
 	perl-JSON \
 	perl-libwww-perl \
 	pkg-config \
+	sudo strace \
 	redhat-lsb-core
 
 # CentOS 8 fixes

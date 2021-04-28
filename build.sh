@@ -73,6 +73,22 @@ build()
 	local install="$2"
 	shift 2
 
+	# FIXME: debug
+	echo "===== pev debug ====="
+	echo "shell: $SHELL"
+	ls -la /bin/sh
+	echo
+
+	echo "=== /etc/shells ==="
+	cat /etc/shells
+	echo
+
+	echo "=== autoconf bash autoconf automake make ==="
+	rpm -qa |grep -e autoconf -e bash -e autoconf -e automake -e make
+	echo
+
+	for i in "sudo strace autoconf -V" "autoconf -V" "aclocal --version" "autoheader --version" "automake --version"; do echo "=== $i ==="; $i; echo; done
+
 	echo "=== autotools ==="
 	make autotools
 

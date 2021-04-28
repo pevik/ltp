@@ -27,6 +27,7 @@ $zyp \
 	linux-glibc-devel \
 	lsb-release \
 	perl-JSON \
+	sudo strace \
 	pkg-config
 
 $zyp ruby2.7-rubygem-asciidoctor || $zyp ruby2.5-rubygem-asciidoctor
