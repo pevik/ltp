@@ -14,7 +14,12 @@
 
 #include "config.h"
 
-#ifndef HAVE_OPENAT2
+#ifdef HAVE_LINUX_OPENAT2_H
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <linux/openat2.h>
+#else
+
 /*
  * Arguments for how openat2(2) should open the target path. If only @flags and
  * @mode are non-zero, then openat2(2) operates very similarly to openat(2).
@@ -46,7 +51,9 @@ struct open_how {
 #define RESOLVE_IN_ROOT		0x10 /* Make all jumps to "/" and ".."
 					be scoped inside the dirfd
 					(similar to chroot(2)). */
+#endif /* HAVE_LINUX_OPENAT2_H */
 
+#ifndef HAVE_OPENAT2
 static inline int openat2(int dfd, const char *pathname,
                           struct open_how *how, size_t size)
 {

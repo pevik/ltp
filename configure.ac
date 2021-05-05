@@ -59,6 +59,7 @@ AC_CHECK_HEADERS_ONCE([ \
     linux/mempolicy.h \
     linux/module.h \
     linux/netlink.h \
+    linux/openat2.h \
     linux/seccomp.h \
     linux/securebits.h \
     linux/tty.h \
