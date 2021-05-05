@@ -201,7 +201,7 @@ def main():
     make_parser = MakeParser(args.ltp_root)
     result = make_parser.ParseFile(args.input_path)
 
-    print pprint.pprint(result)
+    print(pprint.pprint(result))
 
 if __name__ == '__main__':
     main()
