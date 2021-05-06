@@ -18,6 +18,7 @@
 set -e
 
 TOOLS_DIR=$(realpath $(dirname $0))
+TOOLS_DUMP_DIR=$TOOLS_DIR/dump
 LTP_ANDROID_DIR=$(realpath $TOOLS_DIR/..)
 LTP_ROOT=$(realpath $LTP_ANDROID_DIR/..)
 CUSTOM_CFLAGS_PATH=$TOOLS_DIR/custom_cflags.json
@@ -41,7 +42,7 @@ case $1 in
     ;;
 esac
 
-if ! [ -f $TOOLS_DIR/make_dry_run.dump ]; then
+if ! [ -f $TOOLS_DUMP_DIR/make_dry_run.dump ]; then
   DOCKER_USERNAME=$(id -un)
   DOCKER_UID=$(id -u)
   DOCKER_GID=$(id -g)

@@ -30,8 +30,8 @@ import re
 import make_parser
 import make_install_parser
 
-MAKE_DRY_RUN_FILE_NAME = 'make_dry_run.dump'
-MAKE_INSTALL_DRY_RUN_FILE_NAME = 'make_install_dry_run.dump'
+MAKE_DRY_RUN_FILE_NAME = os.path.join('dump', 'make_dry_run.dump')
+MAKE_INSTALL_DRY_RUN_FILE_NAME = os.path.join('dump', 'make_install_dry_run.dump')
 DISABLED_TESTS_FILE_NAME = 'disabled_tests.txt'
 DISABLED_LIBS_FILE_NAME = 'disabled_libs.txt'
 DISABLED_CFLAGS_FILE_NAME = 'disabled_cflags.txt'
