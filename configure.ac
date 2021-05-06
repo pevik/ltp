@@ -192,6 +192,7 @@ AC_CHECK_TYPES([struct rlimit64],,,[
 #include <sys/resource.h>
 ])
 
+AC_CHECK_TYPES([struct semun],,,[#include <sys/sem.h>])
 AC_CHECK_TYPES([struct semid64_ds],,,[#include <sys/sem.h>])
 AC_CHECK_TYPES([struct shmid64_ds],,,[#include <sys/shmbuf.h>])
 
