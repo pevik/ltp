@@ -12,7 +12,7 @@
 #include "tst_timer.h"
 #include "ipcbuf.h"
 
-#ifndef HAVE_SEMID64_DS
+#ifndef HAVE_STRUCT_SEMID64_DS
 
 #if defined(__mips__)
 #define HAVE_SEMID64_DS
