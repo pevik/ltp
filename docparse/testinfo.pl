@@ -87,30 +87,29 @@ sub code
 	return "+$_[0]+";
 }
 
-sub hr
-{
-	return "\n\n'''\n\n";
-}
-
 sub html_a
 {
 	my ($url, $text) = @_;
+
+	# escape ]
+	$text =~ s/([]])/\\$1/g;
+
 	return "$url\[$text\]";
 }
 
 sub h1
 {
-	return "== $_[0]\n";
+	return "= $_[0]\n";
 }
 
 sub h2
 {
-	return "=== $_[0]\n";
+	return "== $_[0]\n";
 }
 
 sub h3
 {
-	return "==== $_[0]\n";
+	return "=== $_[0]\n";
 }
 
 sub label
@@ -125,7 +124,12 @@ sub paragraph
 
 sub reference
 {
-	return "xref:$_[0]\[$_[0]\]" . (defined($_[1]) ? $_[1] : "") . "\n";
+	my ($link, %args) = @_;
+
+	$args{text} //= $link;
+	$args{delimiter} //= "";
+
+	return "xref:$link\[$args{text}\]$args{delimiter}\n";
 }
 
 sub table
@@ -179,7 +183,7 @@ sub get_test_names
 			$content .= "\n";
 		}
 
-		$content .= reference($name, " ");
+		$content .= reference($name, delimiter => " ");
 		$prev_letter = $letter;
 	}
 	$content .= "\n";
@@ -217,21 +221,46 @@ sub get_filters
 {
 	my $json = shift;
 	my %data;
+
 	while (my ($k, $v) = each %{$json->{'tests'}}) {
 		for my $j (keys %{$v}) {
-
 			next if ($j eq 'fname' || $j eq 'doc');
-
 			$data{$j} = () unless (defined($data{$j}));
-			push @{$data{$j}}, $k;
+
+			if ($j eq 'tags') {
+				for my $tags (@{$v}{'tags'}) {
+					for my $tag (@$tags) {
+						my $k2 = $$tag[0];
+						my $v2 = $$tag[1];
+						$data{$j}{$k2} = () unless (defined($data{$j}{$k2}));
+						push @{$data{$j}{$k2}}, $k unless grep{$_ eq $k} @{$data{$j}{$k2}};
+					}
+				}
+			} else {
+				push @{$data{$j}}, $k unless grep{$_ eq $k} @{$data{$j}};
+			}
 		}
 	}
 	return \%data;
 }
 
-# TODO: Handle better .tags (and anything else which contains array)
-# e.g. for .tags there could be separate list for CVE and linux-git
-# (now it's together in single list).
+sub content_filter
+{
+	my $k = $_[0];
+	my $title = $_[1];
+	my $desc = $_[2];
+	my $h = $_[3];
+	my ($letter, $prev_letter, $content);
+
+	$content = label($k);
+	$content .= $title;
+	$content .= paragraph("Tests containing $desc flag.");
+
+	$content .= get_test_names(\@{$h});
+
+	return $content;
+}
+
 sub content_filters
 {
 	my $json = shift;
@@ -240,11 +269,17 @@ sub content_filters
 	my $content;
 
 	for my $k (sort keys %$data) {
-		my $tag = tag2title($k);
-		my ($letter, $prev_letter);
-		$content .= h2($tag);
-		$content .= paragraph("Tests containing $tag flag.");
-		$content .= get_test_names(\@{$h{$k}});
+		my $title = tag2title($k);
+		if (ref($h{$k}) eq 'HASH') {
+			$content .= label($k);
+			$content .= h2($title);
+			for my $k2 (sort keys %{$h{$k}}) {
+				my $title2 = code($k2);
+				$content .= content_filter($k2, h3($title2), "$title $title2", $h{$k}{$k2});
+			}
+		} else {
+			$content .= content_filter($k, h2($title), $title, \@{$h{$k}});
+		}
 	}
 
 	return $content;
@@ -315,7 +350,6 @@ sub content_all_tests
 			$printed = $letter;
 		}
 
-		$content .= hr() if (defined($tmp));
 		$content .= label($name);
 		$content .= h3($name);
 		$content .= $letters;
@@ -357,7 +391,7 @@ sub content_all_tests
 				$content .= table . "|Key|Value\n\n"
 			}
 
-			$content .= "|" . tag2title($k) . "\n|";
+			$content .= "|" . reference($k, text => tag2title($k)) . "\n|";
 
 			if (ref($v) eq 'ARRAY') {
 				# two dimensional array
@@ -384,29 +418,27 @@ sub content_all_tests
 
 		$tmp2 = undef;
 		my %commits;
+		my @sorted_tags = sort { $a->[0] cmp $b->[0] } @{$json->{'tests'}{$name}{tags}};
 
-		for my $tag (@{$json->{'tests'}{$name}{tags}}) {
+		for my $tag (@sorted_tags) {
 			if (!defined($tmp2)) {
 				$content .= table . "|Tags|Info\n"
 			}
 			my $k = @$tag[0];
 			my $v = @$tag[1];
-			my $text = $k;
 
 			if (defined($$git_url{$k})) {
-				$text .= "-$v";
-
 				$commits{$k} = () unless (defined($commits{$k}));
 				unless (defined($commits{$k}{$v})) {
 					chdir($$git_url{$k});
 					$commits{$k}{$v} = `git log --pretty=format:'%s' -1 $v`;
 					chdir(OUTDIR);
 				}
-				$v = $commits{$k}{$v};
+				$v .= ' ("' . $commits{$k}{$v} . '")';
 			}
 
-			my $a = html_a(tag_url($k, @$tag[1]), $text);
-			$content .= "\n|$a\n|$v\n";
+			$v = html_a(tag_url($k, @$tag[1]), $v);
+			$content .= "\n|" . reference($k) . "\n|$v\n";
 			$tmp2 = 1;
 		}
 		if (defined($tmp2)) {
