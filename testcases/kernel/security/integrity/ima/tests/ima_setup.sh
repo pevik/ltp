@@ -1,7 +1,7 @@
 #!/bin/sh
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright (c) 2009 IBM Corporation
-# Copyright (c) 2018-2020 Petr Vorel <pvorel@suse.cz>
+# Copyright (c) 2018-2021 Petr Vorel <pvorel@suse.cz>
 # Author: Mimi Zohar <zohar@linux.ibm.com>
 
 TST_TESTFUNC="test"
@@ -52,6 +52,80 @@ compute_digest()
 		return 0
 	fi
 	return 1
+}
+
+require_valid_policy_template()
+{
+	local func="$1"
+	local policy_file="$2"
+
+	while read line; do
+	if echo $line | grep -q 'template=' && ! echo $line | grep -q 'template=ima-buf'; then
+		tst_brk TCONF "only template=ima-buf can be specified for $func"
+	fi
+	done < $policy_file
+}
+
+check_policy_pattern()
+{
+	local pattern="$1"
+	local func="$2"
+	local policy_file="$3"
+
+	if ! grep -E "$pattern" $policy_file; then
+		tst_res TCONF "IMA policy must specify $pattern, $func"
+		return 1
+	fi
+	return 0
+}
+
+test_policy_measurement()
+{
+	local policy_option="$1"
+	local lines="$(cat $2)"
+	local input_digest="$3"
+	local test_file="$TST_TMPDIR/test.txt"
+	local grep_file="$TST_TMPDIR/grep.txt"
+	local i sources templates
+
+	tst_require_cmds cut sed xxd
+
+	sources=$(for i in $lines; do echo "$i" | grep "$policy_option" | \
+		sed "s/\./\\\./g" | cut -d'=' -f2; done | sed ':a;N;$!ba;s/\n/|/g')
+	if [ -z "$sources" ]; then
+		tst_res TCONF "IMA policy $policy_option is a key-value specifier, but no values specified"
+		return
+	fi
+
+	templates=$(for i in $lines; do echo "$i" | grep "template" | \
+		cut -d'=' -f2; done | sed ':a;N;$!ba;s/\n/|/g')
+
+	tst_res TINFO "policy sources: '$sources'"
+	tst_res TINFO "templates: '$templates'"
+
+	grep -E "($templates).*($sources)" $ASCII_MEASUREMENTS > $grep_file
+
+	while read line; do
+		local algorithm digest expected_digest src_line
+
+		digest=$(echo "$line" | cut -d' ' -f4 | cut -d':' -f2)
+		algorithm=$(echo "$line" | cut -d' ' -f4 | cut -d':' -f1)
+		src_line=$(echo "$line" | cut -d' ' -f5)
+
+		echo "$line" | cut -d' ' -f6 | xxd -r -p > $test_file
+
+		if ! expected_digest="$(compute_digest $algorithm $test_file)"; then
+			tst_res TCONF "cannot compute digest for $algorithm"
+			return
+		fi
+
+		if [ "$digest" != "$expected_digest" ]; then
+			tst_res TFAIL "incorrect digest was found for $src_line $policy_option"
+			return
+		fi
+	done < $grep_file
+
+	tst_res TPASS "$policy_option measured correctly"
 }
 
 check_policy_readable()
