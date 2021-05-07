@@ -26,6 +26,6 @@ top_srcdir	?= ../../../../../..
 
 include	$(top_srcdir)/include/mk/env_pre.mk
 
-SUBDIRS	:= ima_kexec ima_keys ima_policy ima_selinux
+SUBDIRS	:= ima_dm_crypt ima_kexec ima_keys ima_policy
 
 include $(top_srcdir)/include/mk/generic_trunk_target.mk
