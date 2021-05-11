@@ -69,12 +69,18 @@ static void gaiv4(void)
 	char hostname[MAXHOSTNAMELEN + 1];
 	char shortname[MAXHOSTNAMELEN + 1];
 	char service[NI_MAXSERV + 1];
+	struct hostent *phostent;
 	int servnum;
 	char *p;
 
 	if (gethostname(hostname, sizeof(hostname)) < 0)
 		tst_brkm(TBROK | TERRNO, NULL, "gethostname failed");
 	strncpy(shortname, hostname, MAXHOSTNAMELEN);
+
+	phostent = gethostbyname(hostname);
+	if (phostent == NULL)
+		tst_brkm(TBROK | TERRNO, NULL, "gethostbyname failed");
+
 	shortname[MAXHOSTNAMELEN] = '\0';
 	p = strchr(shortname, '.');
 	if (p)
@@ -134,10 +140,10 @@ static void gaiv4(void)
 				 "entries with canonical name set");
 			freeaddrinfo(aires);
 			return;
-		} else if (strcasecmp(hostname, pai->ai_canonname)) {
+		} else if (strcasecmp(phostent->h_name, pai->ai_canonname)) {
 			tst_resm(TFAIL, "getaddrinfo IPv4 canonical name "
 				 "(\"%s\") doesn't match hostname (\"%s\")",
-				 pai->ai_canonname, hostname);
+				 pai->ai_canonname, phostent->h_name);
 			freeaddrinfo(aires);
 			return;
 		}
@@ -524,6 +530,7 @@ static void gaiv4(void)
 static void gaiv6(void)
 {
 	struct addrinfo *aires, hints, *pai;
+	struct hostent *phostent;
 	char hostname[MAXHOSTNAMELEN + 1];
 	char shortname[MAXHOSTNAMELEN + 1];
 	char service[NI_MAXSERV + 1];
@@ -533,6 +540,11 @@ static void gaiv6(void)
 	if (gethostname(hostname, sizeof(hostname)) < 0)
 		tst_brkm(TBROK, NULL, "gethostname failed - %s",
 			 strerror(errno));
+
+	phostent = gethostbyname(hostname);
+	if (phostent == NULL)
+		tst_brkm(TBROK | TERRNO, NULL, "gethostbyname failed");
+
 	strncpy(shortname, hostname, MAXHOSTNAMELEN);
 	shortname[MAXHOSTNAMELEN] = '\0';
 	p = strchr(shortname, '.');
@@ -593,10 +605,10 @@ static void gaiv6(void)
 				 "entries with canonical name set");
 			freeaddrinfo(aires);
 			return;
-		} else if (strcasecmp(hostname, pai->ai_canonname)) {
+		} else if (strcasecmp(phostent->h_name, pai->ai_canonname)) {
 			tst_resm(TFAIL, "getaddrinfo IPv6 canonical name "
 				 "(\"%s\") doesn't match hostname (\"%s\")",
-				 pai->ai_canonname, hostname);
+				 pai->ai_canonname, phostent->h_name);
 			freeaddrinfo(aires);
 			return;
 		}
