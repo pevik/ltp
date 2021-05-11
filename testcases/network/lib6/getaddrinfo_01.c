@@ -124,7 +124,8 @@ static void gaiv4(void)
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_INET;
 	hints.ai_flags = AI_CANONNAME;
-	TEST(getaddrinfo(shortname, 0, &hints, &aires));
+	fprintf(stderr, "%s:%d %s(): hostname: '%s'\n", __FILE__, __LINE__, __func__, hostname); // FIXME: debug
+	TEST(getaddrinfo(hostname, 0, &hints, &aires));
 	if (!TEST_RETURN) {
 		for (pai = aires; pai; pai = pai->ai_next)
 			if (pai->ai_canonname)
@@ -146,7 +147,7 @@ static void gaiv4(void)
 	} else {
 		tst_resm(TFAIL, "getaddrinfo IPv4 "
 			 "canonical name (\"%s\") returns %ld (\"%s\")",
-			 shortname, TEST_RETURN, gai_strerror(TEST_RETURN));
+			 hostname, TEST_RETURN, gai_strerror(TEST_RETURN));
 		return;
 	}
 
@@ -583,7 +584,8 @@ static void gaiv6(void)
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_INET6;
 	hints.ai_flags = AI_CANONNAME;
-	TEST(getaddrinfo(shortname, 0, &hints, &aires));
+	fprintf(stderr, "%s:%d %s(): hostname: '%s'\n", __FILE__, __LINE__, __func__, hostname); // FIXME: debug
+	TEST(getaddrinfo(hostname, 0, &hints, &aires));
 	if (!TEST_RETURN) {
 		for (pai = aires; pai; pai = pai->ai_next)
 			if (pai->ai_canonname)
@@ -605,7 +607,7 @@ static void gaiv6(void)
 	} else {
 		tst_resm(TFAIL, "getaddrinfo IPv6 "
 			 "canonical name (\"%s\") returns %ld (\"%s\")",
-			 shortname, TEST_RETURN, gai_strerror(TEST_RETURN));
+			 hostname, TEST_RETURN, gai_strerror(TEST_RETURN));
 		return;
 	}
 
