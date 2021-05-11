@@ -69,16 +69,26 @@ static void gaiv4(void)
 	char hostname[MAXHOSTNAMELEN + 1];
 	char shortname[MAXHOSTNAMELEN + 1];
 	char service[NI_MAXSERV + 1];
+	struct hostent *phostent;
 	int servnum;
 	char *p;
 
 	if (gethostname(hostname, sizeof(hostname)) < 0)
 		tst_brkm(TBROK | TERRNO, NULL, "gethostname failed");
-	strncpy(shortname, hostname, MAXHOSTNAMELEN);
+
+	phostent = gethostbyname(hostname);
+	if (phostent == NULL)
+		tst_brkm(TBROK | TERRNO, NULL, "gethostbyname failed");
+
+	strncpy(shortname, phostent->h_name, MAXHOSTNAMELEN);
 	shortname[MAXHOSTNAMELEN] = '\0';
+	tst_resm(TINFO, "shortname: '%s'", shortname);
+
 	p = strchr(shortname, '.');
-	if (p)
+	if (p) {
 		*p = '\0';
+		tst_resm(TINFO, "p: '%s', shortname: '%s'", p, shortname);
+	}
 
 	/* test 1, IPv4 basic lookup */
 	memset(&hints, 0, sizeof(hints));
@@ -134,10 +144,10 @@ static void gaiv4(void)
 				 "entries with canonical name set");
 			freeaddrinfo(aires);
 			return;
-		} else if (strcasecmp(hostname, pai->ai_canonname)) {
+		} else if (strcasecmp(phostent->h_name, pai->ai_canonname)) {
 			tst_resm(TFAIL, "getaddrinfo IPv4 canonical name "
 				 "(\"%s\") doesn't match hostname (\"%s\")",
-				 pai->ai_canonname, hostname);
+				 pai->ai_canonname, phostent->h_name);
 			freeaddrinfo(aires);
 			return;
 		}
@@ -524,6 +534,7 @@ static void gaiv4(void)
 static void gaiv6(void)
 {
 	struct addrinfo *aires, hints, *pai;
+	struct hostent *phostent;
 	char hostname[MAXHOSTNAMELEN + 1];
 	char shortname[MAXHOSTNAMELEN + 1];
 	char service[NI_MAXSERV + 1];
@@ -533,16 +544,26 @@ static void gaiv6(void)
 	if (gethostname(hostname, sizeof(hostname)) < 0)
 		tst_brkm(TBROK, NULL, "gethostname failed - %s",
 			 strerror(errno));
-	strncpy(shortname, hostname, MAXHOSTNAMELEN);
+
+	phostent = gethostbyname(hostname);
+	if (phostent == NULL)
+		tst_brkm(TBROK | TERRNO, NULL, "gethostbyname failed");
+
+	strncpy(shortname, phostent->h_name, MAXHOSTNAMELEN);
 	shortname[MAXHOSTNAMELEN] = '\0';
+	tst_resm(TINFO, "shortname: '%s'", shortname);
 	p = strchr(shortname, '.');
-	if (p)
+	if (p) {
 		*p = '\0';
+		tst_resm(TINFO, "p: '%s', shortname: '%s'", p, shortname);
+	}
 
 	/* test 12, IPv6 basic lookup */
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_INET6;
-	TEST(getaddrinfo(hostname, 0, &hints, &aires));
+	TEST(getaddrinfo(phostent->h_name, 0, &hints, &aires));
+	tst_resm(TINFO, "hostname: '%s', phostent->h_name: '%s', TEST_RETURN: %ld", hostname, phostent->h_name, TEST_RETURN); // FIXME: debug
+
 	if (!TEST_RETURN) {
 		struct sockaddr_in6 *psin6 = 0;
 		int err = 0;
@@ -558,6 +579,9 @@ static void gaiv6(void)
 			}
 			if (err)
 				break;
+
+			if (pai)
+				tst_resm(TINFO, "pai->ai_canonname: '%s'", pai->ai_canonname); // FIXME: debug
 		}
 		if (err) {
 			tst_resm(TFAIL, "getaddrinfo IPv6 basic lookup: "
@@ -573,8 +597,10 @@ static void gaiv6(void)
 		tst_resm(TPASS, "getaddrinfo IPv6 basic lookup");
 		freeaddrinfo(aires);
 	} else {
+		if (pai)
+			tst_resm(TINFO, "pai->ai_canonname: '%s'", pai->ai_canonname); // FIXME: debug
 		tst_resm(TFAIL, "getaddrinfo IPv6 basic "
-			 "lookup (\"%s\") returns %ld (\"%s\")", hostname,
+			 "lookup (\"%s\") returns %ld (\"%s\")", phostent->h_name,
 			 TEST_RETURN, gai_strerror(TEST_RETURN));
 		return;
 	}
@@ -583,20 +609,25 @@ static void gaiv6(void)
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_INET6;
 	hints.ai_flags = AI_CANONNAME;
+	tst_resm(TINFO, "hostname: '%s', phostent->h_name: '%s'", hostname, phostent->h_name); // FIXME: debug
+
 	TEST(getaddrinfo(shortname, 0, &hints, &aires));
 	if (!TEST_RETURN) {
 		for (pai = aires; pai; pai = pai->ai_next)
 			if (pai->ai_canonname)
 				break;
+		if (pai)
+			tst_resm(TINFO, "pai->ai_canonname: '%s'", pai->ai_canonname); // FIXME: debug
+
 		if (!pai) {
 			tst_resm(TFAIL, "getaddrinfo IPv6 canonical name: no "
 				 "entries with canonical name set");
 			freeaddrinfo(aires);
 			return;
-		} else if (strcasecmp(hostname, pai->ai_canonname)) {
+		} else if (strcasecmp(phostent->h_name, pai->ai_canonname)) {
 			tst_resm(TFAIL, "getaddrinfo IPv6 canonical name "
 				 "(\"%s\") doesn't match hostname (\"%s\")",
-				 pai->ai_canonname, hostname);
+				 pai->ai_canonname, phostent->h_name);
 			freeaddrinfo(aires);
 			return;
 		}
