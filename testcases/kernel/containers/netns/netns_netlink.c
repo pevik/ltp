@@ -36,10 +36,18 @@
 #include <sched.h>
 
 #include "tst_test.h"
+#include "tst_cmd.h"
 #include "tst_safe_macros.h"
 #include "lapi/namespaces_constants.h"
 
 #define MAX_TRIES 1000
+
+static void setup(void)
+{
+	if (tst_cmd((const char *const []){"ip", "tuntap", NULL}, "/dev/null",
+		      NULL, TST_CMD_PASS_RETVAL | TST_CMD_TCONF_ON_MISSING))
+		tst_brk(TCONF, "ip missing tuntap support");
+}
 
 static void child_func(void)
 {
@@ -114,6 +122,7 @@ static void test_netns_netlink(void)
 
 
 static struct tst_test test = {
+	.setup = setup,
 	.test_all = test_netns_netlink,
 	.needs_checkpoints = 1,
 	.needs_tmpdir = 1,
