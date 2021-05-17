@@ -52,9 +52,9 @@
 			(pathname), (mode), (times))
 
 #define SAFE_MOUNT_OVERLAY() \
-	((void) mount_overlay(__FILE__, __LINE__, 1))
+	((void) tst_mount_overlay(__FILE__, __LINE__, 1))
 
 #define TST_MOUNT_OVERLAY() \
-	(mount_overlay(__FILE__, __LINE__, 0) == 0)
+	(tst_mount_overlay(__FILE__, __LINE__, 0) == 0)
 
 #endif /* TST_SAFE_FILE_OPS */

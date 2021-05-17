@@ -24,7 +24,7 @@ static void create_overlay_dirs(void)
 	closedir(dir);
 }
 
-int mount_overlay(const char *file, const int lineno, int skip)
+int tst_mount_overlay(const char *file, const int lineno, int skip)
 {
 	int ret;
 
