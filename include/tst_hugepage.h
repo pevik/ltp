@@ -9,8 +9,8 @@
 #define PATH_HUGEPAGES	"/sys/kernel/mm/hugepages/"
 #define PATH_NR_HPAGES	"/proc/sys/vm/nr_hugepages"
 
-extern char *nr_opt; /* -s num   Set the number of the been allocated hugepages */
-extern char *Hopt;   /* -H /..   Location of hugetlbfs, i.e.  -H /var/hugetlbfs */
+extern char *tst_hugepage_nr_opt; /* -s num   Set the number of the been allocated hugepages */
+extern char *tst_hugepage_Hopt;   /* -H /..   Location of hugetlbfs, i.e.  -H /var/hugetlbfs */
 
 /*
  * Get the default hugepage size. Returns 0 if hugepages are not supported.

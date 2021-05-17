@@ -9,8 +9,8 @@
 #include "tst_hugepage.h"
 
 unsigned long tst_hugepages;
-char *nr_opt;
-char *Hopt;
+char *tst_hugepage_nr_opt;
+char *tst_hugepage_Hopt;
 
 size_t tst_get_hugepage_size(void)
 {
@@ -29,8 +29,8 @@ unsigned long tst_request_hugepages(unsigned long hpages)
 		goto out;
 	}
 
-	if (nr_opt)
-		tst_hugepages = SAFE_STRTOL(nr_opt, 1, LONG_MAX);
+	if (tst_hugepage_nr_opt)
+		tst_hugepages = SAFE_STRTOL(tst_hugepage_nr_opt, 1, LONG_MAX);
 	else
 		tst_hugepages = hpages;
 

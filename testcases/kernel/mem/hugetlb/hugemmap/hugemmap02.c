@@ -121,25 +121,25 @@ static void setup(void)
 	if (tst_hugepages == 0)
 		tst_brk(TCONF, "Not enough hugepages for testing.");
 
-	if (!Hopt)
-		Hopt = tst_get_tmpdir();
-	SAFE_MOUNT("none", Hopt, "hugetlbfs", 0, NULL);
+	if (!tst_hugepage_Hopt)
+		tst_hugepage_Hopt = tst_get_tmpdir();
+	SAFE_MOUNT("none", tst_hugepage_Hopt, "hugetlbfs", 0, NULL);
 
-	snprintf(TEMPFILE, sizeof(TEMPFILE), "%s/mmapfile%d", Hopt, getpid());
+	snprintf(TEMPFILE, sizeof(TEMPFILE), "%s/mmapfile%d", tst_hugepage_Hopt, getpid());
 }
 
 static void cleanup(void)
 {
 	unlink(TEMPFILE);
-	umount(Hopt);
+	umount(tst_hugepage_Hopt);
 }
 
 static struct tst_test test = {
 	.needs_root = 1,
 	.needs_tmpdir = 1,
 	.options = (struct tst_option[]) {
-		{"H:", &Hopt,   "-H /..   Location of hugetlbfs, i.e.  -H /var/hugetlbfs"},
-		{"s:", &nr_opt, "-s num   Set the number of the been allocated hugepages"},
+		{"H:", &tst_hugepage_Hopt,   "-H /..   Location of hugetlbfs, i.e.  -H /var/hugetlbfs"},
+		{"s:", &tst_hugepage_nr_opt, "-s num   Set the number of the been allocated hugepages"},
 		{}
 	},
 	.setup = setup,
