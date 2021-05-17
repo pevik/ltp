@@ -11,7 +11,7 @@
 #define TST_NO_DEFAULT_MAIN
 #include "tst_test.h"
 
-pid_t create_sig_proc(int sig, int count, unsigned int usec)
+pid_t tst_create_sig_proc(int sig, int count, unsigned int usec)
 {
 	pid_t pid, cpid;
 

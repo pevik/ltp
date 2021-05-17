@@ -139,7 +139,7 @@ static void do_test(unsigned int i)
 	tst_res(TINFO, "case %s", tc->desc);
 
 	if (tc->ttype == SEND_SIGINT || tc->ttype == BAD_TS_ADDR_REM)
-		pid = create_sig_proc(SIGINT, 40, 500000);
+		pid = tst_create_sig_proc(SIGINT, 40, 500000);
 
 	tst_ts_set_sec(rq, tc->tv_sec);
 	tst_ts_set_nsec(rq, tc->tv_nsec);

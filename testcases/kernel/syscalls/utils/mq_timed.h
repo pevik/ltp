@@ -45,7 +45,7 @@ static pid_t set_sig(struct tst_ts *ts,
 	gettime(CLOCK_REALTIME, tst_ts_get(ts));
 	*ts = tst_ts_add_us(*ts, 3000000);
 
-	return create_sig_proc(SIGINT, 40, 50000);
+	return tst_create_sig_proc(SIGINT, 40, 50000);
 }
 
 static void set_timeout(struct tst_ts *ts,

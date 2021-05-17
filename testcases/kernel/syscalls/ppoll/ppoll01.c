@@ -251,8 +251,8 @@ static void do_test(unsigned int i)
 			tst_brk(TBROK, "sigprocmask");
 	}
 	if (tc->sigint_count > 0) {
-		pid = create_sig_proc(SIGINT, tc->sigint_count,
-			tc->sigint_delay);
+		pid = tst_create_sig_proc(SIGINT, tc->sigint_count,
+					  tc->sigint_delay);
 	}
 
 	/* test */

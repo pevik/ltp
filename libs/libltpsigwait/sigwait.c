@@ -19,7 +19,7 @@ void test_empty_set(swi_func sigwaitinfo, int signo,
 	SAFE_SIGEMPTYSET(&sigs);
 
 	/* Run a child that will wake us up */
-	child = create_sig_proc(signo, INT_MAX, 100000);
+	child = tst_create_sig_proc(signo, INT_MAX, 100000);
 
 	TEST(sigwaitinfo(&sigs, &si, NULL));
 	if (TST_RET == -1) {
@@ -49,7 +49,7 @@ void test_timeout(swi_func sigwaitinfo, int signo, enum tst_ts_type type)
 	SAFE_SIGEMPTYSET(&sigs);
 
 	/* Run a child that will wake us up */
-	child = create_sig_proc(signo, INT_MAX, 100000);
+	child = tst_create_sig_proc(signo, INT_MAX, 100000);
 
 	TEST(sigwaitinfo(&sigs, &si, tst_ts_get(&ts)));
 	if (TST_RET == -1) {
@@ -79,7 +79,7 @@ void test_unmasked_matching(swi_func sigwaitinfo, int signo,
 	SAFE_SIGADDSET(&sigs, signo);
 
 	/* Run a child that will wake us up */
-	child = create_sig_proc(signo, INT_MAX, 100000);
+	child = tst_create_sig_proc(signo, INT_MAX, 100000);
 
 	TEST(sigwaitinfo(&sigs, &si, NULL));
 	if (TST_RET == signo) {
@@ -106,7 +106,7 @@ void test_unmasked_matching_noinfo(swi_func sigwaitinfo, int signo,
 	SAFE_SIGADDSET(&sigs, signo);
 
 	/* Run a child that will wake us up */
-	child = create_sig_proc(signo, INT_MAX, 100000);
+	child = tst_create_sig_proc(signo, INT_MAX, 100000);
 
 	TEST(sigwaitinfo(&sigs, NULL, NULL));
 	if (TST_RET == signo)
@@ -139,7 +139,7 @@ void test_masked_matching(swi_func sigwaitinfo, int signo,
 	SAFE_SIGDELSET(&sigs, SIGCHLD);
 
 	/* Run a child that will wake us up */
-	child = create_sig_proc(signo, 1, 0);
+	child = tst_create_sig_proc(signo, 1, 0);
 
 	TEST(sigwaitinfo(&sigs, &si, NULL));
 	if (TST_RET == signo) {
@@ -191,8 +191,8 @@ void test_masked_matching_rt(swi_func sigwaitinfo, int signo,
 	SAFE_SIGDELSET(&sigs, SIGCHLD);
 
 	/* Run a child that will wake us up */
-	child[0] = create_sig_proc(signo, 1, 0);
-	child[1] = create_sig_proc(signo + 1, 1, 0);
+	child[0] = tst_create_sig_proc(signo, 1, 0);
+	child[1] = tst_create_sig_proc(signo + 1, 1, 0);
 
 	/* Ensure that the signals have been sent */
 	SAFE_WAITPID(child[0], &status, 0);
@@ -252,7 +252,7 @@ void test_masked_matching_noinfo(swi_func sigwaitinfo, int signo,
 	SAFE_SIGDELSET(&sigs, SIGCHLD);
 
 	/* Run a child that will wake us up */
-	child = create_sig_proc(signo, 1, 0);
+	child = tst_create_sig_proc(signo, 1, 0);
 
 	TEST(sigwaitinfo(&sigs, NULL, NULL));
 	if (TST_RET == signo)
@@ -294,7 +294,7 @@ void test_bad_address(swi_func sigwaitinfo, int signo,
 	SAFE_SIGDELSET(&sigs, SIGCHLD);
 
 	/* Run a child that will wake us up */
-	child = create_sig_proc(signo, 1, 0);
+	child = tst_create_sig_proc(signo, 1, 0);
 
 	TEST(sigwaitinfo(&sigs, (void *)1, NULL));
 	if (TST_RET == -1) {

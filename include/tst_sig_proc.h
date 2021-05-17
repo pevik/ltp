@@ -7,6 +7,6 @@
 
 #include <sys/types.h>
 
-pid_t create_sig_proc(int sig, int count, unsigned int usec);
+pid_t tst_create_sig_proc(int sig, int count, unsigned int usec);
 
 #endif	/* TST_SIG_PROC_H__ */
