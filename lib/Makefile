@@ -42,5 +42,17 @@ $(pc_file):
 	test -d "$(@D)" || mkdir -p "$(@D)"
 	install -m $(INSTALL_MODE) "$(builddir)/$(@F)" "$@"
 
+CHECK_LIB ?= $(top_srcdir)/scripts/check_export_syms.sh
+.PHONY: check_lib
+check_lib: libltp.a
+ifdef VERBOSE
+	$(CHECK_LIB) $<
+else
+	@echo CHECK_LIB $<
+	@$(CHECK_LIB) $<
+endif
+
+MAKE_TARGETS		+= check_lib
+
 include $(top_srcdir)/include/mk/lib.mk
 include $(top_srcdir)/include/mk/generic_trunk_target.mk
