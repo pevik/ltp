@@ -99,7 +99,7 @@ void tst_sys_conf_restore(int verbose)
 			tst_res(TINFO, "Restoring conf.: %s -> %s\n",
 				i->path, i->value);
 		}
-		FILE_PRINTF(i->path, "%s", i->value);
+		TST_FILE_PRINTF(i->path, "%s", i->value);
 	}
 }
 

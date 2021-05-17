@@ -43,7 +43,7 @@ void tst_assert_file_int(const char *file, const int lineno, const char *path, c
 	char fmt[1024];
 
 	snprintf(fmt, sizeof(fmt), "%s%%d", prefix);
-	file_lines_scanf(file, lineno, NULL, 1, path, fmt, &sys_val);
+	tst_file_lines_scanf(file, lineno, NULL, 1, path, fmt, &sys_val);
 
 	if (val == sys_val) {
 		tst_res_(file, lineno, TPASS, "%s %s = %d", path, prefix, sys_val);
@@ -72,7 +72,7 @@ void tst_assert_file_str(const char *file, const int lineno, const char *path, c
 	char fmt[2048];
 
 	snprintf(fmt, sizeof(fmt), "%s: %%1024s", prefix);
-	file_lines_scanf(file, lineno, NULL, 1, path, fmt, sys_val);
+	tst_file_lines_scanf(file, lineno, NULL, 1, path, fmt, sys_val);
 
 	if (!strcmp(val, sys_val)) {
 		tst_res_(file, lineno, TPASS, "%s %s = '%s'", path, prefix, sys_val);

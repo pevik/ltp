@@ -128,11 +128,11 @@ static int is_affected_by_erratum_BDM106(void)
 {
 	int family = -1, model = -1;
 
-	if (FILE_LINES_SCANF("/proc/cpuinfo", "cpu family%*s%d", &family)
+	if (TST_FILE_LINES_SCANF("/proc/cpuinfo", "cpu family%*s%d", &family)
 		|| family != 6)
 		return 0;
 
-	if (!FILE_LINES_SCANF("/proc/cpuinfo", "model%*s%d", &model)) {
+	if (!TST_FILE_LINES_SCANF("/proc/cpuinfo", "model%*s%d", &model)) {
 		tst_res(TINFO, "Intel FAM6 model %d", model);
 
 		switch (model) {

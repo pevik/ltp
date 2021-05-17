@@ -1715,7 +1715,7 @@ static const char *save_restore[] = {
 
 static void setup(void)
 {
-	FILE_PRINTF("/proc/sys/kernel/core_pattern", "/mypath");
+	TST_FILE_PRINTF("/proc/sys/kernel/core_pattern", "/mypath");
 }
 
 static struct tst_test test = {

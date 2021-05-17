@@ -53,7 +53,7 @@ static void can_setup_vcan(void)
 
 check_echo:
 	SAFE_ASPRINTF(&path, "/sys/class/net/%s/flags", can_dev_name);
-	if (FILE_SCANF(path, "%x", &flags) || !(flags & IFF_ECHO)) {
+	if (TST_FILE_SCANF(path, "%x", &flags) || !(flags & IFF_ECHO)) {
 		tst_res(TWARN,
 			"Could not determine if ECHO is set on %s. This may effect code coverage.",
 			can_dev_name);

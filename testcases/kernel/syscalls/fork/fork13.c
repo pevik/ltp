@@ -143,7 +143,7 @@ static void setup(void)
 static void cleanup(void)
 {
 	/* Restore pid_max value. */
-	FILE_PRINTF(PID_MAX_PATH, "%lu", pid_max);
+	TST_FILE_PRINTF(PID_MAX_PATH, "%lu", pid_max);
 }
 
 /* The distance mod PIDMAX between two pids, where the first pid is

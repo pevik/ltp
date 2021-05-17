@@ -75,15 +75,15 @@ static void setup(void)
 static void cleanup(void)
 {
 	if (merge_across_nodes != -1) {
-		FILE_PRINTF(PATH_KSM "merge_across_nodes",
-			    "%d", merge_across_nodes);
+		TST_FILE_PRINTF(PATH_KSM "merge_across_nodes",
+				"%d", merge_across_nodes);
 	}
 
 	if (sleep_millisecs != -1)
-		FILE_PRINTF(PATH_KSM "sleep_millisecs", "%d", sleep_millisecs);
+		TST_FILE_PRINTF(PATH_KSM "sleep_millisecs", "%d", sleep_millisecs);
 
 	if (run != -1)
-		FILE_PRINTF(PATH_KSM "run", "%d", run);
+		TST_FILE_PRINTF(PATH_KSM "run", "%d", run);
 }
 
 static struct tst_test test = {

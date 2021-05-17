@@ -78,10 +78,10 @@ static void check_set_turbo(char *file, char *off)
 
 static void cleanup(void)
 {
-	FILE_PRINTF(cdrv[id].file, "%d", boost_value);
+	TST_FILE_PRINTF(cdrv[id].file, "%d", boost_value);
 
 	if (governor[0] != '\0')
-		FILE_PRINTF(governor, "%s", governor_name);
+		TST_FILE_PRINTF(governor, "%s", governor_name);
 }
 
 static void setup(void)

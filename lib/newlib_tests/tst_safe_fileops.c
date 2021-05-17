@@ -13,11 +13,11 @@ static void do_test(void)
 	long dummy;
 
 	SAFE_FILE_LINES_SCANF("/proc/meminfo", "MemFree: %ld", &free);
-	if (FILE_LINES_SCANF("/proc/stat", "processes %ld", &nproc))
+	if (TST_FILE_LINES_SCANF("/proc/stat", "processes %ld", &nproc))
 		tst_brk(TBROK, "Could not parse processes");
 	tst_res(TPASS, "Free: %ld, nproc: %ld", free, nproc);
 
-	if (FILE_LINES_SCANF("/proc/stat", "non-existent %ld", &dummy))
+	if (TST_FILE_LINES_SCANF("/proc/stat", "non-existent %ld", &dummy))
 		tst_res(TPASS, "non-existent not found");
 	SAFE_FILE_LINES_SCANF("/proc/stat", "non-existent %ld", &dummy);
 }

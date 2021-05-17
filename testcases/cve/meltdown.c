@@ -261,7 +261,7 @@ find_symbol_in_file(const char *filename, const char *symname)
 
 	sprintf(fmt, "%%lx %%c %s%%c", symname);
 
-	ret = FILE_LINES_SCANF(filename, fmt, &addr, &type, &read);
+	ret = TST_FILE_LINES_SCANF(filename, fmt, &addr, &type, &read);
 	if (ret)
 		return 0;
 

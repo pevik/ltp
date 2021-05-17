@@ -87,7 +87,7 @@ static void setup(void)
 	SAFE_CHOWN(BIN_PATH, 0, 0);
 	SAFE_CHMOD(BIN_PATH, SUID_MODE);
 
-	if (FILE_LINES_SCANF(PROC_STATUS, "NoNewPrivs:%d", &field)) {
+	if (TST_FILE_LINES_SCANF(PROC_STATUS, "NoNewPrivs:%d", &field)) {
 		tst_res(TCONF, "%s doesn't support NoNewPrivs field", PROC_STATUS);
 		proc_flag = 0;
 		proc_sup = "No";

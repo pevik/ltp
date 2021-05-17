@@ -41,9 +41,9 @@ void setup(void)
 	if (TST_RET)
 		tst_brk(TBROK | TTERRNO, "Can't create new net namespace");
 
-	FILE_PRINTF("/proc/self/setgroups", "deny");
-	FILE_PRINTF("/proc/self/uid_map", "0 %d 1\n", real_uid);
-	FILE_PRINTF("/proc/self/gid_map", "0 %d 1\n", real_gid);
+	TST_FILE_PRINTF("/proc/self/setgroups", "deny");
+	TST_FILE_PRINTF("/proc/self/uid_map", "0 %d 1\n", real_uid);
+	TST_FILE_PRINTF("/proc/self/gid_map", "0 %d 1\n", real_gid);
 
 	tst_fzsync_pair_init(&pair);
 }

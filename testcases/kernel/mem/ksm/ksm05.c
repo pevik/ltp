@@ -99,7 +99,7 @@ static void cleanup(void)
 {
 	/* restore /sys/kernel/mm/ksm/run value */
 	if (ksm_run_orig > 0)
-		FILE_PRINTF(PATH_KSM "run", "%d", ksm_run_orig);
+		TST_FILE_PRINTF(PATH_KSM "run", "%d", ksm_run_orig);
 }
 
 static struct tst_test test = {

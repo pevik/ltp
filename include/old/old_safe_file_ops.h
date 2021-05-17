@@ -30,24 +30,24 @@
 
 #include "safe_file_ops_fn.h"
 
-#define FILE_SCANF(path, fmt, ...) \
-	file_scanf(__FILE__, __LINE__, \
-	           (path), (fmt), ## __VA_ARGS__)
+#define TST_FILE_SCANF(path, fmt, ...) \
+	tst_file_scanf(__FILE__, __LINE__, \
+		       (path), (fmt), ## __VA_ARGS__)
 
 #define SAFE_FILE_SCANF(cleanup_fn, path, fmt, ...) \
 	safe_file_scanf(__FILE__, __LINE__, (cleanup_fn), \
 	                (path), (fmt), ## __VA_ARGS__)
 
 #define FILE_LINES_SCANF(cleanup_fn, path, fmt, ...) \
-	file_lines_scanf(__FILE__, __LINE__, (cleanup_fn), 0, \
+	tst_file_lines_scanf(__FILE__, __LINE__, (cleanup_fn), 0, \
 			(path), (fmt), ## __VA_ARGS__)
 
 #define SAFE_FILE_LINES_SCANF(cleanup_fn, path, fmt, ...) \
-	file_lines_scanf(__FILE__, __LINE__, (cleanup_fn), 1, \
+	tst_file_lines_scanf(__FILE__, __LINE__, (cleanup_fn), 1, \
 			(path), (fmt), ## __VA_ARGS__)
 
-#define FILE_PRINTF(path, fmt, ...) \
-	file_printf(__FILE__, __LINE__, \
+#define TST_FILE_PRINTF(path, fmt, ...) \
+	tst_file_printf(__FILE__, __LINE__, \
 	            (path), (fmt), ## __VA_ARGS__)
 
 #define SAFE_FILE_PRINTF(cleanup_fn, path, fmt, ...) \

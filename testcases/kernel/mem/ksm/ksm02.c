@@ -88,8 +88,8 @@ static void verify_ksm(void)
 static void cleanup(void)
 {
 	if (access(PATH_KSM "merge_across_nodes", F_OK) == 0)
-		FILE_PRINTF(PATH_KSM "merge_across_nodes",
-				 "%d", merge_across_nodes);
+		TST_FILE_PRINTF(PATH_KSM "merge_across_nodes",
+				"%d", merge_across_nodes);
 
 	tst_cgroup_cleanup();
 }

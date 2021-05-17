@@ -36,31 +36,31 @@ int tst_count_scanf_conversions(const char *fmt);
 /*
  * All-in-one function to scanf value(s) from a file.
  */
-int file_scanf(const char *file, const int lineno,
-		const char *path, const char *fmt, ...)
-		__attribute__ ((format (scanf, 4, 5)));
+int tst_file_scanf(const char *file, const int lineno,
+		   const char *path, const char *fmt, ...)
+		   __attribute__ ((format (scanf, 4, 5)));
 
 void safe_file_scanf(const char *file, const int lineno,
                      void (*cleanup_fn)(void),
 		     const char *path, const char *fmt, ...)
 		     __attribute__ ((format (scanf, 5, 6)));
 
-int file_lines_scanf(const char *file, const int lineno,
-		     void (*cleanup_fn)(void), int strict,
-		     const char *path, const char *fmt, ...)
-		     __attribute__ ((format (scanf, 6, 7)));
+int tst_file_lines_scanf(const char *file, const int lineno,
+			 void (*cleanup_fn)(void), int strict,
+			 const char *path, const char *fmt, ...)
+			 __attribute__ ((format (scanf, 6, 7)));
 
 /*
  * All-in-one function that lets you printf directly into a file.
  */
-int file_printf(const char *file, const int lineno,
-                      const char *path, const char *fmt, ...)
-                      __attribute__ ((format (printf, 4, 5)));
+int tst_file_printf(const char *file, const int lineno,
+		    const char *path, const char *fmt, ...)
+		    __attribute__ ((format (printf, 4, 5)));
 
 void safe_file_printf(const char *file, const int lineno,
                       void (*cleanup_fn)(void),
                       const char *path, const char *fmt, ...)
-                      __attribute__ ((format (printf, 5, 6)));
+		      __attribute__ ((format (printf, 5, 6)));
 
 /*
  * Safe function to copy files, no more system("cp ...") please.

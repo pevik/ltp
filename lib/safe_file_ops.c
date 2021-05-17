@@ -66,7 +66,7 @@ int tst_count_scanf_conversions(const char *fmt)
 	return cnt;
 }
 
-int file_scanf(const char *file, const int lineno,
+int tst_file_scanf(const char *file, const int lineno,
 		     const char *path, const char *fmt, ...)
 {
 	va_list va;
@@ -165,9 +165,9 @@ void safe_file_scanf(const char *file, const int lineno,
  * to scanf format 'fmt'. If all fields could be parsed, stop and
  * return 0, otherwise continue or return 1 if EOF is reached.
  */
-int file_lines_scanf(const char *file, const int lineno,
-		     void (*cleanup_fn)(void), int strict,
-		     const char *path, const char *fmt, ...)
+int tst_file_lines_scanf(const char *file, const int lineno,
+			 void (*cleanup_fn)(void), int strict,
+			 const char *path, const char *fmt, ...)
 {
 	FILE *fp;
 	int ret = 0;
@@ -209,7 +209,7 @@ int file_lines_scanf(const char *file, const int lineno,
 	return !(ret == arg_count);
 }
 
-int file_printf(const char *file, const int lineno,
+int tst_file_printf(const char *file, const int lineno,
 		      const char *path, const char *fmt, ...)
 {
 	va_list va;
