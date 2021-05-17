@@ -11,7 +11,7 @@
 #define TST_FS_SETUP_OVERLAYFS_MSG "overlayfs is not configured in this kernel"
 #define TST_FS_SETUP_OVERLAYFS_CONFIG "lowerdir="OVL_LOWER",upperdir="OVL_UPPER",workdir="OVL_WORK
 
-void create_overlay_dirs(void)
+static void create_overlay_dirs(void)
 {
 	DIR *dir = opendir(OVL_LOWER);
 	if (dir == NULL) {

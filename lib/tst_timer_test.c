@@ -251,7 +251,7 @@ static void write_to_file(void)
  *   - then we compute truncated mean and compare that with the requested sleep
  *     time increased by a threshold
  */
-void do_timer_test(long long usec, unsigned int nsamples)
+static void do_timer_test(long long usec, unsigned int nsamples)
 {
 	long long trunc_mean, median;
 	unsigned int discard = compute_discard(nsamples);

@@ -747,7 +747,7 @@ static void do_exit(int ret)
 	exit(ret);
 }
 
-void check_kver(void)
+static void check_kver(void)
 {
 	int v1, v2, v3;
 

@@ -32,7 +32,7 @@
  * XXX: we cannot filter ext4 out, because ext2/ext3/ext4 have the
  * same magic number
  */
-const long subdir_limit_whitelist[] = {
+static const long subdir_limit_whitelist[] = {
 	TST_EXT2_OLD_MAGIC, TST_EXT234_MAGIC, TST_MINIX_MAGIC,
 	TST_MINIX_MAGIC2,   TST_MINIX2_MAGIC, TST_MINIX2_MAGIC2,
 	TST_MINIX3_MAGIC,   TST_UDF_MAGIC,    TST_SYSV2_MAGIC,

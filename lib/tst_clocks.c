@@ -14,7 +14,7 @@
 
 typedef int (*mysyscall)(clockid_t clk_id, void *ts);
 
-int syscall_supported_by_kernel(long sysnr)
+static int syscall_supported_by_kernel(long sysnr)
 {
 	int ret;
 

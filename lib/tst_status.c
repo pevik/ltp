@@ -11,14 +11,14 @@
 
 static char buf[32];
 
-const char *exited(int status)
+static const char *exited(int status)
 {
 	snprintf(buf, sizeof(buf), "exited with %i", WEXITSTATUS(status));
 
 	return buf;
 }
 
-const char *signaled(int status)
+static const char *signaled(int status)
 {
 	snprintf(buf, sizeof(buf), "killed by %s",
 		tst_strsig(WTERMSIG(status)));
@@ -26,7 +26,7 @@ const char *signaled(int status)
 	return buf;
 }
 
-const char *invalid(int status)
+static const char *invalid(int status)
 {
 	snprintf(buf, sizeof(buf), "invalid status 0x%x", status);
 
