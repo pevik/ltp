@@ -16,12 +16,14 @@ export TST_COUNT=1
 export TST_ITERATIONS=1
 export TST_TMPDIR_RHOST=0
 export TST_LIB_LOADED=1
+export TST_TIMEOUT_OCCUR=0
 
 . tst_ansi_color.sh
 . tst_security.sh
 
 # default trap function
-trap "tst_brk TBROK 'test interrupted or timed out'" INT
+trap "tst_brk TBROK 'test interrupted'" INT
+trap "TST_TIMEOUT_OCCUR=1; tst_brk TBROK 'test timeouted'" TERM
 
 _tst_do_exit()
 {
@@ -48,7 +50,9 @@ _tst_do_exit()
 		[ "$TST_TMPDIR_RHOST" = 1 ] && tst_cleanup_rhost
 	fi
 
-	_tst_cleanup_timer
+	if ["$TST_TIMEOUT_OCCUR" = 0 ]; then
+		_tst_cleanup_timer
+	fi
 
 	if [ $TST_FAIL -gt 0 ]; then
 		ret=$((ret|1))
@@ -439,9 +443,10 @@ _tst_kill_test()
 {
 	local i=10
 
-	trap '' INT
-	tst_res TBROK "Test timeouted, sending SIGINT! If you are running on slow machine, try exporting LTP_TIMEOUT_MUL > 1"
-	kill -INT -$pid
+	trap '' TERM
+	tst_res TBROK "Test timeouted, sending SIGTERM! If you are running on slow machine, try exporting LTP_TIMEOUT_MUL > 1"
+	kill -TERM -$pid
+
 	tst_sleep 100ms
 
 	while kill -0 $pid 2>&1 > /dev/null && [ $i -gt 0 ]; do
