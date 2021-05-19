@@ -472,6 +472,7 @@ _tst_timeout_process()
 	sleep_pid=$!
 	trap "kill $sleep_pid; exit" TERM
 	wait $sleep_pid
+	[ $? -eq 143 ] && exit
 	trap - TERM
 	_tst_kill_test
 }
