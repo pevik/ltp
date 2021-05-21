@@ -695,6 +695,8 @@ lstat02_64 lstat02_64
 
 mallinfo02 mallinfo02
 
+mallinfo201 mallinfo201
+
 mallopt01 mallopt01
 
 mbind01 mbind01
