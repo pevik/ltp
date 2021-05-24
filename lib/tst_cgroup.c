@@ -1037,6 +1037,7 @@ ssize_t safe_cgroup_read(const char *const file, const int lineno,
 			 const char *const file_name,
 			 char *const out, const size_t len)
 {
+	long ret = -1;
 	const struct cgroup_file *const cfile =
 		cgroup_file_find(file, lineno, file_name);
 	struct cgroup_dir *const *dir;
@@ -1051,9 +1052,9 @@ ssize_t safe_cgroup_read(const char *const file, const int lineno,
 		if (prev_len)
 			memcpy(prev_buf, out, prev_len);
 
-		TEST(safe_file_readat(file, lineno,
-				      (*dir)->dir_fd, alias, out, len));
-		if (TST_RET < 0)
+		ret = safe_file_readat(file, lineno, (*dir)->dir_fd, alias,
+				       out, len);
+		if (ret < 0)
 			continue;
 
 		if (prev_len && memcmp(out, prev_buf, prev_len)) {
@@ -1063,12 +1064,12 @@ ssize_t safe_cgroup_read(const char *const file, const int lineno,
 			break;
 		}
 
-		prev_len = MIN(sizeof(prev_buf), (size_t)TST_RET);
+		prev_len = MIN(sizeof(prev_buf), (size_t) ret);
 	}
 
-	out[MAX(TST_RET, 0)] = '\0';
+	out[MAX(ret, 0)] = '\0';
 
-	return TST_RET;
+	return ret;
 }
 
 void safe_cgroup_printf(const char *const file, const int lineno,
