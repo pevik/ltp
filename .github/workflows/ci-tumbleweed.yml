@@ -1,0 +1,31 @@
+name: CI Tumbleweed
+
+on: [push, pull_request]
+
+jobs:
+  Tests:
+    runs-on: ubuntu-latest
+    container: opensuse/tumbleweed
+
+    steps:
+
+    - name: Git checkout
+      uses: actions/checkout@v1
+
+    - name: Install additional packages
+      run: ./travis/tumbleweed.sh
+
+    - name: List installed packages
+      run: rpm -qa | sort
+
+    - name: Autotools
+      run: make autotools
+
+    - name: Configure
+      run: ./configure
+
+    - name: Compile
+      run: make -j$(getconf _NPROCESSORS_ONLN)
+
+    - name: Install
+      run: make -j$(getconf _NPROCESSORS_ONLN) install
