@@ -23,7 +23,8 @@ CONFIGURE_OPTS_OUT_TREE="--with-realtime-testsuite $CONFIGURE_OPT_EXTRA"
 SRC_DIR="$(cd $(dirname $0); pwd)"
 BUILD_DIR="$SRC_DIR/../ltp-build"
 
-MAKE_OPTS="-j$(getconf _NPROCESSORS_ONLN)"
+#MAKE_OPTS="-j$(getconf _NPROCESSORS_ONLN)"
+MAKE_OPTS="-j1" # FIXME: debug
 MAKE_OPTS_OUT_TREE="$MAKE_OPTS -C $BUILD_DIR -f $SRC_DIR/Makefile top_srcdir=$SRC_DIR top_builddir=$BUILD_DIR"
 
 run_configure()
@@ -54,6 +55,7 @@ configure_out_tree()
 {
 	mkdir -p $BUILD_DIR
 	cd $BUILD_DIR
+	echo "pev: configure_out_tree: pwd: $PWD (`pwd`)" # FIXME: debug
 	run_configure $SRC_DIR/configure $CONFIGURE_OPTS_OUT_TREE $@
 }
 
@@ -71,6 +73,7 @@ build()
 
 build_out_tree()
 {
+	echo "pev: build_out_tree: pwd: $PWD (`pwd`)" # FIXME: debug
 	make $MAKE_OPTS_OUT_TREE
 }
 
