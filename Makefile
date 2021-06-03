@@ -75,10 +75,14 @@ endif
 INSTALL_TARGETS		+= $(COMMON_TARGETS)
 CLEAN_TARGETS		+= $(COMMON_TARGETS) lib libs
 BOOTSTRAP_TARGETS	:= $(sort $(COMMON_TARGETS) $(CLEAN_TARGETS) $(INSTALL_TARGETS))
+TEST_TARGETS		:= lib
+TEST_SHELL_TARGETS	:= lib
 
 CLEAN_TARGETS		:= $(addsuffix -clean,$(CLEAN_TARGETS))
 INSTALL_TARGETS		:= $(addsuffix -install,$(INSTALL_TARGETS))
 MAKE_TARGETS		:= $(addsuffix -all,$(filter-out lib,$(COMMON_TARGETS)))
+TEST_TARGETS		:= $(addsuffix -test-c-run,$(TEST_TARGETS))
+TEST_SHELL_TARGETS	:= $(addsuffix -test-shell-run,$(TEST_SHELL_TARGETS))
 
 # There's no reason why we should run `all' twice. Otherwise we're just wasting
 # 3+ mins of useful CPU cycles on a modern machine, and even more time on an
@@ -189,8 +193,28 @@ INSTALL_TARGETS		+= $(addprefix $(DESTDIR)/$(bindir)/,$(BINDIR_INSTALL_SCRIPTS))
 
 $(INSTALL_TARGETS): $(INSTALL_DIR) $(DESTDIR)/$(bindir)
 
+.PHONY: test-c test-c-run test-shell-run
+
+## Test library API
+test-c: $(TEST_TARGETS)
+
+#$(TEST_TARGETS): lib-all
+test-c-run: lib-all
+	$(MAKE) -C "$(subst -test-c-run,,$@)" \
+		-f "$(abs_top_srcdir)/$(subst -test-c-run,,$@)/Makefile" test-c
+
+test-shell-run: lib-all $(TEST_SHELL_TARGETS)
+	echo "pev test-shell-run"
+
+$(TEST_SHELL_TARGETS): lib-all
+	echo "pev TEST_SHELL_TARGETS: $(TEST_SHELL_TARGETS)" \
+	$(MAKE) -C "$(subst -test-shell-run,,$@)" \
+		-f "$(abs_top_srcdir)/$(subst -test-shell-run,,$@)/Makefile" test-shell-run
+
+test: test-c test-c-run test-shell-run
+
 ## Install
-install: $(INSTALL_TARGETS)
+install: lib-all $(INSTALL_TARGETS)
 
 ## Help
 .PHONY: help

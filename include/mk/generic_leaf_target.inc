@@ -63,8 +63,12 @@
 #				  real files or directories). This will automatically append
 #				  adds the .o suffix to all files referenced by
 #				  $(MAKE_TARGETS)) to CLEAN_TARGETS, if MAKE_TARGETS wasn't
-#				  defined (see
-#				  $(MAKE_TARGETS)).
+#				  defined (see $(MAKE_TARGETS)).
+#
+# $(TEST_TARGETS)		: LTP C API tests to be runned with test-c-run.
+#
+# $(TEST_SHELL_TARGETS)		: LTP shell API tests to be runned with test-shell-run.
+#
 # $(INSTALL_MODE)		: What mode should we using when calling
 # 				  install(1)?
 #
@@ -92,7 +96,7 @@
 # INSTALL_DIR			:= $(libdir)
 #
 
-.PHONY: all clean install
+.PHONY: all clean install test test-c test-c-run test-shell-run
 
 ifneq ($(strip $(MAKE_TARGETS)),)
 $(MAKE_TARGETS) += $(HOST_MAKE_TARGETS)
@@ -102,11 +106,31 @@ $(MAKE_TARGETS): | $(MAKE_DEPS)
 
 all: $(MAKE_TARGETS)
 
+test-c-run: $(TEST_TARGETS)
+	@set -e; echo; echo "===== Test C API ====="; \
+	for i in $(TEST_TARGETS); do \
+	    echo; echo "* $$i"; \
+	    echo "PATH $(top_srcdir)/testcases/lib:$$PATH"; \
+	    PATH="$(top_srcdir)/testcases/lib:$$PATH" ./$$i || [ $$? -eq 32 ]; \
+	done; echo; \
+	echo "All C API tests passed or TCONF"
+
+test-shell-run:
+	@set -e; echo; echo "===== Test shell API ====="; \
+	for i in $(TEST_SHELL_TARGETS); do \
+	    echo; echo "* $$i"; \
+	    PATH="$(abs_top_srcdir)/testcases/lib:$(abs_top_builddir)/testcases/lib:$$PATH" $(abs_srcdir)/$$i || [ $$? -eq 32 ]; \
+	done; echo; \
+	echo "All shell API tests passed or TCONF"
+
+test: test-c-run test-shell-run
+
 clean:: $(CLEAN_DEPS)
 	-$(RM) -f -r $(CLEAN_TARGETS)
 
 $(INSTALL_FILES): | $(INSTALL_DEPS)
 
 install: $(INSTALL_FILES)
+test-c: $(TEST_TARGETS)
 
 # vim: syntax=make
