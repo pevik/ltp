@@ -117,6 +117,9 @@ jobs:
       env: ${{ matrix.env }}
 
     steps:
+    - name: env
+      run: env
+
     - name: Show OS
       run: cat /etc/os-release
 

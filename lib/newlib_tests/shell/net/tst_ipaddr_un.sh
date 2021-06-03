@@ -144,6 +144,11 @@ test_tst_ipaddr_un()
 
 	tst_res TINFO "Testing for IPv${TST_IPVER}, data: \$$var"
 
+	# FIXME: debug
+	echo "=== env start ==="
+	env
+	echo "=== env end ==="
+
 	eval data="\$$var"
 	IFS="
 "
