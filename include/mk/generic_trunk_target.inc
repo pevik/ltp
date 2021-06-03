@@ -48,7 +48,7 @@
 
 include $(top_srcdir)/include/mk/functions.mk
 
-RECURSIVE_TARGETS		?= all install
+RECURSIVE_TARGETS		?= all install test test-c test-c-run test-shell-run
 
 $(eval $(get_make_dirs))
 

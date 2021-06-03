@@ -63,8 +63,12 @@
 #				  real files or directories). This will automatically append
 #				  adds the .o suffix to all files referenced by
 #				  $(MAKE_TARGETS)) to CLEAN_TARGETS, if MAKE_TARGETS wasn't
-#				  defined (see
-#				  $(MAKE_TARGETS)).
+#				  defined (see $(MAKE_TARGETS)).
+#
+# $(TEST_TARGETS)		: LTP C API tests to be runned with test-c-run.
+#
+# $(TEST_SHELL_TARGETS)		: LTP shell API tests to be runned with test-shell-run.
+#
 # $(INSTALL_MODE)		: What mode should we using when calling
 # 				  install(1)?
 #
@@ -92,7 +96,7 @@
 # INSTALL_DIR			:= $(libdir)
 #
 
-.PHONY: all clean install
+.PHONY: all clean install test test-c test-c-run test-shell-run
 
 ifneq ($(strip $(MAKE_TARGETS)),)
 $(MAKE_TARGETS) += $(HOST_MAKE_TARGETS)
@@ -102,11 +106,26 @@ $(MAKE_TARGETS): | $(MAKE_DEPS)
 
 all: $(MAKE_TARGETS)
 
+TEST_TARGETS_RUN := $(addsuffix -run,$(TEST_TARGETS))
+TEST_SHELL_TARGETS_RUN := $(addsuffix -run,$(TEST_SHELL_TARGETS))
+
+$(TEST_TARGETS_RUN): | $(TEST_TARGETS)
+test-c-run: $(TEST_TARGETS_RUN)
+test-shell-run: $(TEST_SHELL_TARGETS_RUN)
+
+.PHONY: $(TEST_TARGETS_RUN) $(TEST_SHELL_TARGETS_RUN)
+$(TEST_TARGETS_RUN) $(TEST_SHELL_TARGETS_RUN):
+	@set -e; echo; echo "* $(subst -run,,$@)"; \
+	PATH="$(top_srcdir)/testcases/lib:$$PATH" ./$(subst -run,,$@) || [ $$? -eq 32 ]; \
+
+test: test-c-run test-shell-run
+
 clean:: $(CLEAN_DEPS)
 	-$(RM) -f -r $(CLEAN_TARGETS)
 
 $(INSTALL_FILES): | $(INSTALL_DEPS)
 
 install: $(INSTALL_FILES)
+test-c: $(TEST_TARGETS)
 
 # vim: syntax=make
