@@ -75,10 +75,14 @@ endif
 INSTALL_TARGETS		+= $(COMMON_TARGETS)
 CLEAN_TARGETS		+= $(COMMON_TARGETS) lib libs
 BOOTSTRAP_TARGETS	:= $(sort $(COMMON_TARGETS) $(CLEAN_TARGETS) $(INSTALL_TARGETS))
+TEST_TARGETS		:= lib
+TEST_SHELL_TARGETS	:= lib
 
 CLEAN_TARGETS		:= $(addsuffix -clean,$(CLEAN_TARGETS))
 INSTALL_TARGETS		:= $(addsuffix -install,$(INSTALL_TARGETS))
 MAKE_TARGETS		:= $(addsuffix -all,$(filter-out lib,$(COMMON_TARGETS)))
+TEST_TARGETS		:= $(addsuffix -check-c,$(TEST_TARGETS))
+TEST_SHELL_TARGETS	:= $(addsuffix -check-shell,$(TEST_SHELL_TARGETS))
 
 # There's no reason why we should run `all' twice. Otherwise we're just wasting
 # 3+ mins of useful CPU cycles on a modern machine, and even more time on an
@@ -112,6 +116,14 @@ $(MAKE_TARGETS) include-all lib-all libs-all:
 $(filter-out include-clean,$(CLEAN_TARGETS))::
 	-$(MAKE) -C "$(subst -clean,,$@)" \
 		 -f "$(abs_top_srcdir)/$(subst -clean,,$@)/Makefile" clean
+
+$(TEST_TARGETS): lib-all
+	$(MAKE) -C "$(subst -check-c,,$@)" \
+		-f "$(abs_top_srcdir)/$(subst -check-c,,$@)/Makefile" check-c
+
+$(TEST_SHELL_TARGETS):
+	$(MAKE) -C "$(subst -check-shell,,$@)" \
+		-f "$(abs_top_srcdir)/$(subst -check-shell,,$@)/Makefile" check-shell
 
 # Just like everything depends on include-all / -install, we need to get rid
 # of include last to ensure that things won't be monkey screwed up. Only do
@@ -189,8 +201,15 @@ INSTALL_TARGETS		+= $(addprefix $(DESTDIR)/$(bindir)/,$(BINDIR_INSTALL_SCRIPTS))
 
 $(INSTALL_TARGETS): $(INSTALL_DIR) $(DESTDIR)/$(bindir)
 
+.PHONY: check check-c check-shell
+
+## Check
+check-c: $(TEST_TARGETS)
+check-shell: $(TEST_SHELL_TARGETS)
+check: check-c check-shell
+
 ## Install
-install: $(INSTALL_TARGETS)
+install: lib-all $(INSTALL_TARGETS)
 
 ## Help
 .PHONY: help

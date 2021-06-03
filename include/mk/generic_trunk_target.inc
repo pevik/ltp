@@ -48,7 +48,7 @@
 
 include $(top_srcdir)/include/mk/functions.mk
 
-RECURSIVE_TARGETS		?= all install
+RECURSIVE_TARGETS		?= all check check-c check-shell install
 
 $(eval $(get_make_dirs))
 
@@ -71,7 +71,7 @@ trunk-install: $(INSTALL_FILES)
 # Avoid creating duplicate .PHONY references to all, clean, and install. IIRC,
 # I've seen some indeterministic behavior when one does this in the past with
 # GNU Make...
-.PHONY: $(filter-out $(RECURSIVE_TARGETS),all clean install)
+.PHONY: $(filter-out $(RECURSIVE_TARGETS),all check clean install)
 all: trunk-all
 
 clean:: trunk-clean

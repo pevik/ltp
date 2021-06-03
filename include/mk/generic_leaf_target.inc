@@ -63,8 +63,12 @@
 #				  real files or directories). This will automatically append
 #				  adds the .o suffix to all files referenced by
 #				  $(MAKE_TARGETS)) to CLEAN_TARGETS, if MAKE_TARGETS wasn't
-#				  defined (see
-#				  $(MAKE_TARGETS)).
+#				  defined (see $(MAKE_TARGETS)).
+#
+# $(TEST_TARGETS)		: LTP C API tests.
+#
+# $(TEST_SHELL_TARGETS)		: LTP shell API tests.
+#
 # $(INSTALL_MODE)		: What mode should we using when calling
 # 				  install(1)?
 #
@@ -92,7 +96,7 @@
 # INSTALL_DIR			:= $(libdir)
 #
 
-.PHONY: all clean install
+.PHONY: all check-c check-shell clean install
 
 ifneq ($(strip $(MAKE_TARGETS)),)
 $(MAKE_TARGETS) += $(HOST_MAKE_TARGETS)
@@ -101,6 +105,21 @@ endif
 $(MAKE_TARGETS): | $(MAKE_DEPS)
 
 all: $(MAKE_TARGETS)
+
+check-c: $(TEST_TARGETS)
+	@set -e; echo; echo "===== Test C API ====="; \
+	for i in $(TEST_TARGETS); do \
+	    echo; echo "* $$i"; \
+	    echo "PATH $(top_srcdir)/testcases/lib:$$PATH"; \
+	    PATH="$(top_srcdir)/testcases/lib:$$PATH" ./$$i || [ $$? -eq 32 ]; \
+	done
+
+check-shell: $(TEST_SHELL_TARGETS)
+	@set -e; echo; echo "===== Test shell API ====="; \
+	for i in $(TEST_SHELL_TARGETS); do \
+	    echo; echo "* $$i"; \
+	    PATH="$(abs_top_srcdir)/testcases/lib:$(abs_top_builddir)/testcases/lib:$$PATH" $(abs_srcdir)/$$i || [ $$? -eq 32 ]; \
+	done
 
 clean:: $(CLEAN_DEPS)
 	-$(RM) -f -r $(CLEAN_TARGETS)
