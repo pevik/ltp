@@ -18,9 +18,6 @@
  * - out_fd opened with O_RDONLY
  */
 
-#include <stdio.h>
-#include <errno.h>
-#include <fcntl.h>
 #include <sys/sendfile.h>
 
 #include "tst_test.h"
