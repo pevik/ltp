@@ -10,6 +10,7 @@ $yum \
 	automake \
 	make \
 	clang \
+	clang-devel \
 	gcc \
 	git \
 	findutils \
