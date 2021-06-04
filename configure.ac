@@ -14,6 +14,7 @@ AC_CONFIG_FILES([ \
 ])
 
 AC_ARG_VAR(HOSTCC, [The C compiler on the host])
+AC_ARG_VAR(CLANG, [The LLVM Clang C compiler on the host])
 
 AM_MAINTAINER_MODE([enable])
 
@@ -42,6 +43,7 @@ AC_CHECK_DECLS([SEM_STAT_ANY],,,[#include <sys/sem.h>])
 
 AC_CHECK_HEADERS_ONCE([ \
     asm/ldt.h \
+    clang-c/Index.h \
     ifaddrs.h \
     keyutils.h \
     linux/can.h \

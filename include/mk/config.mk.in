@@ -44,6 +44,11 @@ HOSTCC := cc
 endif
 endif
 
+CLANG := @CLANG@
+ifeq ($(strip $(CLANG)),)
+CLANG := clang
+endif
+
 AIO_LIBS		:= @AIO_LIBS@
 CAP_LIBS		:= @CAP_LIBS@
 ACL_LIBS		:= @ACL_LIBS@

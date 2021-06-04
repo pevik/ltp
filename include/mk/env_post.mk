@@ -89,6 +89,14 @@ $(error You must define $$(prefix) before executing install)
 endif # END $(filter-out install,$(MAKECMDGOALS)),$(MAKECMDGOALS)
 endif
 
+CHECK_TARGETS			?= $(addprefix check-,$(MAKE_TARGETS))
+CHECK				?= $(abs_top_srcdir)/tools/clang-check/main
+CHECK_FLAGS			?= -resource-dir $(shell $(CLANG) -print-resource-dir)
+
+ifeq ($(dir $(CHECK)),$(abs_top_srcdir)/tools/clang-check/)
+CHECK_DEPS			+= $(CHECK)
+endif
+
 include $(top_srcdir)/include/mk/rules.mk
 
 endif
