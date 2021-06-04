@@ -9,6 +9,7 @@ $zyp \
 	autoconf \
 	automake \
 	clang \
+	clang-devel \
 	findutils \
 	gcc \
 	git \

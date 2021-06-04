@@ -20,6 +20,7 @@ $apt \
 	debhelper \
 	devscripts \
 	clang \
+	libclang-dev \
 	gcc \
 	git \
 	libacl1 \
