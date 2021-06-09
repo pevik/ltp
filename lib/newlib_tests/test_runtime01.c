@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
- * Copyright (c) 2018, Linux Test Project
+ * Copyright (c) 2021, Linux Test Project
  */
 
 #include <stdlib.h>
@@ -9,11 +9,10 @@
 
 static void run(void)
 {
-	do {
+	while (tst_remaining_runtime())
 		sleep(1);
-	} while (tst_timeout_remaining() >= 4);
 
-	tst_res(TPASS, "Timeout remaining: %d", tst_timeout_remaining());
+	tst_res(TPASS, "Timeout remaining: %d", tst_remaining_runtime());
 }
 
 static struct tst_test test = {

@@ -61,7 +61,7 @@ static void run(void)
 	TST_CHECKPOINT_WAIT(0);
 
 	while (pthread_kill(thr, 0) != ESRCH) {
-		if (tst_timeout_remaining() <= 10) {
+		if (!tst_remaining_runtime()) {
 			pthread_cancel(thr);
 			tst_brk(TBROK,
 				"Timed out while reading from request socket.");

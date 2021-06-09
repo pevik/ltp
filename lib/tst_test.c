@@ -62,6 +62,7 @@ struct results {
 	int warnings;
 	int broken;
 	unsigned int timeout;
+	unsigned int max_runtime;
 };
 
 static struct results *results;
@@ -1255,17 +1256,74 @@ static void sigint_handler(int sig LTP_ATTRIBUTE_UNUSED)
 	}
 }
 
-unsigned int tst_timeout_remaining(void)
+#define RUNTIME_TIMEOUT_OFFSET 5
+#define RUNTIME_TIMEOUT_SCALE  0.9
+
+static unsigned int timeout_to_runtime(void)
+{
+	if (results->timeout <= RUNTIME_TIMEOUT_OFFSET) {
+		tst_res(TWARN, "Timeout too short for runtime offset %i!",
+		        RUNTIME_TIMEOUT_OFFSET);
+		return 1;
+	}
+
+	return (results->timeout - RUNTIME_TIMEOUT_OFFSET) * RUNTIME_TIMEOUT_SCALE;
+}
+
+static unsigned int runtime_to_timeout(unsigned int runtime)
+{
+	return runtime / RUNTIME_TIMEOUT_SCALE + RUNTIME_TIMEOUT_OFFSET;
+}
+
+static unsigned int divide_runtime(unsigned int runtime)
+{
+	if (tst_test->test_variants)
+		runtime = 1.00 * runtime / tst_test->test_variants;
+
+	if (tst_test->all_filesystems)
+		runtime = 1.00 * runtime / tst_fs_max_types();
+
+	return runtime;
+}
+
+unsigned int tst_remaining_runtime(void)
 {
 	static struct timespec now;
 	unsigned int elapsed;
+
+	if (!results->max_runtime) {
+		const char *runtime = getenv("LTP_MAX_TEST_RUNTIME");
+
+		if (runtime) {
+			results->max_runtime = atoi(runtime);
+		} else {
+			results->max_runtime = timeout_to_runtime();
+		}
+
+		if (!results->max_runtime)
+			tst_brk(TBROK, "Test runtime too small!");
+
+
+		if (runtime_to_timeout(results->max_runtime) > results->timeout) {
+			results->timeout = runtime_to_timeout(results->max_runtime);
+			tst_res(TINFO, "runtime > timeout, adjusting test timeout to %u", results->timeout);
+			heartbeat();
+		}
+
+		results->max_runtime = divide_runtime(results->max_runtime);
+
+		if (!results->max_runtime)
+			tst_brk(TBROK, "Test runtime too small!");
+
+		tst_res(TINFO, "Max runtime per iteration %us", results->max_runtime);
+	}
 
 	if (tst_clock_gettime(CLOCK_MONOTONIC, &now))
 		tst_res(TWARN | TERRNO, "tst_clock_gettime() failed");
 
 	elapsed = (tst_timespec_diff_ms(now, tst_start_time) + 500) / 1000;
-	if (results->timeout > elapsed)
-		return results->timeout - elapsed;
+	if (results->max_runtime > elapsed)
+		return results->max_runtime - elapsed;
 
 	return 0;
 }
