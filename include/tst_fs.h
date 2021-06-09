@@ -196,6 +196,11 @@ const char **tst_get_supported_fs_types(const char *const *skiplist);
 int tst_fs_in_skiplist(const char *fs_type, const char *const *skiplist);
 
 /*
+ * Returns maximal number of supported filesystem types.
+ */
+unsigned int tst_fs_max_types(void);
+
+/*
  * Check whether device supports FS quotas. Negative return value means that
  * quotas appear to be broken.
  */

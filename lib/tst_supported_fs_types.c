@@ -29,6 +29,11 @@ static const char *const fs_type_whitelist[] = {
 
 static const char *fs_types[ARRAY_SIZE(fs_type_whitelist)];
 
+unsigned int tst_fs_max_types(void)
+{
+	return ARRAY_SIZE(fs_type_whitelist) - 1;
+}
+
 static int has_mkfs(const char *fs_type)
 {
 	char buf[128];
