@@ -1296,7 +1296,7 @@ unsigned int tst_multiply_timeout(unsigned int timeout)
 	return timeout * timeout_mul;
 }
 
-void tst_set_timeout(int timeout)
+static void set_timeout(int timeout)
 {
 	if (timeout == -1) {
 		tst_res(TINFO, "Timeout per run is disabled");
@@ -1311,23 +1311,21 @@ void tst_set_timeout(int timeout)
 	tst_res(TINFO, "Timeout per run is %uh %02um %02us",
 		results->timeout/3600, (results->timeout%3600)/60,
 		results->timeout % 60);
+}
 
-	if (getpid() == lib_pid)
-		alarm(results->timeout);
-	else
-		heartbeat();
+void tst_set_timeout(int timeout)
+{
+	set_timeout(timeout);
+	heartbeat();
 }
 
 static int fork_testrun(void)
 {
 	int status;
 
-	if (tst_test->timeout)
-		tst_set_timeout(tst_test->timeout);
-	else
-		tst_set_timeout(300);
-
 	SAFE_SIGNAL(SIGINT, sigint_handler);
+
+	alarm(results->timeout);
 
 	test_pid = fork();
 	if (test_pid < 0)
@@ -1416,6 +1414,11 @@ void tst_run_tcases(int argc, char *argv[], struct tst_test *self)
 
 	SAFE_SIGNAL(SIGALRM, alarm_handler);
 	SAFE_SIGNAL(SIGUSR1, heartbeat_handler);
+
+	if (tst_test->timeout)
+		set_timeout(tst_test->timeout);
+	else
+		set_timeout(300);
 
 	if (tst_test->test_variants)
 		test_variants = tst_test->test_variants;
