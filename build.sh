@@ -19,7 +19,8 @@ SRC_DIR="$(cd $(dirname $0); pwd)"
 BUILD_DIR="$SRC_DIR/../ltp-build"
 
 MAKE_OPTS="-j$(getconf _NPROCESSORS_ONLN)"
-MAKE_OPTS_OUT_TREE="$MAKE_OPTS -C $BUILD_DIR -f $SRC_DIR/Makefile top_srcdir=$SRC_DIR top_builddir=$BUILD_DIR"
+MAKE_OPTS_OUT_TREE_BASE="$MAKE_OPTS -f $SRC_DIR/Makefile top_srcdir=$SRC_DIR top_builddir=$BUILD_DIR"
+MAKE_OPTS_OUT_TREE="$MAKE_OPTS_OUT_TREE_BASE -C $BUILD_DIR"
 
 run_configure()
 {
@@ -119,6 +120,17 @@ build_out_tree()
 	make $MAKE_OPTS_OUT_TREE
 }
 
+docparse_in_tree()
+{
+	make $MAKE_OPTS -C docparse
+}
+
+docparse_out_tree()
+{
+	cd $BUILD_DIR
+	make $MAKE_OPTS_OUT_TREE_BASE -C $BUILD_DIR/docparse
+}
+
 install_in_tree()
 {
 	make $MAKE_OPTS install
@@ -149,7 +161,7 @@ Options:
          DIR/PREFIX (i.e. DIR/opt/ltp).
          Default for in-tree build: '$DEFAULT_PREFIX'
          Default for out-of-tree build: '$DEFAULT_PREFIX/opt/ltp'
--r RUN   Run only certain step (usable for CI), default: all
+-r RUN   Run only certain step (usable for CI), default: all, but docparse
 -t TYPE  Specify build type, default: $DEFAULT_BUILD, only for configure step
 
 TREE:
@@ -164,6 +176,7 @@ native   native build
 RUN:
 autotools   run only 'make autotools'
 configure   run only 'configure'
+docparse    run 'make' in docparse directory
 build       run only 'make'
 install     run only 'make install'
 
@@ -192,7 +205,7 @@ while getopts "c:hio:p:r:t:" opt; do
 		esac;;
 	p) prefix="$OPTARG";;
 	r) case "$OPTARG" in
-		autotools|configure|build|install) run="$OPTARG";;
+		autotools|configure|docparse|build|install) run="$OPTARG";;
 		*) echo "Wrong run type '$OPTARG'" >&2; usage; exit 1;;
 		esac;;
 	t) case "$OPTARG" in
@@ -211,6 +224,10 @@ fi
 
 if [ -z "$run" -o "$run" = "configure" ]; then
 	eval configure_$build $tree $prefix
+fi
+
+if [ "$run" = "docparse" ]; then
+	eval docparse_${tree}_tree
 fi
 
 if [ -z "$run" -o "$run" = "build" ]; then
