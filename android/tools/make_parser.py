@@ -47,6 +47,7 @@ class MakeParser(object):
         cc_parser.add_argument('-D', dest='defines', action='append')
         cc_parser.add_argument('-I', dest='includes', action='append')
         cc_parser.add_argument('-l', dest='libraries', action='append')
+        cc_parser.add_argument('-L', dest='libraries_path', action='append')
         cc_parser.add_argument('-c', dest='compile', action='store_true')
         cc_parser.add_argument('-o', dest='target', action='store')
         self.cc_parser = cc_parser
