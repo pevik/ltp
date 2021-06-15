@@ -34,7 +34,7 @@ if ! [ -f $LTP_ROOT/include/config.h ]; then
   cat $LTP_ROOT/include/config.h > $OUTPUT
 fi
 
-MAKE_FLAGS="-j1 --dry-run"
+MAKE_FLAGS="-j1 --dry-run V=1"
 
 OUTPUT=$TOOLS_DIR/make_dry_run.dump
 CMD="make $MAKE_FLAGS -C $LTP_ROOT/testcases"
