@@ -135,7 +135,7 @@ class BuildGenerator(object):
             target_bp.append('    srcs: ["%s"],' % list(local_src_files)[0])
         else:
             target_bp.append('    srcs: [')
-            for src in local_src_files:
+            for src in sorted(local_src_files):
                 target_bp.append('        "%s",' % src)
             target_bp.append('    ],')
 
@@ -143,7 +143,7 @@ class BuildGenerator(object):
             target_bp.append('    cflags: ["%s"],' % list(local_cflags)[0])
         elif len(local_cflags) > 1:
             target_bp.append('    cflags: [')
-            for cflag in local_cflags:
+            for cflag in sorted(local_cflags):
                 target_bp.append('        "%s",' % cflag)
             target_bp.append('    ],')
 
@@ -151,7 +151,7 @@ class BuildGenerator(object):
             target_bp.append('    local_include_dirs: ["%s"],' % list(local_c_includes)[0])
         elif len(local_c_includes) > 1:
             target_bp.append('    local_include_dirs: [')
-            for d in local_c_includes:
+            for d in sorted(local_c_includes):
                 target_bp.append('        "%s",' % d)
             target_bp.append('    ],')
 
@@ -163,7 +163,7 @@ class BuildGenerator(object):
             target_bp.append('    static_libs: ["libltp_%s"],' % list(static_libraries)[0])
         elif len(static_libraries) > 1:
             target_bp.append('    static_libs: [')
-            for lib in static_libraries:
+            for lib in sorted(static_libraries):
                 target_bp.append('        "libltp_%s",' % lib)
             target_bp.append('    ],')
 
@@ -175,7 +175,7 @@ class BuildGenerator(object):
             target_bp.append('    shared_libs: ["lib%s"],' % list(shared_libraries)[0])
         elif len(shared_libraries) > 1:
             target_bp.append('    shared_libs: [')
-            for lib in shared_libraries:
+            for lib in sorted(shared_libraries):
                 target_bp.append('        "lib%s",' % lib)
             target_bp.append('    ],')
 
