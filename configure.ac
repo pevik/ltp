@@ -171,6 +171,14 @@ AC_CHECK_TYPES([struct iovec],,,[#include <sys/uio.h>])
 AC_CHECK_TYPES([struct ipc64_perm],,,[#include <sys/ipcbuf.h>])
 AC_CHECK_TYPES([struct loop_config],,,[#include <linux/loop.h>])
 
+AC_CHECK_TYPES([struct __kernel_itimerspec],,,[#include <linux/time_types.h>])
+AC_CHECK_TYPES([struct __kernel_old_timespec],,,[#include <linux/time_types.h>])
+AC_CHECK_TYPES([struct __kernel_old_timeval],,,[#include <linux/time_types.h>])
+AC_CHECK_TYPES([struct __kernel_timespec],,,[#include <linux/time_types.h>])
+
+AC_CHECK_TYPES([struct __kernel_timex],,,[#include <sys/timex.h>])
+AC_CHECK_TYPES([struct __kernel_timex_timeval],,,[#include <sys/timex.h>])
+
 AC_CHECK_TYPES([struct mmsghdr],,,[
 #define _GNU_SOURCE
 #include <sys/types.h>
