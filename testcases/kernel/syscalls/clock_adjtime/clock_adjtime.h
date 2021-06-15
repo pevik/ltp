@@ -4,6 +4,9 @@
  * Author: Rafael David Tinoco <rafael.tinoco@linaro.org>
  */
 
+#ifndef CLOCK_ADJTIME_H__
+#define CLOCK_ADJTIME_H__
+
 #include "config.h"
 #include "tst_test.h"
 #include "tst_timer.h"
@@ -17,7 +20,6 @@
 #include <asm/posix_types.h>
 #include "lapi/timex.h"
 
-#ifndef __kernel_timex
 struct __kernel_old_timex {
 	unsigned int modes;	/* mode selector */
 	__kernel_long_t offset;	/* time offset (usec) */
@@ -49,11 +51,14 @@ struct __kernel_old_timex {
 	int  :32; int  :32; int  :32;
 };
 
+#ifndef HAVE_STRUCT___KERNEL_TIMEX_TIMEVAL
 struct __kernel_timex_timeval {
 	__kernel_time64_t       tv_sec;
 	long long		tv_usec;
 };
+#endif
 
+#ifndef HAVE_STRUCT___KERNEL_TIMEX
 struct __kernel_timex {
 	unsigned int modes;	/* mode selector */
 	int :32;            /* pad */
@@ -246,3 +251,4 @@ TIMEX_GET_SET_FIELD_TYPE(uint, uint);
 TIMEX_GET_SET_FIELD_TYPE(long, long long);
 
 #undef TIMEX_GET_SET_FIELD_TYPE
+#endif
