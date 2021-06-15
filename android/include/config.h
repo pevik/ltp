@@ -426,6 +426,21 @@
 /* Define to 1 if the system has the type `struct xt_entry_target'. */
 #define HAVE_STRUCT_XT_ENTRY_TARGET 1
 
+/* Define to 1 if the system has the type `struct __kernel_itimerspec'. */
+#define HAVE_STRUCT___KERNEL_ITIMERSPEC 1
+
+/* Define to 1 if the system has the type `struct __kernel_old_timespec'. */
+#define HAVE_STRUCT___KERNEL_OLD_TIMESPEC 1
+
+/* Define to 1 if the system has the type `struct __kernel_timespec'. */
+#define HAVE_STRUCT___KERNEL_TIMESPEC 1
+
+/* Define to 1 if the system has the type `struct __kernel_timex'. */
+#define HAVE_STRUCT___KERNEL_TIMEX 1
+
+/* Define to 1 if the system has the type `struct __kernel_timex_timeval'. */
+#define HAVE_STRUCT___KERNEL_TIMEX_TIMEVAL 1
+
 /* Define to 1 if you have the `syncfs' function. */
 #define HAVE_SYNCFS 1
 

@@ -12,6 +12,8 @@
 #ifndef TST_TIMER
 #define TST_TIMER
 
+#include <linux/time_types.h>
+#include <linux/types.h>
 #include <sched.h>
 #include <sys/time.h>
 #include <mqueue.h>
@@ -95,34 +97,37 @@ static inline long long tst_timeval_diff_ms(struct timeval t1,
 	return tst_timeval_to_ms(tst_timeval_diff(t1, t2));
 }
 
-#ifndef __kernel_timespec
-
 typedef __kernel_long_t	__kernel_old_time_t;
 
-#ifndef __kernel_old_timeval
+#ifndef HAVE_STRUCT___KERNEL_OLD_TIMEVAL
 struct __kernel_old_timeval {
 	__kernel_old_time_t	tv_sec;		/* seconds */
 	__kernel_suseconds_t	tv_usec;	/* microseconds */
 };
 #endif
 
+#ifndef HAVE_STRUCT___KERNEL_OLD_TIMESPEC
 struct __kernel_old_timespec {
 	__kernel_old_time_t	tv_sec;		/* seconds */
 	__kernel_old_time_t	tv_nsec;	/* nanoseconds */
 };
+#endif
 
 typedef long long __kernel_time64_t;
 
+#ifndef HAVE_STRUCT___KERNEL_TIMESPEC
 struct __kernel_timespec {
 	__kernel_time64_t       tv_sec;                 /* seconds */
 	long long               tv_nsec;                /* nanoseconds */
 };
+#endif
 
 struct __kernel_old_itimerspec {
 	struct __kernel_old_timespec it_interval;    /* timer period */
 	struct __kernel_old_timespec it_value;       /* timer expiration */
 };
 
+#ifndef HAVE_STRUCT___KERNEL_ITIMERSPEC
 struct __kernel_itimerspec {
 	struct __kernel_timespec it_interval;    /* timer period */
 	struct __kernel_timespec it_value;       /* timer expiration */
