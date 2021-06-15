@@ -110,8 +110,8 @@ class BuildGenerator(object):
         '''
         base_name = os.path.basename(cc_target)
         if base_name in ltp_names_used:
-            print 'ERROR: base name {} of cc_target {} already used. Skipping...'.format(
-                base_name, cc_target)
+            print('ERROR: base name {} of cc_target {} already used. Skipping...'.format(
+                base_name, cc_target))
             return
         ltp_names_used.add(base_name)
 
@@ -335,7 +335,7 @@ class BuildGenerator(object):
         for i in cc_libraries:
             if len(set(cc_libraries[i]).intersection(disabled_libs)) > 0:
                 if not os.path.basename(i) in disabled_tests:
-                    print os.path.basename(i)
+                    print(os.path.basename(i))
 
         print("Disabled_cflag tests: Test cases listed here are"
               "suggested to be disabled since they require a disabled cflag. "
@@ -346,7 +346,7 @@ class BuildGenerator(object):
                 idx = module_name.find('_')
                 if idx > 0:
                     module_name = module_name[:idx]
-                print module_name
+                print(module_name)
 
         # Remove include directories that don't exist. They're an error in
         # Soong.
@@ -463,7 +463,7 @@ class BuildGenerator(object):
             output_path: string
         '''
         with open(output_path, 'a') as f:
-            for k in sorted(self._bp_result.iterkeys()):
+            for k in sorted(self._bp_result.keys()):
                 f.write('\n'.join(self._bp_result[k]))
                 f.write('\n')
             self._bp_result = {}
@@ -475,7 +475,7 @@ class BuildGenerator(object):
             output_path: string
         '''
         with open(output_path, 'a') as f:
-            for k in sorted(self._mk_result.iterkeys()):
+            for k in sorted(self._mk_result.keys()):
                 f.write('\n'.join(self._mk_result[k]))
                 f.write('\n')
             self._mk_result = {}
@@ -548,10 +548,10 @@ def main():
 
     unused_cflags_targs = generator.GetUnusedCustomCFlagsTargets()
     if unused_cflags_targs:
-        print 'NOTE: Tests had custom cflags, but were never seen: {}'.format(
-            ', '.join(unused_cflags_targs))
+        print('NOTE: Tests had custom cflags, but were never seen: {}'.format(
+            ', '.join(unused_cflags_targs)))
 
-    print 'Finished!'
+    print('Finished!')
 
 
 if __name__ == '__main__':

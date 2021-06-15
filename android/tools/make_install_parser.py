@@ -87,7 +87,7 @@ def main():
     make_install_parser = MakeInstallParser(args.ltp_root)
     result = make_install_parser.ParseFile(args.input_path)
 
-    print pprint.pprint(result)
+    print(pprint.pprint(result))
 
 if __name__ == '__main__':
     main()
