@@ -10,7 +10,7 @@
 #include "config.h"
 #include "lapi/posix_types.h"
 
-#ifndef HAVE_IPC64_PERM
+#ifndef HAVE_STRUCT_IPC64_PERM
 
 #if defined(__hppa__)
 #define HAVE_IPC64_PERM
