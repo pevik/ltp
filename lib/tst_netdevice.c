@@ -101,7 +101,7 @@ int tst_netdev_set_state(const char *file, const int lineno,
 int tst_create_veth_pair(const char *file, const int lineno,
 	const char *ifname1, const char *ifname2)
 {
-	int ret;
+	int ret, save_errno;
 	struct ifinfomsg info = { .ifi_family = AF_UNSPEC };
 	struct tst_rtnl_context *ctx;
 	struct tst_rtnl_attr_list peerinfo[] = {
@@ -146,10 +146,12 @@ int tst_create_veth_pair(const char *file, const int lineno,
 	}
 
 	ret = tst_rtnl_send_validate(file, lineno, ctx);
+	save_errno = errno;
 	tst_rtnl_destroy_context(file, lineno, ctx);
 
 	if (!ret) {
-		tst_brk_(file, lineno, TBROK | TTERRNO,
+		errno = save_errno;
+		tst_brk_(file, lineno, TBROK | TERRNO,
 			"Failed to create veth interfaces %s+%s", ifname1,
 			ifname2);
 	}
@@ -161,7 +163,7 @@ int tst_remove_netdev(const char *file, const int lineno, const char *ifname)
 {
 	struct ifinfomsg info = { .ifi_family = AF_UNSPEC };
 	struct tst_rtnl_context *ctx;
-	int ret;
+	int ret, save_errno;
 
 	if (strlen(ifname) >= IFNAMSIZ) {
 		tst_brk_(file, lineno, TBROK,
@@ -180,10 +182,12 @@ int tst_remove_netdev(const char *file, const int lineno, const char *ifname)
 	}
 
 	ret = tst_rtnl_send_validate(file, lineno, ctx);
+	save_errno = errno;
 	tst_rtnl_destroy_context(file, lineno, ctx);
 
 	if (!ret) {
-		tst_brk_(file, lineno, TBROK | TTERRNO,
+		errno = save_errno;
+		tst_brk_(file, lineno, TBROK | TERRNO,
 			"Failed to remove netdevice %s", ifname);
 	}
 
@@ -196,7 +200,7 @@ static int modify_address(const char *file, const int lineno,
 	size_t addrlen, uint32_t addr_flags)
 {
 	struct tst_rtnl_context *ctx;
-	int index, ret;
+	int index, ret, save_errno;
 	struct ifaddrmsg info = {
 		.ifa_family = family,
 		.ifa_prefixlen = prefix
@@ -229,10 +233,12 @@ static int modify_address(const char *file, const int lineno,
 	}
 
 	ret = tst_rtnl_send_validate(file, lineno, ctx);
+	save_errno = errno;
 	tst_rtnl_destroy_context(file, lineno, ctx);
 
 	if (!ret) {
-		tst_brk_(file, lineno, TBROK | TTERRNO,
+		errno = save_errno;
+		tst_brk_(file, lineno, TBROK | TERRNO,
 			"Failed to modify %s network address", ifname);
 	}
 
@@ -276,7 +282,7 @@ static int change_ns(const char *file, const int lineno, const char *ifname,
 {
 	struct ifinfomsg info = { .ifi_family = AF_UNSPEC };
 	struct tst_rtnl_context *ctx;
-	int ret;
+	int ret, save_errno;
 
 	if (strlen(ifname) >= IFNAMSIZ) {
 		tst_brk_(file, lineno, TBROK,
@@ -298,10 +304,12 @@ static int change_ns(const char *file, const int lineno, const char *ifname,
 	}
 
 	ret = tst_rtnl_send_validate(file, lineno, ctx);
+	save_errno = errno;
 	tst_rtnl_destroy_context(file, lineno, ctx);
 
 	if (!ret) {
-		tst_brk_(file, lineno, TBROK | TTERRNO,
+		errno = save_errno;
+		tst_brk_(file, lineno, TBROK | TERRNO,
 			"Failed to move %s to another namespace", ifname);
 	}
 
@@ -327,7 +335,7 @@ static int modify_route(const char *file, const int lineno, unsigned int action,
 	const void *gateway, size_t gatewaylen)
 {
 	struct tst_rtnl_context *ctx;
-	int ret;
+	int ret, save_errno;
 	int32_t index;
 	struct rtmsg info = {
 		.rtm_family = family,
@@ -389,10 +397,12 @@ static int modify_route(const char *file, const int lineno, unsigned int action,
 	}
 
 	ret = tst_rtnl_send_validate(file, lineno, ctx);
+	save_errno = errno;
 	tst_rtnl_destroy_context(file, lineno, ctx);
 
 	if (!ret) {
-		tst_brk_(file, lineno, TBROK | TTERRNO,
+		errno = save_errno;
+		tst_brk_(file, lineno, TBROK | TERRNO,
 			"Failed to modify network route");
 	}
 

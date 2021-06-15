@@ -376,11 +376,12 @@ int tst_rtnl_check_acks(const char *file, const int lineno,
 			tst_brk_(file, lineno, TBROK,
 				"No ACK found for Netlink message %u",
 				msg->nlmsg_seq);
+			errno = ENOMSG;
 			return 0;
 		}
 
 		if (res->err->error) {
-			TST_ERR = -res->err->error;
+			errno = -res->err->error;
 			return 0;
 		}
 	}
@@ -392,9 +393,7 @@ int tst_rtnl_send_validate(const char *file, const int lineno,
 	struct tst_rtnl_context *ctx)
 {
 	struct tst_rtnl_message *response;
-	int ret;
-
-	TST_ERR = 0;
+	int ret, save_errno;
 
 	if (tst_rtnl_send(file, lineno, ctx) <= 0)
 		return 0;
@@ -406,7 +405,9 @@ int tst_rtnl_send_validate(const char *file, const int lineno,
 		return 0;
 
 	ret = tst_rtnl_check_acks(file, lineno, ctx, response);
+	save_errno = errno;
 	tst_rtnl_free_message(response);
+	errno = save_errno;
 
 	return ret;
 }
