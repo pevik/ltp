@@ -19,6 +19,9 @@ set -e
 
 [ -z $TOOLS_DIR ] && TOOLS_DIR=$(realpath $(dirname $0))
 [ -z $LTP_ROOT ] && LTP_ROOT=$(realpath $TOOLS_DIR/../..)
+[ -z $TOOLS_DUMP_DIR ] && TOOLS_DUMP_DIR=$(realpath $TOOLS_DIR/dump)
+
+mkdir -p $TOOLS_DUMP_DIR
 
 if ! [ -f $LTP_ROOT/include/config.h ]; then
   echo ""
@@ -36,13 +39,13 @@ fi
 
 MAKE_FLAGS="-j1 --dry-run V=1"
 
-OUTPUT=$TOOLS_DIR/make_dry_run.dump
+OUTPUT=$TOOLS_DUMP_DIR/make_dry_run.dump
 CMD="make $MAKE_FLAGS -C $LTP_ROOT/testcases"
 echo ""
 echo "Dumping output to $OUTPUT from command '$CMD'"
 $CMD > $OUTPUT
 
-OUTPUT=$TOOLS_DIR/make_install_dry_run.dump
+OUTPUT=$TOOLS_DUMP_DIR/make_install_dry_run.dump
 CMD="make $MAKE_FLAGS -C $LTP_ROOT/testcases install"
 echo ""
 echo "Dumping output to $OUTPUT from command '$CMD'"
