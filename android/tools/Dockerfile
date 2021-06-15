@@ -4,7 +4,7 @@ ARG groupid
 ARG username
 ARG ltproot
 
-RUN apt-get update && apt-get install -y python autoconf build-essential libssl-dev
+RUN apt-get update && apt-get install -y python autoconf build-essential libssl-dev pkgconf
 
 # Set up the user so that files are owned by the proper user
 RUN groupadd -g $groupid $username \
