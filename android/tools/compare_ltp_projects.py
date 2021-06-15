@@ -169,9 +169,11 @@ def show_diff(ltp_tests_1, ltp_tests_2):
 
     # total rows we have to print
     total_rows = max(len(deleted_test_suites), len(added_test_suites))
+    deleted_text = 'Deleted ({})'.format(len(deleted_test_suites))
+    added_text = 'Added ({})'.format(len(added_test_suites))
     if total_rows > 0:
         print('{:*^{len}}'.format(' Tests Suites ', len=width*2+2))
-        print('{:>{len}} {:>{len}}'.format('Deleted', 'Added', len=width))
+        print('{:>{len}} {:>{len}}'.format(deleted_text, added_text, len=width))
         for i in range(total_rows):
             print('{:>{len}} {:>{len}}'.format('' if i >= len(deleted_test_suites) else str(deleted_test_suites[i]),
                                  '' if i >= len(added_test_suites) else str(added_test_suites[i]), len=width))
@@ -179,9 +181,11 @@ def show_diff(ltp_tests_1, ltp_tests_2):
     print('')
     # total rows we have to print
     total_rows = max(len(deleted_tests), len(added_tests))
+    deleted_text = 'Deleted ({})'.format(len(deleted_tests))
+    added_text = 'Added ({})'.format(len(added_tests))
     if total_rows:
         print('{:*^{len}}'.format(' Tests ', len=width*2+2))
-        print('{:>{len}} {:>{len}}'.format('Deleted', 'Added', len=width))
+        print('{:>{len}} {:>{len}}'.format(deleted_text, added_text, len=width))
         for i in range(total_rows):
             print('{:>{len}} {:>{len}}'.format('' if i >= len(deleted_tests) else str(deleted_tests[i]),
                                  '' if i >= len(added_tests) else str(added_tests[i]), len=width))
