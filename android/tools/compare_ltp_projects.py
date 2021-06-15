@@ -188,12 +188,12 @@ def show_diff(ltp_tests_1, ltp_tests_2):
 def main():
     arg_parser = argparse.ArgumentParser(
         description='Diff 2 LTP projects for supported test cases')
-    arg_parser.add_argument('--ltp-root1',
-                            dest='ltp_root1',
+    arg_parser.add_argument('--ltp-old',
+                            dest='ltp_old',
                             required=True,
                             help="LTP Root Directory before merge")
-    arg_parser.add_argument('--ltp-root2',
-                            dest='ltp_root2',
+    arg_parser.add_argument('--ltp-new',
+                            dest='ltp_new',
                             required=True,
                             help="LTP Root Directory after merge")
     arg_parser.add_argument('--scenario', default=None,
@@ -201,8 +201,8 @@ def main():
                             help="LTP scenario to list tests for")
     args = arg_parser.parse_args()
 
-    ltp_tests1 = scan_ltp(args.ltp_root1, args.scenario)
-    ltp_tests2 = scan_ltp(args.ltp_root2, args.scenario)
+    ltp_tests1 = scan_ltp(args.ltp_old, args.scenario)
+    ltp_tests2 = scan_ltp(args.ltp_new, args.scenario)
     show_diff(ltp_tests1, ltp_tests2)
 
 if __name__ == '__main__':
