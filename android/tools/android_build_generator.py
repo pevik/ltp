@@ -24,7 +24,7 @@
 import argparse
 import fileinput
 import json
-import os.path
+import os
 import re
 
 import make_parser
