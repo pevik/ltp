@@ -49,6 +49,11 @@ int main(void)
 	//create a server
 	svcr = svcfd_create(fd, 1024, 1024);
 
+	//check returned value
+	if ((SVCXPRT *) svcr == NULL) {
+		return test_status;
+	}
+
 	//call routine
 	xprt_register(svcr);
 
