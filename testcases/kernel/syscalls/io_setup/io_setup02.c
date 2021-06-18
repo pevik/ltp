@@ -12,10 +12,10 @@
  *
  * Test io_setup invoked via syscall(2):
  *
- * 1. io_setup fails and returns -EFAULT if ctxp is NULL.
- * 2. io_setup fails and returns -EINVAL if ctxp is not initialized to 0.
- * 3. io_setup fails and returns -EINVAL if nr_events is -1.
- * 4. io_setup fails and returns -EAGAIN if nr_events exceeds the limit
+ * 1. io_setup fails and returns EFAULT if ctxp is NULL.
+ * 2. io_setup fails and returns EINVAL if ctxp is not initialized to 0.
+ * 3. io_setup fails and returns EINVAL if nr_events is -1.
+ * 4. io_setup fails and returns EAGAIN if nr_events exceeds the limit
  *    of available events.
  * 5. io_setup succeeds if both nr_events and ctxp are valid.
  */
