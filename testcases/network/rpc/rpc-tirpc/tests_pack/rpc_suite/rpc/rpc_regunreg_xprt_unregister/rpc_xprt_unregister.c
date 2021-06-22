@@ -53,6 +53,11 @@ int main(int argn, char *argc[])
 	//create a server
 	svcr = svcfd_create(fd, 1024, 1024);
 
+	//check returned value
+	if ((SVCXPRT *) svcr == NULL) {
+		return test_status;
+	}
+
 	xprt_register(svcr);
 	//call routine
 	xprt_unregister(svcr);
