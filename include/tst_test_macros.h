@@ -6,6 +6,10 @@
 #ifndef TST_TEST_MACROS_H__
 #define TST_TEST_MACROS_H__
 
+#if LTPLIB
+#define TEST(SCALL) _Pragma("GCC error \"Do not use TEST macro in library\"")
+#define TEST_VOID(SCALL) _Pragma("GCC error \"Do not use TEST_VOID macro in library\"")
+#else
 #define TEST(SCALL) \
 	do { \
 		errno = 0; \
@@ -19,6 +23,7 @@
 		SCALL; \
 		TST_ERR = errno; \
 	} while (0)
+#endif
 
 extern long TST_RET;
 extern int TST_ERR;

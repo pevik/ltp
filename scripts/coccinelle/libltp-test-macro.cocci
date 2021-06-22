@@ -24,7 +24,7 @@ virtual fix
 
  TEST(...)
 
- ...
+ <...
 
 (
 - TST_RET
@@ -36,6 +36,8 @@ virtual fix
 - TTERRNO
 + TERRNO
 )
+
+ ...>
 
 // Replace TEST in all functions where it occurs only at the start. It
 // is slightly complicated by adding a newline if a statement appears
