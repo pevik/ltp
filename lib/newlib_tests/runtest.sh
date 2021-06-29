@@ -7,7 +7,16 @@ tst_fuzzy_sync02}"
 
 LTP_SHELL_API_TESTS="${LTP_SHELL_API_TESTS:-shell/tst_check_driver.sh shell/net/*.sh}"
 
+echo "DEBUG: PWD before: $PWD" # FIXME: debug
+echo "find $PWD"
+find $PWD
+echo "DEBUG: PWD before: $PWD" # FIXME: debug
 cd $(dirname $0)
+echo "DEBUG: PWD after: $PWD" # FIXME: debug
+
+echo "find $PWD/../../testcases/lib/" # FIXME: debug
+find $PWD/../../testcases/lib/ # FIXME: debug
+
 PATH="$PWD/../../testcases/lib/:$PATH"
 
 . tst_ansi_color.sh
@@ -62,10 +71,14 @@ tst_brk()
 	local res="$1"
 	shift
 
+	tst_flag2mask "$res"
+	local mask=$?
+
 	tst_res
 	tst_res $res $@
 
-	exit $(tst_flag2mask $res)
+	echo "exit: '$mask', res: '$res'" # FIXME: debug
+	exit $mask
 }
 
 run_tests()
@@ -78,9 +91,11 @@ run_tests()
 	tst_res TINFO "=== Run $target tests ==="
 
 	for i in $vars; do
-		tst_res TINFO "* $i"
+		tst_res TINFO "* $i ($PWD)"
 		./$i
 		ret=$?
+		echo "PATH: '$PATH'" # FIXME: debug
+		echo "DEBUG: $ret" # FIXME: debug
 
 		case $ret in
 			0) tpass="$tpass $i";;
@@ -105,8 +120,10 @@ run_tests()
 
 run_c_tests()
 {
+	echo "pev: $PWD" # FIXME: debug
 	if [ "$builddir" ]; then
 		cd $builddir/lib/newlib_tests
+		echo "pev: cd to $PWD" # FIXME: debug
 	fi
 
 	run_tests "C"

@@ -194,13 +194,13 @@ install: $(INSTALL_TARGETS)
 
 ## Test
 test: lib-all
-	@set -e; $(top_srcdir)/lib/newlib_tests/runtest.sh -b $(top_builddir)
+	$(top_srcdir)/lib/newlib_tests/runtest.sh -b $(top_builddir) || exit $$?
 
 test-c: lib-all
-	@set -e; $(top_srcdir)/lib/newlib_tests/runtest.sh -b $(top_builddir) -c
+	$(top_srcdir)/lib/newlib_tests/runtest.sh -b $(top_builddir) -c || exit $$?
 
 test-shell: lib-all
-	@set -e; $(top_srcdir)/lib/newlib_tests/runtest.sh -b $(top_builddir) -s
+	$(top_srcdir)/lib/newlib_tests/runtest.sh -b $(top_builddir) -s || exit $$?
 
 ## Help
 .PHONY: help
