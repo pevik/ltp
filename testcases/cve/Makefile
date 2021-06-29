@@ -19,6 +19,7 @@ cve-2014-0196:  LDLIBS += -lutil
 endif
 
 meltdown: CFLAGS += -I$(abs_srcdir)/../realtime/include
+check-meltdown: CFLAGS += -I$(abs_srcdir)/../realtime/include
 
 ifneq (,$(filter $(HOST_CPU),x86 x86_64))
 meltdown: CFLAGS += -msse2
