@@ -192,6 +192,16 @@ $(INSTALL_TARGETS): $(INSTALL_DIR) $(DESTDIR)/$(bindir)
 ## Install
 install: $(INSTALL_TARGETS)
 
+## Test
+test: lib-all
+	$(top_srcdir)/lib/newlib_tests/runtest.sh
+
+test-c: lib-all
+	$(top_srcdir)/lib/newlib_tests/runtest.sh -c
+
+test-shell: lib-all
+	$(top_srcdir)/lib/newlib_tests/runtest.sh -s
+
 ## Help
 .PHONY: help
 help:
