@@ -150,7 +150,11 @@ test_tst_ipaddr_un()
 	for i in $data; do
 		cmd="tst_ipaddr_un $(echo $i | cut -d'|' -f 1)"
 		result="$(echo $i | cut -d'|' -f 2)"
-		tst_res TINFO "testing $cmd"
+		tst_res TINFO "testing '$cmd'"
+		local x="$(eval $cmd)"
+		tst_res TINFO "DEBUG x='$x'"
+		tst_res TINFO "DEBUG $cmd='$(eval $cmd)'"
+
 		EXPECT_PASS "[ '$(eval $cmd)' = '$result' ]"
 	done
 }
