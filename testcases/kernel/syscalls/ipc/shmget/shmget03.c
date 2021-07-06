@@ -42,13 +42,17 @@ static void setup(void)
 	queues = SAFE_MALLOC(maxshms * sizeof(int));
 	for (num = 0; num < maxshms; num++) {
 		res = shmget(shmkey + num, SHM_SIZE, IPC_CREAT | IPC_EXCL | SHM_RW);
-		if (res == -1)
-			tst_brk(TBROK | TERRNO, "shmget failed unexpectedly");
+		if (res == -1) {
+			if (errno == ENOSPC)
+				break;
+			tst_brk(TBROK | TERRNO,
+				"shmget failed unexpectedly, num %d", num);
+		}
 
 		queues[queue_cnt++] = res;
 	}
-	tst_res(TINFO, "The maximum number of memory segments (%d) has been reached",
-		maxshms);
+	tst_res(TINFO, "The max number of memory segments (%d) has been reached, used by test %d",
+		maxshms, queue_cnt);
 }
 
 static void cleanup(void)
