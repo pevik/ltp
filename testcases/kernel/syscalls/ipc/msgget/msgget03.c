@@ -26,29 +26,30 @@ static key_t msgkey;
 
 static void verify_msgget(void)
 {
-	TST_EXP_FAIL2(msgget(msgkey + maxmsgs, IPC_CREAT | IPC_EXCL), ENOSPC,
-		"msgget(%i, %i)", msgkey + maxmsgs, IPC_CREAT | IPC_EXCL);
+	int res = 0, num;
+
+	errno = 0;
+	for (num = 0; num <= maxmsgs; ++num) {
+		res = msgget(msgkey + num, IPC_CREAT | IPC_EXCL);
+		if (res == -1)
+			break;
+		queues[queue_cnt++] = res;
+	}
+
+	if (res != -1 || errno != ENOSPC)
+		tst_brk(TFAIL | TERRNO, "Failed to trigger ENOSPC error");
+
+	tst_res(TPASS, "Maximum number of queues reached (%d), used by test %d",
+		maxmsgs, queue_cnt);
 }
 
 static void setup(void)
 {
-	int res, num;
-
 	msgkey = GETIPCKEY();
 
 	SAFE_FILE_SCANF("/proc/sys/kernel/msgmni", "%i", &maxmsgs);
 
-	queues = SAFE_MALLOC(maxmsgs * sizeof(int));
-
-	for (num = 0; num < maxmsgs; num++) {
-		res = msgget(msgkey + num, IPC_CREAT | IPC_EXCL);
-		if (res == -1)
-			tst_brk(TBROK | TERRNO, "msgget failed unexpectedly");
-		queues[queue_cnt++] = res;
-	}
-
-	tst_res(TINFO, "The maximum number of message queues (%d) reached",
-		maxmsgs);
+	queues = SAFE_MALLOC((maxmsgs + 1) * sizeof(int));
 }
 
 static void cleanup(void)
