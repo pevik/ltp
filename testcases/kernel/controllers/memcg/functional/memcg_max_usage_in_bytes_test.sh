@@ -12,6 +12,7 @@ TST_CNT=4
 . memcg_lib.sh
 
 MEM_TO_ALLOC=$((PAGESIZE * 1024))
+MEM_EXPECTED_UPPER=$((MEM_TO_ALLOC + MEM_USAGE_RANGE))
 MEM_LIMIT=$((MEM_TO_ALLOC * 2))
 
 # Run test cases which checks memory.[memsw.]max_usage_in_bytes after make
@@ -21,6 +22,10 @@ test_max_usage_in_bytes()
 	local item="memory.max_usage_in_bytes"
 	[ $1 -eq 1 ] && item="memory.memsw.max_usage_in_bytes"
 	local check_after_reset=$2
+	local exp_stat_size_low=$MEM_TO_ALLOC
+	local exp_stat_size_up=$MEM_EXPECTED_UPPER
+	local kmem_stat_name="${item##*.}"
+
 	start_memcg_process --mmap-anon -s $MEM_TO_ALLOC
 
 	warmup
@@ -32,11 +37,20 @@ test_max_usage_in_bytes()
 	signal_memcg_process $MEM_TO_ALLOC
 	signal_memcg_process $MEM_TO_ALLOC
 
-	check_mem_stat $item $MEM_TO_ALLOC
+	if [ "$kmem_stat_name" = "max_usage_in_bytes" ] ||
+	   [ "$kmem_stat_name" = "usage_in_bytes" ]; then
+		local kmem=$(cat "memory.kmem.${kmem_stat_name}")
+		if [ $? -eq 0 ]; then
+			exp_stat_size_low=$((exp_stat_size_low + kmem))
+			exp_stat_size_up=$((exp_stat_size_up + kmem))
+		fi
+	fi
+
+	check_mem_stat $item $exp_stat_size_low $exp_stat_size_up
 
 	if [ $check_after_reset -eq 1 ]; then
 		echo 0 > $item
-		check_mem_stat $item 0
+		check_mem_stat $item 0 $PAGESIZES
 	fi
 
 	stop_memcg_process
