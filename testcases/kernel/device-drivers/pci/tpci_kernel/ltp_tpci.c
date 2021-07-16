@@ -108,8 +108,9 @@ static int probe_pci_dev(unsigned int bus, unsigned int slot)
 	if (!dev || !dev->driver)
 		return -ENODEV;
 
-	prk_info("found pci_dev '%s', bus %u, devfn %u",
-		pci_name(dev), bus, slot);
+	prk_info("found pci_dev '%s', driver '%s', bus %u, devfn %u",
+		pci_name(dev), (dev->driver) ? dev->driver->name : "",
+		bus, slot);
 
 	ltp_pci.dev = dev;
 	ltp_pci.bus = dev->bus;
@@ -444,7 +445,15 @@ static int test_assign_resources(void)
 			r->flags & IORESOURCE_PREFETCH) {
 			ret = pci_assign_resource(dev, i);
 			prk_info("assign resource to '%d', ret '%d'", i, ret);
-			rc |= (ret < 0 && ret != -EBUSY) ? TFAIL : TPASS;
+			if (dev->driver && !strncmp(dev->driver->name, "virtio-pci",
+						    strlen("virtio-pci"))) {
+				if (ret < 0 && ret != -EBUSY && ret != -ENOMEM)
+					rc |= TFAIL;
+				else
+					rc |= TPASS;
+			} else {
+				rc |= (ret < 0 && ret != -EBUSY) ? TFAIL : TPASS;
+			}
 		}
 	}
 
