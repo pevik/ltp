@@ -59,6 +59,14 @@ tst_net_remote_tmpdir()
 
 tst_net_setup()
 {
+	if [ "$TST_NET_IPV4_ONLY" = 1 -a $TST_IPVER = 6 ]; then
+		tst_brk TCONF "Test must be run on IPv4 only"
+	fi
+
+	if [ "$TST_NET_IPV6_ONLY" = 1 -a $TST_IPVER = 4 ]; then
+		tst_brk TCONF "Test must be run on IPv6 only"
+	fi
+
 	tst_net_remote_tmpdir
 	[ -n "$TST_SETUP_CALLER" ] && $TST_SETUP_CALLER
 
