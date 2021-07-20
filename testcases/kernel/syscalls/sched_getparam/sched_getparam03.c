@@ -17,8 +17,8 @@
  */
 
 #include <errno.h>
-#include <sched.h>
 #include "tst_test.h"
+#include "tst_sched.h"
 
 static struct sched_param param;
 static pid_t unused_pid;
@@ -43,7 +43,7 @@ static void verify_sched_getparam(unsigned int n)
 {
 	struct test_case_t *tc = &test_cases[n];
 
-	TST_EXP_FAIL(sched_getparam(*(tc->pid), tc->p), tc->exp_errno, "%s", tc->desc);
+	TST_EXP_FAIL(tst_sched_getparam(*(tc->pid), tc->p), tc->exp_errno, "%s", tc->desc);
 }
 
 static void setup(void)
