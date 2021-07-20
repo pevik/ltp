@@ -21,8 +21,8 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <sched.h>
 #include "tst_test.h"
+#include "tst_sched.h"
 
 static pid_t pids[2] = {0, 0};
 
@@ -35,8 +35,8 @@ static void verify_sched_getparam(unsigned int n)
 
 	child_pid = SAFE_FORK();
 	if (!child_pid) {
-		TST_EXP_PASS_SILENT(sched_getparam(pids[n], &param),
-				    "sched_getparam(%d)", pids[n]);
+		TST_EXP_PASS_SILENT(tst_sched_getparam(pids[n], &param),
+				   "sched_getparam(%d)", pids[n]);
 		if (!TST_PASS)
 			exit(0);
 
