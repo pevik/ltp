@@ -111,8 +111,6 @@ cc_defaults {
         "-Wno-unused-function",
         "-Wno-unused-parameter",
         "-Wno-unused-variable",
-        // http://b/192016947
-        "-fPIC",
     ],
 
     local_include_dirs: [
