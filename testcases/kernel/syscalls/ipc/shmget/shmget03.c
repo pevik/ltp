@@ -14,15 +14,19 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/ipc.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <pwd.h>
 #include <sys/shm.h>
 #include "tst_test.h"
 #include "tst_safe_sysv_ipc.h"
+#include "tst_safe_stdio.h"
 #include "libnewipc.h"
 
 static int *queues;
 static int maxshms, queue_cnt;
+static int mapped_shms = -1;
+static FILE *f = NULL;
 static key_t shmkey;
 
 static void verify_shmget(void)
@@ -34,10 +38,19 @@ static void verify_shmget(void)
 static void setup(void)
 {
 	int res, num;
+	char c;
 
 	shmkey = GETIPCKEY();
 
+	f = SAFE_FOPEN("/proc/sysvipc/shm", "r");
+	while ((c = fgetc(f)) != EOF) {
+		if (c == '\n')
+			mapped_shms++;
+	}
+	tst_res(TINFO, "Already mapped shared memory segments: %d", mapped_shms);
+
 	SAFE_FILE_SCANF("/proc/sys/kernel/shmmni", "%i", &maxshms);
+	maxshms -= mapped_shms;
 
 	queues = SAFE_MALLOC(maxshms * sizeof(int));
 	for (num = 0; num < maxshms; num++) {
@@ -62,6 +75,9 @@ static void cleanup(void)
 		SAFE_SHMCTL(queues[num], IPC_RMID, NULL);
 
 	free(queues);
+
+	if (f)
+		SAFE_FCLOSE(f);
 }
 
 static struct tst_test test = {
