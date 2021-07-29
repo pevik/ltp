@@ -231,7 +231,7 @@ EOF
 
 		cat >> "$makefile.3" <<EOF
 $bin_file: \$(srcdir)/$c_file
-	@if $COMPILE_STR > logfile.\$\$\$\$ 2>&1; then \\
+	if $COMPILE_STR > logfile.\$\$\$\$ 2>&1; then \\
 		 cat logfile.\$\$\$\$; \\
 		 echo "\$(subdir)/$test_name compile PASSED"; \\
 		 echo "\$(subdir)/$test_name compile PASSED" >> \$(LOGFILE); \\
