@@ -224,7 +224,7 @@ EOF
 			;;
 		esac
 
-		COMPILE_STR="\$(CC) $compiler_args \$(CFLAGS) \$(LDFLAGS) -o \$@ \$(srcdir)/$c_file"
+		COMPILE_STR="\$(CC) $compiler_args \$(CFLAGS) \$(LDFLAGS) -fexceptions -o \$@ \$(srcdir)/$c_file"
 		if $link_libs; then
 			COMPILE_STR="$COMPILE_STR \$(LDLIBS)"
 		fi
