@@ -76,6 +76,36 @@ static void trigger_fs_abort(void)
 		   MS_REMOUNT|MS_RDONLY, "abort");
 }
 
+#define TCASE2_BASEDIR "tcase2"
+#define TCASE2_BAD_DIR TCASE2_BASEDIR"/bad_dir"
+
+static unsigned int tcase2_bad_ino;
+static void tcase2_prepare_fs(void)
+{
+	struct stat stat;
+
+	SAFE_MKDIR(MOUNT_PATH"/"TCASE2_BASEDIR, 0777);
+	SAFE_MKDIR(MOUNT_PATH"/"TCASE2_BAD_DIR, 0777);
+
+	SAFE_STAT(MOUNT_PATH"/"TCASE2_BAD_DIR, &stat);
+	tcase2_bad_ino = stat.st_ino;
+
+	SAFE_UMOUNT(MOUNT_PATH);
+	do_debugfs_request(tst_device->dev, "sif " TCASE2_BAD_DIR " mode 0xff");
+	SAFE_MOUNT(tst_device->dev, MOUNT_PATH, tst_device->fs_type, 0, NULL);
+}
+
+static void tcase2_trigger_lookup(void)
+{
+	int ret;
+
+	/* SAFE_OPEN cannot be used here because we expect it to fail. */
+	ret = open(MOUNT_PATH"/"TCASE2_BAD_DIR, O_RDONLY, 0);
+	if (ret != -1 && errno != EUCLEAN)
+		tst_res(TFAIL, "Unexpected lookup result(%d) of %s (%d!=%d)",
+			ret, TCASE2_BAD_DIR, errno, EUCLEAN);
+}
+
 static const struct test_case {
 	char *name;
 	int error;
@@ -92,6 +122,14 @@ static const struct test_case {
 		.error_count = 1,
 		.error = EXT4_ERR_ESHUTDOWN,
 		.inode = NULL
+	},
+	{
+		.name = "Lookup of inode with invalid mode",
+		.prepare_fs = tcase2_prepare_fs,
+		.trigger_error = &tcase2_trigger_lookup,
+		.error_count = 1,
+		.error = 0,
+		.inode = &tcase2_bad_ino,
 	}
 };
 
