@@ -61,6 +61,14 @@ int fd_notify;
 
 #define MOUNT_PATH "test_mnt"
 
+#define EXT4_ERR_ESHUTDOWN 16
+
+static void trigger_fs_abort(void)
+{
+	SAFE_MOUNT(tst_device->dev, MOUNT_PATH, tst_device->fs_type,
+		   MS_REMOUNT|MS_RDONLY, "abort");
+}
+
 static const struct test_case {
 	char *name;
 	int error;
@@ -71,6 +79,13 @@ static const struct test_case {
 	void (*trigger_error)(void);
 	void (*prepare_fs)(void);
 } testcases[] = {
+	{
+		.name = "Trigger abort",
+		.trigger_error = &trigger_fs_abort,
+		.error_count = 1,
+		.error = EXT4_ERR_ESHUTDOWN,
+		.inode = NULL
+	}
 };
 
 struct fanotify_event_info_header *get_event_info(
