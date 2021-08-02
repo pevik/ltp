@@ -106,6 +106,18 @@ static void tcase2_trigger_lookup(void)
 			ret, TCASE2_BAD_DIR, errno, EUCLEAN);
 }
 
+static void tcase3_trigger(void)
+{
+	trigger_fs_abort();
+	tcase2_trigger_lookup();
+}
+
+static void tcase4_trigger(void)
+{
+	tcase2_trigger_lookup();
+	trigger_fs_abort();
+}
+
 static const struct test_case {
 	char *name;
 	int error;
@@ -128,6 +140,19 @@ static const struct test_case {
 		.prepare_fs = tcase2_prepare_fs,
 		.trigger_error = &tcase2_trigger_lookup,
 		.error_count = 1,
+		.error = 0,
+		.inode = &tcase2_bad_ino,
+	},
+	{
+		.name = "Multiple error submission",
+		.trigger_error = &tcase3_trigger,
+		.error_count = 2,
+		.error = EXT4_ERR_ESHUTDOWN,
+	},
+	{
+		.name = "Multiple error submission 2",
+		.trigger_error = &tcase4_trigger,
+		.error_count = 2,
 		.error = 0,
 		.inode = &tcase2_bad_ino,
 	}
