@@ -40,6 +40,14 @@
 
 #define FAN_EVENT_INFO_TYPE_ERROR	4
 
+#ifndef FILEID_INVALID
+#define	FILEID_INVALID		0xff
+#endif
+
+#ifndef FILEID_INO32_GEN
+#define FILEID_INO32_GEN	1
+#endif
+
 struct fanotify_event_info_error {
 	struct fanotify_event_info_header hdr;
 	__s32 error;
@@ -57,6 +65,9 @@ static const struct test_case {
 	char *name;
 	int error;
 	unsigned int error_count;
+
+	/* inode can be null for superblock errors */
+	unsigned int *inode;
 	void (*trigger_error)(void);
 	void (*prepare_fs)(void);
 } testcases[] = {
@@ -82,6 +93,42 @@ struct fanotify_event_info_header *get_event_info(
 #define get_event_info_error(event)					\
 	((struct fanotify_event_info_error *)				\
 	 get_event_info((event), FAN_EVENT_INFO_TYPE_ERROR))
+
+#define get_event_info_fid(event)					\
+	((struct fanotify_event_info_fid *)				\
+	 get_event_info((event), FAN_EVENT_INFO_TYPE_FID))
+
+int check_error_event_info_fid(struct fanotify_event_info_fid *fid,
+				 const struct test_case *ex)
+{
+	int fail = 0;
+	struct file_handle *fh = (struct file_handle *) &fid->handle;
+
+	if (!ex->inode) {
+		uint32_t *h = (uint32_t *) fh->f_handle;
+
+		if (!(fh->handle_type == FILEID_INVALID && !h[0] && !h[1])) {
+			tst_res(TFAIL, "%s: file handle should have been invalid",
+				ex->name);
+			fail++;
+		}
+		return fail;
+	} else if (fh->handle_type == FILEID_INO32_GEN) {
+		uint32_t *h = (uint32_t *) fh->f_handle;
+
+		if (h[0] != *ex->inode) {
+			tst_res(TFAIL,
+				"%s: Unexpected file handle inode (%u!=%u)",
+				ex->name, *ex->inode, h[0]);
+			fail++;
+		}
+	} else {
+		tst_res(TFAIL, "%s: Test can't handle received FH type (%d)",
+			ex->name, fh->handle_type);
+	}
+
+	return fail;
+}
 
 int check_error_event_info_error(struct fanotify_event_info_error *info_error,
 				 const struct test_case *ex)
@@ -126,6 +173,7 @@ void check_event(char *buf, size_t len, const struct test_case *ex)
 	struct fanotify_event_metadata *event =
 		(struct fanotify_event_metadata *) buf;
 	struct fanotify_event_info_error *info_error;
+	struct fanotify_event_info_fid *info_fid;
 	int fail = 0;
 
 	if (len < FAN_EVENT_METADATA_LEN)
@@ -136,6 +184,9 @@ void check_event(char *buf, size_t len, const struct test_case *ex)
 
 	info_error = get_event_info_error(event);
 	fail += info_error ? check_error_event_info_error(info_error, ex) : 1;
+
+	info_fid = get_event_info_fid(event);
+	fail += info_fid ? check_error_event_info_fid(info_fid, ex) : 1;
 
 	if (!fail)
 		tst_res(TPASS, "Successfully received: %s", ex->name);
