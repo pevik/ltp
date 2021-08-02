@@ -63,6 +63,13 @@ int fd_notify;
 
 #define EXT4_ERR_ESHUTDOWN 16
 
+static void do_debugfs_request(const char *dev, char *request)
+{
+	char *cmd[] = {"debugfs", "-w", dev, "-R", request, NULL};
+
+	SAFE_CMD(cmd, NULL, NULL);
+}
+
 static void trigger_fs_abort(void)
 {
 	SAFE_MOUNT(tst_device->dev, MOUNT_PATH, tst_device->fs_type,
