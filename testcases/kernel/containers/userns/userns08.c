@@ -120,6 +120,11 @@ static void setup(void)
 
 	SAFE_WRITE(fd, 1, "\n", 1);
 	SAFE_CLOSE(fd);
+
+	/* The default value of max_user_namespaces is set to 0 on some distros,
+	 * We need to change the default value to call clone().
+	 */
+	SAFE_FILE_PRINTF("/proc/sys/user/max_user_namespaces", "%d", 10);
 }
 
 static struct tst_test test = {
@@ -132,6 +137,10 @@ static struct tst_test test = {
 	.needs_kconfigs = (const char *[]) {
 		"CONFIG_USER_NS",
 		NULL
+	},
+	.save_restore = (const char * const[]) {
+		"?/proc/sys/user/max_user_namespaces",
+		NULL,
 	},
 	.tags = (const struct tst_tag[]) {
 		{"linux-git", "d2f007dbe7e4"},
