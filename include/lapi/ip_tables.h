@@ -5,6 +5,8 @@
 
 #include "config.h"
 
+#include <netinet/in.h>
+
 #include <net/if.h>
 #include <linux/netfilter_ipv4/ip_tables.h>
 
