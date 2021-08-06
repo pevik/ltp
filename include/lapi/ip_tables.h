@@ -3,6 +3,8 @@
 #ifndef LAPI_IP_TABLES__
 #define LAPI_IP_TABLES__
 
+#include <netinet/in.h>
+
 #include "config.h"
 
 #include <net/if.h>
