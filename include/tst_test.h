@@ -275,12 +275,12 @@ struct tst_test {
 void tst_run_tcases(int argc, char *argv[], struct tst_test *self)
                     __attribute__ ((noreturn));
 
-#define IPC_ENV_VAR "LTP_IPC_PATH"
+#define IPC_ENV_VAR "TST_IPC_PATH"
 
 /*
  * Does library initialization for child processes started by exec()
  *
- * The LTP_IPC_PATH variable must be passed to the program environment.
+ * The TST_IPC_PATH variable must be passed to the program environment.
  */
 void tst_reinit(void);
 
