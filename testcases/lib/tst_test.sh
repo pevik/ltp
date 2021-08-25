@@ -49,8 +49,8 @@ _tst_do_exit()
 		[ "$TST_TMPDIR_RHOST" = 1 ] && tst_cleanup_rhost
 	fi
 
-	if [ -n "$TST_NEEDS_CHECKPOINTS" -a -f "$LTP_IPC_PATH" ]; then
-		rm $LTP_IPC_PATH
+	if [ -n "$TST_NEEDS_CHECKPOINTS" -a -f "$TST_IPC_PATH" ]; then
+		rm $TST_IPC_PATH
 	fi
 
 	_tst_cleanup_timer
@@ -582,14 +582,14 @@ _tst_init_checkpoints()
 {
 	local pagesize
 
-	LTP_IPC_PATH="/dev/shm/ltp_${TST_ID}_$$"
+	TST_IPC_PATH="/dev/shm/ltp_${TST_ID}_$$"
 	pagesize=$(tst_getconf PAGESIZE)
 	if [ $? -ne 0 ]; then
 		tst_brk TBROK "tst_getconf PAGESIZE failed"
 	fi
-	ROD_SILENT dd if=/dev/zero of="$LTP_IPC_PATH" bs="$pagesize" count=1
-	ROD_SILENT chmod 600 "$LTP_IPC_PATH"
-	export LTP_IPC_PATH
+	ROD_SILENT dd if=/dev/zero of="$TST_IPC_PATH" bs="$pagesize" count=1
+	ROD_SILENT chmod 600 "$TST_IPC_PATH"
+	export TST_IPC_PATH
 }
 
 tst_run()
