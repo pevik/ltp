@@ -142,9 +142,11 @@ timer_t timer;			/* timer structure */
 Pinfo *shmaddr;			/* Start address  of shared memory */
 
 #ifndef _LINUX
+#error ifndef _LINUX
 FILE *errfp = stderr;		/* error file pointer, probably not necessary */
 FILE *debugfp = stderr;		/* debug file pointer, used if AUSDEBUG set */
 #else
+#error els ifndef _LINUX
 #define errfp stderr
 #define debugfp stderr
 #endif
