@@ -42,6 +42,7 @@ AC_CHECK_DECLS([SEM_STAT_ANY],,,[#include <sys/sem.h>])
 
 AC_CHECK_HEADERS_ONCE([ \
     asm/ldt.h \
+    fcntl.h \
     ifaddrs.h \
     keyutils.h \
     linux/can.h \
@@ -82,6 +83,7 @@ AC_SUBST(HAVE_FTS_H, $have_fts)
 AC_CHECK_HEADERS(linux/vm_sockets.h, [], [], [#include <sys/socket.h>])
 
 AC_CHECK_FUNCS_ONCE([ \
+    addseverity \
     clone3 \
     close_range \
     copy_file_range \
@@ -90,6 +92,7 @@ AC_CHECK_FUNCS_ONCE([ \
     execveat \
     fallocate \
     fchownat \
+    fmtmsg \
     fsconfig \
     fsmount \
     fsopen \

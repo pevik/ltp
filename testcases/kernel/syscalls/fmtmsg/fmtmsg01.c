@@ -27,20 +27,26 @@
  *      Check basic functionality using various messages and severity levels.
  */
 
+#include "config.h"
+
+#ifdef HAVE_FMTMSG_H
+# include <fmtmsg.h>		/* interface definition */
+#endif
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <ctype.h>
 #include <stdio.h>
-#if !defined(__UCLIBC__)
-#include <fmtmsg.h>		/* interface definition */
-#endif
+
 #include <string.h>
 
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
+
 #include "test.h"
+
 #define FAILED 0
 #define PASSED 1
 
@@ -70,7 +76,7 @@ void clearbuf(void)
 		buf[i] = '\0';
 }
 
-#if !defined(__UCLIBC__)
+#ifdef HAVE_FMTMSG
 
 int main(int argc, char *argv[])
 {
@@ -126,6 +132,8 @@ int main(int argc, char *argv[])
 
 	blexit();
 /*--------------------------------------------------------------*/
+#ifdef HAVE_ADDSEVERITY
+	printf("HERE aa 1\n"); // FIXME: debug
 	blenter();
 
 	/* Check that a system defined SEV_LEVEL cannot get redefined */
@@ -160,7 +168,9 @@ int main(int argc, char *argv[])
 	close(fd);
 
 	if (ret_val != 0) {
+		printf("fmtmsg pev: returned %d, expected 0\n", ret_val);
 		fprintf(temp, "fmtmsg returned %d, expected 0\n", ret_val);
+		printf("%d FAILED\n", __LINE__); // FIXME: debug
 		local_flag = FAILED;
 	}
 
@@ -171,6 +181,7 @@ int main(int argc, char *argv[])
 		fprintf(temp, "Expected string: %s\n", str3);
 		fprintf(temp, "does not match\n");
 		fprintf(temp, "received string: %s\n\n", buf);
+		printf("%d FAILED\n", __LINE__); // FIXME: debug
 		local_flag = FAILED;
 	}
 
@@ -186,6 +197,7 @@ int main(int argc, char *argv[])
 		fprintf(temp, "Expected string: %s\n", str4);
 		fprintf(temp, "does not match\n");
 		fprintf(temp, "received string: %s\n\n", buf);
+		printf("%d FAILED\n", __LINE__); // FIXME: debug
 		local_flag = FAILED;
 	}
 
@@ -193,6 +205,7 @@ int main(int argc, char *argv[])
 	remove("fmtfile");
 
 	blexit();
+#endif
 /*--------------------------------------------------------------*/
 	blenter();
 
@@ -208,7 +221,9 @@ int main(int argc, char *argv[])
 		local_flag = FAILED;
 	}
 
+	printf("HERE\n"); // FIXME: debug
 	blexit();
+	printf("HERE 2\n"); // FIXME: debug
 	anyfail();
 	tst_exit();
 }
@@ -246,7 +261,7 @@ int blexit(void)
 
 int main(void)
 {
-	tst_brkm(TCONF, NULL, "test is not available on uClibc");
+	tst_brkm(TCONF, NULL, "system does not support fmtmsg()");
 }
 
 #endif /* if !defined(__UCLIBC__) */
