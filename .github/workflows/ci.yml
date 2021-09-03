@@ -9,37 +9,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # 32bit build
-          - container: "debian:stable"
-            env:
-              CC: gcc
-              VARIANT: i386
-
-          # cross compilation builds
-          - container: "debian:stable"
-            env:
-              ARCH: ppc64el
-              CC: powerpc64le-linux-gnu-gcc
-              MAKE_INSTALL: 1
-              TREE: out
-              VARIANT: cross-compile
-
-          - container: "debian:stable"
-            env:
-              ARCH: arm64
-              CC: aarch64-linux-gnu-gcc
-              MAKE_INSTALL: 1
-              TREE: out
-              VARIANT: cross-compile
-
-          - container: "debian:stable"
-            env:
-              ARCH: s390x
-              CC: s390x-linux-gnu-gcc
-              MAKE_INSTALL: 1
-              TREE: out
-              VARIANT: cross-compile
-
           # musl (native)
           - container: "alpine:latest"
             env:
@@ -51,66 +20,6 @@ jobs:
             env:
               CC: gcc
               TREE: out
-              VARIANT: minimal
-
-          # other builds
-          - container: "fedora:latest"
-            env:
-              CC: clang
-              MAKE_INSTALL: 1
-              METADATA: asciidoctor-pdf
-
-          - container: "centos:7"
-            env:
-              CC: gcc
-              METADATA: asciidoc-pdf
-              TREE: out
-
-          - container: "debian:testing"
-            env:
-              CC: gcc
-              METADATA: asciidoctor-pdf
-
-          - container: "debian:oldstable"
-            env:
-              CC: clang
-              METADATA: asciidoc-pdf
-
-          - container: "opensuse/tumbleweed"
-            env:
-              CC: gcc
-              METADATA: asciidoctor
-
-          - container: "opensuse/leap"
-            env:
-              CC: gcc
-              METADATA: asciidoc-pdf
-
-          - container: "debian:oldstable"
-            env:
-              CC: gcc
-              METADATA: asciidoctor
-
-          - container: "debian:testing"
-            env:
-              CC: clang
-              METADATA: asciidoctor-pdf
-
-          - container: "ubuntu:groovy"
-            env:
-              CC: gcc
-              METADATA: asciidoctor
-              TREE: out
-
-          - container: "ubuntu:xenial"
-            env:
-              CC: gcc
-              METADATA: asciidoc-pdf
-
-          - container: "centos:latest"
-            env:
-              CC: gcc
-              METADATA: asciidoctor
 
     container:
       image: ${{ matrix.container }}
