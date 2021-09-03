@@ -141,14 +141,6 @@ timer_t timer;			/* timer structure */
 
 Pinfo *shmaddr;			/* Start address  of shared memory */
 
-#ifndef _LINUX
-FILE *errfp = stderr;		/* error file pointer, probably not necessary */
-FILE *debugfp = stderr;		/* debug file pointer, used if AUSDEBUG set */
-#else
-#define errfp stderr
-#define debugfp stderr
-#endif
-
 struct envstruct *edat = envdata;	/* pointer to environment data */
 
 /* external function declarations */
@@ -201,12 +193,12 @@ void print_shm(void)
 		return;
 
 	for (pinfo = shmaddr, i = 0; i < nodesum; i++, pinfo++) {
-		fprintf(errfp,
+		fprintf(stderr,
 			"slot: %-4d pid: %-6d ppid: %-6d msg: %-2d err: %-2d lst:",
 			i, pinfo->pid, pinfo->ppid, pinfo->msg, pinfo->err);
 		for (j = 0, listp = pinfo->list; j < BVAL; j++, listp++)
-			fprintf(errfp, " %d", *listp);
-		fprintf(errfp, "\n");
+			fprintf(stderr, " %d", *listp);
+		fprintf(stderr, "\n");
 	}
 }
 
@@ -262,7 +254,7 @@ void debugout(char *fmt, ...)
 
 	if (AUSDEBUG) {
 		va_start(args, fmt);
-		vfprintf(debugfp, fmt, args);
+		vfprintf(stderr, fmt, args);
 		va_end(args);
 	}
 }
@@ -276,13 +268,13 @@ void rm_msgqueue(void)
 
 	/* remove message queue id. */
 	if (msgctl(msgid, IPC_RMID, NULL) && errno != EINVAL) {
-		fprintf(errfp, "msgctl failed msgid: errno %d\n", errno);
+		fprintf(stderr, "msgctl failed msgid: errno %d\n", errno);
 		perror("msgctl failed");
 	}
 
 	/* remove message queue id. */
 	if (msgctl(msgerr, IPC_RMID, NULL) && errno != EINVAL) {
-		fprintf(errfp, "msgctl failed msgerr: errno %d\n", errno);
+		fprintf(stderr, "msgctl failed msgerr: errno %d\n", errno);
 		perror("msgctl failed");
 	}
 }
@@ -297,7 +289,7 @@ void rm_shmseg(void)
 
 	/* remove shared memory id (and shared memory segment). */
 	if (shmctl(shmid, IPC_RMID, NULL) && errno != EINVAL) {
-		fprintf(errfp, "shmctl failed: errno %d\n", errno);
+		fprintf(stderr, "shmctl failed: errno %d\n", errno);
 		perror("shmctl failed");
 	}
 }
@@ -313,13 +305,13 @@ void rm_semseg(void)
 	/* remove sem_lock semaphore id */
 	semarg.val = 0;		/* to fix problem with 4th arg of semctl in 64 bits MARIOG */
 	if (semctl(sem_lock, 0, IPC_RMID, semarg.val) && errno != EINVAL) {
-		fprintf(errfp, "semctl failed: errno %d\n", errno);
+		fprintf(stderr, "semctl failed: errno %d\n", errno);
 		perror("semctl failed");
 	}
 	/* remove sem_count semaphore id. */
 	semarg.val = 0;		/* to fix problem with 4th arg of semctl in 64 bits MARIOG */
 	if (semctl(sem_count, 0, IPC_RMID, semarg.val) && errno != EINVAL) {
-		fprintf(errfp, "semctl failed: errno %d\n", errno);
+		fprintf(stderr, "semctl failed: errno %d\n", errno);
 		perror("semctl failed");
 	}
 }
@@ -548,7 +540,7 @@ int spawn(int val)
 			if (!pid) {	/* CHILD */
 				if (AUSDEBUG) {
 					sprintf(foo, "%sslot%d", SLOTDIR, tval);
-					debugfp = fopen(foo, "a+");
+					stderr = fopen(foo, "a+");
 				}
 				pinfo = put_proc_info(tval);
 
@@ -1094,7 +1086,7 @@ void messenger(void)
 				case SIGALRM:
 					/* a process is hung, we will terminate */
 					killpg(procgrp, sig);
-					fprintf(errfp,
+					fprintf(stderr,
 						"ALERT! ALERT! WE HAVE TIMED OUT\n");
 					fprintf(stderr,
 						" SEVERE : SIGALRM: A process timed out, we failed\n");
@@ -1109,7 +1101,7 @@ void messenger(void)
 				default:
 					/* somebody sent a signal, we will terminate */
 					killpg(procgrp, sig);
-					fprintf(errfp,
+					fprintf(stderr,
 						"We received signal %d\n", sig);
 					fprintf(stderr,
 						" SEVERE : signal %d received, A proc was killed\n",
