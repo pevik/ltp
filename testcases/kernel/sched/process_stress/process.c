@@ -141,13 +141,8 @@ timer_t timer;			/* timer structure */
 
 Pinfo *shmaddr;			/* Start address  of shared memory */
 
-#ifndef _LINUX
-FILE *errfp = stderr;		/* error file pointer, probably not necessary */
-FILE *debugfp = stderr;		/* debug file pointer, used if AUSDEBUG set */
-#else
-#define errfp stderr
-#define debugfp stderr
-#endif
+FILE *errfp;
+FILE *debugfp;
 
 struct envstruct *edat = envdata;	/* pointer to environment data */
 
@@ -1221,6 +1216,9 @@ void doit(void)
 /* main */
 int main(int argc, char *argv[])
 {
+	errfp = stderr;
+	debugfp = stderr;
+
 	extern Pinfo *shmaddr;	/* start address of shared memory */
 
 	prtln();
