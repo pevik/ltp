@@ -19,6 +19,8 @@
 TST_SETUP="${TST_SETUP:-virt_lib_setup}"
 TST_CLEANUP="${TST_CLEANUP:-cleanup_vifaces}"
 
+VIRT_LIB_IFACE="ltp_v0"
+
 virt_lib_usage()
 {
 	echo "i n     start ID to use"
@@ -52,10 +54,10 @@ virt_lib_setup()
 
 	tst_require_cmds "ip"
 
-	virt_add ltp_v0 || \
+	virt_add $VIRT_LIB_IFACE || \
 		tst_brk TCONF "iproute2 or kernel doesn't support $virt_type"
 
-	ROD_SILENT "ip link delete ltp_v0"
+	ROD_SILENT "ip link delete $VIRT_LIB_IFACE"
 }
 
 TST_NEEDS_ROOT=1
@@ -87,7 +89,7 @@ cleanup_vifaces()
 virt_cleanup_rmt()
 {
 	cleanup_vifaces
-	tst_rhost_run -c "ip link delete ltp_v0 2>/dev/null"
+	tst_rhost_run -c "ip link delete $VIRT_LIB_IFACE 2>/dev/null"
 	if [ "$virt_tcp_syn" ]; then
 		sysctl -q net.ipv4.tcp_syn_retries=$virt_tcp_syn
 		virt_tcp_syn=
@@ -159,21 +161,21 @@ virt_add_rhost()
 	vxlan|geneve)
 		[ "$virt_type" = "vxlan" ] && opt="dev $(tst_iface rhost)"
 		[ "$vxlan_dstport" -eq 1 ] && opt="$opt dstport 0"
-		tst_rhost_run -s -c "ip link add ltp_v0 type $virt_type $@ $opt"
+		tst_rhost_run -s -c "ip link add $VIRT_LIB_IFACE type $virt_type $@ $opt"
 	;;
 	sit|wireguard)
-		tst_rhost_run -s -c "ip link add ltp_v0 type $virt_type $@"
+		tst_rhost_run -s -c "ip link add $VIRT_LIB_IFACE type $virt_type $@"
 	;;
 	gre|ip6gre)
-		tst_rhost_run -s -c "ip -f inet$TST_IPV6 tu add ltp_v0 \
+		tst_rhost_run -s -c "ip -f inet$TST_IPV6 tu add $VIRT_LIB_IFACE \
 				     mode $virt_type $@"
 	;;
 	gue|fou)
-		tst_rhost_run -s -c "ip link add name ltp_v0 \
+		tst_rhost_run -s -c "ip link add name $VIRT_LIB_IFACE \
 				     type $(_get_gue_fou_tnl $virt_type) $@"
 	;;
 	*)
-		tst_rhost_run -s -c "ip link add link $(tst_iface rhost) ltp_v0 \
+		tst_rhost_run -s -c "ip link add link $(tst_iface rhost) $VIRT_LIB_IFACE \
 				     type $virt_type $@"
 	;;
 	esac
@@ -189,7 +191,7 @@ virt_multiple_add_test()
 
 	for i in $(seq $start_id $max); do
 		virt_add ltp_v$i id $i $opt || \
-			tst_brk TFAIL "failed to create 'ltp_v0 $opt'"
+			tst_brk TFAIL "failed to create '$VIRT_LIB_IFACE $opt'"
 		ROD_SILENT "ip link set ltp_v$i up"
 	done
 
@@ -210,10 +212,10 @@ virt_add_delete_test()
 	tst_res TINFO "add/del $virt_type $NS_TIMES times"
 
 	for i in $(seq 0 $max); do
-		virt_add ltp_v0 $opt || \
-			tst_brk TFAIL "failed to create 'ltp_v0 $opt'"
-		ROD_SILENT "ip link set ltp_v0 up"
-		ROD_SILENT "ip link delete ltp_v0"
+		virt_add $VIRT_LIB_IFACE $opt || \
+			tst_brk TFAIL "failed to create '$VIRT_LIB_IFACE $opt'"
+		ROD_SILENT "ip link set $VIRT_LIB_IFACE up"
+		ROD_SILENT "ip link delete $VIRT_LIB_IFACE"
 	done
 	tst_res TPASS "done"
 }
@@ -224,36 +226,36 @@ virt_setup()
 	local opt_r="${2:-$1}"
 
 	tst_res TINFO "setup local ${virt_type} with '$opt'"
-	virt_add ltp_v0 $opt || \
-		tst_brk TBROK "failed to create 'ltp_v0 $opt'"
+	virt_add $VIRT_LIB_IFACE $opt || \
+		tst_brk TBROK "failed to create '$VIRT_LIB_IFACE $opt'"
 
 	tst_res TINFO "setup rhost ${virt_type} with '$opt_r'"
 	virt_add_rhost "$opt_r"
 
-	ROD_SILENT "ip addr add ${ip6_virt_local}/64 dev ltp_v0 nodad"
-	tst_rhost_run -s -c "ip addr add ${ip6_virt_remote}/64 dev ltp_v0 nodad"
+	ROD_SILENT "ip addr add ${ip6_virt_local}/64 dev $VIRT_LIB_IFACE nodad"
+	tst_rhost_run -s -c "ip addr add ${ip6_virt_remote}/64 dev $VIRT_LIB_IFACE nodad"
 
-	ROD_SILENT "ip addr add ${ip_virt_local}/24 dev ltp_v0"
-	tst_rhost_run -s -c "ip addr add ${ip_virt_remote}/24 dev ltp_v0"
+	ROD_SILENT "ip addr add ${ip_virt_local}/24 dev $VIRT_LIB_IFACE"
+	tst_rhost_run -s -c "ip addr add ${ip_virt_remote}/24 dev $VIRT_LIB_IFACE"
 
-	ROD_SILENT "sysctl -q net.ipv6.conf.ltp_v0.accept_dad=0"
-	tst_rhost_run -s -c "sysctl -q net.ipv6.conf.ltp_v0.accept_dad=0"
+	ROD_SILENT "sysctl -q net.ipv6.conf.$VIRT_LIB_IFACE.accept_dad=0"
+	tst_rhost_run -s -c "sysctl -q net.ipv6.conf.$VIRT_LIB_IFACE.accept_dad=0"
 
-	ROD_SILENT "ip link set up ltp_v0"
-	tst_rhost_run -s -c "ip link set up ltp_v0"
+	ROD_SILENT "ip link set up $VIRT_LIB_IFACE"
+	tst_rhost_run -s -c "ip link set up $VIRT_LIB_IFACE"
 }
 
 virt_tcp_syn=
 virt_minimize_timeout()
 {
-	local mac_loc="$(cat /sys/class/net/ltp_v0/address)"
-	local mac_rmt="$(tst_rhost_run -c 'cat /sys/class/net/ltp_v0/address')"
+	local mac_loc="$(cat /sys/class/net/$VIRT_LIB_IFACE/address)"
+	local mac_rmt="$(tst_rhost_run -c 'cat /sys/class/net/'$VIRT_LIB_IFACE'/address')"
 
 	if [ "$mac_loc" ]; then
 		ROD_SILENT "ip neigh replace $ip_virt_remote lladdr \
-			    $mac_rmt nud permanent dev ltp_v0"
+			    $mac_rmt nud permanent dev $VIRT_LIB_IFACE"
 		tst_rhost_run -s -c "ip neigh replace $ip_virt_local lladdr \
-				     $mac_loc nud permanent dev ltp_v0"
+				     $mac_loc nud permanent dev $VIRT_LIB_IFACE"
 	fi
 
 	virt_tcp_syn=$(sysctl -n net.ipv4.tcp_syn_retries)
@@ -303,10 +305,10 @@ virt_compare_netperf()
 	local opts="$2"
 
 	tst_netload -H $ip_virt_remote $opts -d res_ipv4 -e $expect_res \
-		-D ltp_v0 || ret1="fail"
+		-D $VIRT_LIB_IFACE || ret1="fail"
 
 	tst_netload -H ${ip6_virt_remote} $opts -d res_ipv6 -e $expect_res \
-		-D ltp_v0 || ret2="fail"
+		-D $VIRT_LIB_IFACE || ret2="fail"
 
 	[ "$ret1" = "fail" -o "$ret2" = "fail" ] && return
 
@@ -329,7 +331,7 @@ virt_check_cmd()
 		tst_res TCONF "'$@' option(s) not supported, skipping it"
 		return 1
 	fi
-	ROD_SILENT "ip link delete ltp_v0"
+	ROD_SILENT "ip link delete $VIRT_LIB_IFACE"
 	return 0
 }
 
@@ -359,7 +361,7 @@ virt_test_01()
 	start_id="${start_id:-1}"
 
 	tst_res TINFO "add $virt_type with '$2'"
-	virt_check_cmd virt_add ltp_v0 id 0 $2 || return
+	virt_check_cmd virt_add $VIRT_LIB_IFACE id 0 $2 || return
 	virt_multiple_add_test "$2"
 }
 
@@ -369,7 +371,7 @@ virt_test_02()
 	start_id="${start_id:-1}"
 
 	tst_res TINFO "add and then delete $virt_type with '$2'"
-	virt_check_cmd virt_add ltp_v0 $2 || return
+	virt_check_cmd virt_add $VIRT_LIB_IFACE $2 || return
 	virt_add_delete_test "$2"
 	start_id=$(($start_id + $NS_TIMES))
 }
