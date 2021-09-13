@@ -11,6 +11,47 @@ ROUTE_MAX_IP=${ROUTE_MAX_IP:-5}
 
 IP_ADDR_DELIM=','
 
+setup_if()
+{
+	rt="$(tst_ipaddr_un -p 0)"
+	rhost="$(tst_ipaddr_un 0 1)"
+	tst_add_ipaddr -s -q -a $rhost rhost
+
+	virt_type="macvlan"
+	. virt_lib.sh
+
+	echo "pev: call virt_lib_setup" # FIXME: debug
+	virt_lib_setup
+
+	local mode="mode bridge"
+
+	tst_res TINFO "add and then delete $virt_type with '$mode'"
+	virt_check_cmd virt_add $VIRT_LIB_IFACE $mode || return
+	echo "pev: call virt_setup" # FIXME: debug
+	virt_setup "$mode"
+	LHOST_IFACES="$LHOST_IFACES $VIRT_LIB_IFACE"
+	LHOST_IFACES="$LHOST_IFACES $VIRT_LIB_IFACE"
+}
+
+_setup_if()
+{
+	rt="$(tst_ipaddr_un -p 0)"
+	rhost="$(tst_ipaddr_un 0 1)"
+	tst_add_ipaddr -s -q -a $rhost rhost
+
+	if [ $(tst_get_ifaces_cnt) -lt 2 ]; then
+		new_liface="ltp_mv2"
+		tst_res TINFO "2 or more local ifaces required, adding '$new_liface'"
+		add_macvlan $new_liface
+	fi
+
+	if [ $(tst_get_ifaces_cnt rhost) -lt 2 ]; then
+		new_riface="ltp_mv1"
+		tst_res TINFO "2 or more remote ifaces required, adding '$new_riface'"
+		add_macvlan $new_riface rhost
+	fi
+}
+
 add_macvlan()
 {
 	local action="add"
@@ -50,8 +91,11 @@ check_max_ip()
 
 cleanup_if()
 {
-	[ "$new_liface" ] && add_macvlan -d $new_liface
-	[ "$new_riface" ] && add_macvlan -d $new_riface rhost
+	# FIXME: debug
+	#[ "$new_liface" ] && add_macvlan -d $new_liface
+	#[ "$new_riface" ] && add_macvlan -d $new_riface rhost
+	echo "calling cleanup_vifaces :)" # FIXME: debug
+	cleanup_vifaces
 	route_cleanup
 }
 
@@ -68,25 +112,6 @@ setup_gw()
 	rhost="$(tst_ipaddr_un 0 1)"
 	tst_add_ipaddr -s -q -a $lhost
 	tst_add_ipaddr -s -q -a $rhost rhost
-}
-
-setup_if()
-{
-	rt="$(tst_ipaddr_un -p 0)"
-	rhost="$(tst_ipaddr_un 0 1)"
-	tst_add_ipaddr -s -q -a $rhost rhost
-
-	if [ $(tst_get_ifaces_cnt) -lt 2 ]; then
-		new_liface="ltp_mv2"
-		tst_res TINFO "2 or more local ifaces required, adding '$new_liface'"
-		add_macvlan $new_liface
-	fi
-
-	if [ $(tst_get_ifaces_cnt rhost) -lt 2 ]; then
-		new_riface="ltp_mv1"
-		tst_res TINFO "2 or more remote ifaces required, adding '$new_riface'"
-		add_macvlan $new_riface rhost
-	fi
 }
 
 test_netlink()

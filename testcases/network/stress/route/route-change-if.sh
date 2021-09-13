@@ -9,7 +9,6 @@
 # lhost: 10.23.x.2, gw (on rhost): 10.23.x.1, rhost: 10.23.0.1, switching ifaces on lhost
 
 TST_SETUP="setup"
-TST_CLEANUP="cleanup_if"
 TST_TESTFUNC="test_if"
 . route-lib.sh
 TST_CNT=$ROUTE_CHANGE_IP

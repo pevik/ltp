@@ -7,8 +7,8 @@
 # lhost (iface set, but not specified in Netlink API): 10.23.x.2
 
 TST_SETUP="setup"
-TST_CLEANUP="cleanup_if"
 TST_TESTFUNC="test_netlink"
+TST_CLEANUP="cleanup_if"
 . route-lib.sh
 
 setup()

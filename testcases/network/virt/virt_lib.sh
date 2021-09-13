@@ -149,6 +149,7 @@ virt_add()
 		ip link add name $vname type $(_get_gue_fou_tnl $virt_type) $opt
 	;;
 	*)
+		echo "ip link add link $(tst_iface) $vname type $virt_type $opt" # FIXME: debug
 		ip link add link $(tst_iface) $vname type $virt_type $opt
 	;;
 	esac
@@ -224,6 +225,8 @@ virt_setup()
 {
 	local opt="$1"
 	local opt_r="${2:-$1}"
+
+	echo "pev: START virt_setup" # FIXME: debug
 
 	tst_res TINFO "setup local ${virt_type} with '$opt'"
 	virt_add $VIRT_LIB_IFACE $opt || \
