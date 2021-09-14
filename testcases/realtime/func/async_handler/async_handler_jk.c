@@ -137,6 +137,7 @@ int main(int argc, char *argv[])
 {
 	int aes_id;		// asynchronous event server id
 	int user_id;		// User thread - that fires the event
+	int result;
 	long delta;
 	struct thread *server;
 	setup();
@@ -155,10 +156,11 @@ int main(int argc, char *argv[])
 	join_thread(user_id);
 	join_threads();
 	delta = (end - start) / NS_PER_US;
+	result = delta > pass_criteria ? 1 : 0;
 
 	printf("delta = %ld us\n", delta);
 	printf("\nCriteria: latencies < %d\n", (int)pass_criteria);
-	printf("Result: %s\n", delta > pass_criteria ? "FAIL" : "PASS");
+	printf("Result: %s\n",  result ? "FAIL" : "PASS");
 
-	return 0;
+	return result;
 }
