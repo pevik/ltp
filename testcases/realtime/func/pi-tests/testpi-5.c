@@ -68,29 +68,37 @@ int do_test(int argc, char **argv)
 {
 	pthread_mutexattr_t mutexattr;
 	int retc, protocol;
+	unsigned int err = 0;
 
 #if HAS_PRIORITY_INHERIT
 
-	if (pthread_mutexattr_init(&mutexattr) != 0)
+	if (pthread_mutexattr_init(&mutexattr) != 0) {
 		printf("Failed to init mutexattr\n");
+		err++;
+	}
 
 	if (pthread_mutexattr_setprotocol(&mutexattr,
-					  PTHREAD_PRIO_INHERIT) != 0)
+					  PTHREAD_PRIO_INHERIT) != 0) {
 		printf("Can't set protocol prio inherit\n");
+		err++;
+	}
 
-	if (pthread_mutexattr_getprotocol(&mutexattr, &protocol) != 0)
+	if (pthread_mutexattr_getprotocol(&mutexattr, &protocol) != 0) {
 		printf("Can't get mutexattr protocol\n");
-	else
+		err++;
+	} else
 		printf("protocol in mutexattr is %d\n", protocol);
 
 	retc = pthread_mutex_init(&child_mutex, &mutexattr);
-	if (retc != 0)
+	if (retc != 0) {
 		printf("Failed to init mutex: %d\n", retc);
+		err++;
+	}
 
 	create_other_thread(child_thread, NULL);
 	join_threads();
 
-	return 0;
+	return err > 0 ? 1: 0;
 #else
 	return 1;
 #endif
