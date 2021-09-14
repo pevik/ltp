@@ -94,8 +94,10 @@ int main(int argc, char *argv[])
 	printf("LIBPTHREAD_VERSION: %s\n", pathbuf);
 	free(pathbuf);
 
-	if (sysconf(_SC_THREAD_PRIO_INHERIT) == -1)
+	if (sysconf(_SC_THREAD_PRIO_INHERIT) == -1) {
 		printf("No Prio inheritance support\n");
+		exit(1);
+	}
 
 	printf("Prio inheritance support present\n");
 
