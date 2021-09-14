@@ -88,7 +88,7 @@ static void timeout_handler(int sig)
 		exit(1);
 	}
 	printf("\nResult:PASS\n");
-	exit(1);
+	exit(0);
 }
 
 int main(int argc, char **argv)
