@@ -97,7 +97,8 @@ void *worker_thread(void *arg)
 
 int main(int argc, char *argv[])
 {
-	int m, ret, robust;
+	int m, robust;
+	int ret = 0;
 	intptr_t t;
 	pthread_mutexattr_t mutexattr;
 	setup();
@@ -123,7 +124,8 @@ int main(int argc, char *argv[])
 		if (!(mutexes[m] = malloc(sizeof(pthread_mutex_t)))) {
 			perror("malloc failed\n");
 		}
-		if ((ret = pthread_mutex_init(mutexes[m], &mutexattr))) {
+		if (pthread_mutex_init(mutexes[m], &mutexattr)) {
+			ret = 1;
 			perror("pthread_mutex_init() failed\n");
 		}
 	}
@@ -140,11 +142,13 @@ int main(int argc, char *argv[])
 	/* destroy all the mutexes */
 	for (m = 0; m < NUM_MUTEXES; m++) {
 		if (mutexes[m]) {
-			if ((ret = pthread_mutex_destroy(mutexes[m])))
+			if (pthread_mutex_destroy(mutexes[m])) {
+				ret = 1;
 				perror("pthread_mutex_destroy() failed\n");
+			}
 			free(mutexes[m]);
 		}
 	}
 
-	return 0;
+	return ret;
 }
