@@ -22,7 +22,6 @@
 #include "hugetlb.h"
 
 #define SIZE	(1024 * 1024 * 1024)
-#define BOUNDARY (1024 * 1024 * 1024)
 
 static long huge_free;
 static long huge_free2;
@@ -54,7 +53,7 @@ static void shared_hugepage(void)
 	if (shmid < 0)
 		tst_brk(TBROK | TERRNO, "shmget");
 
-	buf = shmat(shmid, (void *)BOUNDARY, SHM_RND | 0777);
+	buf = shmat(shmid, NULL, 0777);
 	if (buf == (void *)-1) {
 		shmctl(shmid, IPC_RMID, NULL);
 		tst_brk(TBROK | TERRNO, "shmat");
