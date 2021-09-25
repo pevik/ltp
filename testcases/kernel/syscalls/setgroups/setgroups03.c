@@ -73,10 +73,8 @@
 #include <grp.h>
 
 #include "test.h"
-
+#include "safe_macros.h"
 #include "compat_16.h"
-
-#define TESTUSER	"nobody"
 
 char nobody_uid[] = "nobody";
 struct passwd *ltpuser;
@@ -86,7 +84,7 @@ int TST_TOTAL = 2;
 
 GID_T *groups_list;		/* Array to hold gids for getgroups() */
 
-int setup1();			/* setup function to test error EPERM */
+void setup1(const char *uid);	/* setup function to test error EPERM */
 void setup();			/* setup function for the test */
 void cleanup();			/* cleanup function for the test */
 
@@ -95,7 +93,7 @@ struct test_case_t {		/* test case struct. to hold ref. test cond's */
 	int list;
 	char *desc;
 	int exp_errno;
-	int (*setupfunc) ();
+	void (*setupfunc)(const char *uid);
 } Test_cases[] = {
 	{
 	1, 1, "Size is > sysconf(_SC_NGROUPS_MAX)", EINVAL, NULL}, {
@@ -126,7 +124,7 @@ int main(int ac, char **av)
 
 		for (i = 0; i < TST_TOTAL; i++) {
 			if (Test_cases[i].setupfunc != NULL) {
-				Test_cases[i].setupfunc();
+				Test_cases[i].setupfunc(nobody_uid);
 			}
 
 			gidsetsize = ngroups_max + Test_cases[i].gsize_add;
@@ -156,8 +154,11 @@ int main(int ac, char **av)
 					 gidsetsize, test_desc, TEST_ERRNO,
 					 Test_cases[i].exp_errno);
 			}
-		}
 
+			if (Test_cases[i].setupfunc != NULL) {
+				Test_cases[i].setupfunc("root");
+			}
+		}
 	}
 
 	cleanup();
@@ -187,21 +188,14 @@ void setup(void)
  *  Get the user info. from /etc/passwd file.
  *  This function returns 0 on success.
  */
-int setup1(void)
+void setup1(const char *uid)
 {
-	struct passwd *user_info;	/* struct. to hold test user info */
+	struct passwd *user_info;
 
-/* Switch to nobody user for correct error code collection */
-	ltpuser = getpwnam(nobody_uid);
-	if (seteuid(ltpuser->pw_uid) == -1) {
-		tst_resm(TINFO, "setreuid failed to "
-			 "to set the effective uid to %d", ltpuser->pw_uid);
-		perror("setreuid");
-	}
+	ltpuser = SAFE_GETPWNAM(cleanup, uid);
+	SAFE_SETEUID(cleanup, ltpuser->pw_uid);
 
-	if ((user_info = getpwnam(TESTUSER)) == NULL) {
-		tst_brkm(TFAIL, cleanup, "getpwnam(2) of %s Failed", TESTUSER);
-	}
+	user_info = SAFE_GETPWNAM(cleanup, uid);
 
 	if (!GID_SIZE_CHECK(user_info->pw_gid)) {
 		tst_brkm(TBROK,
@@ -209,7 +203,6 @@ int setup1(void)
 			 "gid returned from getpwnam is too large for testing setgroups16");
 	}
 	groups_list[0] = user_info->pw_gid;
-	return 0;
 }
 
 /*
