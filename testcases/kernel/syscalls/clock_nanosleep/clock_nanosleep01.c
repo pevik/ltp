@@ -154,6 +154,14 @@ static void do_test(unsigned int i)
 	else
 		remain = tst_ts_get(rm);
 
+	if ((request == bad_addr || remain == bad_addr) &&
+	    tv->clock_nanosleep == libc_clock_nanosleep &&
+	    sizeof(long) < 8) {
+		tst_res(TCONF,
+			"The libc 32-bit wrapper may dereference req or rem");
+		return;
+	}
+
 	TEST(tv->clock_nanosleep(tc->clk_id, tc->flags, request, remain));
 
 	if (tv->clock_nanosleep == libc_clock_nanosleep) {
