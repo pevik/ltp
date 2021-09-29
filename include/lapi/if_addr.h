@@ -8,6 +8,10 @@
 
 #include <linux/if_addr.h>
 
+#ifndef IFA_FLAGS
+# define IFA_FLAGS 8
+#endif
+
 #ifndef IFA_F_NOPREFIXROUTE
 # define IFA_F_NOPREFIXROUTE	0x200
 #endif
