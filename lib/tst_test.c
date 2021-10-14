@@ -943,6 +943,8 @@ static void prepare_device(void)
 		mnt_data = limit_tmpfs_mount_size(tst_test->mnt_data,
 				buf, sizeof(buf), tdev.fs_type);
 
+		tst_res_(__FILE__, __LINE__, TINFO, "%s(): mount: '%s' ('%s') on '%s'", __func__,
+				get_device_name(tdev.fs_type), tdev.fs_type, tst_test->mntpoint); // FIXME: debug
 		SAFE_MOUNT(get_device_name(tdev.fs_type), tst_test->mntpoint,
 				tdev.fs_type, tst_test->mnt_flags, mnt_data);
 		mntpoint_mounted = 1;

@@ -32,16 +32,22 @@
 
 #include <stdlib.h>
 #include <sys/types.h>
+#include <sys/statvfs.h>
 #include <pwd.h>
+#include <stdio.h>
 #include "tst_test.h"
 #include "tst_uid.h"
 
 #define MODE_RWX        0777
 #define MODE_SGID       (S_ISGID|0777)
 
-#define WORKDIR		"testdir"
-#define CREAT_FILE	WORKDIR "/creat.tmp"
-#define OPEN_FILE	WORKDIR "/open.tmp"
+#define MNTPOINT	"mntpoint"
+#define CREAT_FILE	"creat.tmp"
+#define OPEN_FILE	"open.tmp"
+
+static char *workdir;
+static char *creat_file;
+static char *open_file;
 
 static gid_t free_gid;
 static int fd = -1;
@@ -51,21 +57,48 @@ static void setup(void)
 	struct stat buf;
 	struct passwd *ltpuser = SAFE_GETPWNAM("nobody");
 
+	char *cwd;
+	struct statfs s;
+
+	cwd = SAFE_GETCWD(NULL, 0);
+	if (statfs(cwd, &s))
+		tst_brk(TBROK, "statfs(%s) failed", cwd);
+	tst_res(TINFO, "cwd: '%s', f_type: '%s' (%ld)", cwd, tst_fs_type_name(s.f_type), s.f_type);
+
+	SAFE_CHDIR(MNTPOINT);
+	cwd = SAFE_GETCWD(NULL, 0);
+	if (statfs(cwd, &s))
+		tst_brk(TBROK, "statfs(%s) failed", cwd);
+	tst_res(TINFO, "cwd: '%s', f_type: '%s' (%ld)", cwd, tst_fs_type_name(s.f_type), s.f_type);
+
 	tst_res(TINFO, "User nobody: uid = %d, gid = %d", (int)ltpuser->pw_uid,
 		(int)ltpuser->pw_gid);
 	free_gid = tst_get_free_gid(ltpuser->pw_gid);
 
 	/* Create directories and set permissions */
-	SAFE_MKDIR(WORKDIR, MODE_RWX);
-	SAFE_CHOWN(WORKDIR, ltpuser->pw_uid, free_gid);
-	SAFE_CHMOD(WORKDIR, MODE_SGID);
-	SAFE_STAT(WORKDIR, &buf);
+	workdir = SAFE_MALLOC(strlen(tst_device->fs_type) + 1);
+	sprintf(workdir, "%s", tst_device->fs_type);
+	/*
+	workdir = SAFE_MALLOC(strlen(cwd) + strlen(tst_device->fs_type) + 2);
+	sprintf(workdir, "%s/%s", cwd, tst_device->fs_type);
+	*/
+
+	creat_file = SAFE_MALLOC(strlen(workdir) + strlen(CREAT_FILE) + 2);
+	sprintf(creat_file, "%s/%s", workdir, CREAT_FILE);
+
+	open_file = SAFE_MALLOC(strlen(tst_device->fs_type) + strlen(OPEN_FILE) + 2);
+	sprintf(open_file, "%s/%s", workdir, OPEN_FILE);
+
+	SAFE_MKDIR(workdir, MODE_RWX);
+	SAFE_CHOWN(workdir, ltpuser->pw_uid, free_gid);
+	SAFE_CHMOD(workdir, MODE_SGID);
+	SAFE_STAT(workdir, &buf);
 
 	if (!(buf.st_mode & S_ISGID))
-		tst_brk(TBROK, "%s: Setgid bit not set", WORKDIR);
+		tst_brk(TBROK, "%s: Setgid bit not set", workdir);
 
 	if (buf.st_gid != free_gid) {
-		tst_brk(TBROK, "%s: Incorrect group, %u != %u", WORKDIR,
+		tst_brk(TBROK, "%s: Incorrect group, %u != %u", workdir,
 			buf.st_gid, free_gid);
 	}
 
@@ -95,20 +128,24 @@ static void file_test(const char *name)
 
 static void run(void)
 {
-	fd = SAFE_CREAT(CREAT_FILE, MODE_SGID);
+	fd = SAFE_CREAT(creat_file, MODE_SGID);
 	SAFE_CLOSE(fd);
-	file_test(CREAT_FILE);
+	file_test(creat_file);
 
-	fd = SAFE_OPEN(OPEN_FILE, O_CREAT | O_EXCL | O_RDWR, MODE_SGID);
-	file_test(OPEN_FILE);
+	fd = SAFE_OPEN(open_file, O_CREAT | O_EXCL | O_RDWR, MODE_SGID);
+	file_test(open_file);
 	SAFE_CLOSE(fd);
 
 	/* Cleanup between loops */
-	tst_purge_dir(WORKDIR);
+	tst_purge_dir(workdir);
 }
 
 static void cleanup(void)
 {
+	free(workdir);
+	free(creat_file);
+	free(open_file);
+
 	if (fd >= 0)
 		SAFE_CLOSE(fd);
 }
@@ -119,6 +156,9 @@ static struct tst_test test = {
 	.cleanup = cleanup,
 	.needs_root = 1,
 	.needs_tmpdir = 1,
+	.all_filesystems = 1,
+	.mount_device = 1,
+	.mntpoint = MNTPOINT,
 	.tags = (const struct tst_tag[]) {
 		{"linux-git", "0fa3ecd87848"},
 		{"CVE", "2018-13405"},
