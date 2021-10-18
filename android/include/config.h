@@ -277,7 +277,7 @@
 #define HAVE_PREADV 1
 
 /* Define to 1 if you have the `preadv2' function. */
-/* #undef HAVE_PREADV2 */
+#define HAVE_PREADV2 1
 
 /* Define to 1 if you have the `profil' function. */
 #define HAVE_PROFIL 1
@@ -289,7 +289,7 @@
 #define HAVE_PWRITEV 1
 
 /* Define to 1 if you have the `pwritev2' function. */
-/* #undef HAVE_PWRITEV2 */
+#define HAVE_PWRITEV2 1
 
 /* Define to 1 if you have the `rand_r' function. */
 #define HAVE_RAND_R 1
