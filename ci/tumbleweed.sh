@@ -8,7 +8,6 @@ $zyp \
 	asciidoc \
 	autoconf \
 	automake \
-	clang \
 	findutils \
 	gcc \
 	git \
