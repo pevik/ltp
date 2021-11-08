@@ -2,6 +2,8 @@
 # Copyright (c) 2018-2021 Petr Vorel <pvorel@suse.cz>
 set -ex
 
+export ZYPP_RPM_DEBUG=1
+
 zyp="zypper --non-interactive install --force-resolution --no-recommends"
 
 $zyp \
