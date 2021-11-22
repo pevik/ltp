@@ -218,4 +218,6 @@ const char *tst_strerrno(int err);
 #endif
 #define TCID_DEFINE(ID) char *TCID = (#ID TCID_BIT_SUFFIX)
 
+void __attribute__((destructor)) default_cleanup(void);
+
 #endif	/* __TEST_H__ */
