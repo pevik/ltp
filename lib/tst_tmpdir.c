@@ -342,6 +342,8 @@ void tst_rmdir(void)
 		tst_resm(TWARN, "%s: rmobj(%s) failed: %s",
 			 __func__, TESTDIR, errmsg);
 	}
+
+	TESTDIR == NULL;
 }
 
 void tst_purge_dir(const char *path)
@@ -350,4 +352,9 @@ void tst_purge_dir(const char *path)
 
 	if (purge_dir(path, &err))
 		tst_brkm(TBROK, NULL, "%s: %s", __func__, err);
+}
+
+void __attribute__((destructor)) tst_default_rmdir(void)
+{
+	tst_rmdir();
 }
