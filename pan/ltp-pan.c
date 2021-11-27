@@ -551,6 +551,8 @@ int main(int argc, char **argv)
 				++num_active;
 			if ((cpid != -1 || sequential) && starts > 0)
 				--starts;
+			if (cpid == -1 && track_exit_stats)
+				exit_stat++;
 
 			if (sequential)
 				if (++c >= coll->cnt)
