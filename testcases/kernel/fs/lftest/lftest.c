@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
 
 	for (i = 0; i < bufnum; i++) {
 		if (write(fd, buf, BSIZE) == -1)
-			return -1;
+			break;
 		else {
 			printf(".");
 			writecnt++;
@@ -76,11 +76,16 @@ int main(int argc, char *argv[])
 		}
 		fsync(fd);
 		if (lseek(fd, (i + 1) * BSIZE, 0) == -1)
-			return -1;
+			break;
 		else
 			seekcnt++;
 	}
 	close(fd);
+	// This large file, if undeleted, will cause the failure of
+	// fallocate05 on some Android devices. See b/205911825.
+	unlink("large_file");
+	if (i < bufnum)
+		return -1;
 	time2 = time(NULL);
 	printf("\nFinished building a %lu megabyte file @ %s\n", bufnum,
 	       asctime(localtime(&time2)));
