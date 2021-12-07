@@ -46,4 +46,12 @@ test_macros06
 tst_fuzzy_sync01
 tst_fuzzy_sync02
 tst_fuzzy_sync03
+test_needs_cmds01
+test_needs_cmds02
+test_needs_cmds03
+test_needs_cmds04
+test_needs_cmds05
+test_needs_cmds06
+test_needs_cmds07
+test_needs_cmds08
 test_zero_hugepage
