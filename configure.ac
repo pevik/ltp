@@ -216,7 +216,7 @@ AC_CHECK_TYPES([struct xt_entry_match, struct xt_entry_target],,,[
 
 # Bash
 AC_ARG_WITH([bash],
-  [AC_HELP_STRING([--with-bash],
+  [AS_HELP_STRING([--with-bash],
     [have the Bourne Again Shell interpreter])],
   [with_bash=$withval],
   [with_bash=no]
@@ -229,24 +229,24 @@ fi
 
 # metadata
 AC_ARG_ENABLE([metadata],
-  [AC_HELP_STRING([--disable-metadata],
+  [AS_HELP_STRING([--disable-metadata],
 	[Disable metadata generation (both HTML and PDF, default no)])],
   [], [enable_metadata=yes]
 )
 AC_ARG_ENABLE([metadata_html],
-  [AC_HELP_STRING([--disable-metadata-html],
+  [AS_HELP_STRING([--disable-metadata-html],
 	[Disable metadata HTML generation (default no)])],
   [], [enable_metadata_html=yes]
 )
 
 AC_ARG_ENABLE([metadata_pdf],
-  [AC_HELP_STRING([--enable-metadata-pdf],
+  [AS_HELP_STRING([--enable-metadata-pdf],
 	[Enable metadata PDF generation (default no)])],
   [], [enable_metadata_pdf=no]
 )
 
 AC_ARG_WITH([metadata_generator],
-  [AC_HELP_STRING([--with-metadata-generator=asciidoc|asciidoctor],
+  [AS_HELP_STRING([--with-metadata-generator=asciidoc|asciidoctor],
 	[Specify metadata generator to use (default autodetect)])],
   [with_metadata_generator=$withval],
   [with_metadata_generator=detect]
@@ -256,7 +256,7 @@ LTP_DOCPARSE
 
 # Expect
 AC_ARG_WITH([expect],
-  [AC_HELP_STRING([--with-expect],
+  [AS_HELP_STRING([--with-expect],
     [have the Tcl/expect library])],
   [with_expect=$withval],
   [with_expect=no]
@@ -269,7 +269,7 @@ fi
 
 # Numa
 AC_ARG_WITH([numa],
-  AC_HELP_STRING([--without-numa],
+  AS_HELP_STRING([--without-numa],
     [without numa support]),
   [with_numa=$withval],
   [with_numa=yes]
@@ -277,7 +277,7 @@ AC_ARG_WITH([numa],
 
 # Perl
 AC_ARG_WITH([perl],
-  [AC_HELP_STRING([--with-perl],
+  [AS_HELP_STRING([--with-perl],
     [have a perl interpreter])],
   [with_perl=$withval],
   [with_perl=no]
@@ -290,7 +290,7 @@ fi
 
 # Python
 AC_ARG_WITH([python],
-  [AC_HELP_STRING([--with-python],
+  [AS_HELP_STRING([--with-python],
     [have a python interpreter])],
   [with_python=$withval],
   [with_python=no]
@@ -303,7 +303,7 @@ fi
 
 # TI RPC
 AC_ARG_WITH([tirpc],
-  AC_HELP_STRING([--without-tirpc],
+  AS_HELP_STRING([--without-tirpc],
     [without libtirpc support]),
   [with_tirpc=$withval],
   [with_tirpc=yes]
@@ -313,7 +313,7 @@ AC_ARG_WITH([tirpc],
 # Testsuites knobs
 
 AC_ARG_WITH([open-posix-testsuite],
-  [AC_HELP_STRING([--with-open-posix-testsuite],
+  [AS_HELP_STRING([--with-open-posix-testsuite],
     [compile and install the open posix testsuite])],
   [with_open_posix_testsuite=$withval],
   [with_open_posix_testsuite=no]
@@ -326,7 +326,7 @@ fi
 
 # TODO: testcases/realtime requires bash and python.
 AC_ARG_WITH([realtime-testsuite],
-  [AC_HELP_STRING([--with-realtime-testsuite],
+  [AS_HELP_STRING([--with-realtime-testsuite],
     [compile and install the realtime testsuite])],
   [with_realtime_testsuite=$withval],
   [with_realtime_testsuite=no]
