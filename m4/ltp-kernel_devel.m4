@@ -9,8 +9,7 @@ AC_DEFUN([LTP_CHECK_KERNEL_DEVEL],[
 AC_MSG_CHECKING([for kernel-devel])
 AC_ARG_WITH(
 	[linux-version],
-	[AC_HELP_STRING([--with-linux-version=VERSION],
-			[specify the Linux version to build modules for])],
+	[AS_HELP_STRING([--with-linux-version=VERSION],[specify the Linux version to build modules for])],
 	[LINUX_VERSION="${withval}"],
 	AS_IF([test "$cross_compiling" = "no"],
 		[LINUX_VERSION=`uname -r`]))
@@ -18,8 +17,7 @@ AC_ARG_WITH(
 AC_SUBST(LINUX_VERSION)
 
 AC_ARG_WITH([linux-dir],
-	[AC_HELP_STRING([--with-linux-dir=DIR],
-			[specify path to kernel-devel directory])],
+	[AS_HELP_STRING([--with-linux-dir=DIR],[specify path to kernel-devel directory])],
 	[LINUX_DIR="${withval}"],
 	AS_IF([test -n "$LINUX_VERSION"],
 		[LINUX_DIR="/lib/modules/$LINUX_VERSION/build"]))
@@ -44,8 +42,7 @@ AC_MSG_RESULT([$WITH_MODULES])
 
 AC_ARG_WITH(
 	[modules],
-	[AC_HELP_STRING([--without-modules],
-			[disable auto-building kernel modules])],
+	[AS_HELP_STRING([--without-modules],[disable auto-building kernel modules])],
 			[WITH_MODULES="no"],
 			[])
 
