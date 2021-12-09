@@ -67,6 +67,11 @@ static void test_swapping(void)
 #ifdef TST_ABI32
 	tst_brk(TCONF, "test is not designed for 32-bit system.");
 #endif
+	int ret;
+
+	ret = tst_system("zramctl | grep SWAP");
+	if (!ret)
+		tst_brk(TCONF, "zram-swap is being used!");
 
 	init_meminfo();
 
@@ -155,4 +160,8 @@ static struct tst_test test = {
 	.needs_root = 1,
 	.forks_child = 1,
 	.test_all = test_swapping,
+	.needs_cmds = (const char *[]) {
+		"zramctl",
+		NULL
+	}
 };
