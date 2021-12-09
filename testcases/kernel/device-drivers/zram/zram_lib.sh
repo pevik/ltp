@@ -49,6 +49,8 @@ zram_load()
 
 	tst_set_timeout $((dev_num*450))
 
+	rmmod zram > /dev/null 2>&1 || tst_brk TCONF "zram module is being used"
+
 	tst_res TINFO "create '$dev_num' zram device(s)"
 
 	modprobe zram num_devices=$dev_num || \
@@ -57,7 +59,8 @@ zram_load()
 	dev_num_created=$(ls /dev/zram* | wc -w)
 
 	if [ "$dev_num_created" -ne "$dev_num" ]; then
-		tst_brk TFAIL "unexpected num of devices: $dev_num_created"
+		tst_brk FAIL "num of devices expected $dev_num, but created"\
+				"$dev_num_created"
 	fi
 
 	tst_res TPASS "all zram devices successfully created"
