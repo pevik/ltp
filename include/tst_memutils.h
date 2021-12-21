@@ -30,11 +30,15 @@ long long tst_available_mem(void);
  *   echo -1000 >/proc/$PID/oom_score_adj
  * If the pid is 0 which means it will set on current(self) process.
  *
+ * WARNING:
+ *  Do nothing for non-root, because setting value < 0 requires root.
+    If you want to set value also for non-root, use set_oom_score_adj().
+ *
  * Note:
  *  This exported tst_enable_oom_protection function can be used at anywhere
  *  you want to protect, but please remember that if you do enable protection
  *  on a process($PID) that all the children will inherit its score and be
- *  ignored by OOM Killer as well. So that's why tst_disable_oom_protection
+ *  ignored by OOM Killer as well. So that's why tst_disable_oom_protection()
  *  to be used in combination.
  */
 void tst_enable_oom_protection(pid_t pid);
@@ -42,6 +46,11 @@ void tst_enable_oom_protection(pid_t pid);
 /*
  * Disable the OOM protection for the process($PID).
  *   echo 0 >/proc/$PID/oom_score_adj
+ *
+ * WARNING:
+ *  Do nothing for non-root, because it's expected to be cleanup after
+ *  tst_enable_oom_protection(). Use set_oom_score_adj(), if you want to set
+ *  value also for non-root.
  */
 void tst_disable_oom_protection(pid_t pid);
 

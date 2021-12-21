@@ -8,9 +8,12 @@
 #include <limits.h>
 #include <sys/sysinfo.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #define TST_NO_DEFAULT_MAIN
 #include "tst_test.h"
+#include "tst_capability.h"
+#include "lapi/syscalls.h"
 
 #define BLOCKSIZE (16 * 1024 * 1024)
 
@@ -124,12 +127,41 @@ static void set_oom_score_adj(pid_t pid, int value)
 	}
 }
 
+static bool check_caps(void)
+{
+	struct tst_cap_user_header hdr = {
+		.version = 0x20080522,
+		.pid = tst_syscall(__NR_gettid),
+	};
+
+	struct tst_cap_user_data caps[2] = { {0} };
+
+	if (tst_capget(&hdr, caps))
+		tst_brk(TBROK | TERRNO, "tst_capget()");
+
+	tst_res(TINFO, "pev: CAP_SYS_ADMIN: %d", caps[0].effective & (1U << CAP_SYS_ADMIN));
+	tst_res(TINFO, "pev: CAP_SYS_RESOURCE: %d", caps[0].effective & (1U << CAP_SYS_RESOURCE));
+	if (!(caps[0].effective & (1U << CAP_SYS_ADMIN)) ||
+	    !(caps[0].effective & (1U << CAP_SYS_RESOURCE)))
+		return false;
+
+	return true;
+}
+
 void tst_enable_oom_protection(pid_t pid)
 {
+	fprintf(stderr, "%s:%d %s(): call: check_caps\n", __FILE__, __LINE__, __func__); // FIXME: debug
+	if (!check_caps())
+		return;
+
 	set_oom_score_adj(pid, -1000);
 }
 
 void tst_disable_oom_protection(pid_t pid)
 {
+	fprintf(stderr, "%s:%d %s(): call: check_caps\n", __FILE__, __LINE__, __func__); // FIXME: debug
+	if (!check_caps())
+		return;
+
 	set_oom_score_adj(pid, 0);
 }
