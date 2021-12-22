@@ -5074,6 +5074,22 @@ cc_test {
 }
 
 cc_test {
+    name: "ltp_fsstress",
+    stem: "fsstress",
+    defaults: ["ltp_test_defaults"],
+    srcs: ["testcases/kernel/fs/fsstress/fsstress.c"],
+    cflags: [
+        "-DNO_XFS",
+        "-D_GNU_SOURCE",
+        "-D_LARGEFILE64_SOURCE",
+    ],
+    local_include_dirs: [
+        "include/old",
+        "testcases/kernel/fs/fsstress",
+    ],
+}
+
+cc_test {
     name: "ltp_fstat02",
     stem: "fstat02",
     defaults: ["ltp_test_defaults"],
