@@ -451,6 +451,7 @@ ltp_packages := \
   ltp_fsopen02 \
   ltp_fspick01 \
   ltp_fspick02 \
+  ltp_fsstress \
   ltp_fstat02 \
   ltp_fstat02_64 \
   ltp_fstat03 \
