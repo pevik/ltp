@@ -366,9 +366,6 @@ in6_01
 # bionic doesn't expose resolver routines to the public
 mc_gethost
 
-# Actually two conflicting tests with the same name (upstream bug)
-fsstress
-
 # Require mkfifo
 gf12
 gf13
