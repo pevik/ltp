@@ -53,6 +53,6 @@ void tst_kconfig_read(struct tst_kconfig_var vars[], size_t vars_len);
  *
  * @param kconfigs NULL-terminated array of config strings needed for the testrun.
  */
-void tst_kconfig_check(const char *const kconfigs[]);
+int tst_kconfig_check(const char *const kconfigs[]);
 
 #endif	/* TST_KCONFIG_H__ */
