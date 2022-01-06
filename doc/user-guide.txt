@@ -18,6 +18,9 @@ For running LTP network tests see `testcases/network/README.md`.
 | 'LTP_SINGLE_FS_TYPE'  | Testing only - specifies filesystem instead all
                           supported (for tests with '.all_filesystems').
 | 'LTP_DEV_FS_TYPE'     | Filesystem used for testing (default: 'ext2').
+| 'LTP_KCONFIG_DISABLE' | Switch for kernel config check functionality.
+                          'y' or '1': disable kconfig check,
+                          'n' or '0': enable kconfig check.
 | 'LTP_TIMEOUT_MUL'     | Multiply timeout, must be number >= 1 (> 1 is useful for
                           slow machines to avoid unexpected timeout).
                           Variable is also used in shell tests, but ceiled to int.

@@ -478,12 +478,38 @@ static void dump_vars(const struct tst_expr *expr)
 	}
 }
 
+static int tst_kconfig_disabled(void)
+{
+	static int check;
+
+	if (check)
+		return check - 1;
+
+	char *env = getenv("LTP_KCONFIG_DISABLE");
+
+	if (env) {
+		if (!strcmp(env, "n") || !strcmp(env, "0"))
+			check = 1;
+		if (!strcmp(env, "y") || !strcmp(env, "1"))
+			check = 2;
+		return check - 1;
+	}
+
+	check = 1;
+	return 0;
+}
+
 int tst_kconfig_check(const char *const kconfigs[])
 {
 	size_t expr_cnt = array_len(kconfigs);
 	struct tst_expr *exprs[expr_cnt];
 	unsigned int i, var_cnt;
 	int ret = 0;
+
+	if (tst_kconfig_disabled()) {
+		tst_res(TINFO, "Kernel config check functionality has been disabled.");
+		return 0;
+	}
 
 	for (i = 0; i < expr_cnt; i++) {
 		exprs[i] = tst_bool_expr_parse(kconfigs[i]);
@@ -529,6 +555,11 @@ int tst_kconfig_check(const char *const kconfigs[])
 char tst_kconfig_get(const char *confname)
 {
 	struct tst_kconfig_var var;
+
+	if (tst_kconfig_disabled()) {
+		tst_res(TINFO, "Kernel config check functionality has been disabled.");
+		return 0;
+	}
 
 	var.id_len = strlen(confname);
 
