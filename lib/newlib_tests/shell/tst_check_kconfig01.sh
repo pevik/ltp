@@ -1,0 +1,26 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Copyright (c) 2022 FUJITSU LIMITED. All rights reserved.
+
+TST_TESTFUNC=do_test
+TST_NEEDS_CMDS="tst_check_kconfigs"
+TST_NEEDS_KCONFIGS="CONFIG_GENERIC_IRQ_PROBE=y,
+CONFIG_GENERIC_IRQ_SHOW=y,
+CONFIG_GENERIC_IRQ_EFFECTIVE_AFF_MASK=y,
+CONFIG_GENERIC_PENDING_IRQ=y,
+CONFIG_GENERIC_IRQ_MIGRATION=y,
+CONFIG_IRQ_DOMAIN=y,
+CONFIG_IRQ_DOMAIN_HIERARCHY=y,
+CONFIG_GENERIC_MSI_IRQ=y,
+CONFIG_GENERIC_MSI_IRQ_DOMAIN=y,
+CONFIG_GENERIC_IRQ_MATRIX_ALLOCATOR=y,
+CONFIG_GENERIC_IRQ_RESERVATION_MODE=y"
+
+. tst_test.sh
+
+do_test()
+{
+	tst_res TFAIL "kernel config check functionality only supports 10 kernel kconfigs"
+}
+
+tst_run

@@ -412,6 +412,37 @@ tst_require_drivers()
 	return 0
 }
 
+tst_require_kconfigs()
+{
+	[ $# -eq 0 ] && return 0
+
+	local kconfigs
+	local kconfig_i
+	local kconfig_max
+
+	kconfigs=$@
+	[ -z "$kconfigs" ] && return 0
+
+	tst_check_cmds cut tr wc
+	kconfig_max=$(( $(echo "$kconfigs" | tr -cd "$TST_NEEDS_KCONFIGS_IFS" | wc -c) +1))
+	if [ $kconfig_max -gt 10 ]; then
+		tst_brk TCONF "The max number of kconfig is 10!"
+	fi
+
+	for kconfig_i in $(seq $kconfig_max); do
+		eval "local kconfig$kconfig_i"
+		eval "kconfig$kconfig_i='$(echo "$kconfigs" | cut -d"$TST_NEEDS_KCONFIGS_IFS" -f$kconfig_i)'"
+	done
+
+	tst_check_kconfigs $kconfig1 $kconfig2 $kconfig3 $kconfig4 $kconfig5 $kconfig6\
+			$kconfig7 $kconfig8 $kconfig9 $kconfig10
+	if [ $? -ne 0 ]; then
+		tst_brk TCONF "Aborting due to unsuitable kernel config, see above!"
+	fi
+
+	return 0
+}
+
 tst_is_int()
 {
 	[ "$1" -eq "$1" ] 2>/dev/null
@@ -587,6 +618,7 @@ tst_run()
 			NEEDS_ROOT|NEEDS_TMPDIR|TMPDIR|NEEDS_DEVICE|DEVICE);;
 			NEEDS_CMDS|NEEDS_MODULE|MODPATH|DATAROOT);;
 			NEEDS_DRIVERS|FS_TYPE|MNTPOINT|MNT_PARAMS);;
+			NEEDS_KCONFIGS|NEEDS_KCONFIGS_IFS);;
 			IPV6|IPV6_FLAG|IPVER|TEST_DATA|TEST_DATA_IFS);;
 			RETRY_FUNC|RETRY_FN_EXP_BACKOFF|TIMEOUT);;
 			NET_DATAROOT|NET_MAX_PKT|NET_RHOST_RUN_DEBUG|NETLOAD_CLN_NUMBER);;
@@ -627,6 +659,7 @@ tst_run()
 	[ "$TST_DISABLE_SELINUX" = 1 ] && tst_disable_selinux
 
 	tst_require_cmds $TST_NEEDS_CMDS
+	tst_require_kconfigs $TST_NEEDS_KCONFIGS
 	tst_require_drivers $TST_NEEDS_DRIVERS
 
 	if [ -n "$TST_MIN_KVER" ]; then
@@ -747,6 +780,8 @@ if [ -z "$TST_NO_DEFAULT_RUN" ]; then
 	fi
 
 	TST_TEST_DATA_IFS="${TST_TEST_DATA_IFS:- }"
+
+	TST_NEEDS_KCONFIGS_IFS="${TST_NEEDS_KCONFIGS_IFS:-,}"
 
 	if [ -n "$TST_CNT" ]; then
 		if ! tst_is_int "$TST_CNT"; then
