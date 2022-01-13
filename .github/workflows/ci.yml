@@ -129,6 +129,14 @@ jobs:
         ./ci/$INSTALL.sh
         if [ "$VARIANT" ]; then ./ci/$INSTALL.$VARIANT.sh; fi
 
+    - name: kernel config
+      run: |
+        uname -r
+        ls -la /boot/config* /usr/lib/modules/*/config || true
+        ls -la /boot/config-$(uname -r) || true
+        ls -la /usr/lib/modules/$(uname -r)/config || true
+      exit 55 # FIXME: debug
+
     - name: Compiler version
       run: $CC --version
 
