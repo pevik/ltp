@@ -56,7 +56,8 @@ static int is_kvm(void)
 
 	SAFE_FCLOSE(NULL, cpuinfo);
 
-	if (file_exist("/dev/vda") || file_exist("/dev/block/vda"))
+	if (file_exist("/dev/vda") || file_exist("/dev/block/vda")
+			|| file_exist("/sys/block/vda"))
 		found = 1;
 
 	return found;
