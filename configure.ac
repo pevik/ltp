@@ -404,7 +404,14 @@ libtirpc: ${have_libtirpc:-no}
 glibc SUN-RPC: ${have_rpc_glibc:-no}
 
 METADATA
+EOF
+
+if test "x$enable_metadata" = xyes; then
+cat << EOF
 metadata generator: $with_metadata_generator
 HTML metadata: $with_metadata_html
 PDF metadata: $with_metadata_pdf
 EOF
+else
+echo metadata disabled
+fi
