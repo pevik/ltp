@@ -39,9 +39,9 @@ do_test()
 
 	tst_res TINFO "locking 'flock_idata' file and writing data"
 
-	nfs_flock 0 flock_idata &
+	strace nfs_flock 0 flock_idata &
 	local pids=$!
-	nfs_flock 1 flock_idata &
+	strace nfs_flock 1 flock_idata &
 	pids="$pids $!"
 
 	tst_res TINFO "waiting for pids: $pids"
