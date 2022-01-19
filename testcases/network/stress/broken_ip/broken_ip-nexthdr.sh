@@ -11,6 +11,7 @@ TST_TESTFUNC="do_test"
 do_test()
 {
 	# not supported on IPv4
+	tst_net_require_ipv6
 	TST_IPV6=6
 	TST_IPVER=6
 
