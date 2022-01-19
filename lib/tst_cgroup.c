@@ -84,8 +84,20 @@ enum cgroup_ctrl_indx {
 	CTRL_MEMORY = 1,
 	CTRL_CPU,
 	CTRL_CPUSET,
+	CTRL_IO,
+	CTRL_PIDS,
+	CTRL_RDMA,
+	CTRL_HUGETLB,
+	CTRL_CPUACCT,
+	CTRL_DEVICES,
+	CTRL_FREEZER,
+	CTRL_NETCLS,
+	CTRL_NETPRIO,
+	CTRL_BLKIO,
+	CTRL_MISC,
+	CTRL_PERFEVENT
 };
-#define CTRLS_MAX CTRL_CPUSET
+#define CTRLS_MAX CTRL_PERFEVENT
 
 /* At most we can have one cgroup V1 tree for each controller and one
  * (empty) v2 tree.
@@ -181,6 +193,109 @@ static const struct cgroup_file cpuset_ctrl_files[] = {
 	{ }
 };
 
+static const struct cgroup_file io_ctrl_files[] = {
+	{ "io.state", NULL, CTRL_IO },
+	{ "io.cost.qos", NULL, CTRL_IO },
+	{ "io.cost.model", NULL, CTRL_IO },
+	{ "io.weight", NULL, CTRL_IO },
+	{ "io.max", NULL, CTRL_IO },
+	{ "io.pressure", NULL, CTRL_IO },
+	{ }
+};
+
+static const struct cgroup_file pids_ctrl_files[] = {
+	{ "pids.max", "pids.max", CTRL_PIDS },
+	{ "pids.current", "pids.current", CTRL_PIDS },
+	{ }
+};
+
+static const struct cgroup_file rdma_ctrl_files[] = {
+	{ "rdma.max", "rdma.max", CTRL_RDMA },
+	{ "rdma.current", "rdma.current", CTRL_RDMA },
+	{ }
+};
+
+#define HUGETLB_ENTRY(SIZE) \
+	{ "hugetlb.SIZE.max", "hugetlb.SIZE.limit_in_bytes", CTRL_HUGETLB }, \
+	{ "hugetlb.SIZE.current", "hugetlb.SIZE.usage_in_bytes", CTRL_HUGETLB }, \
+	{ "hugetlb.SIZE.rsvd.max", "hugetlb.SIZE.rsvd.limit_in_bytes", CTRL_HUGETLB }, \
+	{ "hugetlb.SIZE.rsvd.curent", "hugetlb.SIZE.rsvd.usage_in_bytes", CTRL_HUGETLB }, \
+	{ "hugetlb.SIZE.rsvd.max_usage_in_bytes", "hugetlb.SIZE.rsvd.max_usage_in_bytes", CTRL_HUGETLB }, \
+	{ "hugetlb.SIZE.max_usage_in_bytes", "hugetlb.SIZE.max_usage_in_bytes", CTRL_HUGETLB }, \
+	{ "hugetlb.SIZE.events", NULL, CTRL_HUGETLB }, \
+	{ "hugetlb.SIZE.events.local", NULL, CTRL_HUGETLB }, \
+	{ "hugetlb.SIZE.failcnt", "hugetlb.SIZE.failcnt", CTRL_HUGETLB }, \
+	{ "hugetlb.SIZE.rsvd.failcnt", "hugetlb.SIZE.rsvd.failcnt", CTRL_HUGETLB },
+
+// TODO Add rest of hugetlb entries or find better way to reference files
+static const struct cgroup_file hugetlb_ctrl_files[] = {
+	HUGETLB_ENTRY(2MB)
+	HUGETLB_ENTRY(1GB)
+	{ }
+};
+
+static const struct cgroup_file cpuacct_ctrl_files[] = {
+	{ "cpuacct.state", "cpuacct.state", CTRL_CPUACCT },
+	{ "cpuacct.usage", "cpuacct.usage", CTRL_CPUACCT },
+	{ "cpuacct.usage_all", "cpuacct.usage_all", CTRL_CPUACCT },
+	{ "cpuacct.usage_percpu", "cpuacct.usage_percpu", CTRL_CPUACCT },
+	{ "cpuacct.usage_percpu_sys", "cpuacct.usage_percpu_sys", CTRL_CPUACCT },
+	{ "cpuacct.usage_percpu_user", "cpuacct.usage_percpu_user", CTRL_CPUACCT },
+	{ "cpuacct.usage_sys", "cpuacct.usage_sys", CTRL_CPUACCT },
+	{ "cpuacct.usage_user", "cpuacct.usage_user", CTRL_CPUACCT },
+	{ }
+};
+
+static const struct cgroup_file devices_ctrl_files[] = {
+	{ "devices.allow", "devices.allow", CTRL_DEVICES },
+	{ "devices.deny", "devices.deny", CTRL_DEVICES },
+	{ "devices.list", "devices.list", CTRL_DEVICES },
+	{ }
+};
+
+static const struct cgroup_file freezer_ctrl_files[] = {
+	{ "freezer.parent_freezing", "freezer.parent_freezing", CTRL_FREEZER },
+	{ "freezer.self_freezing", "freezer.self_freezing", CTRL_FREEZER },
+	{ "freezer.parent_state", "freezer.parent_state", CTRL_FREEZER },
+	{ }
+};
+
+static const struct cgroup_file netcls_ctrl_files[] = {
+	{ "net_cls.classid", "net_cls.classid", CTRL_NETCLS },
+	{ }
+};
+
+static const struct cgroup_file netprio_ctrl_files[] = {
+	{ "net_prio.ifpriomap", "net_prio.ifpriomap", CTRL_NETPRIO },
+	{ "net_prio.prioidx", "net_prio.prioidx", CTRL_NETPRIO },
+	{ }
+};
+
+static const struct cgroup_file blkio_ctrl_files[] = {
+	{ "blkio.reset_stats", "blkio.reset_stats", CTRL_BLKIO },
+	{ "blkio.throttle.io_service_bytes", "blkio.io_service_bytes", CTRL_BLKIO },
+	{ "blkio.throttle.io_service_bytes_recursive", "blkio.throttle.io_service_bytes_recursive", CTRL_BLKIO },
+	{ "blkio.throttle.io_serviced", "blkio.throttle.io_serviced", CTRL_BLKIO },
+	{ "blkio.throttle.io_serviced_recursive", "blkio.throttle.io_serviced_recursive", CTRL_BLKIO },
+	{ "blkio.throttle.read_bps_device", "blkio.throttle.read_bps_device", CTRL_BLKIO },
+	{ "blkio.throttle.read_iops_device", "blkio.throttle.read_iops_device", CTRL_BLKIO },
+	{ "blkio.throttle.write_bps_device", "blkio.throttle.write_bps_device", CTRL_BLKIO },
+	{ "blkio.throttle.write_iops_device", "blkio.throttle.write_iops_device", CTRL_BLKIO },
+	{ }
+};
+
+static const struct cgroup_file misc_ctrl_files[] = {
+	{ "misc.capacity", "misc.capacity", CTRL_MISC },
+	{ "misc.current", "misc.current", CTRL_MISC },
+	{ "misc.max", "misc.max", CTRL_MISC },
+	{ "misc.events", "misc.events", CTRL_MISC },
+	{ }
+};
+
+static const struct cgroup_file perf_event_ctrl_files[] = {
+	{ }
+};
+
 /* Lookup tree for item names. */
 static struct cgroup_ctrl controllers[] = {
 	[0] = { "cgroup", cgroup_ctrl_files, 0, NULL, 0 },
@@ -192,6 +307,42 @@ static struct cgroup_ctrl controllers[] = {
 	},
 	[CTRL_CPUSET] = {
 		"cpuset", cpuset_ctrl_files, CTRL_CPUSET, NULL, 0
+	},
+	[CTRL_IO] = {
+		"io", io_ctrl_files, CTRL_IO, NULL, 0
+	},
+	[CTRL_PIDS] = {
+		"pids", pids_ctrl_files, CTRL_PIDS, NULL, 0
+	},
+	[CTRL_RDMA] = {
+		"rdma", rdma_ctrl_files, CTRL_RDMA, NULL, 0
+	},
+	[CTRL_HUGETLB] = {
+		"hugetlb", hugetlb_ctrl_files, CTRL_HUGETLB, NULL, 0
+	},
+	[CTRL_CPUACCT] = {
+		"cpuacct", cpuacct_ctrl_files, CTRL_CPUACCT, NULL, 0
+	},
+	[CTRL_DEVICES] = {
+		"devices", devices_ctrl_files, CTRL_DEVICES, NULL, 0
+	},
+	[CTRL_FREEZER] = {
+		"freezer", freezer_ctrl_files, CTRL_FREEZER, NULL, 0
+	},
+	[CTRL_NETCLS] = {
+		"net_cls", netcls_ctrl_files, CTRL_NETCLS, NULL, 0
+	},
+	[CTRL_NETPRIO] = {
+		"net_prio", netprio_ctrl_files, CTRL_NETPRIO, NULL, 0
+	},
+	[CTRL_BLKIO] = {
+		"blkio", blkio_ctrl_files, CTRL_BLKIO, NULL, 0
+	},
+	[CTRL_MISC] = {
+		"misc", misc_ctrl_files, CTRL_MISC, NULL, 0
+	},
+	[CTRL_PERFEVENT] = {
+		"perf_event", perf_event_ctrl_files, CTRL_PERFEVENT, NULL, 0
 	},
 	{ }
 };
