@@ -677,7 +677,7 @@ static void cgroup_root_scan(const char *const mnt_type,
 		goto discard;
 
 	if (root->ctrl_field)
-		tst_brk(TBROK, "Available V2 controllers are changing between scans?");
+		tst_res(TWARN, "Available V2 controllers are changing between scans?");
 
 	root->ver = TST_CGROUP_V2;
 
