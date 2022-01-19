@@ -112,7 +112,9 @@ struct tst_cgroup_group;
 void tst_cgroup_scan(void);
 /* Print the config detected by tst_cgroup_scan */
 void tst_cgroup_print_config(void);
-
+/* Load the config printed by tst_cgroup_print_config() to update the
+ * the internal state of the test to the given config */
+void tst_cgroup_load_config(const char *const config);
 /* Ensure the specified controller is available in the test's default
  * CGroup, mounting/enabling it if necessary */
 void tst_cgroup_require(const char *const ctrl_name,

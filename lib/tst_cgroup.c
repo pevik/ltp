@@ -375,6 +375,112 @@ static struct cgroup_root *cgroup_find_root(const char *const mnt_path)
 	return NULL;
 }
 
+static int parse_ctrl_config(const char *const config_entry)
+{
+	char *token;
+	struct cgroup_ctrl *ctrl = NULL;
+
+	if (!strcmp(CONFIG_CTRL_HEADER, config_entry))
+		return 0;
+
+	if (!strcmp(CONFIG_ROOT_HEADER, config_entry))
+		return 1;
+
+	for (token = strtok(config_entry, " "); token; token = strtok(NULL, " ")) {
+		if (!ctrl && !(ctrl = cgroup_find_ctrl(token)))
+			tst_brk(TBROK, "Could not find ctrl from config. Ctrls changing between calls?");
+
+		if (ctrl && !strcmp(token, CONFIG_CTRL_REQUIRED))
+			ctrl->we_require_it = 1;
+	}
+
+	return 0;
+}
+
+static int parse_root_config(char *config_entry)
+{
+	char *key;
+	char *value;
+	struct cgroup_root *root = NULL;
+
+	for (key = strtok(config_entry, " "); key; key = strtok(NULL, " ")) {
+		if (!(value = strchr(key, '='))) {
+			if (!(root = cgroup_find_root(key)))
+				tst_brk(TBROK, "Could not find root from config. Roots changing between calls?");
+
+			continue;
+		}
+
+		if (!root)
+			tst_brk(TBROK, "Root has not been found, possibly malformed config?");
+
+		*value = '\0';
+		value = value + 1;
+
+		if (!strcmp(key, CONFIG_MOUNTROOT_KEY) && !strcmp(value, "yes")) {
+			root->we_mounted_it = 1;
+		} else if (!strcmp(key, CONFIG_LTPDIR_KEY) && !root->ltp_dir.dir_name) {
+			cgroup_dir_mk(&root->mnt_dir, cgroup_ltp_dir, &root->ltp_dir);
+			cgroup_dir_mk(&root->ltp_dir, cgroup_ltp_drain_dir, &root->drain_dir);
+			if (!strcmp(value, "yes")) {
+				root->ltp_dir.we_created_it = 1;
+				root->drain_dir.we_created_it = 1;
+			}
+		} else if (!strcmp(key, CONFIG_TESTID_KEY) && strcmp(value, "NULL") &&
+				   !root->test_dir.dir_name) {
+			cgroup_dir_mk(&root->ltp_dir, value, &root->test_dir);
+			root->test_dir.we_created_it = 1;
+		}
+	}
+
+	return 0;
+}
+
+/* Load the test state configuration provided by tst_cgroup_print_config()
+ *
+ * This will reload some internal tst_cgroup state given by the config
+ * that might otherwise have been lost between calls or between different
+ * processes. In particular this is used by testcases/lib/tst_cgctl to
+ * provide access to this C api to shell scripts.
+ *
+ * The config keeps track of the minimal state needed for tst_cgroup_cleanup
+ * to cleanup after a test and does not keep track of the creation of
+ * test cgroups that might be created through tst_cgroup_group_mk().
+ */
+void tst_cgroup_load_config(const char *const config)
+{
+	char temp_config[BUFSIZ];
+	char *curr_line;
+	char *next_line;
+
+	if (strlen(config) >= BUFSIZ)
+		tst_brk(TBROK, "Config has exceeded buffer size?");
+
+	strncpy(temp_config, config, BUFSIZ);
+
+	for (curr_line = &temp_config[0]; curr_line; curr_line = next_line + 1) {
+		next_line = strchr(curr_line, '\n');
+		if (next_line)
+			*next_line = '\0';
+
+		if (parse_ctrl_config(curr_line))
+			break;
+	}
+
+	for (curr_line = next_line + 1; curr_line; curr_line = next_line + 1) {
+		next_line = strchr(curr_line, '\n');
+		if (next_line)
+			*next_line = '\0';
+
+		parse_root_config(curr_line);
+		/* Bash will truncate the last newline that we are using to deliminate
+		 * the start and end of valid entries, so if we could not detect any more
+		 * newlines we assume that was our last entry. */
+		if (!next_line)
+			break;
+	}
+}
+
 /* Determine if a mounted cgroup hierarchy is unique and record it if so.
  *
  * For CGroups V2 this is very simple as there is only one
