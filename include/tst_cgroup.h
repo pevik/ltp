@@ -98,6 +98,9 @@ struct tst_cgroup_opts {
 	 * only indicates that we should mount V1 controllers if
 	 * nothing is present. By default we try to mount V2 first. */
 	int only_mount_v1:1;
+	/* Pass in a specific pid to create and identify the test
+	 * directory as opposed to the default pid of the calling process. */
+	int test_pid;
 };
 
 /* A Control Group in LTP's aggregated hierarchy */
