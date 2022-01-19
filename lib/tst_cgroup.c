@@ -301,12 +301,26 @@ opendir:
 				  O_PATH | O_DIRECTORY);
 }
 
+#define CONFIG_LTPDIR_KEY "Created_Ltp_Dir"
+#define CONFIG_MOUNTROOT_KEY "Mounted_Root"
+#define CONFIG_TESTID_KEY "Test_Id"
+#define CONFIG_CTRL_REQUIRED "Required"
+#define CONFIG_CTRL_HEADER "Detected Controllers:"
+#define CONFIG_ROOT_HEADER "Detected Roots:"
+
+/* Prints out the minimal internal state of the test to be consumed
+ * by tst_cgroup_load_config().
+ *
+ * The config keeps track of the minimal state needed for tst_cgroup_cleanup
+ * to cleanup after a test and does not keep track of the creation of
+ * test cgroups that might be created through tst_cgroup_group_mk().
+ */
 void tst_cgroup_print_config(void)
 {
 	struct cgroup_root *root;
 	const struct cgroup_ctrl *ctrl;
 
-	tst_res(TINFO, "Detected Controllers:");
+	printf("%s\n", CONFIG_CTRL_HEADER);
 
 	for_each_ctrl(ctrl) {
 		root = ctrl->ctrl_root;
@@ -314,11 +328,24 @@ void tst_cgroup_print_config(void)
 		if (!root)
 			continue;
 
-		tst_res(TINFO, "\t%.10s %s @ %s:%s",
+		printf("%s %s @ %s %s\n",
 			ctrl->ctrl_name,
-			root->no_cpuset_prefix ? "[noprefix]" : "",
 			root->ver == TST_CGROUP_V1 ? "V1" : "V2",
-			root->mnt_path);
+			root->mnt_path,
+			ctrl->we_require_it ? CONFIG_CTRL_REQUIRED : "");
+	}
+
+	printf("%s\n", CONFIG_ROOT_HEADER);
+
+	for_each_root(root) {
+		printf("%s %s=%s %s=%s %s=%s\n",
+			root->mnt_path,
+			CONFIG_MOUNTROOT_KEY,
+			root->we_mounted_it ? "yes" : "no",
+			CONFIG_LTPDIR_KEY,
+			root->ltp_dir.we_created_it ? "yes" : "no",
+			CONFIG_TESTID_KEY,
+			root->test_dir.dir_name ? root->test_dir.dir_name : "NULL");
 	}
 }
 
