@@ -169,4 +169,5 @@ static struct tst_test test = {
 		"tmpfs",
 		NULL
 	},
+	.timeout = 1800,
 };

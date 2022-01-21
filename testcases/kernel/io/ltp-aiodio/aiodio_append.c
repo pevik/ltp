@@ -183,6 +183,7 @@ static struct tst_test test = {
 		"tmpfs",
 		NULL
 	},
+	.timeout = 1800,
 };
 #else
 TST_TEST_TCONF("test requires libaio and its development packages");
