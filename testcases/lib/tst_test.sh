@@ -17,6 +17,8 @@ export TST_ITERATIONS=1
 export TST_TMPDIR_RHOST=0
 export TST_LIB_LOADED=1
 
+export TST_DEFAULT_FS_TYPE="ext2"
+
 . tst_ansi_color.sh
 . tst_security.sh
 
@@ -338,14 +340,12 @@ tst_umount()
 tst_mkfs()
 {
 	local fs_type=${1:-$TST_FS_TYPE}
+	[ -z "$fs_type" ] && fs_type="$TST_DEFAULT_FS_TYPE"
+
 	local device=${2:-$TST_DEVICE}
 	[ $# -ge 1 ] && shift
 	[ $# -ge 1 ] && shift
 	local fs_opts="$@"
-
-	if [ -z "$fs_type" ]; then
-		tst_brk TBROK "No fs_type specified"
-	fi
 
 	if [ -z "$device" ]; then
 		tst_brk TBROK "No device specified"
@@ -599,7 +599,7 @@ tst_run()
 	local _tst_name
 
 	if [ -n "$TST_TEST_PATH" ]; then
-		for _tst_i in $(grep '^[^#]*\bTST_' "$TST_TEST_PATH" | sed 's/.*TST_//; s/[="} \t\/:`].*//'); do
+		for _tst_i in $(grep '^[^#]*\bTST_' "$TST_TEST_PATH" | sed 's/.*TST_//; s/[="} \t\/:`)].*//'); do
 			case "$_tst_i" in
 			DISABLE_APPARMOR|DISABLE_SELINUX);;
 			SETUP|CLEANUP|TESTFUNC|ID|CNT|MIN_KVER);;
@@ -614,6 +614,7 @@ tst_run()
 			NET_SKIP_VARIABLE_INIT|NEEDS_CHECKPOINTS);;
 			CHECKPOINT_WAIT|CHECKPOINT_WAKE);;
 			CHECKPOINT_WAKE2|CHECKPOINT_WAKE_AND_WAIT);;
+			DEFAULT_FS_TYPE);;
 			*) tst_res TWARN "Reserved variable TST_$_tst_i used!";;
 			esac
 		done
