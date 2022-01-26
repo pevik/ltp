@@ -338,6 +338,5 @@ static struct tst_test test = {
 };
 
 #else /* HAVE_STRUCT_PERF_EVENT_ATTR */
-TST_TEST_TCONF("This system doesn't have <linux/perf_event.h> or "
-	"struct perf_event_attr is not defined.");
+TST_TEST_TCONF("missing <linux/perf_event.h> or struct perf_event_attr not defined");
 #endif

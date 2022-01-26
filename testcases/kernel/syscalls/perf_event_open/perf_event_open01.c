@@ -203,8 +203,6 @@ static void cleanup(void)
 
 int main(void)
 {
-	tst_brkm(TCONF, NULL, "This system doesn't have "
-		 "header file:<linux/perf_event.h> or "
-		 "no struct perf_event_attr defined");
+	tst_brkm(TCONF, NULL, "missing <linux/perf_event.h> or struct perf_event_attr not defined");
 }
 #endif
