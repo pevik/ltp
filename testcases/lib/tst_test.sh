@@ -344,9 +344,8 @@ tst_mkfs()
 	local fs_type=${1:-$TST_FS_TYPE}
 
 	local device=${2:-$TST_DEVICE}
-	[ $# -ge 1 ] && shift
-	[ $# -ge 1 ] && shift
-	local fs_opts="$@"
+	local fs_opts="$3"
+	local extra_opts="$4"
 
 	if [ -z "$device" ]; then
 		tst_brk TBROK "No device specified"
@@ -354,8 +353,8 @@ tst_mkfs()
 
 	tst_require_cmds mkfs.$fs_type
 
-	tst_res TINFO "Formatting $device with $fs_type extra opts='$fs_opts'"
-	ROD_SILENT mkfs.$fs_type $fs_opts $device
+	tst_res TINFO "Formatting $device with $fs_type opts='$fs_opts' extra opts='$extra_opts'"
+	ROD_SILENT mkfs.$fs_type $fs_opts $device $extra_opts
 }
 
 # Detect whether running under hypervisor: Microsoft Hyper-V
