@@ -186,6 +186,7 @@ AC_CHECK_TYPES([struct mmsghdr],,,[
 ])
 
 AC_CHECK_TYPES([struct msqid64_ds],,,[#include <sys/msgbuf.h>])
+AC_CHECK_TYPES([struct perf_event_attr],,,[#include <linux/perf_event.h>])
 
 AC_CHECK_TYPES([struct rlimit64],,,[
 #define _LARGEFILE64_SOURCE
@@ -376,7 +377,6 @@ fi
 AC_DEFINE_UNQUOTED(NUMA_ERROR_MSG, ["$numa_error_msg"], [Error message when no NUMA support])
 
 
-LTP_CHECK_SYSCALL_PERF_EVENT_OPEN
 LTP_CHECK_SYSCALL_SIGNALFD
 LTP_CHECK_SYSCALL_UTIMENSAT
 LTP_CHECK_TASKSTATS

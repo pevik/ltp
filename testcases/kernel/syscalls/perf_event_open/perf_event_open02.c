@@ -45,7 +45,7 @@
 #include "lapi/cpuset.h"
 #include "lapi/syscalls.h"
 
-#if HAVE_PERF_EVENT_ATTR
+#ifdef HAVE_STRUCT_PERF_EVENT_ATTR
 #include "perf_event_open.h"
 
 #define MAX_CTRS	1000
@@ -337,7 +337,7 @@ static struct tst_test test = {
 	.needs_root = 1,
 };
 
-#else /* HAVE_PERF_EVENT_ATTR */
+#else /* HAVE_STRUCT_PERF_EVENT_ATTR */
 TST_TEST_TCONF("This system doesn't have <linux/perf_event.h> or "
 	"struct perf_event_attr is not defined.");
 #endif

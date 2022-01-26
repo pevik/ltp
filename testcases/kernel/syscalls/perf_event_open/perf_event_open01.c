@@ -38,7 +38,7 @@
 #include <fcntl.h>
 #include <stdint.h>
 #include "config.h"
-#if HAVE_PERF_EVENT_ATTR
+#ifdef HAVE_STRUCT_PERF_EVENT_ATTR
 # include <linux/perf_event.h>
 #endif
 
@@ -48,7 +48,7 @@
 
 char *TCID = "perf_event_open01";
 
-#if HAVE_PERF_EVENT_ATTR
+#ifdef HAVE_STRUCT_PERF_EVENT_ATTR
 static void setup(void);
 static void cleanup(void);
 
