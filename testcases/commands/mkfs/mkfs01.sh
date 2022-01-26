@@ -23,7 +23,7 @@ usage: $0 [-f <ext2|ext3|ext4|vfat|...>]
 
 OPTIONS
 -f	Specify the type of filesystem to be built.  If not
-	specified, the default filesystem type (currently ext2)
+	specified, the default filesystem type (currently $TST_DEFAULT_FS_TYPE)
 	is used.
 EOF
 }
@@ -45,7 +45,7 @@ setup()
 mkfs_verify_type()
 {
 	if [ -z "$1" ]; then
-		blkid $2 -t TYPE="ext2" >/dev/null
+		blkid $2 -t TYPE="$TST_DEFAULT_FS_TYPE" >/dev/null
 	else
 		if [ "$1" = "msdos" ]; then
 			blkid $2 -t TYPE="vfat" >/dev/null

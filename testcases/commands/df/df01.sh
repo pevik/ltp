@@ -23,12 +23,10 @@ usage: $0 [-f <ext2|ext3|ext4|vfat|...>]
 
 OPTIONS
 -f	Specify the type of filesystem to be built.  If not
-	specified, the default filesystem type (currently ext2)
+	specified, the default filesystem type (currently $TST_DEFAULT_FS_TYPE)
 	is used.
 EOF
 }
-
-TST_FS_TYPE=ext2
 
 parse_args()
 {
