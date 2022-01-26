@@ -14,7 +14,11 @@
 #include "tst_test.h"
 #include "tst_fs.h"
 
-static const char *const fs_type_whitelist[] = {
+/*
+ * Filesystems to be tested with .all_filesystems and also the only filesystems
+ * which can be whitelisted with .skip_filesystems.
+ */
+static const char *const all_filesystems[] = {
 	"ext2",
 	"ext3",
 	"ext4",
@@ -27,7 +31,7 @@ static const char *const fs_type_whitelist[] = {
 	NULL
 };
 
-static const char *fs_types[ARRAY_SIZE(fs_type_whitelist)];
+static const char *fs_types[ARRAY_SIZE(all_filesystems)];
 
 static int has_mkfs(const char *fs_type)
 {
@@ -151,24 +155,24 @@ const char **tst_get_supported_fs_types(const char *const *skiplist)
 		return fs_types;
 	}
 
-	for (i = 0; fs_type_whitelist[i]; i++) {
-		if (tst_fs_in_skiplist(fs_type_whitelist[i], skiplist)) {
+	for (i = 0; all_filesystems[i]; i++) {
+		if (tst_fs_in_skiplist(all_filesystems[i], skiplist)) {
 			tst_res(TINFO, "Skipping %s as requested by the test",
-				fs_type_whitelist[i]);
+				all_filesystems[i]);
 			continue;
 		}
 
-		sup = tst_fs_is_supported(fs_type_whitelist[i]);
+		sup = tst_fs_is_supported(all_filesystems[i]);
 
 		if (skip_fuse && sup == TST_FS_FUSE) {
 			tst_res(TINFO,
 				"Skipping FUSE based %s as requested by the test",
-				fs_type_whitelist[i]);
+				all_filesystems[i]);
 			continue;
 		}
 
 		if (sup)
-			fs_types[j++] = fs_type_whitelist[i];
+			fs_types[j++] = all_filesystems[i];
 	}
 
 	return fs_types;
