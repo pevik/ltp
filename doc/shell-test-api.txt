@@ -196,11 +196,17 @@ simply by setting right '$TST_FOO'.
 | Variable name            | Action done
 | 'TST_DEV_EXTRA_OPTS'     | Pass additional 'mkfs' options when use 'TST_FORMAT_DEVICE'.
 | 'TST_DEV_FS_OPTS'        | Pass extra 'mkfs' options after the device name
+| 'TST_DEVICE'             | See
+|                          | https://github.com/linux-test-project/ltp/wiki/Shell-Test-API#mounting-and-unmounting-filesystems[Mounting and unmounting filesystems]
 |                          | when use 'TST_FORMAT_DEVICE'.
 | 'TST_FORMAT_DEVICE'      | Format a block device with a filesystem. See also
 |                          | 'TST_DEV_EXTRA_OPTS', 'TST_DEV_FS_OPTS', 'TST_FS_TYPE'.
 |                          | Implies 'TST_NEEDS_DEVICE=1' (no need to set it).
 | 'TST_FS_TYPE'            | Overwrite the default filesystem to be used.
+| 'TST_MNTPOINT'           | See
+|                          | https://github.com/linux-test-project/ltp/wiki/Shell-Test-API#mounting-and-unmounting-filesystems[Mounting and unmounting filesystems]
+| 'TST_MNT_PARAMS'         | See
+|                          | https://github.com/linux-test-project/ltp/wiki/Shell-Test-API#mounting-and-unmounting-filesystems[Mounting and unmounting filesystems]
 | 'TST_NEEDS_ROOT'         | Exit the test with 'TCONF' unless executed under root.
 |                          | Alternatively the 'tst_require_root' command can be used.
 | 'TST_NEEDS_TMPDIR'       | Create test temporary directory and cd into it.
