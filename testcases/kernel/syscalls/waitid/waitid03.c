@@ -8,8 +8,8 @@
 /*\
  * [Description]
  *
- * This test is checking if waitid() syscall returns EINVAL when passing
- * invalid set of input values.
+ * This test is checking if waitid() syscall returns ECHILD when the calling
+ * process has no existing unwaited-for child processes.
  */
 
 #include <sys/wait.h>
@@ -20,13 +20,13 @@ static void run(void)
 	siginfo_t infop;
 
 	memset(&infop, 0, sizeof(infop));
-	TEST(waitid(P_ALL, 0, &infop, WNOHANG));
+	TEST(waitid(P_ALL, 0, &infop, WNOHANG | WEXITED));
 
 	tst_res(TINFO, "si_pid = %d ; si_code = %d ; si_status = %d",
 		infop.si_pid, infop.si_code, infop.si_status);
 
-	if (TST_RET == -1 && TST_ERR == EINVAL)
-		tst_res(TPASS, "waitid returned EINVAL");
+	if (TST_RET == -1 && TST_ERR == ECHILD)
+		tst_res(TPASS, "waitid returned ECHILD");
 	else
 		tst_res(TFAIL, "ret=%ld errno=%s", TST_RET,
 			tst_strerrno(TST_ERR));
