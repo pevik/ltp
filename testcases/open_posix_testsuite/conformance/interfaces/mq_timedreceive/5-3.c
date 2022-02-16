@@ -28,7 +28,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <time.h>
 #include "posixtest.h"
 
 #define TEST "5-3"
@@ -38,7 +37,7 @@
 #define NAMESIZE 50
 #define BUFFER 40
 
-static void stopreceive(int signo PTS_ATTRIBUTE_UNUSED)
+void stopreceive(int signo LTP_ATTRIBUTE_UNUSED)
 {
 	return;
 }
@@ -55,8 +54,7 @@ int main(void)
 	sprintf(mqname, "/" FUNCTION "_" TEST "_%d", getpid());
 
 	attr.mq_msgsize = BUFFER;
-	attr.mq_maxmsg = 1;
-
+	attr.mq_maxmsg = BUFFER;
 	mqdes = mq_open(mqname, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR, &attr);
 	if (mqdes == (mqd_t) - 1) {
 		perror(ERROR_PREFIX "mq_open");
@@ -72,21 +70,20 @@ int main(void)
 		sigemptyset(&act.sa_mask);
 		sigaction(SIGABRT, &act, 0);
 
-		ts.tv_sec = time(NULL) + 5;
+		ts.tv_sec = INT32_MAX;
 		ts.tv_nsec = 0;
 
 		if (mq_timedreceive(mqdes, msgrv, BUFFER, NULL, &ts) == -1) {
+			wait(NULL);
 			if (EINTR != errno) {
 				printf("errno != EINTR\n");
 				failure = 1;
 			}
 		} else {
-			printf("mq_timedreceive() succeeded unexpectedly\n");
+			wait(NULL);
+			printf("mq_timedreceive() succeed unexpectly\n");
 			failure = 1;
 		}
-
-		wait(NULL);
-
 		if (mq_close(mqdes) != 0) {
 			perror("mq_close() did not return success");
 			unresolved = 1;

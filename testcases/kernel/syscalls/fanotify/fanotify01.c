@@ -3,26 +3,25 @@
  * Copyright (c) 2013 SUSE.  All Rights Reserved.
  *
  * Started by Jan Kara <jack@suse.cz>
+ *
+ * DESCRIPTION
+ *     Check that fanotify work for a file
  */
-
-/*\
- * [Description]
- * Check that fanotify work for a file.
- */
-
 #define _GNU_SOURCE
 #include "config.h"
 
 #include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <fcntl.h>
 #include <errno.h>
 #include <string.h>
 #include <sys/syscall.h>
 #include "tst_test.h"
-
-#ifdef HAVE_SYS_FANOTIFY_H
 #include "fanotify.h"
+
+#if defined(HAVE_SYS_FANOTIFY_H)
+#include <sys/fanotify.h>
 
 #define EVENT_MAX 1024
 /* size of the event structure, not counting name */
@@ -75,8 +74,6 @@ static struct tcase {
 static char fname[BUF_SIZE];
 static char buf[BUF_SIZE];
 static int fd_notify;
-static int fan_report_fid_unsupported;
-static int filesystem_mark_unsupported;
 
 static unsigned long long event_set[EVENT_MAX];
 
@@ -91,20 +88,32 @@ static void test_fanotify(unsigned int n)
 
 	tst_res(TINFO, "Test #%d: %s", n, tc->tname);
 
-	if (fan_report_fid_unsupported && (tc->init_flags & FAN_REPORT_FID)) {
-		FANOTIFY_INIT_FLAGS_ERR_MSG(FAN_REPORT_FID, fan_report_fid_unsupported);
-		return;
+	fd_notify = fanotify_init(tc->init_flags, O_RDONLY);
+	if (fd_notify < 0) {
+		if (errno == EINVAL &&
+		    (tc->init_flags & FAN_REPORT_FID)) {
+			tst_res(TCONF,
+				"FAN_REPORT_FID not supported in kernel?");
+			return;
+		}
+		tst_brk(TBROK | TERRNO,
+			"fanotify_init (0x%x, O_RDONLY) "
+			"failed", tc->init_flags);
 	}
 
-	if (filesystem_mark_unsupported && mark->flag == FAN_MARK_FILESYSTEM) {
-		tst_res(TCONF, "FAN_MARK_FILESYSTEM not supported in kernel?");
-		return;
+	if (fanotify_mark(fd_notify, FAN_MARK_ADD | mark->flag,
+			  FAN_ACCESS | FAN_MODIFY | FAN_CLOSE | FAN_OPEN,
+			  AT_FDCWD, fname) < 0) {
+		if (errno == EINVAL && mark->flag == FAN_MARK_FILESYSTEM) {
+			tst_res(TCONF,
+				"FAN_MARK_FILESYSTEM not supported in kernel?");
+			return;
+		}
+		tst_brk(TBROK | TERRNO,
+			"fanotify_mark (%d, FAN_MARK_ADD, FAN_ACCESS | %s | "
+			"FAN_MODIFY | FAN_CLOSE | FAN_OPEN, AT_FDCWD, %s) "
+			"failed", fd_notify, mark->name, fname);
 	}
-
-	fd_notify = SAFE_FANOTIFY_INIT(tc->init_flags, O_RDONLY);
-
-	SAFE_FANOTIFY_MARK(fd_notify, FAN_MARK_ADD | mark->flag,
-			  FAN_ACCESS | FAN_MODIFY | FAN_CLOSE | FAN_OPEN, AT_FDCWD, fname);
 
 	/*
 	 * generate sequence of events
@@ -152,9 +161,14 @@ static void test_fanotify(unsigned int n)
 	 */
 
 	/* Ignore access events */
-	SAFE_FANOTIFY_MARK(fd_notify,
+	if (fanotify_mark(fd_notify,
 			  FAN_MARK_ADD | mark->flag | FAN_MARK_IGNORED_MASK,
-			  FAN_ACCESS, AT_FDCWD, fname);
+			  FAN_ACCESS, AT_FDCWD, fname) < 0) {
+		tst_brk(TBROK | TERRNO,
+			"fanotify_mark (%d, FAN_MARK_ADD | %s | "
+			"FAN_MARK_IGNORED_MASK, FAN_ACCESS, AT_FDCWD, %s) "
+			"failed", fd_notify, mark->name, fname);
+	}
 
 	fd = SAFE_OPEN(fname, O_RDWR);
 	event_set[tst_count] = FAN_OPEN;
@@ -170,7 +184,7 @@ static void test_fanotify(unsigned int n)
 			EVENT_BUF_LEN - len);
 	len += ret;
 
-	SAFE_LSEEK(fd, 0, SEEK_SET);
+	lseek(fd, 0, SEEK_SET);
 	/* Generate modify event to clear ignore mask */
 	SAFE_WRITE(1, fd, fname, 1);
 	event_set[tst_count] = FAN_MODIFY;
@@ -197,9 +211,15 @@ static void test_fanotify(unsigned int n)
 	 * Now ignore open & close events regardless of file
 	 * modifications
 	 */
-	SAFE_FANOTIFY_MARK(fd_notify, FAN_MARK_ADD | mark->flag |
+	if (fanotify_mark(fd_notify, FAN_MARK_ADD | mark->flag |
 			  FAN_MARK_IGNORED_MASK | FAN_MARK_IGNORED_SURV_MODIFY,
-			  FAN_OPEN | FAN_CLOSE, AT_FDCWD, fname);
+			  FAN_OPEN | FAN_CLOSE, AT_FDCWD, fname) < 0) {
+		tst_brk(TBROK | TERRNO,
+			"fanotify_mark (%d, FAN_MARK_ADD | %s | "
+			"FAN_MARK_IGNORED_MASK | FAN_MARK_IGNORED_SURV_MODIFY, "
+			"FAN_OPEN | FAN_CLOSE, AT_FDCWD, %s) failed",
+			fd_notify, mark->name, fname);
+	}
 
 	/* This event should be ignored */
 	fd = SAFE_OPEN(fname, O_RDWR);
@@ -220,9 +240,15 @@ static void test_fanotify(unsigned int n)
 	len += ret;
 
 	/* Now remove open and close from ignored mask */
-	SAFE_FANOTIFY_MARK(fd_notify,
+	if (fanotify_mark(fd_notify,
 			  FAN_MARK_REMOVE | mark->flag | FAN_MARK_IGNORED_MASK,
-			  FAN_OPEN | FAN_CLOSE, AT_FDCWD, fname);
+			  FAN_OPEN | FAN_CLOSE, AT_FDCWD, fname) < 0) {
+		tst_brk(TBROK | TERRNO,
+			"fanotify_mark (%d, FAN_MARK_REMOVE | %s | "
+			"FAN_MARK_IGNORED_MASK, FAN_OPEN | FAN_CLOSE, "
+			"AT_FDCWD, %s) failed", fd_notify,
+			mark->name, fname);
+	}
 
 	SAFE_CLOSE(fd);
 	event_set[tst_count] = FAN_CLOSE_WRITE;
@@ -318,9 +344,14 @@ pass:
 
 	}
 	/* Remove mark to clear FAN_MARK_IGNORED_SURV_MODIFY */
-	SAFE_FANOTIFY_MARK(fd_notify, FAN_MARK_REMOVE | mark->flag,
+	if (fanotify_mark(fd_notify, FAN_MARK_REMOVE | mark->flag,
 			  FAN_ACCESS | FAN_MODIFY | FAN_CLOSE | FAN_OPEN,
-			  AT_FDCWD, fname);
+			  AT_FDCWD, fname) < 0) {
+		tst_brk(TBROK | TERRNO,
+			"fanotify_mark (%d, FAN_MARK_REMOVE | %s, FAN_ACCESS | "
+			"FAN_MODIFY | FAN_CLOSE | FAN_OPEN, AT_FDCWD, %s) "
+			"failed", fd_notify, mark->name, fname);
+	}
 
 	SAFE_CLOSE(fd_notify);
 }
@@ -335,9 +366,6 @@ static void setup(void)
 
 	sprintf(fname, MOUNT_PATH"/tfile_%d", getpid());
 	SAFE_FILE_PRINTF(fname, "1");
-
-	fan_report_fid_unsupported = fanotify_init_flags_supported_on_fs(FAN_REPORT_FID, fname);
-	filesystem_mark_unsupported = fanotify_mark_supported_by_kernel(FAN_MARK_FILESYSTEM);
 }
 
 static void cleanup(void)

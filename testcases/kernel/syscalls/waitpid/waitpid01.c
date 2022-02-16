@@ -18,7 +18,7 @@
 
 static void run(void)
 {
-	pid_t pid;
+	pid_t pid, rpid;
 	int status;
 
 	pid = SAFE_FORK();
@@ -27,13 +27,13 @@ static void run(void)
 		exit(0);
 	}
 
-	TST_EXP_PID_SILENT(waitpid(pid, &status, 0));
-	if (!TST_PASS)
-		return;
+	rpid = waitpid(pid, &status, 0);
+	if (rpid < 0)
+		tst_brk(TBROK | TERRNO, "waitpid() failed");
 
-	if (TST_RET != pid) {
-		tst_res(TFAIL, "waitpid() returned wrong pid %li, expected %i",
-			TST_RET, pid);
+	if (rpid != pid) {
+		tst_res(TFAIL, "waitpid() returned wrong pid %i, expected %i",
+		        rpid, pid);
 	} else {
 		tst_res(TPASS, "waitpid() returned correct pid %i", pid);
 	}

@@ -15,8 +15,8 @@
 #include <stdio.h>
 #include "posixtest.h"
 
-static pthread_mutex_t mutex1, mutex2;
-static pthread_mutex_t mutex3 = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutex1, mutex2;
+pthread_mutex_t mutex3 = PTHREAD_MUTEX_INITIALIZER;
 
 int main(void)
 {

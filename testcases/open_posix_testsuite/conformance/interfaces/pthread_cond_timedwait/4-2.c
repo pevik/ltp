@@ -67,7 +67,7 @@ typedef struct {
 	int status;		/* error code */
 } testdata_t;
 
-static struct _scenar {
+struct _scenar {
 	int m_type;		/* Mutex type to use */
 	int mc_pshared;		/* 0: mutex and cond are process-private (default) ~ !0: Both are process-shared, if supported */
 	int c_clock;		/* 0: cond uses the default clock. ~ !0: Cond uses monotonic clock, if supported. */
@@ -147,7 +147,7 @@ static struct _scenar {
 #endif
 };
 
-static struct {
+struct {
 	long sec_val;		/* Value for seconds */
 	short sec_is_offset;	/* Seconds value is added to current time or is absolute */
 	long nsec_val;		/* Value for nanoseconds */
@@ -161,7 +161,7 @@ static struct {
 	-3, 1, 2000000000, 0}
 };
 
-static void *tf(void *arg)
+void *tf(void *arg)
 {
 	int ret = 0;
 

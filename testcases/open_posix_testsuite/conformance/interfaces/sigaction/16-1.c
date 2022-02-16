@@ -85,7 +85,7 @@ static volatile int ready;
 static sem_t sem;
 
 /* Lookup */
-static struct sig_info *lookup(int signo)
+struct sig_info *lookup(int signo)
 {
 	struct sig_info *s = &sigs[0];
 
@@ -98,7 +98,7 @@ static struct sig_info *lookup(int signo)
 }
 
 /* Handler function */
-static void handler(int signo)
+void handler(int signo)
 {
 	struct sig_info *s;
 
@@ -108,7 +108,7 @@ static void handler(int signo)
 }
 
 /* Thread function */
-static void *threaded(void *arg)
+void *threaded(void *arg)
 {
 	int rc;
 	int status = PTS_PASS;
@@ -143,7 +143,7 @@ static void *threaded(void *arg)
 	return (void *)((long)status);
 }
 
-static int test_sig(struct sig_info *s)
+int test_sig(struct sig_info *s)
 {
 	int rc;
 	int status = PTS_UNRESOLVED;

@@ -20,7 +20,7 @@
 
 typedef int (*munmap_test) (void *, size_t);
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	munmap_test dummyvar;
 	dummyvar = munmap;

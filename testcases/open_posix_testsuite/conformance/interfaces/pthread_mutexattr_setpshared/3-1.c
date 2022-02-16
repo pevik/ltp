@@ -44,7 +44,7 @@ int main(void)
 			return PTS_PASS;
 		}
 
-		printf("Test FAILED: Expected return code 0 or EINVAL, got: %d\n",
+		printf("Test FAILED: Expected return code 0 or EINVAL, got: %d",
 		       ret);
 		return PTS_FAIL;
 	}

@@ -8,7 +8,7 @@
 
 typedef int (*sigismember_test) (const sigset_t *, int);
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	sigismember_test dummyvar;
 	dummyvar = sigismember;

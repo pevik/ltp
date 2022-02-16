@@ -18,15 +18,15 @@
 #include <unistd.h>
 #include "posixtest.h"
 
-static int SIGPIPE_count = 0;
+int SIGPIPE_count = 0;
 
-static void SIGPIPE_handler(int signo PTS_ATTRIBUTE_UNUSED)
+void SIGPIPE_handler(int signo LTP_ATTRIBUTE_UNUSED)
 {
 	SIGPIPE_count++;
 	printf("Caught SIGPIPE\n");
 }
 
-static void SIGQUIT_handler(int signo PTS_ATTRIBUTE_UNUSED)
+void SIGQUIT_handler(int signo LTP_ATTRIBUTE_UNUSED)
 {
 	printf("Caught SIGQUIT\n");
 	raise(SIGPIPE);

@@ -71,7 +71,6 @@
 #include <netinet/sctp.h>
 #include <sys/uio.h>
 #include <sctputil.h>
-#include "tst_kernel.h"
 
 #define SCTP_RESERVED_PORT 7
 #define SCTP_INV_LOOPBACK "172.31.43.112"
@@ -81,7 +80,7 @@ int TST_TOTAL = 15;
 int TST_CNT = 0;
 
 int
-main(void)
+main(int argc, char *argv[])
 {
         int sk,pf_class;
 	int error = 0;
@@ -90,9 +89,6 @@ main(void)
 	char filename[21];
 
         struct sockaddr_in bind_addr;
-
-	if (tst_check_driver("sctp"))
-		tst_brkm(TCONF, tst_exit, "sctp driver not available");
 
 	/* Rather than fflush() throughout the code, set stdout to
          * be unbuffered.

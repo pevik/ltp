@@ -13,7 +13,6 @@ TST_CLEANUP="cleanup"
 TST_NEEDS_TMPDIR=1
 TST_NEEDS_ROOT=1
 TST_NEEDS_CMDS="cat awk diff"
-TST_NEEDS_DRIVERS="dummy"
 
 . tst_net.sh
 
@@ -26,10 +25,10 @@ init()
 	iface=ltp_dummy
 	lsmod | grep -q dummy || rm_dummy=1
 
-	ROD ip link add $iface type dummy
+	ROD ip li add $iface type dummy
 
 	ip4_addr=${IPV4_NET16_UNUSED}.6.6
-	ROD ip addr add ${ip4_addr}/24 dev $iface
+	ROD ip a add ${ip4_addr}/24 dev $iface
 
 	cat > tst_ip02.exp <<-EOF
 	1:
@@ -47,12 +46,12 @@ init()
 
 cleanup()
 {
-	[ -n "$iface" -a -d /sys/class/net/$iface ] && ip link del $iface
+	[ -n "$iface" -a -d /sys/class/net/$iface ] && ip li del $iface
 
 	[ "$rm_dummy" ] && modprobe -r dummy
 
 	# test #5
-	[ "$ip4_addr" ] && ip route show | grep -q $ip4_addr && ip route del $ip4_addr
+	ip route show | grep $ip4_addr && ip route del $ip4_addr
 }
 
 test1()

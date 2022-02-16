@@ -21,7 +21,7 @@
 #include <stdio.h>
 #include "posixtest.h"
 
-static void *a_thread_func()
+void *a_thread_func()
 {
 
 	pthread_exit(0);

@@ -32,9 +32,9 @@
 
 #define SIGTOTEST SIGALRM
 
-static struct timespec tpreset;
+struct timespec tpreset;
 
-static void handler(int signo)
+void handler(int signo)
 {
 	(void) signo;
 

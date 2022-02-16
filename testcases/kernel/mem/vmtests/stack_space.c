@@ -103,14 +103,14 @@ char *argv[];
 			bd_arg(argv[i - 1]);
 		if (nchild > MAXCHILD) {
 			tst_brkm(TBROK, NULL,
-				 "Too many children, max is %d",
+				 "Too many children, max is %d\n",
 				 MAXCHILD);
 		}
 		if (sscanf(argv[i++], "%d", &csize) != 1)
 			bd_arg(argv[i - 1]);
 		if (csize > MAXSIZE) {
 			tst_brkm(TBROK, NULL,
-				 "Chunk size too large , max is %d",
+				 "Chunk size too large , max is %d\n",
 				 MAXSIZE);
 		}
 		if (sscanf(argv[i++], "%d", &iterations) != 1)
@@ -129,7 +129,7 @@ int bd_arg(str)
 char *str;
 {
 	tst_brkm(TCONF, NULL,
-		 "Bad argument - %s - could not parse as number.",
+		 "Bad argument - %s - could not parse as number.\n",
 		 str);
 }
 
@@ -148,8 +148,8 @@ int runtest()
 		if (child < 0) {
 			tst_resm(TBROK,
 				 "Fork failed (may be OK if under stress)");
-			tst_resm(TINFO, "System resource may be too low.");
-			tst_brkm(TBROK, tst_rmdir, "Reason: %s",
+			tst_resm(TINFO, "System resource may be too low.\n");
+			tst_brkm(TBROK, tst_rmdir, "Reason: %s\n",
 				 strerror(errno));
 
 		}
@@ -166,7 +166,7 @@ int runtest()
 			 status);
 #endif
 		if (status) {
-			tst_resm(TINFO, "\tFailed - expected 0 exit status.");
+			tst_resm(TINFO, "\tFailed - expected 0 exit status.\n");
 			local_flag = FAILED;
 		}
 		++count;
@@ -177,7 +177,7 @@ int runtest()
 	 */
 
 	if (count != nchild) {
-		tst_resm(TINFO, "\tWrong # children waited on, count = %d",
+		tst_resm(TINFO, "\tWrong # children waited on, count = %d\n",
 			 count);
 		local_flag = FAILED;
 	}
@@ -220,7 +220,7 @@ int dotest(int testers, int me)
 	zero_buf = (char *)(malloc(csize));
 
 	if (bits == 0 || val_buf == 0 || zero_buf == 0) {
-		tst_brkm(TFAIL, NULL, "\tmalloc failed, pid: %d", getpid());
+		tst_brkm(TFAIL, NULL, "\tmalloc failed, pid: %d\n", getpid());
 	}
 
 	/*
@@ -266,7 +266,7 @@ int dotest(int testers, int me)
 			if ((bits[chunk / 8] & (1 << (chunk % 8))) == 0) {
 				if (memcmp(buf, zero_buf, csize)) {
 					tst_resm(TFAIL,
-						 "%s[%d] bad verify @ %d (%p) for val %d count %d, should be 0.",
+						 "%s[%d] bad verify @ %d (%p) for val %d count %d, should be 0.\n",
 						 prog, me, chunk, buf, val,
 						 count);
 					tst_resm(TINFO, "Prev ");
@@ -283,7 +283,7 @@ int dotest(int testers, int me)
 				++collide;
 				if (memcmp(buf, val_buf, csize)) {
 					tst_resm(TFAIL,
-						 "%s[%d] bad verify @ %d (%p) for val %d count %d.",
+						 "%s[%d] bad verify @ %d (%p) for val %d count %d.\n",
 						 prog, me, chunk, buf, val,
 						 count);
 					tst_resm(TINFO, "Prev ");

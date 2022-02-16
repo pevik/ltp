@@ -18,15 +18,15 @@
 #include <unistd.h>
 #include "posixtest.h"
 
-static int SIGVTALRM_count = 0;
+int SIGVTALRM_count = 0;
 
-static void SIGVTALRM_handler(int signo PTS_ATTRIBUTE_UNUSED)
+void SIGVTALRM_handler(int signo LTP_ATTRIBUTE_UNUSED)
 {
 	SIGVTALRM_count++;
 	printf("Caught SIGVTALRM\n");
 }
 
-static void SIGXCPU_handler(int signo PTS_ATTRIBUTE_UNUSED)
+void SIGXCPU_handler(int signo LTP_ATTRIBUTE_UNUSED)
 {
 	printf("Caught SIGXCPU\n");
 	raise(SIGVTALRM);

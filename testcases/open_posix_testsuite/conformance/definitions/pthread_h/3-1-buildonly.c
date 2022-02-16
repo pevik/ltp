@@ -10,4 +10,4 @@
 
 #include <pthread.h>
 
-static pthread_attr_t dummy;
+pthread_attr_t dummy;

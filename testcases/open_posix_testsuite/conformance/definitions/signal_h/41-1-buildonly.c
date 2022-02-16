@@ -9,7 +9,7 @@
 
 typedef int (*sigpending_test) (sigset_t *);
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	sigpending_test dummyvar;
 	dummyvar = sigpending;

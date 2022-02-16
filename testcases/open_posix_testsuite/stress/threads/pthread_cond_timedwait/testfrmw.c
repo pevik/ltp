@@ -34,13 +34,13 @@ static pthread_mutex_t m_trace = PTHREAD_MUTEX_INITIALIZER;
 /*****************************************************************************************/
 /* The following functions will output to stdout */
 #if (1)
-static void output_init()
+void output_init()
 {
 	/* do nothing */
 	return;
 }
 
-static void output(char *string, ...)
+void output(char *string, ...)
 {
 	va_list ap;
 	pthread_mutex_lock(&m_trace);
@@ -50,7 +50,7 @@ static void output(char *string, ...)
 	pthread_mutex_unlock(&m_trace);
 }
 
-static void output_fini()
+void output_fini()
 {
 	/*do nothing */
 	return;

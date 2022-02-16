@@ -32,9 +32,9 @@
 
 #define SEMINITVAL 0		//initial value of semaphore = 0
 
-static sem_t *gsemp;
+sem_t *gsemp;
 
-static void handler(int signo PTS_ATTRIBUTE_UNUSED)
+void handler(int signo LTP_ATTRIBUTE_UNUSED)
 {
 	if (sem_post(gsemp) == -1) {
 		perror(ERROR_PREFIX "sem_post");

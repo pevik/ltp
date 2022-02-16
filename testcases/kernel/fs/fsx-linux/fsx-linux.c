@@ -43,7 +43,7 @@
 #include <sys/param.h>
 #include <limits.h>
 #include <time.h>
-#include <string.h>
+#include <strings.h>
 #include <sys/time.h>
 #endif
 #include <fcntl.h>

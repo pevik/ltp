@@ -22,9 +22,9 @@
 #include <stdlib.h>
 #include "posixtest.h"
 
-static stack_t alt_ss;
+stack_t alt_ss;
 
-static void handler(int signo PTS_ATTRIBUTE_UNUSED)
+void handler(int signo LTP_ATTRIBUTE_UNUSED)
 {
 	stack_t ss;
 

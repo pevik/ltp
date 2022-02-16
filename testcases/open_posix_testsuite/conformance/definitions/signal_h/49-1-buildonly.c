@@ -9,7 +9,7 @@
 typedef int (*sigwaitinfo_test) (const sigset_t * restrict,
 				 siginfo_t * restrict);
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	sigwaitinfo_test dummyvar;
 	dummyvar = sigwaitinfo;

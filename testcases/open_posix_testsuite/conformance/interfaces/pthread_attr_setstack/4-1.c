@@ -32,14 +32,14 @@
 #define STACKADDROFFSET 0x8000000
 
 static void *stack_addr;
-static size_t stack_size;
+size_t stack_size;
 
-static int teststack()
+int teststack()
 {
 	return 0;
 }
 
-static void *thread_func()
+void *thread_func()
 {
 	/* execute a function to test the read/right of the stack */
 	if (teststack() != 0) {

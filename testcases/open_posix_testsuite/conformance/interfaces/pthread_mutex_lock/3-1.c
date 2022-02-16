@@ -79,16 +79,16 @@
 /********************************************************************************************/
 /***********************************    Test case   *****************************************/
 /********************************************************************************************/
-static char do_it = 1;
-static unsigned long count_ope = 0;
-static pthread_mutex_t count_protect = PTHREAD_MUTEX_INITIALIZER;
+char do_it = 1;
+unsigned long count_ope = 0;
+pthread_mutex_t count_protect = PTHREAD_MUTEX_INITIALIZER;
 #ifdef WITH_SYNCHRO
-static sem_t semsig1;
-static sem_t semsig2;
-static unsigned long count_sig = 0;
+sem_t semsig1;
+sem_t semsig2;
+unsigned long count_sig = 0;
 #endif
-static sem_t semsync;
-static sem_t semsync2;
+sem_t semsync;
+sem_t semsync2;
 
 typedef struct {
 	pthread_t *thr;
@@ -100,7 +100,7 @@ typedef struct {
 
 /* the following function keeps on sending the signal to the thread pointed by arg
  *  If WITH_SYNCHRO is defined, the target thread has a handler for the signal */
-static void *sendsig(void *arg)
+void *sendsig(void *arg)
 {
 	thestruct *thearg = (thestruct *) arg;
 	int ret;
@@ -122,7 +122,7 @@ static void *sendsig(void *arg)
 }
 
 /* Next are the signal handlers. */
-static void sighdl1(int sig PTS_ATTRIBUTE_UNUSED)
+void sighdl1(int sig LTP_ATTRIBUTE_UNUSED)
 {
 #ifdef WITH_SYNCHRO
 	if ((sem_post(&semsig1))) {
@@ -131,7 +131,7 @@ static void sighdl1(int sig PTS_ATTRIBUTE_UNUSED)
 #endif
 }
 
-static void sighdl2(int sig PTS_ATTRIBUTE_UNUSED)
+void sighdl2(int sig LTP_ATTRIBUTE_UNUSED)
 {
 #ifdef WITH_SYNCHRO
 	if ((sem_post(&semsig2))) {
@@ -143,7 +143,7 @@ static void sighdl2(int sig PTS_ATTRIBUTE_UNUSED)
 /* The following function loops on init/destroy some mutex (with different attributes)
  * it does check that no error code of EINTR is returned */
 
-static void *threaded(void *arg PTS_ATTRIBUTE_UNUSED)
+void *threaded(void *arg LTP_ATTRIBUTE_UNUSED)
 {
 	pthread_mutexattr_t ma[4], *pma[5];
 	pthread_mutex_t m[5];

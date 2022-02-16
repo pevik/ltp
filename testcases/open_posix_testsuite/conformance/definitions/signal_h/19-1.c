@@ -5,10 +5,10 @@
 #include <sys/types.h>
 #include <signal.h>
 
-static stack_t this_type_should_exist, t;
-static void *sp;
-static size_t size;
-static int flags;
+stack_t this_type_should_exist, t;
+void *sp;
+size_t size;
+int flags;
 
 int main(void)
 {

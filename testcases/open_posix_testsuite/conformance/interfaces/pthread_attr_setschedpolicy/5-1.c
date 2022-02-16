@@ -27,7 +27,7 @@
 #define ERR_MSG(p, f, rc) printf("Failed: %s function: %s error: %s (%u)\n", \
 						p, f, strerror(rc), rc)
 
-static int set_policy(char *label, int policy)
+int set_policy(char *label, int policy)
 {
 	int rc;
 	int status;

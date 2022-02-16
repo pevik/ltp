@@ -76,11 +76,11 @@
 /***********************************    Test cases  *****************************************/
 /********************************************************************************************/
 
-static char do_it = 1;
-static long long iterations = 0;
+char do_it = 1;
+long long iterations = 0;
 
 /* Handler for user request to terminate */
-static void sighdl(int sig)
+void sighdl(int sig)
 {
 	do {
 		do_it = 0;
@@ -94,10 +94,10 @@ typedef struct _tdata {
 	pthread_t thread;
 } testdata_t;
 
-static testdata_t td[4];
+testdata_t td[4];
 
 /* Thread function */
-static void *threaded(void *arg)
+void *threaded(void *arg)
 {
 	int ret = 0;
 	int i = 0;
@@ -131,7 +131,7 @@ static void *threaded(void *arg)
 }
 
 /* alternative policy threads */
-static void *rt_thread(void *arg)
+void *rt_thread(void *arg)
 {
 	int ret = 0;
 

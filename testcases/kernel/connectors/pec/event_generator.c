@@ -1,12 +1,24 @@
-// SPDX-License-Identifier: GPL-2.0-or-later
-/*
- * Copyright (c) 2008 FUJITSU LIMITED
- * Copyright (c) 2021 Joerg Vehlow <joerg.vehlow@aox-tech.de>
- *
- * Author: Li Zefan <lizf@cn.fujitsu.com>
- *
- * Generate a specified process event (fork, exec, uid, gid or exit).
- */
+/******************************************************************************/
+/*                                                                            */
+/* Copyright (c) 2008 FUJITSU LIMITED                                         */
+/*                                                                            */
+/* This program is free software;  you can redistribute it and/or modify      */
+/* it under the terms of the GNU General Public License as published by       */
+/* the Free Software Foundation; either version 2 of the License, or          */
+/* (at your option) any later version.                                        */
+/*                                                                            */
+/* This program is distributed in the hope that it will be useful,            */
+/* but WITHOUT ANY WARRANTY;  without even the implied warranty of            */
+/* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See                  */
+/* the GNU General Public License for more details.                           */
+/*                                                                            */
+/* You should have received a copy of the GNU General Public License          */
+/* along with this program;  if not, write to the Free Software               */
+/* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA    */
+/*                                                                            */
+/* Author: Li Zefan <lizf@cn.fujitsu.com>                                     */
+/*                                                                            */
+/******************************************************************************/
 
 #include <unistd.h>
 #include <string.h>
@@ -16,13 +28,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-#define TST_NO_DEFAULT_MAIN
-#include "tst_test.h"
-
-extern struct tst_test *tst_test;
-static struct tst_test test = {
-	.forks_child = 1
-};
+#include "test.h"
 
 #define DEFAULT_EVENT_NUM       1
 
@@ -35,12 +41,11 @@ const char *ltp_user = "nobody";
 char **exec_argv;
 
 void (*gen_event) (void);
-static void usage(int status) LTP_ATTRIBUTE_NORETURN;
 
 /*
  * Show the usage
  *
- * @param status the exit status
+ * @status: the exit status
  */
 static void usage(int status)
 {
@@ -56,8 +61,8 @@ static void usage(int status)
  * Generate exec event.
  *
  * We can't just exec nr_event times, because the current process image
- * will be replaced with the new process image, so we use environment
- * variable as event counters, as it will be inherited after exec.
+ * will be replaced with the new process image, so we use enviroment
+ * viriable as event counters, as it will be inherited after exec.
  */
 static void gen_exec(void)
 {
@@ -84,8 +89,7 @@ static void gen_exec(void)
 	printf("exec pid: %d\n", getpid());
 	fflush(stdout);
 
-	/* Note: This expects the full path to self in exec_argv[0]! */
-	SAFE_EXECVP(exec_argv[0], exec_argv);
+	execv(exec_argv[0], exec_argv);
 }
 
 /*
@@ -93,8 +97,19 @@ static void gen_exec(void)
  */
 static inline void gen_fork(void)
 {
-	/* The actual fork is already done in main */
-	printf("fork parent: %d, child: %d\n", getppid(), getpid());
+	pid_t pid;
+	int status;
+
+	pid = fork();
+	if (pid == 0) {
+		printf("fork parent: %d, child: %d\n", getppid(), getpid());
+		exit(0);
+	} else if (pid < 0) {
+		fprintf(stderr, "fork() failed\n");
+		exit(1);
+	} else {		/* Parent should wait for the child */
+		wait(&status);
+	}
 }
 
 /**
@@ -102,10 +117,16 @@ static inline void gen_fork(void)
  */
 static inline void gen_exit(void)
 {
-	/* exit_signal will always be SIGCHLD, if the process terminates cleanly */
-	printf("exit pid: %d exit_code: %d exit_signal: %d\n",
-	       getpid(), 0, SIGCHLD);
-	/* exit is called by main already */
+	pid_t pid;
+
+	pid = fork();
+	if (pid == 0) {
+		printf("exit pid: %d exit_code: %d\n", getpid(), 0);
+		exit(0);
+	} else if (pid < 0) {
+		fprintf(stderr, "fork() failed\n");
+		exit(1);
+	}
 }
 
 /*
@@ -113,8 +134,8 @@ static inline void gen_exit(void)
  */
 static inline void gen_uid(void)
 {
-	SAFE_SETUID(ltp_uid);
-	printf("uid pid: %d euid: %d ruid: %d\n", getpid(), ltp_uid, ltp_uid);
+	setuid(ltp_uid);
+	printf("uid pid: %d euid: %d\n", getpid(), ltp_uid);
 }
 
 /*
@@ -122,15 +143,15 @@ static inline void gen_uid(void)
  */
 static inline void gen_gid(void)
 {
-	SAFE_SETGID(ltp_gid);
-	printf("gid pid: %d egid: %d rgid: %u\n", getpid(), ltp_gid, ltp_gid);
+	setgid(ltp_gid);
+	printf("gid pid: %d egid: %d\n", getpid(), ltp_gid);
 }
 
 /*
  * Read option from user input.
  *
- * @param argc number of arguments
- * @param argv argument list
+ * @argc: number of arguments
+ * @argv: argument list
  */
 static void process_options(int argc, char **argv)
 {
@@ -184,8 +205,6 @@ int main(int argc, char **argv)
 	unsigned long i;
 	struct passwd *ent;
 
-	tst_test = &test;
-
 	process_options(argc, argv);
 
 	ent = getpwnam(ltp_user);
@@ -195,6 +214,8 @@ int main(int argc, char **argv)
 	}
 	ltp_uid = ent->pw_uid;
 	ltp_gid = ent->pw_gid;
+
+	signal(SIGCHLD, SIG_IGN);
 
 	/* special processing for gen_exec, see comments above gen_exec() */
 	if (gen_event == gen_exec) {
@@ -207,26 +228,8 @@ int main(int argc, char **argv)
 	}
 
 	/* other events */
-	for (i = 0; i < nr_event; i++) {
-		pid_t pid;
-		int status;
-
-		pid = SAFE_FORK();
-		if (pid == 0) {
-			gen_event();
-			exit(0);
-		} else {
-			if (pid != SAFE_WAITPID(pid, &status, 0)) {
-				fprintf(stderr,
-				        "Child process did not terminate as expected\n");
-				return 1;
-			}
-			if (WEXITSTATUS(status) != 0) {
-				fprintf(stderr, "Child process did not terminate with 0\n");
-				return 1;
-			}
-		}
-	}
+	for (i = 0; i < nr_event; i++)
+		gen_event();
 
 	return 0;
 }

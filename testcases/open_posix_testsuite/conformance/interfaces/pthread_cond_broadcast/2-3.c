@@ -80,7 +80,7 @@
 
 #endif
 
-static struct _scenar {
+struct _scenar {
 	int m_type;
 	int mc_pshared;
 	int c_clock;
@@ -139,7 +139,7 @@ static struct _scenar {
 
 #define NSCENAR (sizeof(scenarii) / sizeof(scenarii[0]))
 
-static struct testdata {
+struct testdata {
 	int count;
 	pthread_cond_t cnd;
 	pthread_mutex_t mtx;
@@ -149,7 +149,7 @@ static struct testdata {
 	char fork;
 } *td;
 
-static struct {
+struct {
 	union {
 		pthread_t t;
 		pid_t p;
@@ -157,7 +157,7 @@ static struct {
 	int nb;
 } children;
 
-static void *child(void *arg PTS_ATTRIBUTE_UNUSED)
+static void *child(void *arg LTP_ATTRIBUTE_UNUSED)
 {
 	int ret = 0;
 	int timed;
@@ -228,7 +228,7 @@ static void *child(void *arg PTS_ATTRIBUTE_UNUSED)
 	return NULL;
 }
 
-static void *timer(void *arg PTS_ATTRIBUTE_UNUSED)
+static void *timer(void *arg LTP_ATTRIBUTE_UNUSED)
 {
 	unsigned int to = TIMEOUT;
 	do {

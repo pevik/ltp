@@ -22,6 +22,6 @@ top_srcdir		?= ../../../..
 
 include $(top_srcdir)/include/mk/testcases.mk
 
-INTERNAL_LIB		:= libclone.a
+LIB			:= libclone.a
 
 include $(top_srcdir)/include/mk/lib.mk

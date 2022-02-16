@@ -170,8 +170,10 @@ static void do_test(unsigned int i)
 
 	setup_node();
 
-	p = SAFE_MMAP(NULL, MEM_LENGTH, PROT_READ | PROT_WRITE, MAP_PRIVATE |
+	p = mmap(NULL, MEM_LENGTH, PROT_READ | PROT_WRITE, MAP_PRIVATE |
 			 MAP_ANONYMOUS, 0, 0);
+	if (p == MAP_FAILED)
+		tst_brk(TBROK | TERRNO, "mmap");
 
 	tc->test(i, p);
 

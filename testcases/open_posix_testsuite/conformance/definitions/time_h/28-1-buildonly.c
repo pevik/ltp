@@ -14,7 +14,7 @@
 
 typedef time_t(*time_test) (time_t *);
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	time_test dummyvar;
 	dummyvar = time;

@@ -27,7 +27,7 @@
 
 #define CONSCOPE PTHREAD_SCOPE_SYSTEM
 
-static void *thread_func()
+void *thread_func()
 {
 	pthread_exit(0);
 	return NULL;
