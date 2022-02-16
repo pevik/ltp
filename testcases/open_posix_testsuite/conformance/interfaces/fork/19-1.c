@@ -95,7 +95,7 @@ int main(void)
 	if (mqa.mq_curmsgs != 1) {
 		mq_close(mq);
 		mq_unlink(queue_name);
-		printf("The queue information does not show the new message\n");
+		printf("The queue information does not show the new message");
 		return PTS_UNRESOLVED;
 	}
 
@@ -153,7 +153,7 @@ int main(void)
 	if (!WIFEXITED(status) || (WEXITSTATUS(status) != PTS_PASS)) {
 		mq_close(mq);
 		mq_unlink(queue_name);
-		printf("Child exited abnormally\n");
+		printf("Child exited abnormally");
 		return PTS_FAIL;
 	}
 
@@ -170,7 +170,7 @@ int main(void)
 	if (mqa.mq_curmsgs != 0) {
 		mq_close(mq);
 		mq_unlink(queue_name);
-		printf("The message received in child was not dequeued.\n");
+		printf("The message received in child was not dequeued.");
 		return PTS_FAIL;
 	}
 

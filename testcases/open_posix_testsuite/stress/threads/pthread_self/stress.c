@@ -86,11 +86,11 @@
 /***********************************    Real Test   *****************************************/
 /********************************************************************************************/
 
-static char do_it = 1;
-static long long iterations = 0;
+char do_it = 1;
+long long iterations = 0;
 
 /* Handler for user request to terminate */
-static void sighdl(int sig)
+void sighdl(int sig)
 {
 	/* do_it = 0 */
 	do {
@@ -100,17 +100,17 @@ static void sighdl(int sig)
 }
 
 /* Protect concurrent access to the shared data */
-static pthread_mutex_t m_synchro = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t m_synchro = PTHREAD_MUTEX_INITIALIZER;
 
 /* Signaled when all threads are running */
-static pthread_cond_t c_synchro = PTHREAD_COND_INITIALIZER;
-static int c_boolean;
+pthread_cond_t c_synchro = PTHREAD_COND_INITIALIZER;
+int c_boolean;
 
 /* Thread ID returned by pthread_self  */
-static pthread_t running[NSCENAR];
+pthread_t running[NSCENAR];
 
 /* Thread function */
-static void *threaded(void *arg)
+void *threaded(void *arg)
 {
 	int ret = 0;
 	int me = *(int *)arg;

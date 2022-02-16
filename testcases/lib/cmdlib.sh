@@ -103,8 +103,8 @@ exists()
 {
     for cmd in $*; do
         if ! command -v $cmd >/dev/null 2>&1; then
-            tst_resm TCONF "$1: command $2 not found."
-            exit 32
+            end_testcase "$cmd: command not found"
+            exit 1
         fi
     done
 }
@@ -118,7 +118,7 @@ tst_require_root()
 {
 	if [ "x$(id -u)" != "x0" ]; then
 		tst_resm TCONF "You must be root to execute this test"
-		exit 32
+		exit 0
 	fi
 }
 

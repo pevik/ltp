@@ -34,12 +34,12 @@
 
 static volatile int handler_called;
 
-static void handler(int signo PTS_ATTRIBUTE_UNUSED)
+void handler(int signo LTP_ATTRIBUTE_UNUSED)
 {
 	handler_called = 1;
 }
 
-static void *a_thread_func()
+void *a_thread_func()
 {
 	struct sigaction act;
 	sigset_t set1, set2, pending_set;

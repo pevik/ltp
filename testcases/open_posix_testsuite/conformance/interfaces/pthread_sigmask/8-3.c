@@ -21,7 +21,7 @@
 
 #define NUMSIGNALS (sizeof(siglist) / sizeof(siglist[0]))
 
-static int is_changed(sigset_t set, int sig)
+int is_changed(sigset_t set, int sig)
 {
 
 	int i;
@@ -53,7 +53,7 @@ static int is_changed(sigset_t set, int sig)
 	return 0;
 }
 
-static void *a_thread_func()
+void *a_thread_func()
 {
 
 	sigset_t actl, oactl;

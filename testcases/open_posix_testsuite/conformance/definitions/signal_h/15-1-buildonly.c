@@ -4,13 +4,13 @@
 
 #include <signal.h>
 
-static struct sigaction this_type_should_exist, t;
+struct sigaction this_type_should_exist, t;
 extern void signal_handler(int);
-static sigset_t *set;
-static int flags;
+sigset_t *set;
+int flags;
 extern void signal_action(int, siginfo_t *, void *);
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	t.sa_handler = signal_handler;
 	set = &t.sa_mask;

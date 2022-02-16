@@ -23,7 +23,7 @@
 #include <unistd.h>
 #include "posixtest.h"
 
-static void handler(int signo)
+void handler(int signo)
 {
 	(void) signo;
 

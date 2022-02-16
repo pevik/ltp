@@ -28,16 +28,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include "posixtest.h"
 #include <time.h>
 
-#include "posixtest.h"
-#include "tempfile.h"
 #define TNAME "aio_return/2-1.c"
 #define BUF_SIZE 111
 
 int main(void)
 {
-	char tmpfname[PATH_MAX];
+	char tmpfname[256];
 	char buf[BUF_SIZE];
 	struct aiocb aiocb;
 	int fd, retval;
@@ -46,7 +45,8 @@ int main(void)
 	if (sysconf(_SC_ASYNCHRONOUS_IO) < 200112L)
 		return PTS_UNSUPPORTED;
 
-	PTS_GET_TMP_FILENAME(tmpfname, "pts_aio_return_2_1");
+	snprintf(tmpfname, sizeof(tmpfname), "/tmp/pts_aio_return_2_1_%d",
+		 getpid());
 	unlink(tmpfname);
 	fd = open(tmpfname, O_CREAT | O_RDWR | O_EXCL, S_IRUSR | S_IWUSR);
 

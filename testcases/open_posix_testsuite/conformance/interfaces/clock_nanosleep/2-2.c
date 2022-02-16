@@ -26,7 +26,7 @@
 
 #define SLEEPSEC 30
 
-static void handler(int signo)
+void handler(int signo)
 {
 	(void) signo;
 

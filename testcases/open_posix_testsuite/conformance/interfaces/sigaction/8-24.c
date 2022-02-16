@@ -18,15 +18,15 @@
 #include <unistd.h>
 #include "posixtest.h"
 
-static int SIGURG_count = 0;
+int SIGURG_count = 0;
 
-static void SIGURG_handler(int signo PTS_ATTRIBUTE_UNUSED)
+void SIGURG_handler(int signo LTP_ATTRIBUTE_UNUSED)
 {
 	SIGURG_count++;
 	printf("Caught SIGURG\n");
 }
 
-static void SIGVTALRM_handler(int signo PTS_ATTRIBUTE_UNUSED)
+void SIGVTALRM_handler(int signo LTP_ATTRIBUTE_UNUSED)
 {
 	printf("Caught SIGVTALRM\n");
 	raise(SIGURG);

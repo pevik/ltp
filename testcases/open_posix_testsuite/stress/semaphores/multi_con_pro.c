@@ -34,10 +34,10 @@ typedef struct {
 	sem_t lock;
 } buf_t;
 
-static buf_t *buf;
-static int in, out;
+buf_t *buf;
+int in, out;
 
-static int *producer(void *ID)
+int *producer(void *ID)
 {
 	int data;
 	int i;
@@ -103,7 +103,7 @@ static int *producer(void *ID)
 	pthread_exit(NULL);
 }
 
-static int *consumer(void *ID)
+int *consumer(void *ID)
 {
 	int data;
 	int ThreadID = *(int *)ID;

@@ -54,8 +54,8 @@ static void setup(void)
 	pid1 = getpid();
 	pid_unused = tst_get_unused_pid();
 
-	fd1 = SAFE_OPEN(TEST_FILE, O_CREAT | O_RDWR | O_TRUNC, 0644);
-	fd2 = SAFE_OPEN(TEST_FILE2, O_CREAT | O_RDWR | O_TRUNC, 0644);
+	fd1 = SAFE_OPEN(TEST_FILE, O_CREAT | O_RDWR | O_TRUNC);
+	fd2 = SAFE_OPEN(TEST_FILE2, O_CREAT | O_RDWR | O_TRUNC);
 }
 
 static void cleanup(void)

@@ -54,11 +54,11 @@ int check_remaining_caps(int lastdropped)
 		if (ret == -1) {
 			tst_brkm(TBROK,
 				 NULL,
-				 "Failed to read bounding set during sanity check");
+				 "Failed to read bounding set during sanity check\n");
 		}
 		if (ret == 1) {
 			tst_resm(TFAIL,
-				 "Bit %d should have been dropped but wasn't",
+				 "Bit %d should have been dropped but wasn't\n",
 				 i);
 			return i;
 		}
@@ -74,11 +74,11 @@ int check_remaining_caps(int lastdropped)
 		if (ret == -1) {
 			tst_brkm(TBROK,
 				 NULL,
-				 "Failed to read bounding set during sanity check");
+				 "Failed to read bounding set during sanity check\n");
 		}
 		if (ret == 0) {
 			tst_resm(TFAIL,
-				 "Bit %d wasn't yet dropped, but isn't in bounding set",
+				 "Bit %d wasn't yet dropped, but isn't in bounding set\n",
 				 i);
 			return -i;
 		}
@@ -107,7 +107,7 @@ int main(void)
 #endif
 	if (ret != -1) {
 		tst_brkm(TFAIL, NULL,
-			 "prctl(PR_CAPBSET_DROP, -1) returned %d",
+			 "prctl(PR_CAPBSET_DROP, -1) returned %d\n",
 			 ret);
 	}
 	/* Ideally I'd check CAP_LAST_CAP+1, but userspace
@@ -123,9 +123,9 @@ int main(void)
 	ret = -1;
 #endif
 	if (ret != -1) {
-		tst_resm(TFAIL, "prctl(PR_CAPBSET_DROP, %d) returned %d",
+		tst_resm(TFAIL, "prctl(PR_CAPBSET_DROP, %d) returned %d\n",
 			 max(INSANE, CAP_LAST_CAP + 1), ret);
-		tst_resm(TINFO, " %d is should not exist",
+		tst_resm(TINFO, " %d is should not exist\n",
 			 max(INSANE, CAP_LAST_CAP + 1));
 		tst_exit();
 	}
@@ -138,26 +138,26 @@ int main(void)
 #endif
 		if (ret != 0) {
 			tst_resm(TFAIL,
-				 "prctl(PR_CAPBSET_DROP, %d) returned %d", i,
+				 "prctl(PR_CAPBSET_DROP, %d) returned %d\n", i,
 				 ret);
 			if (ret == -1)
-				tst_resm(TINFO, "errno was %d", errno);
+				tst_resm(TINFO, "errno was %d\n", errno);
 			tst_exit();
 		}
 		ret = check_remaining_caps(i);
 		if (ret > 0) {
 			tst_brkm(TFAIL,
 				 NULL,
-				 "after dropping bits 0..%d, %d was still in bounding set",
+				 "after dropping bits 0..%d, %d was still in bounding set\n",
 				 i, ret);
 		} else if (ret < 0) {
 			tst_brkm(TFAIL,
 				 NULL,
-				 "after dropping bits 0..%d, %d was not in bounding set",
+				 "after dropping bits 0..%d, %d was not in bounding set\n",
 				 i, -ret);
 		}
 	}
-	tst_resm(TPASS, "PR_CAPBSET_DROP tests passed");
+	tst_resm(TPASS, "PR_CAPBSET_DROP tests passed\n");
 #else
 	tst_resm(TCONF, "System doesn't have POSIX capabilities.");
 #endif

@@ -21,7 +21,7 @@
 #include <limits.h>
 #include "posixtest.h"
 
-static int compare(const void *key, const void *amemb)
+int compare(const void *key, const void *amemb)
 {
 	if (*(timer_t *) key == *(timer_t *) amemb) {
 		return 0;

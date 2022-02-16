@@ -10,4 +10,4 @@
 
 #include <sys/types.h>
 
-static clockid_t dummy;
+clockid_t dummy;

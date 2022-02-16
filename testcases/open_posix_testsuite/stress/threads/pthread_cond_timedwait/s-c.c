@@ -95,7 +95,7 @@
 /***********************************    Test case   *****************************************/
 /********************************************************************************************/
 
-static long altclk_ok, pshared_ok;
+long altclk_ok, pshared_ok;
 
 typedef struct {
 	pthread_cond_t *cnd;
@@ -104,7 +104,7 @@ typedef struct {
 	int *tnum;
 } test_t;
 
-static struct {
+struct {
 	int mutex_type;
 	int pshared;
 	clockid_t cid;
@@ -168,7 +168,7 @@ static struct {
 
 #define NSCENAR (sizeof(test_scenar) / sizeof(test_scenar[0]))
 
-static pthread_attr_t ta;
+pthread_attr_t ta;
 
 /* The next structure is used to save the tests measures */
 typedef struct __mes_t {
@@ -182,7 +182,7 @@ typedef struct __mes_t {
  * Once the timedwait times out, it will read the clock cid then
  * compute the difference and put it into ts.
  * This function must be called once test is ready, as the timeout will be very short. */
-static void do_measure(pthread_mutex_t * mtx, pthread_cond_t * cnd, clockid_t cid,
+void do_measure(pthread_mutex_t * mtx, pthread_cond_t * cnd, clockid_t cid,
 		struct timespec *ts)
 {
 	int ret, rc;
@@ -244,7 +244,7 @@ static void do_measure(pthread_mutex_t * mtx, pthread_cond_t * cnd, clockid_t ci
 	return;
 }
 
-static void *waiter(void *arg)
+void *waiter(void *arg)
 {
 	test_t *dt = (test_t *) arg;
 
@@ -287,7 +287,7 @@ static void *waiter(void *arg)
  *  < 0 if function was not able to create enough threads.
  *  cumulated # of nanoseconds otherwise.
  */
-static long do_threads_test(int nthreads, mes_t * measure)
+long do_threads_test(int nthreads, mes_t * measure)
 {
 	int ret;
 
@@ -547,7 +547,7 @@ static long do_threads_test(int nthreads, mes_t * measure)
 }
 
 /* Forward declaration */
-static int parse_measure(mes_t * measures);
+int parse_measure(mes_t * measures);
 
 /* Main
  */
@@ -669,7 +669,7 @@ int main(int argc, char *argv[])
  * The function returns 0 when r1 is the best for all cases (latency is constant) and !0 otherwise.
  */
 
-static struct row {
+struct row {
 	long X;			/* the X values -- copied from function argument */
 	long Y[NSCENAR];	/* the Y values -- copied from function argument */
 	long _x;		/* Value X - Xavg */
@@ -680,7 +680,7 @@ static struct row {
 	double _lny[NSCENAR];	/* Value LnY - LnYavg */
 };
 
-static int parse_measure(mes_t * measures)
+int parse_measure(mes_t * measures)
 {
 	int ret, i, r;
 

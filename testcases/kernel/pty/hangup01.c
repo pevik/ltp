@@ -20,7 +20,10 @@
 /* 12/24/2002   Port to LTP     robbiew@us.ibm.com */
 /* 06/30/2001   Port to Linux   nsharoff@us.ibm.com */
 
-#define _GNU_SOURCE
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE 1
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -204,7 +207,7 @@ int child(int masterfd)
 /*
  * main test driver
  */
-int main(void)
+int main(int argc, char **argv)
 {
 	int masterfd;		/* master pty fd */
 	char *slavename;

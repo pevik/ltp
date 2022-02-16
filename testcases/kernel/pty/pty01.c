@@ -20,7 +20,10 @@
 /* 12/23/2002	Port to LTP	robbiew@us.ibm.com */
 /* 06/30/2001	Port to Linux	nsharoff@us.ibm.com */
 
-#define _GNU_SOURCE
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE 1
+#endif
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
@@ -29,12 +32,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <termios.h>
+#include <termio.h>
 #include <unistd.h>
 
+/** LTP Port **/
 #include "test.h"
 #include "safe_macros.h"
-#include "lapi/ioctl.h"
 
 char *TCID = "pty01";		/* Test program identifier.    */
 int TST_TOTAL = 5;		/* Total number of test cases. */
@@ -380,7 +383,7 @@ static void test5(void)
 /*
  * main test driver
  */
-int main(void)
+int main(int argc, char **argv)
 {
 	test1();
 	test2();

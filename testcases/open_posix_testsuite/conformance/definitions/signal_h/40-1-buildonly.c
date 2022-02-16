@@ -9,7 +9,7 @@
 
 typedef int (*sigpause_test) (int);
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	sigpause_test dummyvar;
 	dummyvar = sigpause;

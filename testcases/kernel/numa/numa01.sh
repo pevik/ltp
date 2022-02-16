@@ -1,7 +1,7 @@
 #!/bin/sh
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright (c) International Business Machines Corp., 2007
-# Copyright (c) Linux Test Project, 2016-2020
+# Copyright (c) Linux Test Project, 2016
 # Author: Sivakumar Chinnaiah <Sivakumar.C@in.ibm.com>
 #
 # Test Basic functionality of numactl command.
@@ -12,10 +12,11 @@
 # Test #5: Verifies localalloc
 # Test #6: Verifies memhog
 # Test #7: Verifies numa_node_size api
-# Test #8: Verifies hugepage alloacted on specified node
-# Test #9: Verifies THP memory allocated on preferred node
+# Test #8:Verifies Migratepages
+# Test #9:Verifies hugepage alloacted on specified node
+# Test #10:Verifies THP memory allocated on preferred node
 
-TST_CNT=9
+TST_CNT=10
 TST_SETUP=setup
 TST_TESTFUNC=test
 TST_NEEDS_TMPDIR=1
@@ -24,35 +25,15 @@ TST_NEEDS_CMDS="awk bc numactl numastat"
 
 . tst_test.sh
 
-# Awk the field matching the node value for numastat
-# $1 - Pid number
-# $2 - Node number
-get_node_index()
-{
-       local pid=$1
-       local nid="Node $2"
-       echo $(numastat -p $pid | sed '3q;d' | awk -F '[[:space:]][[:space:]]+' \
-               -v node="$nid" '{ for (i = 1; i <= NF; ++i) if($i==node) print i; exit }')
-}
-
-# Convert the value of given numa node from the `numastat -p` output,
-# multiply by size.
-# $1 - Pid number
-# $2 - Node number
-# $3 - Size for multiplication (e.g. 1024, $MB)
-get_mem_cur()
+# Extracts the value of given numa node from the `numastat -p` output.
+# $1 - Pid number.
+# $2 - Node number.
+extract_numastat_p()
 {
 	local pid=$1
-	local index=$(echo "$(get_node_index $pid $2)")
-	local size=$3
-	local numstat=$(numastat -p $pid |awk '/^Total/ {print $'$index'}')
+	local node=$(($2 + 2))
 
-	if [ -z "$numstat" ]; then
-		echo 0
-		return
-	fi
-
-	echo $(echo "$numstat * $size" | bc)
+	echo $(numastat -p $pid |awk '/^Total/ {print $'$node'}')
 }
 
 check_for_support_numa()
@@ -91,7 +72,7 @@ setup()
 # Verification of memory allocated on a node
 test1()
 {
-	local mem_curr
+	Mem_curr=0
 
 	for node in $nodes_list; do
 		numactl --cpunodebind=$node --membind=$node support_numa alloc_1MB &
@@ -99,8 +80,8 @@ test1()
 
 		TST_RETRY_FUNC "check_for_support_numa $pid" 0
 
-		mem_curr=$(get_mem_cur $pid $node $MB)
-		if [ $(echo "$mem_curr < $MB" | bc) -eq 1 ]; then
+		Mem_curr=$(echo "$(extract_numastat_p $pid $node) * $MB" |bc)
+		if [ $(echo "$Mem_curr < $MB" | bc) -eq 1 ]; then
 			tst_res TFAIL \
 				"NUMA memory allocated in node$node is less than expected"
 			kill -CONT $pid >/dev/null 2>&1
@@ -116,16 +97,16 @@ test1()
 # Verification of memory allocated on preferred node
 test2()
 {
-	local mem_curr
-	local cnt=1
+	Mem_curr=0
 
+	COUNTER=1
 	for node in $nodes_list; do
 
-		if [ $cnt -eq $total_nodes ]; then   #wrap up for last node
+		if [ $COUNTER -eq $total_nodes ]; then   #wrap up for last node
 			Preferred_node=$(echo $nodes_list | cut -d ' ' -f 1)
 		else
 			# always next node is preferred node
-			Preferred_node=$(echo $nodes_list | cut -d ' ' -f $((cnt+1)))
+			Preferred_node=$(echo $nodes_list | cut -d ' ' -f $((COUNTER+1)))
 		fi
 
 		numactl --cpunodebind=$node --preferred=$Preferred_node support_numa alloc_1MB &
@@ -133,15 +114,15 @@ test2()
 
 		TST_RETRY_FUNC "check_for_support_numa $pid" 0
 
-		mem_curr=$(get_mem_cur $pid $Preferred_node $MB)
-		if [ $(echo "$mem_curr < $MB" |bc ) -eq 1 ]; then
+		Mem_curr=$(echo "$(extract_numastat_p $pid $Preferred_node) * $MB" |bc)
+		if [ $(echo "$Mem_curr < $MB" |bc ) -eq 1 ]; then
 			tst_res TFAIL \
 				"NUMA memory allocated in node$Preferred_node is less than expected"
 			kill -CONT $pid >/dev/null 2>&1
 			return
 		fi
 
-		cnt=$((cnt+1))
+		COUNTER=$((COUNTER+1))
 		kill -CONT $pid >/dev/null 2>&1
 	done
 
@@ -151,7 +132,7 @@ test2()
 # Verification of memory interleaved on all nodes
 test3()
 {
-	local mem_curr
+	Mem_curr=0
 	# Memory will be allocated using round robin on nodes.
 	Exp_incr=$(echo "$MB / $total_nodes" |bc)
 
@@ -161,9 +142,9 @@ test3()
 	TST_RETRY_FUNC "check_for_support_numa $pid" 0
 
 	for node in $nodes_list; do
-		mem_curr=$(get_mem_cur $pid $node $MB)
+		Mem_curr=$(echo "$(extract_numastat_p $pid $node) * $MB" |bc)
 
-		if [ $(echo "$mem_curr < $Exp_incr" |bc ) -eq 1 ]; then
+		if [ $(echo "$Mem_curr < $Exp_incr" |bc ) -eq 1 ]; then
 			tst_res TFAIL \
 				"NUMA interleave memory allocated in node$node is less than expected"
 			kill -CONT $pid >/dev/null 2>&1
@@ -210,7 +191,7 @@ test4()
 # Verification of local node allocation
 test5()
 {
-	local mem_curr
+	Mem_curr=0
 
 	for node in $nodes_list; do
 		numactl --cpunodebind=$node --localalloc support_numa alloc_1MB &
@@ -218,8 +199,8 @@ test5()
 
 		TST_RETRY_FUNC "check_for_support_numa $pid" 0
 
-		mem_curr=$(get_mem_cur $pid $node $MB)
-		if [ $(echo "$mem_curr < $MB" |bc ) -eq 1 ]; then
+		Mem_curr=$(echo "$(extract_numastat_p $pid $node) * $MB" |bc)
+		if [ $(echo "$Mem_curr < $MB" |bc ) -eq 1 ]; then
 			tst_res TFAIL \
 				"NUMA localnode memory allocated in node$node is less than expected"
 			kill -CONT $pid >/dev/null 2>&1
@@ -240,7 +221,7 @@ check_ltp_numa_test8_log()
 # Verification of memhog with interleave policy
 test6()
 {
-	local mem_curr
+	Mem_curr=0
 	# Memory will be allocated using round robin on nodes.
 	Exp_incr=$(echo "$MB / $total_nodes" |bc)
 
@@ -250,9 +231,9 @@ test6()
 	TST_RETRY_FUNC "check_ltp_numa_test8_log" 0
 
 	for node in $nodes_list; do
-		mem_curr=$(get_mem_cur $pid $node $MB)
+		Mem_curr=$(echo "$(extract_numastat_p $pid $node) * $MB" |bc)
 
-		if [ $(echo "$mem_curr < $Exp_incr" |bc ) -eq 1 ]; then
+		if [ $(echo "$Mem_curr < $Exp_incr" |bc ) -eq 1 ]; then
 			tst_res TFAIL \
 				"NUMA interleave memhog in node$node is less than expected"
 			kill -KILL $pid >/dev/null 2>&1
@@ -299,8 +280,44 @@ test7()
 	fi
 }
 
-# Verification of hugepage memory allocated on a node
+# Verification of migratepages
 test8()
+{
+	Mem_curr=0
+	COUNTER=1
+
+	for node in $nodes_list; do
+
+		if [ $COUNTER -eq $total_nodes ]; then
+			Preferred_node=$(echo $nodes_list | cut -d ' ' -f 1)
+		else
+			Preferred_node=$(echo $nodes_list | cut -d ' ' -f $((COUNTER+1)))
+		fi
+
+		numactl --preferred=$node support_numa alloc_1MB &
+		pid=$!
+
+		TST_RETRY_FUNC "check_for_support_numa $pid" 0
+
+		migratepages $pid $node $Preferred_node
+
+		Mem_curr=$(echo "$(extract_numastat_p $pid $Preferred_node) * $MB" |bc)
+		if [ $(echo "$Mem_curr < $MB" |bc ) -eq 1 ]; then
+			tst_res TFAIL \
+				"NUMA migratepages is not working fine"
+			kill -CONT $pid >/dev/null 2>&1
+			return
+		fi
+
+		COUNTER=$((COUNTER+1))
+		kill -CONT $pid >/dev/null 2>&1
+	done
+
+	tst_res TPASS "NUMA MIGRATEPAGES policy"
+}
+
+# Verification of hugepage memory allocated on a node
+test9()
 {
 	Mem_huge=0
 	Sys_node=/sys/devices/system/node
@@ -325,8 +342,7 @@ test8()
 		pid=$!
 		TST_RETRY_FUNC "check_for_support_numa $pid" 0
 
-		local index=$(echo "$(get_node_index $pid $node)")
-		Mem_huge=$(echo $(numastat -p $pid |awk '/^Huge/ {print $'$index'}'))
+		Mem_huge=$(echo $(numastat -p $pid |awk '/^Huge/ {print $'$((node+2))'}'))
 		Mem_huge=$((${Mem_huge%.*} * 1024))
 
 		if [ "$Mem_huge" -lt "$HPAGE_SIZE" ]; then
@@ -345,22 +361,23 @@ test8()
 }
 
 # Verification of THP memory allocated on preferred node
-test9()
+test10()
 {
-	local mem_curr
-	local cnt=1
+	Mem_curr=0
 
 	if ! grep -q '\[always\]' /sys/kernel/mm/transparent_hugepage/enabled; then
 		tst_res TCONF "THP is not supported/enabled"
 		return
 	fi
 
+	COUNTER=1
 	for node in $nodes_list; do
-		if [ $cnt -eq $total_nodes ]; then   #wrap up for last node
+
+		if [ $COUNTER -eq $total_nodes ]; then   #wrap up for last node
 			Preferred_node=$(echo $nodes_list | cut -d ' ' -f 1)
 		else
 			# always next node is preferred node
-			Preferred_node=$(echo $nodes_list | cut -d ' ' -f $((cnt+1)))
+			Preferred_node=$(echo $nodes_list | cut -d ' ' -f $((COUNTER+1)))
 		fi
 
 		numactl --cpunodebind=$node --preferred=$Preferred_node support_numa alloc_2HPSZ_THP &
@@ -368,15 +385,15 @@ test9()
 
 		TST_RETRY_FUNC "check_for_support_numa $pid" 0
 
-		mem_curr=$(get_mem_cur $pid $Preferred_node 1024)
-		if [ $(echo "$mem_curr < $HPAGE_SIZE * 2" |bc ) -eq 1 ]; then
+		Mem_curr=$(echo "$(extract_numastat_p $pid $Preferred_node) * 1024" |bc)
+		if [ $(echo "$Mem_curr < $HPAGE_SIZE * 2" |bc ) -eq 1 ]; then
 			tst_res TFAIL \
 				"NUMA memory allocated in node$Preferred_node is less than expected"
 			kill -CONT $pid >/dev/null 2>&1
 			return
 		fi
 
-		cnt=$((cnt+1))
+		COUNTER=$((COUNTER+1))
 		kill -CONT $pid >/dev/null 2>&1
 	done
 

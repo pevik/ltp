@@ -4,4 +4,4 @@
 
 #include <ucontext.h>
 
-static ucontext_t dummy;
+ucontext_t dummy;

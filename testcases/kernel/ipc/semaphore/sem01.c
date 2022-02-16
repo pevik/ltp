@@ -40,7 +40,8 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/ipc.h>
-#include "lapi/sem.h"
+#include <sys/sem.h>
+#include "lapi/semun.h"
 
 int verbose = 0;
 int loops = 100;

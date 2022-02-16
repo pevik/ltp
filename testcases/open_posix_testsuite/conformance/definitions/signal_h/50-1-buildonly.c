@@ -6,4 +6,4 @@
 
 #include <signal.h>
 
-static struct tm *mytime;
+struct tm *mytime;

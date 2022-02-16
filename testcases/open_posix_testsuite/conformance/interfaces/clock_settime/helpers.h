@@ -12,7 +12,7 @@
  * in certain tests, they make use of some libraries already included
  * by those tests.
  */
-static int getBeforeTime(struct timespec *tpget)
+int getBeforeTime(struct timespec *tpget)
 {
 	if (clock_gettime(CLOCK_REALTIME, tpget) != 0) {
 		perror("clock_gettime() did not return success\n");
@@ -22,7 +22,7 @@ static int getBeforeTime(struct timespec *tpget)
 	return PTS_PASS;
 }
 
-static int setBackTime(struct timespec tpset)
+int setBackTime(struct timespec tpset)
 {
 	if (clock_settime(CLOCK_REALTIME, &tpset) != 0) {
 		perror("clock_settime() did not return success\n");

@@ -30,7 +30,7 @@
 #include <time.h>
 #include <sys/socket.h>
 #include <netdb.h>
-#include "rpc.h"
+#include "lapi/rpc.h"
 
 //Standard define
 #define PINGPROC 1

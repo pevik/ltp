@@ -18,7 +18,7 @@
 
 typedef int (*munlockall_test) (void);
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	munlockall_test dummyvar;
 	dummyvar = munlockall;
