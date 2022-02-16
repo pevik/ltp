@@ -78,6 +78,7 @@ extern void cleanup(void)
 }
 
 int migrate_task();
+volatile int timer_expired = 0;
 
 int main(void)
 {
@@ -138,10 +139,10 @@ int main(void)
 			sprintf(mygroup, "%s", mygroup_p);
 		} else {
 			tst_brkm(TBROK, cleanup,
-				 "Invalid other input parameters");
+				 "Invalid other input parameters\n");
 		}
 	} else {
-		tst_brkm(TBROK, cleanup, "Invalid test number passed");
+		tst_brkm(TBROK, cleanup, "Invalid test number passed\n");
 	}
 
 	sprintf(mytaskfile, "%s", mygroup);
@@ -240,7 +241,7 @@ with %u(shares) in %lu (s) INTERVAL\n", mygroup_num, task_num, delta_cpu_time,
 				break;
 			default:
 				tst_brkm(TBROK, cleanup,
-					 "Invalid test number passed");
+					 "Invalid test number passed\n");
 				break;
 
 			}	/* end switch */

@@ -20,9 +20,8 @@
 
 CONTAINER TESTS AUTOMATION SUITE
 ----------------------------
-The tests requires the Kernel to be compiled with the following configs
+The tests requires the Kernel to  be compiled with the following config's
 
-CONFIG_DUMMY=y(or =m)
 CONFIG_NAMESPACES=y
 CONFIG_UTS_NS=y
 CONFIG_IPC_NS=y

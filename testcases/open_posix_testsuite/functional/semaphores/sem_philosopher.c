@@ -27,24 +27,24 @@
 #define hungry		1
 #define eating		2
 
-static sem_t ph[PH_NUM];
-static sem_t lock;
+sem_t ph[PH_NUM];
+sem_t lock;
 
-static int state[PH_NUM];
+int state[PH_NUM];
 
-static int think(int ID)
+int think(int ID)
 {
 	printf("Philosoper [%d] is thinking... \n", ID);
 	return 0;
 }
 
-static int eat(int ID)
+int eat(int ID)
 {
 	printf("Philosoper [%d] is eating... \n", ID);
 	return 0;
 }
 
-static int test(int ID)
+int test(int ID)
 {
 	int preID = 0, postID = 0;
 	if ((ID - 1) < 0)
@@ -66,7 +66,7 @@ static int test(int ID)
 
 }
 
-static int philosopher(void *ID)
+int philosopher(void *ID)
 {
 	int PhID = *(int *)ID;
 	int prePH, postPH;

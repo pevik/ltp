@@ -79,10 +79,10 @@
 /******************************************************************************/
 
 static volatile int handler_called;
-static pthread_t ch;
+pthread_t ch;
 
 /* Signal handler */
-static void handler(int sig)
+void handler(int sig)
 {
 	handler_called = sig;
 
@@ -93,7 +93,7 @@ static void handler(int sig)
 }
 
 /* Thread function */
-static void *threaded(void *arg PTS_ATTRIBUTE_UNUSED)
+void *threaded(void *arg LTP_ATTRIBUTE_UNUSED)
 {
 	int rebours = 3;
 

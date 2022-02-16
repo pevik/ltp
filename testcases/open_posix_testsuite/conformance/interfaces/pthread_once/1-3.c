@@ -75,10 +75,10 @@
 /***********************************    Test case   *****************************************/
 /********************************************************************************************/
 
-static int control;
-static pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
+int control;
+pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
 
-static void my_init(void)
+void my_init(void)
 {
 	int ret = 0;
 	ret = pthread_mutex_lock(&mtx);
@@ -99,7 +99,7 @@ static void my_init(void)
 }
 
 /* Thread function */
-static void *threaded(void *arg)
+void *threaded(void *arg)
 {
 	int ret;
 

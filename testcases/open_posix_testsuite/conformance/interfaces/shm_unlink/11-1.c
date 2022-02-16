@@ -35,7 +35,7 @@ int main(void)
 		return PTS_UNRESOLVED;
 	}
 
-	printf("shm_unlink() success.\n");
+	printf("shm_unlink() success.");
 	return PTS_FAIL;
 
 }

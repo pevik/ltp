@@ -95,7 +95,7 @@ static void verify_lremovexattr(void)
 		return;
 	}
 
-	if (strncmp(got_value, XATTR_VALUE, XATTR_VALUE_SIZE)) {
+	if (strcmp(got_value, XATTR_VALUE)) {
 		tst_res(TFAIL, "lremovexattr(2) changed file attribute");
 		return;
 	}

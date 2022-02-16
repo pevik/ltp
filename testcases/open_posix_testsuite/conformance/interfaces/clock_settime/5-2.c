@@ -34,7 +34,7 @@
 
 #define SIGTOTEST SIGALRM
 
-static void handler(int signo)
+void handler(int signo)
 {
 	(void) signo;
 

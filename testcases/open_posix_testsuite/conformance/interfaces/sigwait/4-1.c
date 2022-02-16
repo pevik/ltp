@@ -49,7 +49,7 @@ int main(void)
 
 	/* Read clock */
 	if (gettimeofday(&tv_ref, NULL) != 0) {
-		printf("Failed to get time of day\n");
+		printf("Failed to get time of day");
 		return PTS_UNRESOLVED;
 	}
 
@@ -65,7 +65,7 @@ int main(void)
 
 	/* Re-read clock */
 	if (gettimeofday(&tv_cur, NULL) != 0) {
-		printf("Failed to get time of day\n");
+		printf("Failed to get time of day");
 		return PTS_UNRESOLVED;
 	}
 

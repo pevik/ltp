@@ -8,7 +8,7 @@
 
 typedef int (*sigemptyset_test) (sigset_t *);
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	sigemptyset_test dummyvar;
 	dummyvar = sigemptyset;

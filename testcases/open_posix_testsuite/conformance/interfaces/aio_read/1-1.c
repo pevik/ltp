@@ -29,13 +29,12 @@
 #include <unistd.h>
 
 #include "posixtest.h"
-#include "tempfile.h"
 
 #define TNAME "aio_read/1-1.c"
 
 int main(void)
 {
-	char tmpfname[PATH_MAX];
+	char tmpfname[256];
 #define WBUF_SIZE 1024
 	char buf[WBUF_SIZE];
 #define RBUF_SIZE 256
@@ -51,7 +50,8 @@ int main(void)
 	if (sysconf(_SC_ASYNCHRONOUS_IO) < 200112L)
 		return PTS_UNSUPPORTED;
 
-	PTS_GET_TMP_FILENAME(tmpfname, "pts_aio_read_1_1");
+	snprintf(tmpfname, sizeof(tmpfname), "/tmp/pts_aio_read_1_1_%d",
+		 getpid());
 	unlink(tmpfname);
 	fd = open(tmpfname, O_CREAT | O_RDWR | O_EXCL, S_IRUSR | S_IWUSR);
 	if (fd == -1) {

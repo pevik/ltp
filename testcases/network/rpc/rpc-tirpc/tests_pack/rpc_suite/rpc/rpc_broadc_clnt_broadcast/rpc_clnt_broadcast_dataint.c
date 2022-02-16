@@ -29,7 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include "rpc.h"
+#include <rpc/rpc.h>
 
 //Standard define
 #define INTPROCNUM 1000

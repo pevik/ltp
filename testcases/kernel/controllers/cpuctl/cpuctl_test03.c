@@ -76,7 +76,9 @@ extern void cleanup(void)
 	tst_exit();		/* Report exit status */
 }
 
-int main(void)
+volatile int timer_expired = 0;
+
+int main(int argc, char *argv[])
 {
 
 	int test_num;
@@ -133,10 +135,10 @@ int main(void)
 			sprintf(mygroup, "%s", mygroup_p);
 		} else {
 			tst_brkm(TBROK, cleanup,
-				 "Invalid other input parameters");
+				 "Invalid other input parameters\n");
 		}
 	} else {
-		tst_brkm(TBROK, cleanup, "Invalid test number passed");
+		tst_brkm(TBROK, cleanup, "Invalid test number passed\n");
 	}
 
 	sprintf(mytaskfile, "%s", mygroup);
@@ -223,7 +225,7 @@ int main(void)
 				break;
 			default:
 				tst_brkm(TBROK, cleanup,
-					 "Invalid test number passed");
+					 "Invalid test number passed\n");
 				break;
 
 			}	/* end switch */

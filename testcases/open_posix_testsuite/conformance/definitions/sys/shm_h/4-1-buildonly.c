@@ -12,4 +12,4 @@
 
 #include <sys/shm.h>
 
-static shmatt_t this_type_should_exist;
+shmatt_t this_type_should_exist;

@@ -26,9 +26,9 @@
 
 #define RRPOLICY SCHED_RR
 
-static volatile int thread_created = 0;
+volatile int thread_created = 0;
 
-static void *thread_func()
+void *thread_func()
 {
 	thread_created = 1;
 	pthread_exit(0);

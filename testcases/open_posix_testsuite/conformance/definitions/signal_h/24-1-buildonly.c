@@ -9,7 +9,7 @@
 
 typedef int (*kill_test) (pid_t, int);
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	kill_test dummyvar;
 	dummyvar = kill;

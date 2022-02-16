@@ -20,13 +20,10 @@
 #ifndef FUTEX_UTILS_H__
 #define FUTEX_UTILS_H__
 
-#include <stdio.h>
-#include <stdlib.h>
-
 /*
  * Wait for nr_threads to be sleeping
  */
-static inline int wait_for_threads(unsigned int nr_threads)
+static int wait_for_threads(unsigned int nr_threads)
 {
 	char thread_state, name[1024];
 	DIR *dir;
@@ -35,31 +32,31 @@ static inline int wait_for_threads(unsigned int nr_threads)
 
 	snprintf(name, sizeof(name), "/proc/%i/task/", getpid());
 
-	dir = SAFE_OPENDIR(name);
+	dir = SAFE_OPENDIR(NULL, name);
 
-	while ((dent = SAFE_READDIR(dir))) {
+	while ((dent = SAFE_READDIR(NULL, dir))) {
 		/* skip ".", ".." and the main thread */
 		if (atoi(dent->d_name) == getpid() || atoi(dent->d_name) == 0)
 			continue;
 
 		snprintf(name, sizeof(name), "/proc/%i/task/%s/stat",
-			 getpid(), dent->d_name);
+		         getpid(), dent->d_name);
 
-		SAFE_FILE_SCANF(name, "%*i %*s %c", &thread_state);
+		SAFE_FILE_SCANF(NULL, name, "%*i %*s %c", &thread_state);
 
 		if (thread_state != 'S') {
-			tst_res(TINFO, "Thread %s not sleeping yet", dent->d_name);
-			SAFE_CLOSEDIR(dir);
+			tst_resm(TINFO, "Thread %s not sleeping yet", dent->d_name);
+			SAFE_CLOSEDIR(NULL, dir);
 			return 1;
 		}
 		cnt++;
 	}
 
-	SAFE_CLOSEDIR(dir);
+	SAFE_CLOSEDIR(NULL, dir);
 
 	if (cnt != nr_threads) {
-		tst_res(TINFO, "%u threads sleeping, expected %u", cnt,
-			nr_threads);
+		tst_resm(TINFO, "%u threads sleeping, expected %u",
+	                  cnt, nr_threads);
 	}
 
 	return 0;

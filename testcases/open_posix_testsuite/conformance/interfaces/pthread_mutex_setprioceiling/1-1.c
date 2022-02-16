@@ -71,7 +71,7 @@ int main(void)
 	printf("Prioceiling returned: %d\n", prioceiling);
 	return PTS_PASS;
 #else
-	printf("pthread_mutex_getprioceiling not supported\n");
+	printf("pthread_mutex_getprioceiling not supported");
 	return PTS_UNSUPPORTED;
 #endif
 

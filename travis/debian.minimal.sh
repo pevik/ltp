@@ -1,12 +1,8 @@
 #!/bin/sh
-# Copyright (c) 2018-2020 Petr Vorel <pvorel@suse.cz>
-set -ex
+# Copyright (c) 2018 Petr Vorel <pvorel@suse.cz>
+set -e
 
-apt="apt remove -y"
-
-$apt \
-	asciidoc \
-	asciidoctor \
+apt remove -y \
 	libacl1-dev \
 	libaio-dev \
 	libaio1 \
@@ -21,5 +17,3 @@ $apt \
 	libsepol1-dev \
 	libssl-dev \
 	libtirpc-dev
-
-$apt asciidoc-base ruby-asciidoctor || true

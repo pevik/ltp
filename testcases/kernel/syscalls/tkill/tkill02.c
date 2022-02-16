@@ -1,18 +1,28 @@
-// SPDX-License-Identifier: GPL-2.0-or-later
+/******************************************************************************
+ * Copyright (c) Crackerjack Project., 2007                                   *
+ *                                                                            *
+ * This program is free software;  you can redistribute it and/or modify      *
+ * it under the terms of the GNU General Public License as published by       *
+ * the Free Software Foundation; either version 2 of the License, or          *
+ * (at your option) any later version.                                        *
+ *                                                                            *
+ * This program is distributed in the hope that it will be useful,            *
+ * but WITHOUT ANY WARRANTY;  without even the implied warranty of            *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See                  *
+ * the GNU General Public License for more details.                           *
+ *                                                                            *
+ * You should have received a copy of the GNU General Public License          *
+ * along with this program;  if not, write to the Free Software Foundation,   *
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA           *
+ *                                                                            *
+ ******************************************************************************/
 /*
- * Copyright (c) Crackerjack Project., 2007
- * Ported from Crackerjack to LTP by Manas Kumar Nayak maknayak@in.ibm.com>
- */
-
-/*\
- * [Description]
+ * File:	tkill02.c
  *
- * Basic tests for the tkill() errors.
+ * Description: This tests the tkill() syscall
  *
- * [Algorithm]
- *
- * - EINVAL on an invalid thread ID
- * - ESRCH when no process with the specified thread ID exists
+ * History:     Porting from Crackerjack to LTP is done by
+ *              Manas Kumar Nayak maknayak@in.ibm.com>
  */
 
 #include <stdio.h>
@@ -22,35 +32,66 @@
 #include <signal.h>
 #include <sys/syscall.h>
 
+#include "test.h"
 #include "lapi/syscalls.h"
-#include "tst_test.h"
 
-static pid_t unused_tid;
+char *TCID = "tkill02";
+int testno;
+
 static pid_t inval_tid = -1;
+static pid_t unused_tid;
+
+void cleanup(void)
+{
+	tst_rmdir();
+}
+
+void setup(void)
+{
+	TEST_PAUSE;
+	tst_tmpdir();
+
+	unused_tid = tst_get_unused_pid(cleanup);
+}
 
 struct test_case_t {
 	int *tid;
 	int exp_errno;
-} tc[] = {
+} test_cases[] = {
 	{&inval_tid, EINVAL},
 	{&unused_tid, ESRCH}
 };
 
-static void setup(void)
-{
-	unused_tid = tst_get_unused_pid();
-}
+int TST_TOTAL = sizeof(test_cases) / sizeof(test_cases[0]);
 
-static void run(unsigned int i)
+int main(int ac, char **av)
 {
-	TST_EXP_FAIL(tst_syscall(__NR_tkill, *(tc[i].tid), SIGUSR1),
-		     tc[i].exp_errno, "tst_syscall(__NR_tkill) expecting %s",
-			 tst_strerrno(tc[i].exp_errno));
-}
+	int i;
 
-static struct tst_test test = {
-	.tcnt = ARRAY_SIZE(tc),
-	.needs_tmpdir = 1,
-	.setup = setup,
-	.test = run,
-};
+	setup();
+
+	tst_parse_opts(ac, av, NULL, NULL);
+
+	for (i = 0; i < TST_TOTAL; i++) {
+
+		TEST(ltp_syscall(__NR_tkill, *(test_cases[i].tid), SIGUSR1));
+
+		if (TEST_RETURN == -1) {
+			if (TEST_ERRNO == test_cases[i].exp_errno) {
+				tst_resm(TPASS | TTERRNO,
+					 "tkill(%d, SIGUSR1) failed as expected",
+					 *(test_cases[i].tid));
+			} else {
+				tst_brkm(TFAIL | TTERRNO, cleanup,
+					 "tkill(%d, SIGUSR1) failed unexpectedly",
+					 *(test_cases[i].tid));
+			}
+		} else {
+			tst_brkm(TFAIL, cleanup,
+				 "tkill(%d) succeeded unexpectedly",
+				 *(test_cases[i].tid));
+		}
+	}
+	cleanup();
+	tst_exit();
+}

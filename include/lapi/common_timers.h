@@ -15,7 +15,7 @@
 #define NSEC_PER_SEC (1000000000L)
 #endif
 
-static const clock_t clock_list[] = {
+clock_t clock_list[] = {
 	CLOCK_REALTIME,
 	CLOCK_MONOTONIC,
 	CLOCK_PROCESS_CPUTIME_ID,
@@ -34,7 +34,7 @@ static const clock_t clock_list[] = {
 	case def_name:		\
 		return #def_name;
 
-static inline const char *get_clock_str(const int clock_id)
+const char *get_clock_str(const int clock_id)
 {
 	switch (clock_id) {
 	CLOCK_TO_STR(CLOCK_REALTIME);
@@ -50,7 +50,7 @@ static inline const char *get_clock_str(const int clock_id)
 	}
 }
 
-static inline int possibly_unsupported(clock_t clock)
+int possibly_unsupported(clock_t clock)
 {
 	switch (clock) {
 	case CLOCK_BOOTTIME:
@@ -63,7 +63,7 @@ static inline int possibly_unsupported(clock_t clock)
 	}
 }
 
-static inline int have_cputime_timers(void)
+int have_cputime_timers(void)
 {
 	return tst_kvercmp(2, 6, 12) >= 0;
 }

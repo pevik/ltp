@@ -67,7 +67,7 @@ char *usage = "-h hours -m minutes -s secs\n";
 
 int anyfail(void)
 {
-	tst_brkm(TFAIL, tst_rmdir, "Test failed");
+	tst_brkm(TFAIL, tst_rmdir, "Test failed\n");
 }
 
 int main(int argc, char **argv)

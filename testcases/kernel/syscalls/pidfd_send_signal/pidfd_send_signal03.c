@@ -19,7 +19,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <unistd.h>
-#include "lapi/pidfd_send_signal.h"
+#include "pidfd_send_signal.h"
 #include "tst_safe_pthread.h"
 
 #define PIDTRIES	3
@@ -111,7 +111,7 @@ static void verify_pidfd_send_signal(void)
 
 static void setup(void)
 {
-	pidfd_send_signal_supported();
+	check_syscall_support();
 
 	last_pid_file = "/proc/sys/kernel/ns_last_pid";
 	if (access(last_pid_file, F_OK) == -1) {

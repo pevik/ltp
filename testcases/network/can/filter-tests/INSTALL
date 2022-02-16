@@ -12,8 +12,7 @@ enable CAN protocol, please see ltp/README file.
 $ make
 
 2) To Run the tests from this directory, do:
-$ ./can_filter
-$ ./can_rcv_own_msgs
+$ ./run_ltp-can_tests.sh
 
 3) To let LTP run the tests from $LTPROOT, execute:
 $ ./runltp -f can

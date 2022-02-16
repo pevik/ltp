@@ -17,7 +17,7 @@
 
 typedef int (*sched_yield_test) (void);
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	sched_yield_test dummyvar;
 	dummyvar = sched_yield;

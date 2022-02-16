@@ -53,6 +53,19 @@ static void check_reset_timerslack(char *message)
 	check_get_timerslack(message, origin_value);
 }
 
+static void check_proc_timerslack(char *message, unsigned long value)
+{
+	unsigned long proc_value;
+
+	SAFE_FILE_SCANF(PROC_TIMERSLACK_PATH, "%lu", &proc_value);
+	if (proc_value == value)
+		tst_res(TPASS, "%s %s  got %lu expectedly",
+				message, PROC_TIMERSLACK_PATH, proc_value);
+	else
+		tst_res(TFAIL, "%s %s expected %lu got %lu",
+				message, PROC_TIMERSLACK_PATH, value, proc_value);
+}
+
 static void check_get_timerslack(char *message, unsigned long value)
 {
 	TEST(prctl(PR_GET_TIMERSLACK));
@@ -64,7 +77,8 @@ static void check_get_timerslack(char *message, unsigned long value)
 				message, value, TST_RET);
 
 	if (proc_flag)
-		TST_ASSERT_INT(PROC_TIMERSLACK_PATH, value);
+		check_proc_timerslack(message, value);
+
 }
 
 static void check_inherit_timerslack(char *message, unsigned long value)

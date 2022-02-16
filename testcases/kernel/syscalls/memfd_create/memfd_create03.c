@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 /*
  *  Copyright (c) Zilogic Systems Pvt. Ltd., 2018
@@ -109,7 +110,7 @@ static void test_def_pagesize(int fd)
 		} else {
 			tst_res(TFAIL,
 				"munmap(%p, %dkB) suceeded unexpectedly\n",
-				mem, i/1024);
+				mem, i);
 			return;
 		}
 	}
@@ -207,7 +208,7 @@ static void setup(void)
 	SAFE_FILE_LINES_SCANF(TOTAL_HP_PATH, "%ld", &og_total_pages);
 	sprintf(buf, "%ld", og_total_pages + 1);
 
-	fd = SAFE_OPEN(TOTAL_HP_PATH, O_RDWR | O_TRUNC);
+	fd = open(TOTAL_HP_PATH, O_RDWR | O_TRUNC);
 
 	if (write(fd, buf, strlen(buf)) == -1)
 		tst_brk(TCONF | TERRNO,
@@ -233,7 +234,7 @@ static void cleanup(void)
 
 	sprintf(buf, "%ld", og_total_pages);
 
-	fd = SAFE_OPEN(TOTAL_HP_PATH, O_RDWR | O_TRUNC);
+	fd = open(TOTAL_HP_PATH, O_RDWR | O_TRUNC);
 
 	if (write(fd, buf, strlen(buf)) == -1)
 		tst_brk(TCONF | TERRNO, "Clean-up failed: write() failed");
