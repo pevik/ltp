@@ -27,7 +27,7 @@
 #include "posixtest.h"
 #include "safe_helpers.h"
 
-#define TEST "pthread_cond_wait_1"
+#define TEST "5-1"
 #define AREA "scheduler"
 #define ERROR_PREFIX "unexpected error: " AREA " " TEST ": "
 
@@ -36,21 +36,21 @@
 #define RUNTIME       5
 #define POLICY        SCHED_RR
 
-static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
 /* Flags that the threads use to indicate events */
 static volatile int woken_up;
 static volatile int low_done;
 
-static float timediff(struct timespec t2, struct timespec t1)
+float timediff(struct timespec t2, struct timespec t1)
 {
 	float diff = t2.tv_sec - t1.tv_sec;
 	diff += (t2.tv_nsec - t1.tv_nsec) / 1000000000.0;
 	return diff;
 }
 
-static void *hi_prio_thread(void *tmp)
+void *hi_prio_thread(void *tmp)
 {
 	struct sched_param param;
 	int policy;
@@ -79,7 +79,7 @@ static void *hi_prio_thread(void *tmp)
 	return NULL;
 }
 
-static void *low_prio_thread(void *tmp)
+void *low_prio_thread(void *tmp)
 {
 	struct timespec start_time, current_time;
 	struct sched_param param;

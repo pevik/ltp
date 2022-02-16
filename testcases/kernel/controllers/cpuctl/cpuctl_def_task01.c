@@ -81,6 +81,8 @@ extern void cleanup(void)
 	/* Report exit status */
 }
 
+volatile int timer_expired = 0;
+
 int main(int argc, char *argv[])
 {
 
@@ -117,14 +119,14 @@ int main(int argc, char *argv[])
 	    ((scriptpid = atoi(argv[3])) <= 0) ||
 	    ((num_cpus = atoi(argv[4])) <= 0) ||
 	    (test_num = atoi(argv[5])) <= 0)
-		tst_brkm(TBROK, cleanup, "Invalid input parameters");
+		tst_brkm(TBROK, cleanup, "Invalid input parameters\n");
 
 	if (test_num == 1)
 		myshares *= my_group_num;
 	else if (test_num == 3)
 		myshares = baseshares;
 	else
-		tst_brkm(TBROK, cleanup, "Wrong Test num passed. Exiting.");
+		tst_brkm(TBROK, cleanup, "Wrong Test num passed. Exiting.\n");
 
 	sprintf(mygroup, "%s", argv[2]);
 	sprintf(mytaskfile, "%s", mygroup);

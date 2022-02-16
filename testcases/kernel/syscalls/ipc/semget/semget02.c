@@ -51,7 +51,7 @@
  */
 #include <pwd.h>
 
-#include "ipcsem.h"
+#include "../lib/ipcsem.h"
 
 char *TCID = "semget02";
 int TST_TOTAL = 2;
@@ -138,7 +138,7 @@ void setup(void)
 	/*
 	 * Create a temporary directory and cd into it.
 	 * This helps to ensure that a unique msgkey is created.
-	 * See libs/libltpipc/libipc.c for more information.
+	 * See ../lib/libipc.c for more information.
 	 */
 	tst_tmpdir();
 

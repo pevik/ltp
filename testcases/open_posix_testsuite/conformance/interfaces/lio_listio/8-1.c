@@ -31,13 +31,12 @@
 #include <aio.h>
 
 #include "posixtest.h"
-#include "tempfile.h"
 
 #define TNAME "lio_listio/8-1.c"
 
 int main(void)
 {
-	char tmpfname[PATH_MAX];
+	char tmpfname[256];
 #define BUF_SIZE 512
 	unsigned char buf[BUF_SIZE];
 	unsigned char check[BUF_SIZE];
@@ -51,7 +50,8 @@ int main(void)
 	if (sysconf(_SC_ASYNCHRONOUS_IO) < 200112L)
 		exit(PTS_UNSUPPORTED);
 
-	PTS_GET_TMP_FILENAME(tmpfname, "pts_lio_listio_8_1");
+	snprintf(tmpfname, sizeof(tmpfname), "/tmp/pts_lio_listio_8_1_%d",
+		 getpid());
 	unlink(tmpfname);
 	fd = open(tmpfname, O_CREAT | O_RDWR | O_EXCL, S_IRUSR | S_IWUSR);
 	if (fd == -1) {

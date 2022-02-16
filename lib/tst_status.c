@@ -20,8 +20,7 @@ const char *exited(int status)
 
 const char *signaled(int status)
 {
-	snprintf(buf, sizeof(buf), "killed by %s",
-		tst_strsig(WTERMSIG(status)));
+	snprintf(buf, sizeof(buf), "killed by %s", tst_strsig(status));
 
 	return buf;
 }

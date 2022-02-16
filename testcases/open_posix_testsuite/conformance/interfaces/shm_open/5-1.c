@@ -37,9 +37,9 @@
 #define BUF_SIZE 8
 #define SHM_NAME "/posixtest_5-1"
 
-static char str[BUF_SIZE] = "qwerty";
+char str[BUF_SIZE] = "qwerty";
 
-static int child_process()
+int child_process()
 {
 	int fd;
 	char *buf;

@@ -95,18 +95,10 @@ static void cleanup(void)
 static struct tst_test test = {
 	.needs_root = 1,
 	.forks_child = 1,
-	.options = (struct tst_option[]) {
-		{"n:", &opt_numstr,  "-n       Number of processes"},
-		{"s:", &opt_sizestr, "-s       Memory allocation size in MB"},
-		{"u:", &opt_unitstr, "-u       Memory allocation unit in MB"},
-		{}
-	},
+	.options = ksm_options,
 	.setup = setup,
 	.cleanup = cleanup,
-	.save_restore = (const char * const[]) {
-		"?/sys/kernel/mm/ksm/max_page_sharing",
-		NULL,
-	},
+	.save_restore = save_restore,
 	.test_all = verify_ksm,
 	.min_kver = "2.6.32",
 };

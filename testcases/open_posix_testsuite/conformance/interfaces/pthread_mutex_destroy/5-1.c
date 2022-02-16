@@ -13,7 +13,7 @@
 #include <unistd.h>
 #include "posixtest.h"
 
-static pthread_mutex_t mutex;
+pthread_mutex_t mutex;
 
 int main(void)
 {

@@ -24,7 +24,7 @@ top_srcdir		?= ../../../../..
 
 include $(top_srcdir)/include/mk/env_pre.mk
 
-INSTALL_TARGETS		:= mcast*.sh
+INSTALL_TARGETS		:= mcast*
 
 MAKE_TARGETS		:=
 

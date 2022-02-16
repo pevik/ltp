@@ -34,17 +34,17 @@
 #define CLEANUP_NOTCALLED 0
 #define CLEANUP_CALLED 1
 
-static int cleanup_flag;
+int cleanup_flag;
 
 /* Cleanup handler */
-static void a_cleanup_func(void *flag_val)
+void a_cleanup_func(void *flag_val)
 {
 	cleanup_flag = (long)flag_val;
 	return;
 }
 
 /* Function that the thread executes upon its creation */
-static void *a_thread_func()
+void *a_thread_func()
 {
 	pthread_cleanup_push(a_cleanup_func, (void *)CLEANUP_CALLED);
 

@@ -73,12 +73,12 @@
 /********************************************************************************************/
 /***********************************    Test case   *****************************************/
 /********************************************************************************************/
-static char do_it = 1;
-static pthread_mutex_t cnt_mtx = PTHREAD_MUTEX_INITIALIZER;
-static unsigned long long cnt = 0;
+char do_it = 1;
+pthread_mutex_t cnt_mtx = PTHREAD_MUTEX_INITIALIZER;
+unsigned long long cnt = 0;
 
 /******** Threads function *********/
-static void *threaded(void *arg)
+void *threaded(void *arg)
 {
 	int me = (int)arg;
 	pthread_cond_t cnd;
@@ -208,7 +208,7 @@ static void *threaded(void *arg)
 }
 
 /******** Signal handler ************/
-static void sighdl(int sig)
+void sighdl(int sig)
 {
 	do {
 		do_it = 0;

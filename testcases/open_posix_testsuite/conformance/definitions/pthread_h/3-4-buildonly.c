@@ -10,4 +10,4 @@
 
 #include <pthread.h>
 
-static pthread_cond_t dummy;
+pthread_cond_t dummy;

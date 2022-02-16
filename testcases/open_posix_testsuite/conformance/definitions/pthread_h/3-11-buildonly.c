@@ -10,4 +10,4 @@
 
 #include <pthread.h>
 
-static pthread_rwlockattr_t dummy;
+pthread_rwlockattr_t dummy;

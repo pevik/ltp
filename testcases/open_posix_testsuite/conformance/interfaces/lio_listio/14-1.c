@@ -29,9 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
 #include "posixtest.h"
-#include "tempfile.h"
 
 #define TNAME "lio_listio/14-1.c"
 
@@ -41,23 +39,23 @@
 static volatile int num_received;
 static volatile int received_all;
 
-static void sigrt1_handler(int signum PTS_ATTRIBUTE_UNUSED,
-	siginfo_t *info PTS_ATTRIBUTE_UNUSED,
-	void *context PTS_ATTRIBUTE_UNUSED)
+void sigrt1_handler(int signum LTP_ATTRIBUTE_UNUSED,
+	siginfo_t *info LTP_ATTRIBUTE_UNUSED,
+	void *context LTP_ATTRIBUTE_UNUSED)
 {
 	num_received++;
 }
 
-static void sigrt2_handler(int signum PTS_ATTRIBUTE_UNUSED,
-	siginfo_t *info PTS_ATTRIBUTE_UNUSED,
-	void *context PTS_ATTRIBUTE_UNUSED)
+void sigrt2_handler(int signum LTP_ATTRIBUTE_UNUSED,
+	siginfo_t *info LTP_ATTRIBUTE_UNUSED,
+	void *context LTP_ATTRIBUTE_UNUSED)
 {
 	received_all = 1;
 }
 
 int main(void)
 {
-	char tmpfname[PATH_MAX];
+	char tmpfname[256];
 	int fd;
 
 	struct aiocb *aiocbs[NUM_AIOCBS];
@@ -72,7 +70,8 @@ int main(void)
 	if (sysconf(_SC_ASYNCHRONOUS_IO) < 200112L)
 		exit(PTS_UNSUPPORTED);
 
-	PTS_GET_TMP_FILENAME(tmpfname, "pts_lio_listio_14_1");
+	snprintf(tmpfname, sizeof(tmpfname), "/tmp/pts_lio_listio_14_1_%d",
+		 getpid());
 	unlink(tmpfname);
 
 	fd = open(tmpfname, O_CREAT | O_RDWR | O_EXCL, S_IRUSR | S_IWUSR);

@@ -23,10 +23,10 @@
 #include <stdio.h>
 #include "posixtest.h"
 
-static pthread_t new_th2;		/* Global thread to hold the value of when pthread_self
+pthread_t new_th2;		/* Global thread to hold the value of when pthread_self
 				   returns from the thread function. */
 
-static void *a_thread_func()
+void *a_thread_func()
 {
 	new_th2 = pthread_self();
 	pthread_exit(0);

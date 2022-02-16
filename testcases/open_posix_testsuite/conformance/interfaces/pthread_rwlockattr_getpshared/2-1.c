@@ -33,7 +33,7 @@
 #include <unistd.h>
 #include "posixtest.h"
 
-static struct shmstruct {
+struct shmstruct {
 	pthread_rwlock_t rwl;
 	int data;
 } *rwlock_data;

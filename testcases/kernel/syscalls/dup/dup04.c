@@ -144,7 +144,7 @@ int main(int ac, char **av)
 		TEST(dup(fd[0]));
 
 		if (TEST_RETURN == -1)
-			tst_resm(TFAIL | TTERRNO,
+			tst_resm(TFAIL | TERRNO,
 				 "dup of read side of pipe failed");
 		else {
 			tst_resm(TPASS,

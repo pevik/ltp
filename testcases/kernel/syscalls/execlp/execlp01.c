@@ -24,7 +24,7 @@ static void verify_execlp(void)
 	pid = SAFE_FORK();
 	if (pid == 0 ) {
 		TEST(execlp("execlp01_child", "execlp01_child", "canary", NULL));
-		tst_brk(TFAIL | TTERRNO,
+		tst_brk(TFAIL | TERRNO,
 			"Failed to execute execlp01_child");
 	}
 }

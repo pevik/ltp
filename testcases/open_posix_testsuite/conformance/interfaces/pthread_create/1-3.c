@@ -27,10 +27,10 @@
 #include <string.h>
 #include "posixtest.h"
 
-static void *a_thread_function();
-static void alarm_handler();
+void *a_thread_function();
+void alarm_handler();
 
-static pthread_t a;
+pthread_t a;
 
 int main(void)
 {
@@ -62,7 +62,7 @@ int main(void)
 }
 
 /* A never-ending thread function */
-static void *a_thread_function()
+void *a_thread_function()
 {
 	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
 
@@ -75,7 +75,7 @@ static void *a_thread_function()
 #define WRITE(str) write(STDOUT_FILENO, str, sizeof(str) - 1)
 
 /* If this handler is called, that means that the test has failed. */
-static void alarm_handler()
+void alarm_handler()
 {
 	WRITE("Test FAILED: Alarm fired while waiting for cancelation\n");
 	_exit(PTS_FAIL);

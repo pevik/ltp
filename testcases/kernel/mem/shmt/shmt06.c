@@ -86,7 +86,7 @@ int main(void)
 
 	if ((shmid = shmget(key, SIZE, IPC_CREAT | 0666)) < 0) {
 		perror("shmget");
-		tst_resm(TFAIL, "Error: shmget: shmid = %d, errno = %d",
+		tst_resm(TFAIL, "Error: shmget: shmid = %d, errno = %d\n",
 			 shmid, errno);
 		/*
 		 * kill the child if parent failed to do the attach
@@ -98,7 +98,7 @@ int main(void)
 		if (cp == (char *)-1) {
 			perror("shmat");
 			tst_resm(TFAIL,
-				 "Error: shmat: shmid = %d, errno = %d",
+				 "Error: shmat: shmid = %d, errno = %d\n",
 				 shmid, errno);
 
 			/* kill the child if parent failed to do the attch */
@@ -120,7 +120,7 @@ int main(void)
 		if (pid1 != pid) {
 			tst_resm(TFAIL, "Waited on the wrong child");
 			tst_resm(TFAIL,
-				 "Error: wait_status = %d, pid1= %d", status,
+				 "Error: wait_status = %d, pid1= %d\n", status,
 				 pid1);
 		}
 	}
@@ -153,7 +153,7 @@ int child(void)
 	if ((shmid = shmget(key, SIZE, 0)) < 0) {
 		perror("shmget:child process");
 		tst_resm(TFAIL,
-			 "Error: shmget: errno=%d, shmid=%d, child_pid=%d",
+			 "Error: shmget: errno=%d, shmid=%d, child_pid=%d\n",
 			 errno, shmid, chld_pid);
 	} else {
 		cp = shmat(shmid, NULL, 0);
@@ -161,20 +161,20 @@ int child(void)
 		if (cp == (char *)-1) {
 			perror("shmat:child process");
 			tst_resm(TFAIL,
-				 "Error: shmat: errno=%d, shmid=%d, child_pid=%d",
+				 "Error: shmat: errno=%d, shmid=%d, child_pid=%d\n",
 				 errno, shmid, chld_pid);
 		} else {
 			if (*cp != 'A') {
-				tst_resm(TFAIL, "child: not A");
+				tst_resm(TFAIL, "child: not A\n");
 			}
 			if (*(cp + 1) != 'B') {
-				tst_resm(TFAIL, "child: not B");
+				tst_resm(TFAIL, "child: not B\n");
 			}
 			if (*(cp + 2) != 'C') {
-				tst_resm(TFAIL, "child: not C");
+				tst_resm(TFAIL, "child: not C\n");
 			}
 			if (*(cp + 8192) != 0) {
-				tst_resm(TFAIL, "child: not 0");
+				tst_resm(TFAIL, "child: not 0\n");
 			}
 		}
 
@@ -187,20 +187,20 @@ int child(void)
 		if (cp == (char *)-1) {
 			perror("shmat:child process");
 			tst_resm(TFAIL,
-				 "Error: shmat: errno=%d, shmid=%d, child_pid=%d",
+				 "Error: shmat: errno=%d, shmid=%d, child_pid=%d\n",
 				 errno, shmid, chld_pid);
 		} else {
 			if (*cp != 'A') {
-				tst_resm(TFAIL, "child: not A");
+				tst_resm(TFAIL, "child: not A\n");
 			}
 			if (*(cp + 1) != 'B') {
-				tst_resm(TFAIL, "child: not B");
+				tst_resm(TFAIL, "child: not B\n");
 			}
 			if (*(cp + 2) != 'C') {
-				tst_resm(TFAIL, "child: not C");
+				tst_resm(TFAIL, "child: not C\n");
 			}
 			if (*(cp + 8192) != 0) {
-				tst_resm(TFAIL, "child: not 0");
+				tst_resm(TFAIL, "child: not 0\n");
 			}
 		}
 	}
@@ -213,7 +213,7 @@ static int rm_shm(int shmid)
 		perror("shmctl");
 		tst_brkm(TFAIL,
 			 NULL,
-			 "shmctl Failed to remove: shmid = %d, errno = %d",
+			 "shmctl Failed to remove: shmid = %d, errno = %d\n",
 			 shmid, errno);
 	}
 	return (0);

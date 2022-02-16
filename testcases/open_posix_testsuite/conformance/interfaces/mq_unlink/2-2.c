@@ -39,9 +39,9 @@
 #define FUNCTION "mq_unlink"
 #define ERROR_PREFIX "unexpected error: " FUNCTION " " TEST ": "
 
-static int parent_process(char *mqname, int read_pipe, int write_pipe, pid_t child_pid);
-static int child_process(char *mqname, int read_pipe, int write_pipe);
-static int send_receive(int read_pipe, int write_pipe, char send, char *reply);
+int parent_process(char *mqname, int read_pipe, int write_pipe, pid_t child_pid);
+int child_process(char *mqname, int read_pipe, int write_pipe);
+int send_receive(int read_pipe, int write_pipe, char send, char *reply);
 
 int main(void)
 {
@@ -88,8 +88,8 @@ int main(void)
 	}
 }
 
-static int parent_process(char *mqname, int read_pipe, int write_pipe,
-	pid_t child_pid PTS_ATTRIBUTE_UNUSED)
+int parent_process(char *mqname, int read_pipe, int write_pipe,
+	pid_t child_pid LTP_ATTRIBUTE_UNUSED)
 {
 	mqd_t mqdes;
 	char reply;
@@ -138,7 +138,7 @@ static int parent_process(char *mqname, int read_pipe, int write_pipe,
 	return PTS_UNRESOLVED;
 }
 
-static int child_process(char *mqname, int read_pipe, int write_pipe)
+int child_process(char *mqname, int read_pipe, int write_pipe)
 {
 	mqd_t mqdes;
 	int rval;
@@ -176,7 +176,7 @@ static int child_process(char *mqname, int read_pipe, int write_pipe)
 	return 0;
 }
 
-static int send_receive(int read_pipe, int write_pipe, char send, char *reply)
+int send_receive(int read_pipe, int write_pipe, char send, char *reply)
 {
 	ssize_t bytes;
 	if (send) {

@@ -36,17 +36,27 @@
 
 #ifdef HAVE_NUMA_V2
 
-static const struct tst_cgroup_group *cg;
+static int memcg_mounted;
 
 static void verify_oom(void)
 {
 #ifdef TST_ABI32
 	tst_brk(TCONF, "test is not designed for 32-bit system.");
 #endif
+
+	SAFE_FILE_PRINTF(MEMCG_PATH_NEW "/tasks", "%d", getpid());
+	SAFE_FILE_PRINTF(MEMCG_LIMIT, "%ld", TESTMEM);
+
 	testoom(0, 0, ENOMEM, 1);
 
-	if (SAFE_CGROUP_HAS(cg, "memory.swap.max")) {
-		SAFE_CGROUP_PRINTF(cg, "memory.swap.max", "%lu", TESTMEM);
+	if (access(MEMCG_SW_LIMIT, F_OK) == -1) {
+		if (errno == ENOENT)
+			tst_res(TCONF,
+				"memcg swap accounting is disabled");
+		else
+			tst_brk(TBROK | TERRNO, "access");
+	} else {
+		SAFE_FILE_PRINTF(MEMCG_SW_LIMIT, "%ld", TESTMEM);
 		testoom(0, 1, ENOMEM, 1);
 	}
 
@@ -63,18 +73,16 @@ static void setup(void)
 {
 	overcommit = get_sys_tune("overcommit_memory");
 	set_sys_tune("overcommit_memory", 1, 1);
-
-	tst_cgroup_require("memory", NULL);
-	cg = tst_cgroup_get_test_group();
-	SAFE_CGROUP_PRINTF(cg, "cgroup.procs", "%d", getpid());
-	SAFE_CGROUP_PRINTF(cg, "memory.max", "%lu", TESTMEM);
+	mount_mem("memcg", "cgroup", "memory", MEMCG_PATH, MEMCG_PATH_NEW);
+	memcg_mounted = 1;
 }
 
 static void cleanup(void)
 {
 	if (overcommit != -1)
 		set_sys_tune("overcommit_memory", overcommit, 0);
-	tst_cgroup_cleanup();
+	if (memcg_mounted)
+		umount_mem(MEMCG_PATH, MEMCG_PATH_NEW);
 }
 
 static struct tst_test test = {

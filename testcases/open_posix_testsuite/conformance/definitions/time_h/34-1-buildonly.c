@@ -14,7 +14,7 @@
 
 typedef void (*tzset_test) (void);
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	tzset_test dummyvar;
 	dummyvar = tzset;

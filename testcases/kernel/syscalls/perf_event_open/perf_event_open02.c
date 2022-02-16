@@ -61,6 +61,10 @@ struct read_format {
 };
 
 static char *verbose;
+static struct tst_option options[] = {
+	{"v", &verbose, "-v\tverbose output"},
+	{NULL, NULL, NULL},
+};
 
 static int ntotal, nhw;
 static int tsk0 = -1, hwfd[MAX_CTRS], tskfd[MAX_CTRS];
@@ -355,10 +359,7 @@ static void verify(void)
 static struct tst_test test = {
 	.setup = setup,
 	.cleanup = cleanup,
-	.options = (struct tst_option[]) {
-		{"v", &verbose, "-v       verbose output"},
-		{},
-	},
+	.options = options,
 	.test_all = verify,
 	.needs_root = 1,
 };

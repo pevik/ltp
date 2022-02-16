@@ -14,7 +14,7 @@
 
 typedef char *(*asctime_test) (const struct tm *);
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	asctime_test dummyvar;
 	dummyvar = asctime;

@@ -9,7 +9,7 @@
 
 typedef int (*sighold_test) (int);
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	sighold_test dummyvar;
 	dummyvar = sighold;

@@ -29,13 +29,11 @@
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
-
 #include "posixtest.h"
-#include "tempfile.h"
 
 int main(void)
 {
-	char tmpfname[PATH_MAX];
+	char tmpfname[256];
 	long page_size;
 	long total_size;
 
@@ -49,7 +47,7 @@ int main(void)
 	size = total_size;
 
 	/* Create tmp file */
-	PTS_GET_TMP_FILENAME(tmpfname, "pts_mmap_9_1");
+	snprintf(tmpfname, sizeof(tmpfname), "/tmp/pts_mmap_9_1_%d", getpid());
 	unlink(tmpfname);
 	fd = open(tmpfname, O_CREAT | O_RDWR | O_EXCL, S_IRUSR | S_IWUSR);
 	if (fd == -1) {

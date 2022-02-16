@@ -32,7 +32,7 @@
 #include <unistd.h>
 #include "posixtest.h"
 
-static struct shmstruct {
+struct shmstruct {
 	pthread_spinlock_t spinlock;
 	int data;
 } *spinlock_data;

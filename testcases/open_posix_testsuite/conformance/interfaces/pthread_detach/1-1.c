@@ -25,7 +25,7 @@
 #include <unistd.h>
 #include "posixtest.h"
 
-static void *a_thread_func()
+void *a_thread_func()
 {
 	pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
 
