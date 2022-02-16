@@ -259,7 +259,7 @@ int main(void)
 	}
 
 	if (pthread_rwlock_destroy(&rwlock) != 0) {
-		printf("Error at pthread_rwlockattr_destroy()\n");
+		printf("Error at pthread_rwlockattr_destroy()");
 		return PTS_UNRESOLVED;
 	}
 

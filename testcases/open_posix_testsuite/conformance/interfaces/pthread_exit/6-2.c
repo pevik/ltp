@@ -90,7 +90,7 @@
 /********************************************************************************************/
 
 /* Thread routine */
-static void *threaded(void *arg)
+void *threaded(void *arg)
 {
 	int ret = 0;
 

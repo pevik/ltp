@@ -28,19 +28,17 @@
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
-
 #include "posixtest.h"
-#include "tempfile.h"
 
 int main(void)
 {
-	char tmpfname[PATH_MAX];
+	char tmpfname[256];
 	void *pa;
 	size_t size = 1024;
 	int fd;
 
 	/* Create the tmp file */
-	PTS_GET_TMP_FILENAME(tmpfname, "pts_mmap_6_6");
+	snprintf(tmpfname, sizeof(tmpfname), "/tmp/pts_mmap_6_6_%d", getpid());
 	unlink(tmpfname);
 	fd = open(tmpfname, O_CREAT | O_RDWR | O_EXCL, S_IRUSR | S_IWUSR);
 	if (fd == -1) {

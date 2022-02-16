@@ -10,4 +10,4 @@
 
 #include <sys/types.h>
 
-static clock_t dummy;
+clock_t dummy;

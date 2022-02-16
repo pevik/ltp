@@ -34,13 +34,11 @@
 #include <string.h>
 #include <errno.h>
 #include <sys/utsname.h>
-
 #include "posixtest.h"
-#include "tempfile.h"
 
 int main(void)
 {
-	char tmpfname[PATH_MAX];
+	char tmpfname[256];
 
 	void *pa;
 	size_t len;
@@ -49,7 +47,7 @@ int main(void)
 
 	/* check for 64 bit arch */
 	if (sizeof(void *) == 8) {
-		printf("UNSUPPORTED: Cannot be tested on 64 bit architecture\n");
+		printf("USUPPORTED: Cannot be tested on 64 bit architecture\n");
 		return PTS_UNSUPPORTED;
 	}
 
@@ -67,7 +65,7 @@ int main(void)
 
 	long page_size = sysconf(_SC_PAGE_SIZE);
 
-	PTS_GET_TMP_FILENAME(tmpfname, "pts_mmap_31_1");
+	snprintf(tmpfname, sizeof(tmpfname), "/tmp/pts_mmap_31_1_%d", getpid());
 	unlink(tmpfname);
 	fd = open(tmpfname, O_CREAT | O_RDWR | O_EXCL, S_IRUSR | S_IWUSR);
 	if (fd == -1) {

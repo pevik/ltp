@@ -31,16 +31,15 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-
 #include "posixtest.h"
-#include "tempfile.h"
 
+#define NAMESIZE 50
 #define TNAME "mq_open/16-1.c"
 
 int main(void)
 {
-	char qname[NAME_MAX];
-	char fname[PATH_MAX];
+	char qname[NAMESIZE];
+	char fname[NAMESIZE];
 	int pid, succeeded = 0;
 	int fd;
 	void *pa = NULL;
@@ -54,7 +53,7 @@ int main(void)
 
 	sprintf(qname, "/mq_open_16-1_%d", getpid());
 
-	PTS_GET_TMP_FILENAME(fname, "pts_mq_open_16_1");
+	sprintf(fname, "/tmp/pts_mq_open_16_1_%d", getpid());
 	unlink(fname);
 	fd = open(fname, O_CREAT | O_RDWR | O_EXCL, S_IRUSR | S_IWUSR);
 	if (fd == -1) {

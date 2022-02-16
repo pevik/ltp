@@ -55,7 +55,7 @@ struct test_struct {
 	void *four;
 };
 
-static void handler(int sig)
+void handler(int sig)
 {
 	(void)sig;
 }

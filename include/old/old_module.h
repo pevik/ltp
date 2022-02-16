@@ -34,14 +34,6 @@
 #ifndef TST_MODULE
 #define TST_MODULE
 
-void tst_module_exists_(void (cleanup_fn)(void), const char *mod_name,
-					 char **mod_path);
-
-void tst_module_load_(void (cleanup_fn)(void), const char *mod_name,
-					char *const argv[]);
-
-void tst_module_unload_(void (cleanup_fn)(void), const char *mod_name);
-
 /*
  * Check module existence.
  *
@@ -52,11 +44,8 @@ void tst_module_unload_(void (cleanup_fn)(void), const char *mod_name);
  *
  * In case of failure, test'll call cleanup_fn and exit with TCONF return value.
  */
-static inline void tst_module_exists(void (cleanup_fn)(void),
-				     const char *mod_name, char **mod_path)
-{
-	tst_module_exists_(cleanup_fn, mod_name, mod_path);
-}
+void tst_module_exist(void (cleanup_fn)(void), const char *mod_name,
+	char **mod_path);
 
 /*
  * Load a module using insmod program.
@@ -69,11 +58,8 @@ static inline void tst_module_exists(void (cleanup_fn)(void),
  * In case of insmod failure, test will call cleanup_fn and exit with TBROK
  * return value.
  */
-static inline void tst_module_load(void (cleanup_fn)(void),
-				   const char *mod_name, char *const argv[])
-{
-	tst_module_load_(cleanup_fn, mod_name, argv);
-}
+void tst_module_load(void (cleanup_fn)(void),
+	const char *mod_name, char *const argv[]);
 
 /*
  * Unload a module using rmmod program. In case of failure, test will call
@@ -81,9 +67,6 @@ static inline void tst_module_load(void (cleanup_fn)(void),
  *
  * @mod_name: can be module name or module's file name.
  */
-static inline void tst_module_unload(void (cleanup_fn)(void), const char *mod_name)
-{
-	tst_module_unload_(cleanup_fn, mod_name);
-}
+void tst_module_unload(void (cleanup_fn)(void), const char *mod_name);
 
 #endif /* TST_MODULE */

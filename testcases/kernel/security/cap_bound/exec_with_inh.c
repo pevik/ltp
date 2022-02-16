@@ -52,21 +52,21 @@ int main(int argc, char *argv[])
 	if (!cur) {
 		tst_brkm(TBROK,
 			 NULL,
-			 "Failed to create cap_sys_admin+i cap_t (errno %d)",
+			 "Failed to create cap_sys_admin+i cap_t (errno %d)\n",
 			 errno);
 	}
 	ret = cap_set_proc(cur);
 	if (ret) {
 		tst_brkm(TBROK,
 			 NULL,
-			 "Failed to cap_set_proc with cap_sys_admin+i (ret %d errno %d)",
+			 "Failed to cap_set_proc with cap_sys_admin+i (ret %d errno %d)\n",
 			 ret, errno);
 	}
 	cap_free(cur);
 	cur = cap_get_proc();
 	ret = cap_get_flag(cur, CAP_SYS_ADMIN, CAP_INHERITABLE, &f);
 	if (ret || f != CAP_SET) {
-		tst_brkm(TBROK, NULL, "Failed to add CAP_SYS_ADMIN to pI");
+		tst_brkm(TBROK, NULL, "Failed to add CAP_SYS_ADMIN to pI\n");
 	}
 	cap_free(cur);
 
@@ -74,14 +74,14 @@ int main(int argc, char *argv[])
 	ret = prctl(PR_CAPBSET_DROP, CAP_SYS_ADMIN);
 	if (ret) {
 		tst_resm(TFAIL,
-			 "Failed to drop CAP_SYS_ADMIN from bounding set.");
-		tst_resm(TINFO, "(ret=%d, errno %d)", ret, errno);
+			 "Failed to drop CAP_SYS_ADMIN from bounding set.\n");
+		tst_resm(TINFO, "(ret=%d, errno %d)\n", ret, errno);
 		tst_exit();
 	}
 
 	/* execute "check_pe 1" */
 	execl("check_pe", "check_pe", "1", NULL);
-	tst_resm(TBROK, "Failed to execute check_pe (errno %d)", errno);
+	tst_resm(TBROK, "Failed to execute check_pe (errno %d)\n", errno);
 #else /* HAVE_LIBCAP */
 	tst_resm(TCONF, "System doesn't have POSIX capabilities.");
 #endif

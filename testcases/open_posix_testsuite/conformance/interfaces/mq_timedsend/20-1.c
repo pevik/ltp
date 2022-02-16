@@ -37,10 +37,10 @@
 #define BUFFER 40
 #define MAXMSG 5
 
-static char gqname[NAMESIZE];
-static mqd_t gqueue;
+char gqname[NAMESIZE];
+mqd_t gqueue;
 
-static void testfailed_handler(int signo PTS_ATTRIBUTE_UNUSED)
+void testfailed_handler(int signo LTP_ATTRIBUTE_UNUSED)
 {
 	printf("Timeout never happened\n");
 	printf("Test FAILED\n");

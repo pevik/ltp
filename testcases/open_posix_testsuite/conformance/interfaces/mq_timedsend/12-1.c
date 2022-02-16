@@ -51,18 +51,18 @@ static volatile int in_handler;
 /* errno returned by mq_timedsend() */
 static int mq_timedsend_errno = -1;
 
-static pthread_barrier_t barrier;
+pthread_barrier_t barrier;
 
 /*
  * This handler is just used to catch the signal and stop sleep (so the
  * parent knows the child is still busy sending signals).
  */
-static void justreturn_handler(int signo PTS_ATTRIBUTE_UNUSED)
+void justreturn_handler(int signo LTP_ATTRIBUTE_UNUSED)
 {
 	in_handler++;
 }
 
-static void *a_thread_func(void *arg PTS_ATTRIBUTE_UNUSED)
+void *a_thread_func(void *arg LTP_ATTRIBUTE_UNUSED)
 {
 	int i, ret;
 	struct sigaction act;

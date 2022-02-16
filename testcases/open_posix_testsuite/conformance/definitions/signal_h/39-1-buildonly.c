@@ -8,7 +8,7 @@
 
 typedef void (*(*signal_test) (int, void (*)(int))) (int);
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	signal_test dummyvar;
 	dummyvar = signal;

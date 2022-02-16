@@ -21,7 +21,7 @@
 #include "posixtest.h"
 
 /* Set the euid of this process to a non-root uid */
-static int set_nonroot(void)
+int set_nonroot(void)
 {
 	struct passwd *pw;
 	setpwent();

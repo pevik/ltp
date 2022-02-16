@@ -296,11 +296,13 @@ static void cleanup(void)
 		SAFE_CLOSE(fd);
 }
 
+static struct tst_option opts[] = {
+	{"v", &verbose, "-v       Turns on verbose mode"},
+	{NULL, NULL, NULL}
+};
+
 static struct tst_test test = {
-	.options = (struct tst_option[]) {
-		{"v", &verbose, "-v       Turns on verbose mode"},
-		{}
-	},
+	.options = opts,
 	.cleanup = cleanup,
 	.setup = setup,
 	.test = run,

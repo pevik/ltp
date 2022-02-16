@@ -10,4 +10,4 @@
 
 #include <sys/types.h>
 
-static timer_t dummy;
+timer_t dummy;

@@ -12,9 +12,9 @@
 
 #include <pthread.h>
 
-static pthread_mutexattr_t a;
+pthread_mutexattr_t a;
 
-static void dummy_func()
+void dummy_func()
 {
 
 	pthread_mutexattr_destroy(&a);

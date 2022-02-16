@@ -33,7 +33,7 @@
 
 #define NAMESIZE 50
 
-static void mqclean(mqd_t queue, const char *qname)
+void mqclean(mqd_t queue, const char *qname)
 {
 	mq_close(queue);
 	mq_unlink(qname);

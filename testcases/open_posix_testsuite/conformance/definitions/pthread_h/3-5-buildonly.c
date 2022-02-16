@@ -10,4 +10,4 @@
 
 #include <pthread.h>
 
-static pthread_condattr_t dummy;
+pthread_condattr_t dummy;

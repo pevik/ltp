@@ -56,7 +56,6 @@
 #include <netinet/in.h>
 #include <netinet/sctp.h>
 #include <sctputil.h>
-#include "tst_kernel.h"
 
 char *TCID = __FILE__;
 int TST_TOTAL = 29;
@@ -101,9 +100,6 @@ main(void)
 	socklen_t optlen, addrlen;
 	struct sctp_status status;
 	struct sctp_assoc_value value;
-
-	if (tst_check_driver("sctp"))
-		tst_brkm(TCONF, tst_exit, "sctp driver not available");
 
         /* Rather than fflush() throughout the code, set stdout to
 	 * be unbuffered.

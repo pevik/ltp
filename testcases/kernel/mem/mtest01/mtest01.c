@@ -55,6 +55,14 @@ static char *dowrite;
 static char *verbose;
 
 static char *opt_chunksize, *opt_maxbytes, *opt_maxpercent;
+static struct tst_option mtest_options[] = {
+	{"c:", &opt_chunksize,	"-c  size of chunk in bytes to malloc on each pass"},
+	{"b:", &opt_maxbytes,	"-b  maximum number of bytes to allocate before stopping"},
+	{"p:", &opt_maxpercent, "-p  percent of total memory used at which the program stops"},
+	{"w",  &dowrite,   	"-w  write to the memory after allocating"},
+	{"v",  &verbose,     	"-v  verbose"},
+	{NULL, NULL, 		NULL}
+};
 
 static void parse_mtest_options(char *str_chunksize, int *chunksize,
 		char *str_maxbytes, long *maxbytes,
@@ -219,21 +227,14 @@ static void mem_test(void)
 			alloc_maxbytes / 1024, write_msg);
 
 	for (i = 0; i < pid_cntr; i++) {
-		TST_PROCESS_STATE_WAIT(pid_list[i], 'T', 0);
+		TST_PROCESS_STATE_WAIT(pid_list[i], 'T');
 		kill(pid_list[i], SIGCONT);
 	}
 }
 
 static struct tst_test test = {
 	.forks_child = 1,
-	.options = (struct tst_option[]) {
-		{"c:", &opt_chunksize,	"-c  size of chunk in bytes to malloc on each pass"},
-		{"b:", &opt_maxbytes,	"-b  maximum number of bytes to allocate before stopping"},
-		{"p:", &opt_maxpercent, "-p  percent of total memory used at which the program stops"},
-		{"w",  &dowrite,   	"-w  write to the memory after allocating"},
-		{"v",  &verbose,     	"-v  verbose"},
-		{}
-	},
+	.options = mtest_options,
 	.setup = setup,
 	.cleanup = cleanup,
 	.test_all = mem_test,

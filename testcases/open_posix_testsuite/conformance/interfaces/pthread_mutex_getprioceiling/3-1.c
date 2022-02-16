@@ -65,7 +65,7 @@ int main(void)
 
 	return (error == EINVAL ? PTS_PASS : PTS_FAIL);
 #else
-	printf("pthread_mutex_getprioceiling not supported\n");
+	printf("pthread_mutex_getprioceiling not supported");
 	return PTS_UNSUPPORTED;
 #endif
 

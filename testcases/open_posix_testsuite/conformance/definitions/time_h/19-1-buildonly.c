@@ -15,7 +15,7 @@
 
 typedef struct tm *(*getdate_test) (const char *);
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	getdate_test dummyvar;
 	dummyvar = getdate;

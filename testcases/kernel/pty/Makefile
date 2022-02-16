@@ -24,7 +24,6 @@ top_srcdir		?= ../../..
 
 include $(top_srcdir)/include/mk/testcases.mk
 
-pty03 pty05: CFLAGS += -pthread
-pty03 pty05: LDLIBS += -lrt
+CPPFLAGS		+= -D_GNU_SOURCE
 
 include $(top_srcdir)/include/mk/generic_leaf_target.mk

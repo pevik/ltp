@@ -12,10 +12,10 @@
 
 #include <pthread.h>
 
-static pthread_t a, b;
-static int tmp;
+pthread_t a, b;
+int tmp;
 
-static void dummy_func()
+void dummy_func()
 {
 	tmp = pthread_equal(a, b);
 	return;

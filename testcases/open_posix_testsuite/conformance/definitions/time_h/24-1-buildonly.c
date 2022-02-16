@@ -14,7 +14,7 @@
 
 typedef time_t(*mktime_test) (struct tm *);
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	mktime_test dummyvar;
 	dummyvar = mktime;

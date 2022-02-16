@@ -19,7 +19,7 @@
 #include <errno.h>
 #include "posixtest.h"
 
-static void *runner(void *arg PTS_ATTRIBUTE_UNUSED)
+void *runner(void *arg LTP_ATTRIBUTE_UNUSED)
 {
 
 	while (1)
@@ -50,7 +50,7 @@ int main(void)
 	}
 
 	if (pthread_attr_init(&attr) != 0) {
-		printf("An error occurs when calling pthread_attr_init()\n");
+		printf("An error occurs when calling pthread_attr_init()");
 		return PTS_UNRESOLVED;
 	}
 	result = pthread_attr_setscope(&attr, PTHREAD_SCOPE_PROCESS);
@@ -58,16 +58,16 @@ int main(void)
 		printf("Process contention scope threads are not supported.\n");
 		return PTS_UNSUPPORTED;
 	} else if (result != 0) {
-		printf("An error occurs when calling pthread_attr_setscope()\n");
+		printf("An error occurs when calling pthread_attr_setscope()");
 		return PTS_UNRESOLVED;
 	}
 	if (pthread_create(&tid, &attr, runner, NULL) != 0) {
-		printf("An error occurs when calling pthread_create()\n");
+		printf("An error occurs when calling pthread_create()");
 		return PTS_UNRESOLVED;
 	}
 
 	if (pthread_getschedparam(tid, &policy, &param) != 0) {
-		printf("An error occurs when calling pthread_getschedparam()\n");
+		printf("An error occurs when calling pthread_getschedparam()");
 		return PTS_UNRESOLVED;
 	}
 

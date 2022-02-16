@@ -10,4 +10,4 @@
 
 #include <pthread.h>
 
-static pthread_key_t dummy;
+pthread_key_t dummy;

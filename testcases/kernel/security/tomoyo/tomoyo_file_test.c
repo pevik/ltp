@@ -279,7 +279,7 @@ static void set_file_enforce(int enforce)
 	}
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
 	tomoyo_test_init();
 

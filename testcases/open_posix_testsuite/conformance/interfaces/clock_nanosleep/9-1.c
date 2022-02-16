@@ -25,7 +25,7 @@
 
 #define OKDELTA 1
 
-static void handler(int signo)
+void handler(int signo)
 {
 	(void) signo;
 

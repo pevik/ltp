@@ -9,7 +9,7 @@
 
 #include "posixtest.h"
 
-static void test_mq_notify_prototype(void)
+void test_mq_notify_prototype(void)
 {
 	mqd_t mqdes;
 	struct sigevent *notification;

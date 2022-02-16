@@ -34,6 +34,7 @@
 #define _GNU_SOURCE
 #include <sys/ipc.h>
 #include <sys/stat.h>
+#include <sys/sem.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/un.h>
@@ -44,7 +45,7 @@
 #include "config.h"
 #include "test.h"
 #include "safe_macros.h"
-#include "lapi/sem.h"
+#include "lapi/semun.h"
 
 char *TCID = "sendmsg02";
 

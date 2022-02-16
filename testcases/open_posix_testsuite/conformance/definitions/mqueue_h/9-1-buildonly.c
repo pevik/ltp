@@ -8,7 +8,7 @@
 #include <time.h>
 #include "posixtest.h"
 
-static void test_mq_timedreceive_prototype(void)
+void test_mq_timedreceive_prototype(void)
 {
 	mqd_t mqdes;
 	struct timespec abstime;

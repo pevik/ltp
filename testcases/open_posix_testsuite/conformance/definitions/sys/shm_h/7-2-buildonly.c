@@ -12,4 +12,4 @@
 
 #include <sys/shm.h>
 
-static time_t this_type_should_exist;
+time_t this_type_should_exist;

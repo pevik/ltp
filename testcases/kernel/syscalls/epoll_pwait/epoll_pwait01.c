@@ -121,8 +121,8 @@ static void verify_sigmask(void)
 		return;
 	}
 
-	if (TEST_RETURN != 1) {
-		tst_resm(TFAIL, "epoll_pwait() returned %li, expected 1",
+	if (TEST_RETURN != 0) {
+		tst_resm(TFAIL, "epoll_pwait() returned %li, expected 0",
 			 TEST_RETURN);
 		return;
 	}
@@ -153,7 +153,6 @@ static void sighandler(int sig LTP_ATTRIBUTE_UNUSED)
 static void do_test(sigset_t *sigmask)
 {
 	pid_t cpid;
-	char b;
 
 	cpid = tst_fork();
 	if (cpid < 0)
@@ -162,14 +161,12 @@ static void do_test(sigset_t *sigmask)
 	if (cpid == 0)
 		do_child();
 
-	TEST(epoll_pwait(epfd, &epevs, 1, -1, sigmask));
+	TEST(epoll_pwait(epfd, &epevs, 1, 100, sigmask));
 
 	if (sigmask != NULL)
 		verify_sigmask();
 	else
 		verify_nonsigmask();
-
-	SAFE_READ(cleanup, 1, fds[0], &b, 1);
 
 	tst_record_childstatus(cleanup, cpid);
 }
@@ -182,8 +179,6 @@ static void do_child(void)
 	}
 
 	SAFE_KILL(cleanup, getppid(), SIGUSR1);
-	usleep(10000);
-	SAFE_WRITE(cleanup, 1, fds[1], "w", 1);
 
 	cleanup();
 	tst_exit();

@@ -133,7 +133,7 @@ void dio_append(char *filename, int fill)
 	close(fd);
 }
 
-int main(void)
+int main(int argc, char **argv)
 {
 	char filename[PATH_MAX];
 	int pid[NUM_CHILDREN];
