@@ -34,9 +34,9 @@
 #define HANDLER_NOTCALLED 0
 #define HANDLER_CALLED 1
 
-static int prep_val;
-static int parent_val;
-static int child_val;
+int prep_val;
+int parent_val;
+int child_val;
 
 static void prepare_handler()
 {

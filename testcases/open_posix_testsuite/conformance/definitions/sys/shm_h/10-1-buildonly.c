@@ -16,7 +16,7 @@
 
 typedef int (*shmdt_test) (const void *);
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	shmdt_test dummyvar;
 	dummyvar = shmdt;

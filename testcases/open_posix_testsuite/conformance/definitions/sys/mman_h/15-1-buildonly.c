@@ -19,7 +19,7 @@
 
 typedef int (*msync_test) (void *, size_t, int);
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	msync_test dummyvar;
 	dummyvar = msync;

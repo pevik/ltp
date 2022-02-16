@@ -346,7 +346,7 @@ static void exception_policy_test(const unsigned int before)
 	}
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
 	unsigned int before;
 	mount("/proc", "/proc/", "proc", 0, NULL);

@@ -10,7 +10,7 @@
 
 #include <time.h>
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	long dummy;
 

@@ -8,7 +8,7 @@
 #include "posixtest.h"
 #include <stdio.h>
 
-static void test_mq_setattr_prototype(void)
+void test_mq_setattr_prototype(void)
 {
 	mqd_t mqdes;
 	struct mq_attr mqs, omqs;

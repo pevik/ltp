@@ -26,13 +26,13 @@
 #include "posixtest.h"
 
 /* Keeps track of how many times the init function has been called. */
-static int init_flag;
+int init_flag;
 
 /* Global pthread_once_t object */
-static pthread_once_t once_control = PTHREAD_ONCE_INIT;
+pthread_once_t once_control = PTHREAD_ONCE_INIT;
 
 /* The init function that pthread_once calls */
-static void *an_init_func()
+void *an_init_func()
 {
 	/* Indicate to main() that the init function has been reached */
 	init_flag = 1;
@@ -49,7 +49,7 @@ static void *an_init_func()
 }
 
 /* Thread function */
-static void *a_thread_func()
+void *a_thread_func()
 {
 	/* Make the thread cancelable immediately */
 	pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
@@ -59,7 +59,7 @@ static void *a_thread_func()
 }
 
 /* 2nd init function used by the 2nd call of pthread_once */
-static void *an_init_func2()
+void *an_init_func2()
 {
 	/* Indicate to main() that this init function has been reached */
 	init_flag = 1;

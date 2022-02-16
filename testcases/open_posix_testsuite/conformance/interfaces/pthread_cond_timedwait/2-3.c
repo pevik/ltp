@@ -23,14 +23,14 @@
 
 #define INTERVAL  2
 
-static struct testdata {
+struct testdata {
 	pthread_mutex_t mutex;
 	pthread_cond_t cond;
 } td;
 
-static int t1_start = 0;
+int t1_start = 0;
 
-static void *t1_func(void *arg)
+void *t1_func(void *arg)
 {
 	int rc;
 	struct timeval curtime;

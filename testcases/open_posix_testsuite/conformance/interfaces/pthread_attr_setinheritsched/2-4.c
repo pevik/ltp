@@ -21,7 +21,7 @@
 #include <stdlib.h>
 #include "posixtest.h"
 
-#define TEST "2-4"
+#define TEST "4-2"
 #define AREA "scheduler"
 #define ERROR_PREFIX "unexpected error: " AREA " " TEST ": "
 
@@ -29,10 +29,10 @@
 #define POLICY SCHED_RR
 
 /* Flags that the threads use to indicate events */
-static int policy_correct = -1;
-static int priority_correct = -1;
+int policy_correct = -1;
+int priority_correct = -1;
 
-static void *thread(void *tmp PTS_ATTRIBUTE_UNUSED)
+void *thread(void *tmp LTP_ATTRIBUTE_UNUSED)
 {
 	struct sched_param param;
 	int policy;

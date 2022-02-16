@@ -49,7 +49,6 @@
 #include <errno.h>
 #include <netinet/sctp.h>
 #include <sctputil.h>
-#include "tst_kernel.h"
 
 char *TCID = __FILE__;
 int TST_TOTAL = 9;
@@ -65,7 +64,7 @@ int TST_CNT = 0;
 	((unsigned char *)&addr)[3]
 
 int
-main(void)
+main(int argc, char *argv[])
 {
 	int svr_sk, clt_sk1, clt_sk2, peeloff_sk;
 	sctp_assoc_t associd, svr_associd1, svr_associd2, clt_associd1, clt_associd2;
@@ -81,9 +80,6 @@ main(void)
 	struct sockaddr_in clt_loop2[NUMADDR];
 	struct sockaddr_in clt_loop3[NUMADDR];
 	sockaddr_storage_t svr_test[NUMADDR], clt_test1[NUMADDR], clt_test2[NUMADDR];
-
-	if (tst_check_driver("sctp"))
-		tst_brkm(TCONF, tst_exit, "sctp driver not available");
 
 	/* Rather than fflush() throughout the code, set stdout to 
 	 * be unbuffered.  

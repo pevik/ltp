@@ -30,13 +30,13 @@
 #include <errno.h>
 #include "posixtest.h"
 
-static pthread_t thread1;
-static pthread_mutex_t mutex;
-static pthread_mutexattr_t mta;
+pthread_t thread1;
+pthread_mutex_t mutex;
+pthread_mutexattr_t mta;
 
-static int ret;			/* Return value of the thread unlocking the mutex. */
+int ret;			/* Return value of the thread unlocking the mutex. */
 
-static void *a_thread_func()
+void *a_thread_func()
 {
 	/* Try to unlock the mutex that main already locked. */
 	ret = pthread_mutex_unlock(&mutex);

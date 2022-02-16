@@ -30,9 +30,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
-
 #include "posixtest.h"
-#include "tempfile.h"
 
 #define TNAME "munmap/4-1.c"
 
@@ -40,7 +38,7 @@ int main(void)
 {
 	int rc;
 
-	char tmpfname[PATH_MAX];
+	char tmpfname[256];
 	char *data;
 	int total_size = 1024;
 
@@ -54,7 +52,8 @@ int main(void)
 
 	char *ch;
 
-	PTS_GET_TMP_FILENAME(tmpfname, "pts_munmap_4_1");
+	snprintf(tmpfname, sizeof(tmpfname), "/tmp/pts_munmap_4_1_%d",
+		 getpid());
 	unlink(tmpfname);
 	fd = open(tmpfname, O_CREAT | O_RDWR | O_EXCL, S_IRUSR | S_IWUSR);
 	if (fd == -1) {

@@ -75,10 +75,10 @@
 /***********************************    Test cases  *****************************************/
 /********************************************************************************************/
 
-static char do_it = 1;
+char do_it = 1;
 
 /* Handler for user request to terminate */
-static void sighdl(int sig)
+void sighdl(int sig)
 {
 	do {
 		do_it = 0;
@@ -86,10 +86,10 @@ static void sighdl(int sig)
 	while (do_it);
 }
 
-static long long canceled, ended;
+long long canceled, ended;
 
 /* The canceled thread */
-static void *th(void *arg)
+void *th(void *arg)
 {
 	int ret = 0;
 	ret = pthread_barrier_wait(arg);
@@ -102,7 +102,7 @@ static void *th(void *arg)
 }
 
 /* Thread function */
-static void *threaded(void *arg)
+void *threaded(void *arg)
 {
 	int ret = 0;
 	pthread_t child;

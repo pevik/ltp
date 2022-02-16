@@ -23,7 +23,7 @@
 ################################################################################
 
 export TCID="cpuset_inherit"
-export TST_TOTAL=33
+export TST_TOTAL=27
 export TST_COUNT=1
 
 . cpuset_funcs.sh
@@ -44,12 +44,9 @@ cfile_name=
 base_op_write_and_test()
 {
 	local write_file="$1"
-	local inherit_value="$2"
-	local write_string="$3"
-	local expect_string="$4"
+	local write_string="$2"
+	local expect_string="$3"
 	local return_result=
-
-	echo $inherit_value > $CLONE_CHILDREN
 
 	mkdir -p "$(dirname $write_file)" || {
 		tst_brkm TFAIL "Failed to mkdir -p $(basename $write_file)"
@@ -106,16 +103,13 @@ inherit_test()
 test_cpus()
 {
 	cfile_name="cpus"
-	while read inherit cpus result
+	while read cpus result
 	do
-		inherit_test "$CPUSET/1/cpuset.cpus" "$inherit" "$cpus" "$result"
+		inherit_test "$CPUSET/1/cpuset.cpus" "$cpus" "$result"
 	done <<- EOF
-		0	NULL					EMPTY
-		0	0					EMPTY
-		0	$cpus_all				EMPTY
-		1	NULL					EMPTY
-		1	0					0
-		1	$cpus_all				$cpu_string
+		NULL					EMPTY
+		0					EMPTY
+		$cpus_all				EMPTY
 	EOF
 	# while read cpus result
 }
@@ -123,16 +117,13 @@ test_cpus()
 test_mems()
 {
 	cfile_name="mems"
-	while read inherit mems result
+	while read mems result
 	do
-		inherit_test "$CPUSET/1/cpuset.mems" "$inherit" "$mems" "$result"
+		inherit_test "$CPUSET/1/cpuset.mems" "$mems" "$result"
 	done <<- EOF
-		0	NULL					EMPTY
-		0	0					EMPTY
-		0	$mems_all				EMPTY
-		1	NULL					EMPTY
-		1	0					0
-		1	$mems_all				$mem_string
+		NULL					EMPTY
+		0					EMPTY
+		$mems_all				EMPTY
 	EOF
 	# while read mems result
 }
@@ -144,12 +135,12 @@ test_three_result_similar_flags()
 			memory_migrate
 	do
 		cfile_name="$filename"
-		while read inherit flags result
+		while read flags result
 		do
-			inherit_test "$CPUSET/1/cpuset.$filename" "$inherit" "$flags" "$result"
+			inherit_test "$CPUSET/1/cpuset.$filename" "$flags" "$result"
 		done <<- EOF
-			0	0	0
-			0	1	0
+			0	0
+			1	0
 		EOF
 		# while read flags, result
 	done # for filename in flagfiles
@@ -161,12 +152,12 @@ test_spread_flags()
 	for filename in memory_spread_page memory_spread_slab
 	do
 		cfile_name="$filename"
-		while read inherit flags result
+		while read flags result
 		do
-			inherit_test "$CPUSET/1/cpuset.$filename" "$inherit" "$flags" "$result"
+			inherit_test "$CPUSET/1/cpuset.$filename" "$flags" "$result"
 		done <<- EOF
-			0	0	0
-			0	1	1
+			0	0
+			1	1
 		EOF
 		# while read flags, result
 	done # for filename in flagfiles
@@ -175,12 +166,12 @@ test_spread_flags()
 test_sched_load_balance_flag()
 {
 	cfile_name="sched_load_balance"
-	while read inherit flag result
+	while read flag result
 	do
-		inherit_test "$CPUSET/1/cpuset.sched_load_balance" "$inherit" "$flag" "$result"
+		inherit_test "$CPUSET/1/cpuset.sched_load_balance" "$flag" "$result"
 	done <<- EOF
-		0	0	1
-		0	1	1
+		0	1
+		1	1
 	EOF
 	# while read mems result
 }
@@ -188,37 +179,37 @@ test_sched_load_balance_flag()
 test_domain()
 {
 	cfile_name="sched_relax_domain_level"
-	while read inherit domain_level result
+	while read domain_level result
 	do
-		inherit_test "$CPUSET/1/cpuset.sched_relax_domain_level" "$inherit" "$domain_level" "$result"
+		inherit_test "$CPUSET/1/cpuset.sched_relax_domain_level" "$domain_level" "$result"
 	done <<- EOF
-		0	-1	-1
-		0	0	-1
-		0	1	-1
-		0	2	-1
-		0	3	-1
-		0	4	-1
-		0	5	-1
+		-1	-1
+		0	-1
+		1	-1
+		2	-1
+		3	-1
+		4	-1
+		5	-1
 	EOF
 	# while read domain_level result
 }
 
-# Case 1-6
+# Case 1-3
 test_cpus
 
-# Case 7-12
+# Case 4-6
 test_mems
 
-# Case 13-20
+# Case 7-14
 test_three_result_similar_flags
 
-# Case 21-24
+# Case 15-18
 test_spread_flags
 
-# Case 25-26
+# Case 19-20
 test_sched_load_balance_flag
 
-# Case 27-33
+# Case 21-27
 test_domain
 
 exit $exit_status

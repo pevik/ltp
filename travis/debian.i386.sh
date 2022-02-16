@@ -1,6 +1,6 @@
 #!/bin/sh
-# Copyright (c) 2018-2020 Petr Vorel <pvorel@suse.cz>
-set -ex
+# Copyright (c) 2018 Petr Vorel <pvorel@suse.cz>
+set -e
 
 dpkg --add-architecture i386
 apt update
@@ -16,5 +16,4 @@ apt install -y --no-install-recommends \
 	libkeyutils1:i386 \
 	libnuma1:i386 \
 	libssl-dev:i386 \
-	libtirpc-dev:i386 \
-	pkg-config:i386
+	libtirpc-dev:i386

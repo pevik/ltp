@@ -8,7 +8,7 @@
 
 typedef int (*sigsuspend_test) (const sigset_t *);
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	sigsuspend_test dummyvar;
 	dummyvar = sigsuspend;

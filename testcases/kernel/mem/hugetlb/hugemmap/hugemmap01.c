@@ -1,8 +1,19 @@
-// SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * Copyright (c) International Business Machines  Corp., 2004
  * Copyright (c) Linux Test Project, 2004-2017
  *
+ * This program is free software;  you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY;  without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See
+ * the GNU General Public License for more details.
+ */
+
+/*
  * Test Name: hugemmap01
  *
  * Test Description:
@@ -28,11 +39,18 @@
 #include <sys/param.h>
 #include "hugetlb.h"
 
+static struct tst_option options[] = {
+	{"H:", &Hopt,   "-H   /..  Location of hugetlbfs, i.e.  -H /var/hugetlbfs"},
+	{"s:", &nr_opt, "-s   num  Set the number of the been allocated hugepages"},
+	{NULL, NULL, NULL}
+};
+
 static long *addr;
 static int  fildes;
 static long beforetest;
 static long aftertest;
 static long hugepagesmapped;
+static long hugepages = 128;
 static char TEMPFILE[MAXPATHLEN];
 
 static void test_hugemmap(void)
@@ -71,12 +89,17 @@ static void test_hugemmap(void)
 
 void setup(void)
 {
-	if (tst_hugepages == 0)
-		tst_brk(TCONF, "Not enough hugepages for testing.");
+	save_nr_hugepages();
 
 	if (!Hopt)
 		Hopt = tst_get_tmpdir();
 	SAFE_MOUNT("none", Hopt, "hugetlbfs", 0, NULL);
+
+	if (nr_opt)
+		hugepages = SAFE_STRTOL(nr_opt, 0, LONG_MAX);
+
+	limit_hugepages(&hugepages);
+	set_sys_tune("nr_hugepages", hugepages, 1);
 
 	snprintf(TEMPFILE, sizeof(TEMPFILE), "%s/mmapfile%d", Hopt, getpid());
 }
@@ -84,19 +107,16 @@ void setup(void)
 void cleanup(void)
 {
 	unlink(TEMPFILE);
+	restore_nr_hugepages();
+
 	umount(Hopt);
 }
 
 static struct tst_test test = {
 	.needs_root = 1,
 	.needs_tmpdir = 1,
-	.options = (struct tst_option[]) {
-		{"H:", &Hopt,   "-H /..   Location of hugetlbfs, i.e.  -H /var/hugetlbfs"},
-		{"s:", &nr_opt, "-s num   Set the number of the been allocated hugepages"},
-		{}
-	},
+	.options = options,
 	.setup = setup,
 	.cleanup = cleanup,
 	.test_all = test_hugemmap,
-	.request_hugepages = 128,
 };

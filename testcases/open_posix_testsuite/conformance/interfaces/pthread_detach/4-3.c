@@ -69,7 +69,7 @@ struct thestruct {
 #endif
 };
 
-static unsigned long long current_time_usec()
+unsigned long long current_time_usec()
 {
 	struct timeval now;
 	SAFE_FUNC(gettimeofday(&now, NULL));
@@ -216,7 +216,7 @@ static void *test(void *arg)
 	return NULL;
 }
 
-static void do_child()
+void do_child()
 {
 	int ret;
 	pthread_t th_work, th_sig1;
@@ -279,7 +279,7 @@ static void do_child()
 		UNRESOLVED(ret, "Worker thread join failed");
 }
 
-static void main_loop()
+void main_loop()
 {
 	int child_count = 0;
 	int stat_pipe[2];

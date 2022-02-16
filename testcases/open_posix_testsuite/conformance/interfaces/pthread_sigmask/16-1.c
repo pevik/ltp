@@ -20,7 +20,7 @@
 #include <stdlib.h>
 #include "posixtest.h"
 
-static int get_rand()
+int get_rand()
 {
 
 	int r;
@@ -31,7 +31,7 @@ static int get_rand()
 	return r;
 }
 
-static void *a_thread_func()
+void *a_thread_func()
 {
 
 	int r = get_rand();

@@ -112,7 +112,7 @@
 /***********************************    Test case   *****************************************/
 /********************************************************************************************/
 
-static struct _scenar {
+struct _scenar {
 	int m_type;		/* Mutex type to use */
 	int mc_pshared;		/* 0: mutex and cond are process-private (default) ~ !0: Both are process-shared, if supported */
 	int c_clock;		/* 0: cond uses the default clock. ~ !0: Cond uses monotonic clock, if supported. */
@@ -196,7 +196,7 @@ static struct _scenar {
 
 #define NTOT (NSCENAR * SCALABILITY_FACTOR * NCHILDREN)
 
-static struct childdata {
+struct childdata {
 	pthread_mutex_t mtx;
 	pthread_cond_t cnd;
 	clockid_t cid;
@@ -209,12 +209,12 @@ typedef struct {
 	int boolean;
 } testdata_t;
 
-static pthread_attr_t ta;
+pthread_attr_t ta;
 
 /***
  * The grand child function (either sub-thread or sub-process)
  */
-static void *threaded_B(void *arg)
+void *threaded_B(void *arg)
 {
 	int ret;
 	struct timespec ts;
@@ -265,7 +265,7 @@ static void *threaded_B(void *arg)
 /***
  * The child function (always in the main thread)
  */
-static void *threaded_A(void *arg)
+void *threaded_A(void *arg)
 {
 	struct childdata *cd = (struct childdata *)arg;
 	int ret, status;
@@ -360,12 +360,12 @@ static void *threaded_A(void *arg)
 	return NULL;
 }
 
-static int *pBoolean = NULL;
+int *pBoolean = NULL;
 
 /***
  * Signal handler
  */
-static void sighdl(int sig)
+void sighdl(int sig)
 {
 #if VERBOSE > 1
 	output("Received the USR1 signal; stopping everything\n");

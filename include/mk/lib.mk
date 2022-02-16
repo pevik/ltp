@@ -1,8 +1,7 @@
 #
 #    library include Makefile.
 #
-#    Copyright (c) Linux Test Project, 2009-2020
-#    Copyright (c) Cisco Systems Inc., 2009
+#    Copyright (C) 2009, Cisco Systems Inc.
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -50,26 +49,25 @@ endif
 MAKE_TARGETS	+= $(LIB)
 
 LIBSRCS		?= $(wildcard $(abs_srcdir)/*.c)
-LIBSRCS		:= $(sort $(LIBSRCS))
+
+ifdef MAKE_3_80_COMPAT
+LIBSRCS		:= $(call MAKE_3_80_abspath,$(LIBSRCS))
+else
 LIBSRCS		:= $(abspath $(LIBSRCS))
+endif
+
 LIBSRCS		:= $(subst $(abs_srcdir)/,,$(wildcard $(LIBSRCS)))
+
 LIBSRCS		:= $(filter-out $(FILTER_OUT_LIBSRCS),$(LIBSRCS))
 
 LIBOBJS		:= $(LIBSRCS:.c=.o)
 
 $(LIB): $(notdir $(LIBOBJS))
-	@if [ -z "$(strip $^)" ] ; then \
+	if [ -z "$(strip $^)" ] ; then \
 		echo "Cowardly refusing to create empty archive"; \
 		exit 1; \
 	fi
-ifdef VERBOSE
 	$(if $(AR),$(AR),ar) -rc "$@" $^
 	$(if $(RANLIB),$(RANLIB),ranlib) "$@"
-else
-	@echo "AR $@"
-	@$(if $(AR),$(AR),ar) -rc "$@" $^
-	@echo "RANLIB $@"
-	@$(if $(RANLIB),$(RANLIB),ranlib) "$@"
-endif
 
 include $(top_srcdir)/include/mk/generic_leaf_target.mk

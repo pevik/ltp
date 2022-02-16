@@ -8,7 +8,7 @@
 
 typedef int (*sigwait_test) (const sigset_t * restrict, int *restrict);
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	sigwait_test dummyvar;
 	dummyvar = sigwait;

@@ -9,7 +9,7 @@
 
 typedef int (*sigqueue_test) (pid_t, int, const union sigval);
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	sigqueue_test dummyvar;
 	dummyvar = sigqueue;

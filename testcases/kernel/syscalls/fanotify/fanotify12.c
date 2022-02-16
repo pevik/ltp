@@ -3,16 +3,14 @@
  * Copyright (c) 2018 Matthew Bobrowski. All Rights Reserved.
  *
  * Started by Matthew Bobrowski <mbobrowski@mbobrowski.org>
+ *
+ * DESCRIPTION
+ *	Validate that the newly introduced FAN_OPEN_EXEC mask functions as
+ *	expected. The idea is to generate a sequence of open related
+ *	actions to ensure that the correct event flags are being set
+ *	depending on what event mask was requested when the object was
+ *	marked.
  */
-
-/*\
- * [Description]
- * Validate that the newly introduced FAN_OPEN_EXEC mask functions as expected.
- * The idea is to generate a sequence of open related actions to ensure that
- * the correct event flags are being set depending on what event mask was
- * requested when the object was marked.
- */
-
 #define _GNU_SOURCE
 #include "config.h"
 
@@ -23,9 +21,10 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include "tst_test.h"
-
-#ifdef HAVE_SYS_FANOTIFY_H
 #include "fanotify.h"
+
+#if defined(HAVE_SYS_FANOTIFY_H)
+#include <sys/fanotify.h>
 
 #define EVENT_MAX 1024
 #define EVENT_SIZE (sizeof (struct fanotify_event_metadata))
@@ -40,7 +39,6 @@ static char fname[BUF_SIZE];
 static volatile int fd_notify;
 static volatile int complete;
 static char event_buf[EVENT_BUF_LEN];
-static int exec_events_unsupported;
 
 static struct test_case_t {
 	const char *tname;
@@ -137,26 +135,59 @@ static int setup_mark(unsigned int n)
 	const char *const files[] = {fname, TEST_APP};
 
 	tst_res(TINFO, "Test #%d: %s", n, tc->tname);
-
-	if (exec_events_unsupported && ((tc->mask & FAN_OPEN_EXEC) ||
-					tc->ignore_mask & FAN_OPEN_EXEC)) {
-		tst_res(TCONF, "FAN_OPEN_EXEC not supported in kernel?");
-		return -1;
-	}
-
 	fd_notify = SAFE_FANOTIFY_INIT(FAN_CLASS_NOTIF, O_RDONLY);
 
 	for (; i < ARRAY_SIZE(files); i++) {
 		/* Setup normal mark on object */
-		SAFE_FANOTIFY_MARK(fd_notify, FAN_MARK_ADD | mark->flag,
-					tc->mask, AT_FDCWD, files[i]);
+		if (fanotify_mark(fd_notify, FAN_MARK_ADD | mark->flag,
+					tc->mask, AT_FDCWD, files[i]) < 0) {
+			if (errno == EINVAL && tc->mask & FAN_OPEN_EXEC) {
+				tst_res(TCONF,
+					"FAN_OPEN_EXEC not supported in "
+					"kernel?");
+				return -1;
+			} else if (errno == EINVAL) {
+				tst_brk(TCONF | TERRNO,
+					"CONFIG_FANOTIFY_ACCESS_PERMISSIONS "
+					"not configured in kernel?");
+			}else {
+				tst_brk(TBROK | TERRNO,
+					"fanotify_mark(%d, FAN_MARK_ADD | %s, "
+					"%llx, AT_FDCWD, %s) failed",
+					fd_notify,
+					mark->name,
+					tc->mask,
+					files[i]);
+			}
+		}
 
 		/* Setup ignore mark on object */
 		if (tc->ignore_mask) {
-			SAFE_FANOTIFY_MARK(fd_notify, FAN_MARK_ADD | mark->flag
+			if (fanotify_mark(fd_notify, FAN_MARK_ADD | mark->flag
 						| FAN_MARK_IGNORED_MASK,
 						tc->ignore_mask, AT_FDCWD,
-						files[i]);
+						files[i]) < 0) {
+				if (errno == EINVAL &&
+					tc->ignore_mask & FAN_OPEN_EXEC) {
+					tst_res(TCONF,
+						"FAN_OPEN_EXEC not supported "
+						"in kernel?");
+					return -1;
+				} else if (errno == EINVAL) {
+					tst_brk(TCONF | TERRNO,
+						"CONFIG_FANOTIFY_ACCESS_"
+						"PERMISSIONS not configured in "
+						"kernel?");
+				} else {
+					tst_brk(TBROK | TERRNO,
+						"fanotify_mark (%d, "
+						"FAN_MARK_ADD | %s "
+						"| FAN_MARK_IGNORED_MASK, "
+						"%llx, AT_FDCWD, %s) failed",
+						fd_notify, mark->name,
+						tc->ignore_mask, files[i]);
+				}
+			}
 		}
 	}
 
@@ -222,8 +253,6 @@ cleanup:
 
 static void do_setup(void)
 {
-	exec_events_unsupported = fanotify_events_supported_by_kernel(FAN_OPEN_EXEC);
-
 	sprintf(fname, "fname_%d", getpid());
 	SAFE_FILE_PRINTF(fname, "1");
 }

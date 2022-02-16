@@ -58,8 +58,21 @@ static struct tcase {
 
 static void access_test(struct tcase *tc, const char *user)
 {
-	TST_EXP_FAIL(access(tc->pathname, tc->mode), tc->exp_errno,
-	             "access as %s", user);
+	TEST(access(tc->pathname, tc->mode));
+
+	if (TST_RET != -1) {
+		tst_res(TFAIL, "access as %s succeeded unexpectedly", user);
+		return;
+	}
+
+	if (tc->exp_errno != TST_ERR) {
+		tst_res(TFAIL | TTERRNO,
+			"access as %s should fail with %s",
+			user, tst_strerrno(tc->exp_errno));
+		return;
+	}
+
+	tst_res(TPASS | TTERRNO, "access as %s failed expectedly", user);
 }
 
 static void verify_access(unsigned int n)

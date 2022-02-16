@@ -3,15 +3,13 @@
  * Copyright (c) 2018 Huawei.  All Rights Reserved.
  *
  * Started by nixiaoming <nixiaoming@huawei.com>
+ *
+ * DESCRIPTION
+ *     After fanotify_init adds flags FAN_REPORT_TID,
+ *     check whether the program can accurately identify which thread id
+ *     in the multithreaded program triggered the event.
+ *
  */
-
-/*\
- * [Description]
- * After fanotify_init adds flags FAN_REPORT_TID,
- * check whether the program can accurately identify which thread id
- * in the multithreaded program triggered the event.
- */
-
 #define _GNU_SOURCE
 #include "config.h"
 
@@ -20,23 +18,24 @@
 
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <fcntl.h>
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/syscall.h>
 #include <pthread.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 #include <linux/limits.h>
 #include "tst_test.h"
 #include "tst_safe_pthread.h"
-
-#ifdef HAVE_SYS_FANOTIFY_H
 #include "fanotify.h"
+
+#if defined(HAVE_SYS_FANOTIFY_H)
+#include <sys/fanotify.h>
 
 #define gettid() syscall(SYS_gettid)
 static int tid;
-
-static int fan_report_tid_unsupported;
 
 void *thread_create_file(void *arg LTP_ATTRIBUTE_UNUSED)
 {
@@ -56,6 +55,7 @@ static unsigned int tcases[] = {
 
 void test01(unsigned int i)
 {
+	int ret;
 	pthread_t p_id;
 	struct fanotify_event_metadata event;
 	int fd_notify;
@@ -65,15 +65,21 @@ void test01(unsigned int i)
 			i, (tcases[i] & FAN_REPORT_TID) ? "with" : "without",
 			tgid, tid, event.pid);
 
-	if (fan_report_tid_unsupported && (tcases[i] & FAN_REPORT_TID)) {
-		FANOTIFY_INIT_FLAGS_ERR_MSG(FAN_REPORT_TID, fan_report_tid_unsupported);
-		return;
+	fd_notify = fanotify_init(tcases[i], 0);
+	if (fd_notify < 0) {
+		if (errno == EINVAL && (tcases[i] & FAN_REPORT_TID)) {
+			tst_res(TCONF,
+				"FAN_REPORT_TID not supported in kernel?");
+			return;
+		}
+		tst_brk(TBROK | TERRNO, "fanotify_init(0x%x, 0) failed",
+				tcases[i]);
 	}
 
-	fd_notify = SAFE_FANOTIFY_INIT(tcases[i], 0);
-
-	SAFE_FANOTIFY_MARK(fd_notify, FAN_MARK_ADD,
+	ret = fanotify_mark(fd_notify, FAN_MARK_ADD,
 			FAN_ALL_EVENTS | FAN_EVENT_ON_CHILD, AT_FDCWD, ".");
+	if (ret != 0)
+		tst_brk(TBROK, "fanotify_mark FAN_MARK_ADD fail ret=%d", ret);
 
 	SAFE_PTHREAD_CREATE(&p_id, NULL, thread_create_file, NULL);
 
@@ -94,7 +100,10 @@ void test01(unsigned int i)
 
 static void setup(void)
 {
-	fan_report_tid_unsupported = fanotify_init_flags_supported_by_kernel(FAN_REPORT_TID);
+	int fd;
+
+	fd = SAFE_FANOTIFY_INIT(FAN_CLASS_NOTIF, O_RDONLY);
+	SAFE_CLOSE(fd);
 }
 
 static struct tst_test test = {
@@ -106,5 +115,5 @@ static struct tst_test test = {
 };
 
 #else
-	TST_TEST_TCONF("system doesn't have required fanotify support");
+TST_TEST_TCONF("system doesn't have required fanotify support");
 #endif
