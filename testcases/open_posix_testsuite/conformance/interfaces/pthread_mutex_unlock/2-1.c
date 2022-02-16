@@ -32,10 +32,10 @@
 #define    THREAD_NUM  	6
 #define    LOOPS     	3
 
-static void *func(void *parm);
+void *func(void *parm);
 
-static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-static int value;			/* value protected by mutex */
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+int value;			/* value protected by mutex */
 
 int main(void)
 {
@@ -65,7 +65,7 @@ int main(void)
 	return PTS_PASS;
 }
 
-static void *func(void *parm PTS_ATTRIBUTE_UNUSED)
+void *func(void *parm LTP_ATTRIBUTE_UNUSED)
 {
 	int i, tmp;
 	int rc = 0;

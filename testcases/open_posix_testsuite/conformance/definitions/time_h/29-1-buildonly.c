@@ -15,7 +15,7 @@
 
 typedef int (*timer_create_test) (clockid_t, struct sigevent *, timer_t *);
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	timer_create_test dummyvar;
 	dummyvar = timer_create;

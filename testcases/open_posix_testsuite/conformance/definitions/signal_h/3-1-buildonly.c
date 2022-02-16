@@ -4,4 +4,4 @@
 
 #include <signal.h>
 
-static sig_atomic_t dummy;
+sig_atomic_t dummy;

@@ -18,7 +18,7 @@
 
 typedef int (*shm_open_test) (const char *, int, mode_t);
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	shm_open_test dummyvar;
 	dummyvar = shm_open;

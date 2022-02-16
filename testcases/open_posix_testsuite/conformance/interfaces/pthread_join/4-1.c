@@ -45,10 +45,10 @@
 
 #include "../testfrmw/threads_scenarii.c"
 
-static pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
 
 /* 1st thread function */
-static void *threaded(void *arg PTS_ATTRIBUTE_UNUSED)
+void *threaded(void *arg LTP_ATTRIBUTE_UNUSED)
 {
 	int ret = 0;
 
@@ -65,7 +65,7 @@ static void *threaded(void *arg PTS_ATTRIBUTE_UNUSED)
 }
 
 /* Canceled thread */
-static void *joiner_func(void *arg)
+void *joiner_func(void *arg)
 {
 	(void)pthread_join(*(pthread_t *) arg, NULL);
 

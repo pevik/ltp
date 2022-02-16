@@ -30,9 +30,9 @@
 #define OFFSET 0x7
 
 static void *stack_addr;
-static size_t stack_size;
+size_t stack_size;
 
-static void *thread_func()
+void *thread_func()
 {
 	pthread_exit(0);
 	return NULL;

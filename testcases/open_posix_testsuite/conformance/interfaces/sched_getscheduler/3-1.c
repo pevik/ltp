@@ -16,7 +16,7 @@
 #include <errno.h>
 #include "posixtest.h"
 
-static struct unique {
+struct unique {
 	int value;
 	char *name;
 } sym[] = {

@@ -30,7 +30,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <netdb.h>
-#include "rpc.h"
+#include "lapi/rpc.h"
 
 //Standard define
 #define PROCNUM 1

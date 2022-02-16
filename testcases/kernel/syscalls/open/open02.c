@@ -25,13 +25,12 @@
 #define TEST_FILE2	"test_file2"
 
 static struct tcase {
-	const char *filename;
+	char *filename;
 	int flag;
 	int exp_errno;
-	const char *desc;
 } tcases[] = {
-	{TEST_FILE, O_RDWR, ENOENT, "new file without O_CREAT"},
-	{TEST_FILE2, O_RDONLY | O_NOATIME, EPERM, "unpriviledget O_RDONLY | O_NOATIME"},
+	{TEST_FILE, O_RDWR, ENOENT},
+	{TEST_FILE2, O_RDONLY | O_NOATIME, EPERM},
 };
 
 void setup(void)
@@ -49,8 +48,22 @@ static void verify_open(unsigned int n)
 {
 	struct tcase *tc = &tcases[n];
 
-	TST_EXP_FAIL(open(tc->filename, tc->flag, 0444),
-	             tc->exp_errno, "open() %s", tc->desc);
+	TEST(open(tc->filename, tc->flag, 0444));
+
+	if (TST_RET != -1) {
+		tst_res(TFAIL, "open(%s) succeeded unexpectedly",
+			tc->filename);
+		return;
+	}
+
+	if (tc->exp_errno != TST_ERR) {
+		tst_res(TFAIL | TTERRNO,
+			"open() should fail with %s",
+			tst_strerrno(tc->exp_errno));
+		return;
+	}
+
+	tst_res(TPASS | TTERRNO, "open() failed as expected");
 }
 
 void cleanup(void)

@@ -30,14 +30,12 @@
 #include <string.h>
 #include <errno.h>
 #include <time.h>
-
 #include "noatime.h"
 #include "posixtest.h"
-#include "tempfile.h"
 
 int main(void)
 {
-	char tmpfname[PATH_MAX];
+	char tmpfname[256];
 	ssize_t size = 1024;
 	char data[size];
 	void *pa;
@@ -48,12 +46,12 @@ int main(void)
 
 	char *ch;
 
-	PTS_GET_TMP_FILENAME(tmpfname, "pts_mmap_13_1");
-	if (mounted_noatime(pts_get_tmpdir()) == 1) {
-		printf("UNTESTED: The tmpdir is mounted noatime\n");
+	if (mounted_noatime("/tmp") == 1) {
+		printf("UNTESTED: The /tmp is mounted noatime\n");
 		return PTS_UNTESTED;
 	}
 
+	snprintf(tmpfname, sizeof(tmpfname), "/tmp/pts_mmap_13_1_%d", getpid());
 	unlink(tmpfname);
 	fd = open(tmpfname, O_CREAT | O_RDWR | O_EXCL, S_IRUSR | S_IWUSR);
 	if (fd == -1) {

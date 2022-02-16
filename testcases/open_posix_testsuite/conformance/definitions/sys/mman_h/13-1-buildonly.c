@@ -20,7 +20,7 @@
 
 typedef void *(*mmap_test) (void *, size_t, int, int, int, off_t);
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	mmap_test dummyvar;
 	dummyvar = mmap;

@@ -4,4 +4,4 @@
 
 #include <signal.h>
 
-static sigset_t dummy;
+sigset_t dummy;

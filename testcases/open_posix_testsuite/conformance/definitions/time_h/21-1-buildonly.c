@@ -15,7 +15,7 @@
 
 typedef struct tm *(*gmtime_r_test) (const time_t *, struct tm *);
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	gmtime_r_test dummyvar;
 	dummyvar = gmtime_r;

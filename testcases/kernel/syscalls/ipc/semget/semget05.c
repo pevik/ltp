@@ -48,7 +48,7 @@
  *	none
  */
 
-#include "ipcsem.h"
+#include "../lib/ipcsem.h"
 
 char *TCID = "semget05";
 int TST_TOTAL = 1;

@@ -102,10 +102,10 @@
 /***********************************    Real Test   *****************************************/
 /********************************************************************************************/
 
-static sem_t semsync[2];		/* These semaphores will only be used in child process! */
+sem_t semsync[2];		/* These semaphores will only be used in child process! */
 
 /* The overflow function is used to test the stack overflow */
-static void *overflow(void *arg)
+void *overflow(void *arg)
 {
 	void *current;
 	void *pad[50];		/* We want to consume the stack quickly */
@@ -173,7 +173,7 @@ static void *overflow(void *arg)
   If newsize is not 0, the stack size in ta will be set to this value once the thread is created.
 
 */
-static int test_stack(pthread_attr_t * ta, size_t newsize)
+int test_stack(pthread_attr_t * ta, size_t newsize)
 {
 	pid_t child, ctrl;
 	int status;
@@ -310,7 +310,7 @@ typedef struct {
 	struct sched_param param;
 } testdata_t;
 
-static void *schedtest(void *arg)
+void *schedtest(void *arg)
 {
 	testdata_t *td = (testdata_t *) arg;
 	int newpol, ret = 0;

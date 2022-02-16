@@ -69,13 +69,12 @@ static void run(unsigned int i)
 	TEST(SETREGID(*test_data[i].real_gid, *test_data[i].eff_gid));
 
 	if (TST_RET == -1) {
-		tst_res(TFAIL | TTERRNO, "setregid(%d, %d) failed",
+		tst_res(TBROK | TTERRNO, "setregid(%d, %d) failed",
 			*test_data[i].real_gid, *test_data[i].eff_gid);
-		return;
+	} else {
+		gid_verify(test_data[i].exp_real_usr, test_data[i].exp_eff_usr,
+			   test_data[i].test_msg);
 	}
-
-	gid_verify(test_data[i].exp_real_usr, test_data[i].exp_eff_usr,
-		   test_data[i].test_msg);
 }
 
 static void setup(void)

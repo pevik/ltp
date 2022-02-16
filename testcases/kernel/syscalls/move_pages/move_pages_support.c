@@ -67,11 +67,11 @@ int alloc_pages_on_nodes(void **pages, unsigned int num, int *nodes)
 	size_t onepage = get_page_size();
 #endif
 
-	for (i = 0; i < (int)num; i++) {
+	for (i = 0; i < num; i++) {
 		pages[i] = NULL;
 	}
 
-	for (i = 0; i < (int)num; i++) {
+	for (i = 0; i < num; i++) {
 		char *page;
 
 #ifdef HAVE_NUMA_V2
@@ -88,7 +88,7 @@ int alloc_pages_on_nodes(void **pages, unsigned int num, int *nodes)
 		page[0] = i;
 	}
 
-	if (i == (int)num)
+	if (i == num)
 		return 0;
 
 	free_pages(pages, num);

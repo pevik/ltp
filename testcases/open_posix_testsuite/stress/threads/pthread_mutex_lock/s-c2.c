@@ -87,7 +87,7 @@
 /********************************************************************************************/
 
 #ifndef WITHOUT_XOPEN
-static int types[] = {
+int types[] = {
 	PTHREAD_MUTEX_NORMAL,
 	PTHREAD_MUTEX_ERRORCHECK,
 	PTHREAD_MUTEX_RECURSIVE,
@@ -96,17 +96,17 @@ static int types[] = {
 #endif
 
 /* The condition used to signal the main thread to go to the next step */
-static pthread_cond_t cnd;
-static pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;
-static char do_it;
-static unsigned long counter;
+pthread_cond_t cnd;
+pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;
+char do_it;
+unsigned long counter;
 
 /* Mutex attribute objects and pointers */
-static pthread_mutexattr_t *pma[6];
+pthread_mutexattr_t *pma[6];
 #ifdef WITHOUT_XOPEN
-static pthread_mutexattr_t ma[1];
+pthread_mutexattr_t ma[1];
 #else
-static pthread_mutexattr_t ma[5];
+pthread_mutexattr_t ma[5];
 #endif
 
 /* Test data type */
@@ -119,12 +119,12 @@ typedef struct _td {
 } testdata_t;
 
 /* Thread attribute object */
-static pthread_attr_t ta;
+pthread_attr_t ta;
 
 /*****
  * Level 2 - grandchild function
  */
-static void *sub(void *arg)
+void *sub(void *arg)
 {
 	testdata_t *td = (testdata_t *) arg;
 	td->error = pthread_mutex_lock(&(td->mtx));
@@ -146,7 +146,7 @@ static void *sub(void *arg)
 /*****
  * Level 1 - child function
  */
-static void *threaded(void *arg)
+void *threaded(void *arg)
 {
 	testdata_t *td = (testdata_t *) arg;
 	int ret;

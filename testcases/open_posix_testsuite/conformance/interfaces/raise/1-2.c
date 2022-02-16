@@ -32,13 +32,13 @@
 
 #define SIGTOTEST SIGABRT
 
-static void parenthandler(int signo PTS_ATTRIBUTE_UNUSED)
+void parenthandler(int signo LTP_ATTRIBUTE_UNUSED)
 {
 	printf("Caught signal from parent!\n");
 	exit(-1);
 }
 
-static void childhandler(int signo PTS_ATTRIBUTE_UNUSED)
+void childhandler(int signo LTP_ATTRIBUTE_UNUSED)
 {
 	printf("Caught signal from child!\n");
 	exit(0);

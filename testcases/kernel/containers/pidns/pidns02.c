@@ -89,7 +89,7 @@ static void setup(void)
 	check_newpid();
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
 	int status;
 

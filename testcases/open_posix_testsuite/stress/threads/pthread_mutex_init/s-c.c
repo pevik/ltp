@@ -90,13 +90,12 @@ typedef struct _teststruct {
 	struct _teststruct *prev;
 } teststruct_t;
 
-static int types[] = { PTHREAD_MUTEX_NORMAL,
+int types[] = { PTHREAD_MUTEX_NORMAL,
 	PTHREAD_MUTEX_ERRORCHECK,
 	PTHREAD_MUTEX_RECURSIVE,
 	PTHREAD_MUTEX_DEFAULT
 };
 
-#ifndef WITHOUT_XOPEN
 int main(int argc, char *argv[])
 {
 	struct rlimit rl;

@@ -37,14 +37,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
 #include "posixtest.h"
-#include "tempfile.h"
 
 int main(void)
 {
 #ifdef _POSIX_MEMORY_PROTECTION
-	char tmpfname[PATH_MAX];
+	char tmpfname[256];
 	ssize_t size = 1024;
 	char data[size];
 	void *pa;
@@ -54,7 +52,7 @@ int main(void)
 	int status;
 	int sig_num;
 
-	PTS_GET_TMP_FILENAME(tmpfname, "pts_mmap_6_2");
+	snprintf(tmpfname, sizeof(tmpfname), "/tmp/pts_mmap_6_2_%d", getpid());
 	unlink(tmpfname);
 	fd = open(tmpfname, O_CREAT | O_RDWR | O_EXCL, S_IRUSR | S_IWUSR);
 	if (fd == -1) {

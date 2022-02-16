@@ -14,7 +14,7 @@
 
 typedef double (*difftime_test) (time_t, time_t);
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	difftime_test dummyvar;
 	dummyvar = difftime;

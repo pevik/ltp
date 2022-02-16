@@ -70,9 +70,9 @@
 
 #define SIGNAL SIGALRM
 
-static int called = 0;
+int called = 0;
 
-static void handler(int sig PTS_ATTRIBUTE_UNUSED)
+void handler(int sig LTP_ATTRIBUTE_UNUSED)
 {
 	int ret;
 	sigset_t pending;
