@@ -22,7 +22,7 @@ At
 
 #define NUMSIGNALS (sizeof(siglist) / sizeof(siglist[0]))
 
-static int is_changed(sigset_t set, int sig)
+int is_changed(sigset_t set, int sig)
 {
 
 	int i;

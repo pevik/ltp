@@ -77,15 +77,15 @@
 /*****************************    Test case   *********************************/
 /******************************************************************************/
 
-static volatile char do_it = 1;
-static unsigned long count_ope = 0;
+char do_it = 1;
+unsigned long count_ope = 0;
 #ifdef WITH_SYNCHRO
-static sem_t semsig1;
-static sem_t semsig2;
-static unsigned long count_sig = 0;
+sem_t semsig1;
+sem_t semsig2;
+unsigned long count_sig = 0;
 #endif
 
-static sigset_t usersigs;
+sigset_t usersigs;
 
 typedef struct {
 	int sig;
@@ -95,7 +95,7 @@ typedef struct {
 } thestruct;
 
 /* the following function keeps on sending the signal to the process */
-static void *sendsig(void *arg)
+void *sendsig(void *arg)
 {
 	thestruct *thearg = (thestruct *) arg;
 	int ret;
@@ -134,7 +134,7 @@ static void *sendsig(void *arg)
 
 /* Next are the signal handlers. */
 /* This one is registered for signal SIGUSR1 */
-static void sighdl1(int sig PTS_ATTRIBUTE_UNUSED)
+void sighdl1(int sig LTP_ATTRIBUTE_UNUSED)
 {
 #ifdef WITH_SYNCHRO
 
@@ -145,7 +145,7 @@ static void sighdl1(int sig PTS_ATTRIBUTE_UNUSED)
 }
 
 /* This one is registered for signal SIGUSR2 */
-static void sighdl2(int sig PTS_ATTRIBUTE_UNUSED)
+void sighdl2(int sig LTP_ATTRIBUTE_UNUSED)
 {
 #ifdef WITH_SYNCHRO
 
@@ -155,23 +155,23 @@ static void sighdl2(int sig PTS_ATTRIBUTE_UNUSED)
 #endif
 }
 
-static void prepare(void)
+void prepare(void)
 {
 	return;
 }
 
-static void parent(void)
+void parent(void)
 {
 	return;
 }
 
-static void child(void)
+void child(void)
 {
 	return;
 }
 
 /* Test function -- calls pthread_setschedparam() and checks that EINTR is never returned. */
-static void *test(void *arg PTS_ATTRIBUTE_UNUSED)
+void *test(void *arg LTP_ATTRIBUTE_UNUSED)
 {
 	int ret = 0;
 

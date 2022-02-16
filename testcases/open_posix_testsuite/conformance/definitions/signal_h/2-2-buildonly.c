@@ -4,4 +4,4 @@
 
 #include <signal.h>
 
-static void (*dummy) (int) = SIG_ERR;
+void (*dummy) (int) = SIG_ERR;

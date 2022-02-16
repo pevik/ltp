@@ -13,7 +13,6 @@
 #include "tst_test.h"
 
 #include "tst_net.h"
-#include "tst_private.h"
 
 static char *iface;
 static int prefix;
@@ -125,7 +124,7 @@ int main(int argc, char *argv[])
 
 	prefix_str = strchr(ip_str, '/');
 	if (prefix_str) {
-		prefix = tst_get_prefix(ip_str, is_ipv6);
+		prefix = get_prefix(ip_str, is_ipv6);
 		tst_res_comment(TINFO,
 			"IP address '%s' contains prefix %d, using it and don't search for iface.\n",
 			ip_str, prefix);
@@ -137,12 +136,11 @@ int main(int argc, char *argv[])
 
 	/* checks for validity of IP string */
 	if (is_ipv6)
-		tst_get_in6_addr(ip_str, &ip6);
+		get_in6_addr(ip_str, &ip6);
 	else
-		tst_get_in_addr(ip_str, &ip);
+		get_in_addr(ip_str, &ip);
 
-	tst_print_svar_change(is_rhost ? "RHOST_IFACES" : "LHOST_IFACES",
-		iface);
+	print_svar_change(is_rhost ? "RHOST_IFACES" : "LHOST_IFACES", iface);
 	if (is_ipv6)
 		print_ivar(is_rhost ? "IPV6_RPREFIX" : "IPV6_LPREFIX", prefix);
 	else

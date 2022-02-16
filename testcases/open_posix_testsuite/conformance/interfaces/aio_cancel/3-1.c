@@ -40,7 +40,6 @@
 #include <time.h>
 
 #include "posixtest.h"
-#include "tempfile.h"
 
 #define TNAME "aio_cancel/3-1.c"
 
@@ -50,8 +49,8 @@
 static volatile int countdown = BUF_NB;
 static volatile int canceled;
 
-static void sig_handler(int signum PTS_ATTRIBUTE_UNUSED, siginfo_t *info,
-    void *context PTS_ATTRIBUTE_UNUSED)
+void sig_handler(int signum LTP_ATTRIBUTE_UNUSED, siginfo_t *info,
+    void *context LTP_ATTRIBUTE_UNUSED)
 {
 	struct aiocb *a = info->si_value.sival_ptr;
 
@@ -65,7 +64,7 @@ static void sig_handler(int signum PTS_ATTRIBUTE_UNUSED, siginfo_t *info,
 
 int main(void)
 {
-	char tmpfname[PATH_MAX];
+	char tmpfname[256];
 	int fd;
 	struct aiocb *aiocb_list[BUF_NB];
 	struct aiocb *aiocb;
@@ -78,7 +77,8 @@ int main(void)
 		return PTS_UNSUPPORTED;
 	}
 
-	PTS_GET_TMP_FILENAME(tmpfname, "pts_aio_cancel_3_1");
+	snprintf(tmpfname, sizeof(tmpfname), "/tmp/pts_aio_cancel_3_1_%d",
+		 getpid());
 	unlink(tmpfname);
 	fd = open(tmpfname, O_CREAT | O_RDWR | O_EXCL, S_IRUSR | S_IWUSR);
 	if (fd == -1) {

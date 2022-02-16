@@ -17,6 +17,10 @@
 
 static char *s_fuzz;
 static int fuzz = 2;
+static struct tst_option options[] = {
+	{"f:", &s_fuzz, "-f c     Fuzz factor for valid match (default 2)"},
+	{NULL, NULL, NULL}
+};
 static int fd;
 
 static void verify_ioctl(void)
@@ -49,9 +53,6 @@ static void cleanup(void)
 static struct tst_test test = {
 	.setup = setup,
 	.cleanup = cleanup,
-	.options = (struct tst_option[]) {
-		{"f:", &s_fuzz, "-f c     Fuzz factor for valid match (default 2)"},
-		{}
-	},
+	.options = options,
 	.test_all = verify_ioctl,
 };

@@ -35,11 +35,11 @@
 
 #define NUMSIGNALS (sizeof(siglist) / sizeof(siglist[0]))
 
-static void handler(int signo PTS_ATTRIBUTE_UNUSED)
+void handler(int signo LTP_ATTRIBUTE_UNUSED)
 {
 }
 
-static int is_changed(sigset_t set, int sig)
+int is_changed(sigset_t set, int sig)
 {
 
 	int i;

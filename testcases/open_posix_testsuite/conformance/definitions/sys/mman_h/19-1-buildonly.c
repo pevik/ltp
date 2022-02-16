@@ -18,7 +18,7 @@
 
 typedef int (*posix_madvise_test) (void *, size_t, int);
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	posix_madvise_test dummyvar;
 	dummyvar = posix_madvise;

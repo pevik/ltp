@@ -4,8 +4,6 @@
  */
 
 /*
- * CVE-2016-5195
- *
  * This is a regression test for write race that allows unprivileged programs
  * to change readonly files on the system.
  *
@@ -46,8 +44,6 @@ static gid_t nobody_gid;
 static void setup(void)
 {
 	struct passwd *pw;
-
-	umask(0);
 
 	pw = SAFE_GETPWNAM("nobody");
 
@@ -103,8 +99,7 @@ static struct tst_test test = {
 	.test_all = dirtyc0w_test,
 	.tags = (const struct tst_tag[]) {
 		{"linux-git", "4ceb5db9757a"},
-		{"linux-git", "19be0eaffa3a"},
-		{"CVE", "2016-5195"},
+		{"linux-git", "9be0eaffa3ac"},
 		{}
 	}
 };

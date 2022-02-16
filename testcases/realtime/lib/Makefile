@@ -31,6 +31,6 @@ CFLAGS			+= -D_GNU_SOURCE\
 
 LDLIBS			+= -lpthread -lrt -lm
 
-INTERNAL_LIB		:= librealtime.a
+LIB			:= librealtime.a
 
 include $(top_srcdir)/include/mk/lib.mk

@@ -106,14 +106,15 @@ int main(int ac, char **av)
 
 void setup(void)
 {
-	size_t c_total = 0, nwrite = 0;	/* no. of bytes to be written */
+	int c_total = 0, nwrite = 0;	/* no. of bytes to be written */
 	char tst_buf[BUF_SIZE];
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
 	TEST_PAUSE;
 
-	page_sz = (size_t)getpagesize();
+	if ((page_sz = getpagesize()) == -1)
+		tst_brkm(TBROK | TERRNO, NULL, "getpagesize failed");
 
 	tst_tmpdir();
 
@@ -139,7 +140,7 @@ void setup(void)
 		tst_brkm(TBROK | TERRNO, cleanup, "lseek failed");
 
 	/* Write the string in write_buf at the 100 byte offset */
-	if (write(fildes, write_buf, strlen(write_buf)) != (long)strlen(write_buf))
+	if (write(fildes, write_buf, strlen(write_buf)) != strlen(write_buf))
 		tst_brkm(TBROK | TERRNO, cleanup, "write failed");
 }
 

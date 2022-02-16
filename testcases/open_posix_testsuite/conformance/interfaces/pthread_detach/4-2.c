@@ -29,7 +29,7 @@
 #include "posixtest.h"
 
 /* Thread function */
-static void *a_thread_func()
+void *a_thread_func()
 {
 	pthread_exit(0);
 	return NULL;

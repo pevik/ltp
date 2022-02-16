@@ -26,7 +26,7 @@
 #include <unistd.h>
 #include "posixtest.h"
 
-static void handler(int signo PTS_ATTRIBUTE_UNUSED)
+void handler(int signo LTP_ATTRIBUTE_UNUSED)
 {
 	printf("Inside dummy handler\n");
 }

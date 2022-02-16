@@ -28,24 +28,24 @@
 #define READ_NUM	10
 #define WRITE_NUM	15
 
-static sem_t r_lock, w_lock;
-static int reader_count = 0;
-static int data = 0;
+sem_t r_lock, w_lock;
+int reader_count = 0;
+int data = 0;
 
-static int read_fun(int ID PTS_ATTRIBUTE_UNUSED)
+int read_fun(int ID LTP_ATTRIBUTE_UNUSED)
 {
 	printf("read the board, data=%d \n", data);
 	return 0;
 }
 
-static int write_fun(int ID)
+int write_fun(int ID)
 {
 	data = 100 * ID + ID;
 	printf("write the board, data=%d \n", data);
 	return 0;
 }
 
-static int *reader(void *ID)
+int *reader(void *ID)
 {
 	int ThID = *(int *)ID;
 	if (-1 == sem_wait(&r_lock)) {
@@ -86,7 +86,7 @@ static int *reader(void *ID)
 	pthread_exit(NULL);
 }
 
-static int *writer(void *ID)
+int *writer(void *ID)
 {
 	int ThID = *(int *)ID;
 /* When ThID is equal to WRITE_NUM/2, sleep 2 second and let reader read the data */

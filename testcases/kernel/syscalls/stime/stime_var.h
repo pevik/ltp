@@ -9,7 +9,6 @@
 
 #include <sys/time.h>
 #include "config.h"
-#include "tst_timer.h"
 #include "lapi/syscalls.h"
 
 #define TEST_VARIANTS 3
@@ -27,7 +26,7 @@ static int do_stime(time_t *ntime)
 	case 1:
 		return tst_syscall(__NR_stime, ntime);
 	case 2: {
-		struct __kernel_old_timeval tv;
+		struct timeval tv;
 
 		tv.tv_sec = *ntime;
 		tv.tv_usec = 0;

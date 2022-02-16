@@ -82,14 +82,9 @@ void tst_taint_init(unsigned int mask)
 		tst_res(TCONF, "Kernel is too old for requested mask");
 
 	taint_mask = mask;
+
 	taint = tst_taint_read();
-
-	if (taint & TST_TAINT_W) {
-		tst_res(TCONF, "Ignoring already set kernel warning taint");
-		taint_mask &= ~TST_TAINT_W;
-	}
-
-	if ((taint & taint_mask) != 0)
+	if ((taint & mask) != 0)
 		tst_brk(TBROK, "Kernel is already tainted: %u", taint);
 }
 

@@ -13,9 +13,9 @@
 
 #include <pthread.h>
 
-static pthread_mutex_t a;
+pthread_mutex_t a;
 
-static void dummy_func()
+void dummy_func()
 {
 
 	pthread_mutex_init(&a, NULL);

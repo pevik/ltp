@@ -28,7 +28,7 @@
 #define RRPOLICY SCHED_RR
 #define OTHERPOLICY SCHED_OTHER
 
-static int verify_param(pthread_attr_t * attr, int priority)
+int verify_param(pthread_attr_t * attr, int priority)
 {
 	int rc;
 	struct sched_param param;

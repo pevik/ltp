@@ -563,7 +563,7 @@ void masterClient(void)
 	/* Receive the END(ish) instruction */
 
 	/* Repeat it to the slaves */
-	printf("Exiting...\n");
+	printf("Exitting...\n");
 	serverSendLocal();
 
 	/* Ok, we can quit */

@@ -33,9 +33,9 @@
 
 #define SUBTRACTAMOUNT 1000
 
-static int fails = 0, passes = 0;
+int fails = 0, passes = 0;
 
-static void handler(int signo PTS_ATTRIBUTE_UNUSED)
+void handler(int signo LTP_ATTRIBUTE_UNUSED)
 {
 	printf("Caught signal\n");
 	passes += 1;

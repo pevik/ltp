@@ -86,11 +86,11 @@
 /********************************************************************************************/
 /***********************************    Test case   *****************************************/
 /********************************************************************************************/
-static pthread_mutex_t mtx;
-static sem_t sem;
+pthread_mutex_t mtx;
+sem_t sem;
 
 /** child thread function **/
-static void *threaded(void *arg PTS_ATTRIBUTE_UNUSED)
+void *threaded(void *arg LTP_ATTRIBUTE_UNUSED)
 {
 	int ret;
 	/* Try to lock the mutex once. The call must fail here. */

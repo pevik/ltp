@@ -47,11 +47,11 @@ static void verify_ioctl(void)
 	}
 
 	if (TST_ERR == EACCES) {
-		tst_res(TPASS | TTERRNO, "Mounting RO device RW failed");
+		tst_res(TPASS | TERRNO, "Mounting RO device RW failed");
 		goto next;
 	}
 
-	tst_res(TFAIL | TTERRNO,
+	tst_res(TFAIL | TERRNO,
 		"Mounting RO device RW failed unexpectedly expected EACCES");
 
 next:

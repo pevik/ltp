@@ -21,12 +21,12 @@
 
 #define TIMEOUT   3
 
-static struct testdata {
+struct testdata {
 	pthread_mutex_t mutex;
 	pthread_cond_t cond;
 } td;
 
-static void *t1_func(void *arg)
+void *t1_func(void *arg)
 {
 	int rc;
 	struct timespec timeout;
