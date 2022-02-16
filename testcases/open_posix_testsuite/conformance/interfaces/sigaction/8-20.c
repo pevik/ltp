@@ -18,15 +18,15 @@
 #include <unistd.h>
 #include "posixtest.h"
 
-static int SIGUSR2_count = 0;
+int SIGUSR2_count = 0;
 
-static void SIGUSR2_handler(int signo PTS_ATTRIBUTE_UNUSED)
+void SIGUSR2_handler(int signo LTP_ATTRIBUTE_UNUSED)
 {
 	SIGUSR2_count++;
 	printf("Caught SIGUSR2\n");
 }
 
-static void SIGPROF_handler(int signo PTS_ATTRIBUTE_UNUSED)
+void SIGPROF_handler(int signo LTP_ATTRIBUTE_UNUSED)
 {
 	printf("Caught SIGPROF\n");
 	raise(SIGUSR2);

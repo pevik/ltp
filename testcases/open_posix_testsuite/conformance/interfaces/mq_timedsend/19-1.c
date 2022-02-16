@@ -32,7 +32,7 @@
 #define BUFFER 40
 #define MAXMSG 5
 
-static int invalid_tests[NUMTESTS] = { -1, INT32_MIN, 1000000000, 1000000001,
+int invalid_tests[NUMTESTS] = { -1, INT32_MIN, 1000000000, 1000000001,
 	INT32_MAX
 };
 

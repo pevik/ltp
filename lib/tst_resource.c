@@ -102,8 +102,9 @@ void tst_resource_copy(const char *file, const int lineno,
 		       const char *filename, const char *dest)
 {
 	if (!tst_tmpdir_created()) {
-		tst_brkm_(file, lineno, TBROK, cleanup_fn,
-			"Temporary directory doesn't exist");
+		tst_brkm(TBROK, cleanup_fn,
+		         "Temporary directory doesn't exist at %s:%d",
+		         file, lineno);
 		return;
 	}
 
@@ -132,6 +133,6 @@ void tst_resource_copy(const char *file, const int lineno,
 	if (file_copy(file, lineno, cleanup_fn, startwd, filename, dest))
 		return;
 
-	tst_brkm_(file, lineno, TBROK, cleanup_fn,
-		"Failed to copy resource '%s'", filename);
+	tst_brkm(TBROK, cleanup_fn, "Failed to copy resource '%s' at %s:%d",
+	         filename, file, lineno);
 }

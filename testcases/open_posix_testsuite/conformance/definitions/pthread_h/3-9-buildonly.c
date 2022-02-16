@@ -10,4 +10,4 @@
 
 #include <pthread.h>
 
-static pthread_once_t dummy;
+pthread_once_t dummy;

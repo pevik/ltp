@@ -14,9 +14,6 @@ static const char *kconfigs[] = {
 	"CONFIG_MMU",
 	"CONFIG_EXT4_FS=m",
 	"CONFIG_PGTABLE_LEVELS=4",
-	"CONFIG_MMU & CONFIG_EXT4_FS=m",
-	"CONFIG_EXT4_FS=m | CONFIG_MMU",
-	"CONFIG_DEFAULT_HOSTNAME=\"(none)\"",
 	NULL
 };
 

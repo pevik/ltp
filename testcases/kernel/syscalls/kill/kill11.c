@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: GPL-2.0-or-later
 /* IBM Corporation
  * 01/02/2003	Port to LTP	avenkat@us.ibm.com
  * 06/30/2001	Port to Linux	nsharoff@us.ibm.com
@@ -6,14 +5,31 @@
  *   Copyright (c) International Business Machines  Corp., 2002
  *   Copyright (c) Cyril Hrubis <chrubis@suse.cz> 2014
  *
- * Test checks that when a child is killed by its parent with sig, it
- * returns the correct values(sig and core dump bit) to the waiting parent.
+ *   This program is free software;  you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation; either version 2 of the License, or
+ *   (at your option) any later version.
  *
- * RESTRICTIONS
- * The ulimit for core file size must be greater than 0.
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY;  without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See
+ *   the GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program;  if not, write to the Free Software
+ *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#define _GNU_SOURCE
+/*
+
+  Test check that when a child is killed by its parent, it returns the correct
+  values to the waiting parent--default behaviour assumed by child.
+
+ */
+
+#define _GNU_SOURCE 1
+
+#include <stdio.h>
 #include <errno.h>
 #include <sys/types.h>
 #include <signal.h>
@@ -22,9 +38,27 @@
 #include <sys/wait.h>
 #include <sys/resource.h>
 
-#include "tst_test.h"
+#include "test.h"
+#include "safe_macros.h"
 
-static struct tcase {
+#define FAILED 0
+#define PASSED 1
+
+char *TCID = "kill11";
+
+int local_flag = PASSED;
+int block_number;
+FILE *temp;
+int TST_TOTAL = 1;
+static int sig;
+
+void setup(void);
+void do_child(void);
+
+/*
+ * These signals terminate process by default, some create core file.
+ */
+struct tcase {
 	int sig;
 	int dumps_core;
 } tcases[] = {
@@ -44,9 +78,6 @@ static struct tcase {
 	{SIGPIPE, 0},
 	{SIGALRM, 0},
 	{SIGTERM, 0},
-#ifdef SIGSTKFLT
-	{SIGSTKFLT, 0},
-#endif
 	{SIGXCPU, 1},
 	{SIGXFSZ, 1},
 	{SIGVTALRM, 0},
@@ -56,76 +87,126 @@ static struct tcase {
 	{SIGSYS, 1},
 };
 
-static void verify_kill(unsigned int n)
+static void verify_kill(struct tcase *t)
 {
 	int core;
-	pid_t pid, npid;
-	int nsig, status;
-	struct tcase *tc = &tcases[n];
+	int pid, npid;
+	int nsig, nexno, status;
 
-	pid = SAFE_FORK();
-	if (!pid)
-		pause();
+	if (t->sig != SIGKILL) {
+#ifndef BCS
+		if (t->sig != SIGSTOP)
+#endif
+			if (sigset(t->sig, SIG_DFL) == SIG_ERR) {
+				tst_brkm(TBROK | TERRNO, tst_rmdir,
+				         "sigset(%d) failed", sig);
+			}
+	}
 
-	SAFE_KILL(pid, tc->sig);
-	npid = SAFE_WAIT(&status);
+	pid = FORK_OR_VFORK();
+	if (pid < 0)
+		tst_brkm(TBROK | TERRNO, tst_rmdir, "fork() failed");
+
+	if (pid == 0) {
+#ifdef UCLINUX
+		if (self_exec(argv[0], "dd", t->sig) < 0)
+			exit(1);
+#else
+		do_child();
+#endif
+	}
+
+	kill(pid, t->sig);
+	npid = wait(&status);
 
 	if (npid != pid) {
-		tst_res(TFAIL, "wait() returned %d, expected %d", npid, pid);
+		tst_resm(TFAIL, "wait() returned %d, expected %d", npid, pid);
 		return;
 	}
 
 	nsig = WTERMSIG(status);
+#ifdef WCOREDUMP
 	core = WCOREDUMP(status);
+#endif
+	nexno = WIFEXITED(status);
 
-	if (tc->dumps_core) {
+	if (t->dumps_core) {
 		if (!core) {
-			tst_res(TFAIL, "core dump bit not set for %s", tst_strsig(tc->sig));
+			tst_resm(TFAIL, "core dump bit not set for %s", tst_strsig(t->sig));
 			return;
 		}
 	} else {
 		if (core) {
-			tst_res(TFAIL, "core dump bit set for %s", tst_strsig(tc->sig));
+			tst_resm(TFAIL, "core dump bit set for %s", tst_strsig(t->sig));
 			return;
 		}
 	}
 
-	if (nsig != tc->sig) {
-		tst_res(TFAIL, "wait: unexpected signal %d returned, expected %d", nsig, tc->sig);
+	if (nsig != t->sig) {
+		tst_resm(TFAIL, "wait: unexpected signal %d returned, expected %d", nsig, t->sig);
 		return;
 	}
 
-	tst_res(TPASS, "signal %-16s%s", tst_strsig(tc->sig),
-			tc->dumps_core ? " dumped core" : "");
+	if (nexno != 0) {
+		tst_resm(TFAIL,
+			"signal: unexpected exit number %d returned, expected 0\n",
+			nexno);
+		return;
+	}
+
+	tst_resm(TPASS, "signal %-16s%s", tst_strsig(t->sig),
+	         t->dumps_core ? " dumped core" : "");
 }
 
-#define MIN_RLIMIT_CORE (512 * 1024)
+int main(int argc, char **argv)
+{
+	int lc;
+	unsigned int i;
 
-static void setup(void)
+	tst_parse_opts(argc, argv, NULL, NULL);
+
+#ifdef UCLINUX
+	maybe_run_child(&do_child, "dd", &sig);
+#endif
+
+	setup();
+
+	for (lc = 0; TEST_LOOPING(lc); lc++) {
+		for (i = 0; i < ARRAY_SIZE(tcases); i++)
+			verify_kill(tcases + i);
+	}
+
+	tst_rmdir();
+	tst_exit();
+}
+
+void do_child(void)
+{
+	int i;
+
+	for (i = 0; i < 180; i++)
+		sleep(1);
+
+	fprintf(stderr, "Child missed siggnal");
+	fflush(stderr);
+	exit(1);
+}
+
+/* 1024 GNU blocks */
+#define MIN_RLIMIT_CORE (1024 * 1024)
+
+void setup(void)
 {
 	struct rlimit rlim;
 
-	SAFE_GETRLIMIT(RLIMIT_CORE, &rlim);
+	SAFE_GETRLIMIT(NULL, RLIMIT_CORE, &rlim);
 
-	if (rlim.rlim_max < MIN_RLIMIT_CORE) {
-		if (geteuid() != 0) {
-			tst_brk(TCONF, "hard limit(%lu)less than MIN_RLIMT_CORE(%i)",
-				rlim.rlim_max, MIN_RLIMIT_CORE);
-		}
-		tst_res(TINFO, "Raising rlim_max to %i", MIN_RLIMIT_CORE);
-		rlim.rlim_max = MIN_RLIMIT_CORE;
-	}
 	if (rlim.rlim_cur < MIN_RLIMIT_CORE) {
-		tst_res(TINFO, "Adjusting RLIMIT_CORE to %i", MIN_RLIMIT_CORE);
+		tst_resm(TINFO, "Adjusting RLIMIT_CORE to %i", MIN_RLIMIT_CORE);
 		rlim.rlim_cur = MIN_RLIMIT_CORE;
-		SAFE_SETRLIMIT(RLIMIT_CORE, &rlim);
+		SAFE_SETRLIMIT(NULL, RLIMIT_CORE, &rlim);
 	}
-}
 
-static struct tst_test test = {
-	.needs_tmpdir = 1,
-	.forks_child = 1,
-	.setup = setup,
-	.tcnt = ARRAY_SIZE(tcases),
-	.test = verify_kill,
-};
+	temp = stderr;
+	tst_tmpdir();
+}

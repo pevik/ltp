@@ -27,11 +27,11 @@
 #define INTHREAD 0		/* Control going to or is already for Thread */
 #define INMAIN 1		/* Control going to or is already for Main */
 
-static int sem1;			/* Manual semaphore */
-static int cancel_flag;
+int sem1;			/* Manual semaphore */
+int cancel_flag;
 
 /* Function that the thread executes upon its creation */
-static void *a_thread_func()
+void *a_thread_func()
 {
 	/* Set cancel state to DISABLE, meaning it shouldn't honor any cancel requests. */
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);

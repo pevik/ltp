@@ -24,16 +24,6 @@
 #include "lapi/utime.h"
 
 /*
- * Count number of expected assigned conversions. Any conversion starts with '%'.
- * The '%%' matches % and no assignment is done. The %*x matches as x would do but
- * the assignment is suppressed.
- *
- * NOTE: This is not 100% correct for complex scanf strings, but will do for
- *       all of our intended usage.
- */
-int tst_count_scanf_conversions(const char *fmt);
-
-/*
  * All-in-one function to scanf value(s) from a file.
  */
 int file_scanf(const char *file, const int lineno,
@@ -65,7 +55,7 @@ void safe_file_printf(const char *file, const int lineno,
 /*
  * Safe function to copy files, no more system("cp ...") please.
  */
-int safe_cp(const char *file, const int lineno,
+void safe_cp(const char *file, const int lineno,
              void (*cleanup_fn)(void),
 	     const char *src, const char *dst);
 
@@ -81,7 +71,7 @@ int safe_cp(const char *file, const int lineno,
  * times is a timespec[2] (as for utimensat(2)). If times is NULL then
  * the access/modification times of the file is set to the current time.
  */
-int safe_touch(const char *file, const int lineno,
+void safe_touch(const char *file, const int lineno,
 		void (*cleanup_fn)(void),
 		const char *pathname,
 		mode_t mode, const struct timespec times[2]);

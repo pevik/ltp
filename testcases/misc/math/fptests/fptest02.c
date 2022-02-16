@@ -94,7 +94,7 @@ int critfree;			/* TRUE if critical section not occupied */
 
 static struct event *nextevent(void );
 
-int main(void)
+int main(int argc, char *argv[])
 {
 	struct event *ev;
 

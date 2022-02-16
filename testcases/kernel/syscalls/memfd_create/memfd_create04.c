@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 /*
  *  Copyright (c) Zilogic Systems Pvt. Ltd., 2018
@@ -69,7 +70,7 @@ static void memfd_huge_x_controller(unsigned int n)
 	fd = sys_memfd_create("tfile", MFD_HUGETLB | tflag.flag);
 	if (fd < 0) {
 		if (errno == tflag.exp_err)
-			tst_res(TPASS, "Test failed as expected");
+			tst_res(TPASS, "Test failed as expected\n");
 		else
 			tst_brk(TFAIL | TERRNO,
 				"memfd_create() failed unexpectedly");
@@ -77,7 +78,7 @@ static void memfd_huge_x_controller(unsigned int n)
 	}
 
 	tst_res(TPASS,
-		"memfd_create succeeded for %s page size",
+		"memfd_create succeeded for %s page size\n",
 		tflag.h_size);
 }
 

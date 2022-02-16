@@ -97,7 +97,7 @@
 /********************************************************************************************/
 
 /* The overflow function is used to test the stack overflow */
-static void *overflow(void *arg)
+void *overflow(void *arg)
 {
 	void *current;
 	void *pad[50];		/* We want to consume the stack quickly */
@@ -147,7 +147,7 @@ static void *overflow(void *arg)
 	}
 }
 
-static void *threaded(void *arg)
+void *threaded(void *arg)
 {
 	int ret = 0;
 

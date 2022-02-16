@@ -1,116 +1,142 @@
 #! /bin/sh
-# SPDX-License-Identifier: GPL-2.0-or-later
-# Copyright (c) 2012 FUJITSU LIMITED
-# Copyright (c) 2014-2018 Linux Test Project
-# Copyright (c) 2021 Joerg Vehlow <joerg.vehlow@aox-tech.de>
-#
-# Author: Peng Haitao <penght@cn.fujitsu.com>
 
-MEMCG_TESTFUNC=test
-TST_CNT=8
+################################################################################
+##                                                                            ##
+## Copyright (c) 2012 FUJITSU LIMITED                                         ##
+##                                                                            ##
+## This program is free software;  you can redistribute it and#or modify      ##
+## it under the terms of the GNU General Public License as published by       ##
+## the Free Software Foundation; either version 2 of the License, or          ##
+## (at your option) any later version.                                        ##
+##                                                                            ##
+## This program is distributed in the hope that it will be useful, but        ##
+## WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY ##
+## or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License   ##
+## for more details.                                                          ##
+##                                                                            ##
+## You should have received a copy of the GNU General Public License          ##
+## along with this program;  if not, write to the Free Software               ##
+## Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA    ##
+##                                                                            ##
+################################################################################
+#
+# File :        memcg_stat_test.sh
+# Description:  Tests memory.stat.
+# Author:       Peng Haitao <penght@cn.fujitsu.com>
+# History:      2012/01/16 - Created.
+#
+
+TCID="memcg_stat_test"
+TST_TOTAL=8
 
 . memcg_lib.sh
 
-test1()
+# Test cache
+testcase_1()
 {
-	tst_res TINFO "Test cache"
 	test_mem_stat "--shm -k 3" $PAGESIZES $PAGESIZES "cache" $PAGESIZES false
 }
 
-test2()
+# Test mapped_file
+testcase_2()
 {
-	tst_res TINFO "Test mapped_file"
 	test_mem_stat "--mmap-file" $PAGESIZES $PAGESIZES \
 		"mapped_file" $PAGESIZES false
 }
 
-test3()
+# Test unevictable with MAP_LOCKED
+testcase_3()
 {
-	tst_res TINFO "Test unevictable with MAP_LOCKED"
-	test_mem_stat "--mmap-lock1" $PAGESIZES $PAGESIZES \
-		"unevictable" $PAGESIZES false
+	test_mem_stat "--mmap-lock1" $PAGESIZE $PAGESIZE \
+		"unevictable" $PAGESIZE false
 }
 
-test4()
+# Test unevictable with mlock
+testcase_4()
 {
-	tst_res TINFO "Test unevictable with mlock"
-	test_mem_stat "--mmap-lock2" $PAGESIZES $PAGESIZES \
-		"unevictable" $PAGESIZES false
+	test_mem_stat "--mmap-lock2" $PAGESIZE $PAGESIZE \
+		"unevictable" $PAGESIZE false
 }
 
-test5()
+# Test hierarchical_memory_limit with enabling hierarchical accounting
+testcase_5()
 {
-	tst_res TINFO "Test hierarchical_memory_limit with enabling hierarchical accounting"
 	echo 1 > memory.use_hierarchy
 
 	mkdir subgroup
-	echo $PAGESIZES > memory.limit_in_bytes
-	echo $((PAGESIZES * 2)) > subgroup/memory.limit_in_bytes
+	echo $PAGESIZE > memory.limit_in_bytes
+	echo $((PAGESIZE*2)) > subgroup/memory.limit_in_bytes
 
 	cd subgroup
-	check_mem_stat "hierarchical_memory_limit" $PAGESIZES
+	check_mem_stat "hierarchical_memory_limit" $PAGESIZE
 
 	cd ..
 	rmdir subgroup
 }
 
-test6()
+# Test hierarchical_memory_limit with disabling hierarchical accounting
+testcase_6()
 {
-	tst_res TINFO "Test hierarchical_memory_limit with disabling hierarchical accounting"
-	memcg_require_hierarchy_disabled
+	echo 0 > memory.use_hierarchy
+
+	mkdir subgroup
+	echo $PAGESIZE > memory.limit_in_bytes
+	echo $((PAGESIZE*2)) > subgroup/memory.limit_in_bytes
+
+	cd subgroup
+	check_mem_stat "hierarchical_memory_limit" $((PAGESIZE*2))
+
+	cd ..
+	rmdir subgroup
+}
+
+# Test hierarchical_memsw_limit with enabling hierarchical accounting
+testcase_7()
+{
+	if [ "$MEMSW_LIMIT_FLAG" -eq 0 ]; then
+		tst_resm TCONF "mem+swap is not enabled"
+		return
+	fi
+
+	echo 1 > memory.use_hierarchy
+
+	mkdir subgroup
+	echo $PAGESIZE > memory.limit_in_bytes
+	echo $PAGESIZE > memory.memsw.limit_in_bytes
+	echo $((PAGESIZE*2)) > subgroup/memory.limit_in_bytes
+	echo $((PAGESIZE*2)) > subgroup/memory.memsw.limit_in_bytes
+
+	cd subgroup
+	check_mem_stat "hierarchical_memsw_limit" $PAGESIZE
+
+	cd ..
+	rmdir subgroup
+}
+
+# Test hierarchical_memsw_limit with disabling hierarchical accounting
+testcase_8()
+{
+	if [ "$MEMSW_LIMIT_FLAG" -eq 0 ]; then
+		tst_resm TCONF "mem+swap is not enabled"
+		return
+	fi
 
 	echo 0 > memory.use_hierarchy
 
 	mkdir subgroup
-	echo $PAGESIZES > memory.limit_in_bytes
-	echo $((PAGESIZES * 2)) > subgroup/memory.limit_in_bytes
+	echo $PAGESIZE > memory.limit_in_bytes
+	echo $PAGESIZE > memory.memsw.limit_in_bytes
+	echo $((PAGESIZE*2)) > subgroup/memory.limit_in_bytes
+	echo $((PAGESIZE*2)) > subgroup/memory.memsw.limit_in_bytes
 
 	cd subgroup
-	check_mem_stat "hierarchical_memory_limit" $((PAGESIZES * 2))
+	check_mem_stat "hierarchical_memsw_limit" $((PAGESIZE*2))
 
 	cd ..
 	rmdir subgroup
 }
 
-test7()
-{
-	tst_res TINFO "Test hierarchical_memsw_limit with enabling hierarchical accounting"
-	memcg_require_memsw
+run_tests
 
-	ROD echo 1 \> memory.use_hierarchy
+tst_exit
 
-	mkdir subgroup
-	echo $PAGESIZES > memory.limit_in_bytes
-	echo $PAGESIZES > memory.memsw.limit_in_bytes
-	echo $((PAGESIZES * 2)) > subgroup/memory.limit_in_bytes
-	echo $((PAGESIZES * 2)) > subgroup/memory.memsw.limit_in_bytes
-
-	cd subgroup
-	check_mem_stat "hierarchical_memsw_limit" $PAGESIZES
-
-	cd ..
-	rmdir subgroup
-}
-
-test8()
-{
-	tst_res TINFO "Test hierarchical_memsw_limit with disabling hierarchical accounting"
-	memcg_require_memsw
-	memcg_require_hierarchy_disabled
-
-	ROD echo 0 \> memory.use_hierarchy
-
-	mkdir subgroup
-	echo $PAGESIZES > memory.limit_in_bytes
-	echo $PAGESIZES > memory.memsw.limit_in_bytes
-	echo $((PAGESIZES * 2)) > subgroup/memory.limit_in_bytes
-	echo $((PAGESIZES * 2)) > subgroup/memory.memsw.limit_in_bytes
-
-	cd subgroup
-	check_mem_stat "hierarchical_memsw_limit" $((PAGESIZES * 2))
-
-	cd ..
-	rmdir subgroup
-}
-
-tst_run

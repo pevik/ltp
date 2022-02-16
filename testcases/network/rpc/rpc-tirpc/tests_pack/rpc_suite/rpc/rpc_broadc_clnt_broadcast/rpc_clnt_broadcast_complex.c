@@ -28,9 +28,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <rpc/rpc.h>
 #include <sys/socket.h>
 #include <netdb.h>
-#include "rpc.h"
+#include <rpc/pmap_clnt.h>
 
 //Standard define
 #define PROCNUM 1000

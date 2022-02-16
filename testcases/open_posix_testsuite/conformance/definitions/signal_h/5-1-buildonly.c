@@ -4,4 +4,4 @@
 
 #include <sys/types.h>
 
-static pid_t dummy;
+pid_t dummy;

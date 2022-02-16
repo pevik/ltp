@@ -15,7 +15,7 @@
 
 typedef int (*timer_getoverrun_test) (timer_t);
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	timer_getoverrun_test dummyvar;
 	dummyvar = timer_getoverrun;

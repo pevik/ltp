@@ -16,7 +16,7 @@
 
 typedef key_t(*ftok_test) (const char *, int);
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	ftok_test dummyvar;
 	dummyvar = ftok;

@@ -169,7 +169,7 @@ static const unsigned char compressed_ext2_image_sample[1350] = {
 	0x14, 0x08, 0x00, 0x00, 0x10, 0x00
 };
 
-int main(void)
+int main(int argc, char *argv[])
 {
 	char c = 0;
 	tomoyo_test_init();

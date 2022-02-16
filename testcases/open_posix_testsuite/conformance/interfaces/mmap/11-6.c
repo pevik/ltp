@@ -38,13 +38,11 @@
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
-
 #include "posixtest.h"
-#include "tempfile.h"
 
 int main(void)
 {
-	char tmpfname[PATH_MAX];
+	char tmpfname[256];
 	long page_size;
 
 	char *pa, ch;
@@ -59,7 +57,7 @@ int main(void)
 	/* mmap will create a partial page */
 	len = page_size / 2;
 
-	PTS_GET_TMP_FILENAME(tmpfname, "pts_mmap_11_6");
+	snprintf(tmpfname, sizeof(tmpfname), "/tmp/pts_mmap_11_5_%d", getpid());
 	child = fork();
 	switch (child) {
 	case 0:

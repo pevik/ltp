@@ -22,7 +22,7 @@
 #include <time.h>
 #include "posixtest.h"
 
-#define TEST "6-2"
+#define TEST "5-1"
 #define FUNCTION "sem_timedwait"
 #define ERROR_PREFIX "unexpected error: " FUNCTION " " TEST ": "
 

@@ -18,7 +18,7 @@
 
 typedef int (*sched_getscheduler_test) (pid_t);
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	sched_getscheduler_test dummyvar;
 	dummyvar = sched_getscheduler;

@@ -4,39 +4,29 @@
  *
  * Started by Amir Goldstein <amir73il@gmail.com>
  * Modified by Matthew Bobrowski <mbobrowski@mbobrowski.org>
+ *
+ * DESCRIPTION
+ *	Test file that has been purposely designed to verify
+ *	FAN_REPORT_FID functionality while using newly defined dirent
+ *	events.
  */
-
-/*\
- * [Description]
- * Test file that has been purposely designed to verify FAN_REPORT_FID
- * functionality while using newly defined dirent events.
- */
-
-/*
- * Test case #1 is a regression test for commit f367a62a7cad:
- *      fanotify: merge duplicate events on parent and child
- */
-
 #define _GNU_SOURCE
 #include "config.h"
 
 #include <string.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <sys/statfs.h>
 #include <sys/types.h>
-#include "tst_test.h"
 
-#ifdef HAVE_SYS_FANOTIFY_H
+#include "tst_test.h"
 #include "fanotify.h"
 
-#define EVENT_MAX 10
+#if defined(HAVE_SYS_FANOTIFY_H)
+#include <sys/fanotify.h>
 
-/* Size of the event structure, not including file handle */
-#define EVENT_SIZE (sizeof(struct fanotify_event_metadata) + \
-		    sizeof(struct fanotify_event_info_fid))
-/* Double events buffer size to account for file handles */
-#define EVENT_BUF_LEN (EVENT_MAX * EVENT_SIZE * 2)
-
+#define BUF_SIZE 256
+#define EVENT_MAX 256
 
 #define MOUNT_POINT "mntpoint"
 #define TEST_DIR MOUNT_POINT"/test_dir"
@@ -48,96 +38,59 @@
 #if defined(HAVE_NAME_TO_HANDLE_AT)
 struct event_t {
 	unsigned long long mask;
-	struct fanotify_fid_t *fid;
+	__kernel_fsid_t fsid;
+	struct file_handle handle;
+	char buf[MAX_HANDLE_SZ];
 };
 
 static int fanotify_fd;
-static char events_buf[EVENT_BUF_LEN];
+static char events_buf[BUF_SIZE];
 static struct event_t event_set[EVENT_MAX];
 
-static struct test_case_t {
-	const char *tname;
-	struct fanotify_mark_type mark;
-	unsigned long mask;
-} test_cases[] = {
-	{
-		"FAN_REPORT_FID on filesystem including FAN_DELETE_SELF",
-		INIT_FANOTIFY_MARK_TYPE(FILESYSTEM),
-		FAN_DELETE_SELF,
-	},
-	{
-		"FAN_REPORT_FID on directory with FAN_EVENT_ON_CHILD",
-		INIT_FANOTIFY_MARK_TYPE(INODE),
-		FAN_EVENT_ON_CHILD,
-	},
-};
-
-static void do_test(unsigned int number)
+static void do_test(void)
 {
 	int i, fd, len, count = 0;
 
 	struct file_handle *event_file_handle;
 	struct fanotify_event_metadata *metadata;
 	struct fanotify_event_info_fid *event_fid;
-	struct test_case_t *tc = &test_cases[number];
-	struct fanotify_mark_type *mark = &tc->mark;
-	struct fanotify_fid_t root_fid, dir_fid, file_fid;
 
-	tst_res(TINFO, "Test #%d: %s", number, tc->tname);
+	if (fanotify_mark(fanotify_fd, FAN_MARK_ADD | FAN_MARK_FILESYSTEM,
+				FAN_CREATE | FAN_DELETE | FAN_ATTRIB |
+				FAN_MOVED_FROM | FAN_MOVED_TO |
+				FAN_DELETE_SELF | FAN_ONDIR,
+				AT_FDCWD, TEST_DIR) == -1) {
+		if (errno == ENODEV)
+			tst_brk(TCONF,
+				"FAN_REPORT_FID not supported on %s "
+				"filesystem", tst_device->fs_type);
+		tst_brk(TBROK | TERRNO,
+			"fanotify_mark(%d, FAN_MARK_ADD, FAN_CREATE | "
+			"FAN_DELETE | FAN_MOVED_FROM | FAN_MOVED_TO | "
+			"FAN_DELETE_SELF | FAN_ONDIR, AT_FDCWD, %s) failed",
+			fanotify_fd, TEST_DIR);
+	}
 
-	SAFE_FANOTIFY_MARK(fanotify_fd, FAN_MARK_ADD | mark->flag, tc->mask |
-				FAN_CREATE | FAN_DELETE | FAN_MOVE |
-				FAN_MODIFY | FAN_ONDIR,
-				AT_FDCWD, TEST_DIR);
-
-	/* Save the test root dir fid */
-	fanotify_save_fid(TEST_DIR, &root_fid);
-
-	/* All dirent events on testdir are merged */
-	event_set[count].mask = FAN_CREATE | FAN_MOVE | FAN_DELETE;
-	event_set[count].fid = &root_fid;
+	/* Generate a sequence of events */
+	event_set[count].mask = FAN_CREATE | FAN_MOVED_FROM | FAN_MOVED_TO | \
+				FAN_DELETE;
+	event_set[count].handle.handle_bytes = MAX_HANDLE_SZ;
+	fanotify_get_fid(TEST_DIR, &event_set[count].fsid,
+			 &event_set[count].handle);
 	count++;
 
 	fd = SAFE_CREAT(FILE1, 0644);
 	SAFE_CLOSE(fd);
 
-	/* Save the file fid */
-	fanotify_save_fid(FILE1, &file_fid);
-
-	/* Recursive watch file for events "on self" */
-	if (mark->flag == FAN_MARK_INODE &&
-	    fanotify_mark(fanotify_fd, FAN_MARK_ADD | mark->flag,
-			  FAN_MODIFY | FAN_DELETE_SELF,
-			  AT_FDCWD, FILE1) == -1) {
-		tst_brk(TBROK | TERRNO,
-			"fanotify_mark(%d, FAN_MARK_ADD | %s, "
-			"FAN_DELETE_SELF, AT_FDCWD, %s) failed",
-			fanotify_fd, mark->name, FILE1);
-	}
-
-	/*
-	 * Event on child file is not merged with dirent events.
-	 * FAN_MODIFY event reported on file mark should be merged with the
-	 * FAN_MODIFY event reported on parent directory watch.
-	 */
-	event_set[count].mask = FAN_MODIFY;
-	event_set[count].fid = &file_fid;
-	count++;
-
-	SAFE_TRUNCATE(FILE1, 1);
 	SAFE_RENAME(FILE1, FILE2);
 
-	/*
-	 * FAN_DELETE_SELF may be merged with FAN_MODIFY event above.
-	 */
-	event_set[count].mask = FAN_DELETE_SELF;
-	event_set[count].fid = &file_fid;
+	event_set[count].mask = FAN_ATTRIB | FAN_DELETE_SELF;
+	event_set[count].handle.handle_bytes = MAX_HANDLE_SZ;
+	fanotify_get_fid(FILE2, &event_set[count].fsid,
+			 &event_set[count].handle);
 	count++;
 
 	SAFE_UNLINK(FILE2);
-
-	/* Read file events from the event queue */
-	len = SAFE_READ(0, fanotify_fd, events_buf, EVENT_BUF_LEN);
 
 	/*
 	 * Generate a sequence of events on a directory. Subsequent events
@@ -146,47 +99,32 @@ static void do_test(unsigned int number)
 	 * took place. Events on subdirectories are not merged with events
 	 * on non-subdirectories.
 	 */
-	event_set[count].mask = FAN_ONDIR | FAN_CREATE | FAN_MOVE | FAN_DELETE;
-	event_set[count].fid = &root_fid;
+	event_set[count].mask = FAN_ONDIR | FAN_CREATE | FAN_MOVED_FROM | \
+				FAN_MOVED_TO | FAN_DELETE;
+	event_set[count].handle.handle_bytes = MAX_HANDLE_SZ;
+	fanotify_get_fid(TEST_DIR, &event_set[count].fsid,
+			 &event_set[count].handle);
 	count++;
 
 	SAFE_MKDIR(DIR1, 0755);
 
-	/* Save the subdir fid */
-	fanotify_save_fid(DIR1, &dir_fid);
-
-	/* Recursive watch subdir for events "on self" */
-	if (mark->flag == FAN_MARK_INODE &&
-	    fanotify_mark(fanotify_fd, FAN_MARK_ADD | mark->flag,
-			  FAN_DELETE_SELF | FAN_ONDIR,
-			  AT_FDCWD, DIR1) == -1) {
-		tst_brk(TBROK | TERRNO,
-			"fanotify_mark(%d, FAN_MARK_ADD | %s,"
-			"FAN_DELETE_SELF | FAN_ONDIR, AT_FDCWD, %s) failed",
-			fanotify_fd, mark->name, DIR1);
-	}
-
 	SAFE_RENAME(DIR1, DIR2);
 
 	event_set[count].mask = FAN_ONDIR | FAN_DELETE_SELF;
-	event_set[count].fid = &dir_fid;
+	event_set[count].handle.handle_bytes = MAX_HANDLE_SZ;
+	fanotify_get_fid(DIR2, &event_set[count].fsid,
+			 &event_set[count].handle);
 	count++;
 
 	SAFE_RMDIR(DIR2);
 
-	/* Read dir events from the event queue */
-	len += SAFE_READ(0, fanotify_fd, events_buf + len, EVENT_BUF_LEN - len);
-
-	/*
-	 * Cleanup the mark
-	 */
-	SAFE_FANOTIFY_MARK(fanotify_fd, FAN_MARK_FLUSH | mark->flag, 0,
-			  AT_FDCWD, TEST_DIR);
+	/* Read events from the event queue */
+	len = SAFE_READ(0, fanotify_fd, events_buf, BUF_SIZE);
 
 	/* Process each event in buffer */
 	for (i = 0, metadata = (struct fanotify_event_metadata *) events_buf;
-		FAN_EVENT_OK(metadata, len); i++) {
-		struct event_t *expected = &event_set[i];
+		FAN_EVENT_OK(metadata, len);
+		metadata = FAN_EVENT_NEXT(metadata,len), i++) {
 		event_fid = (struct fanotify_event_info_fid *) (metadata + 1);
 		event_file_handle = (struct file_handle *) event_fid->handle;
 
@@ -203,12 +141,13 @@ static void do_test(unsigned int number)
 				"Received unexpected file descriptor %d in "
 				"event. Expected to get FAN_NOFD(%d)",
 				metadata->fd, FAN_NOFD);
-		} else if (!(metadata->mask & expected->mask)) {
+		} else if (metadata->mask != event_set[i].mask) {
 			tst_res(TFAIL,
 				"Got event: mask=%llx (expected %llx) "
 				"pid=%u fd=%d",
 				(unsigned long long) metadata->mask,
-				expected->mask, (unsigned) metadata->pid,
+				event_set[i].mask,
+				(unsigned) metadata->pid,
 				metadata->fd);
 		} else if (metadata->pid != getpid()) {
 			tst_res(TFAIL,
@@ -219,30 +158,31 @@ static void do_test(unsigned int number)
 				(unsigned) getpid(),
 				metadata->fd);
 		} else if (event_file_handle->handle_bytes !=
-			   expected->fid->handle.handle_bytes) {
+				event_set[i].handle.handle_bytes) {
 			tst_res(TFAIL,
 				"Got event: handle_bytes (%x) returned in "
 				"event does not equal handle_bytes (%x) "
 				"retunred in name_to_handle_at(2)",
 				event_file_handle->handle_bytes,
-				expected->fid->handle.handle_bytes);
+				event_set[i].handle.handle_bytes);
 		} else if (event_file_handle->handle_type !=
-			   expected->fid->handle.handle_type) {
+				event_set[i].handle.handle_type) {
 			tst_res(TFAIL,
 				"handle_type (%x) returned in event does not "
 				"equal to handle_type (%x) returned in "
 				"name_to_handle_at(2)",
 				event_file_handle->handle_type,
-				expected->fid->handle.handle_type);
+				event_set[i].handle.handle_type);
 		} else if (memcmp(event_file_handle->f_handle,
-				  expected->fid->handle.f_handle,
-				  expected->fid->handle.handle_bytes) != 0) {
+					event_set[i].handle.f_handle,
+					event_set[i].handle.handle_bytes)
+					!= 0) {
 			tst_res(TFAIL,
-				"file_handle returned in event does not match "
-				"the file_handle returned in "
+				"event_file_handle->f_handle does not match "
+				"handle.f_handle returned in "
 				"name_to_handle_at(2)");
-		} else if (memcmp(&event_fid->fsid, &expected->fid->fsid,
-				  sizeof(event_fid->fsid)) != 0) {
+		} else if (memcmp(&event_fid->fsid, &event_set[i].fsid,
+					sizeof(event_set[i].fsid)) != 0) {
 			tst_res(TFAIL,
 				"event_fid->fsid != stats.f_fsid that was "
 				"obtained via statfs(2)");
@@ -257,10 +197,6 @@ static void do_test(unsigned int number)
 				*(unsigned long *)
 				event_file_handle->f_handle);
 		}
-		metadata->mask  &= ~expected->mask;
-		/* No events left in current mask? Go for next event */
-		if (metadata->mask == 0)
-			metadata = FAN_EVENT_NEXT(metadata, len);
 	}
 
 	for (; i < count; i++)
@@ -271,9 +207,22 @@ static void do_test(unsigned int number)
 
 static void do_setup(void)
 {
+	int fd;
+
+	/* Check kernel for fanotify support */
+	fd = SAFE_FANOTIFY_INIT(FAN_CLASS_NOTIF, O_RDONLY);
+	SAFE_CLOSE(fd);
+
+	fanotify_fd = fanotify_init(FAN_REPORT_FID, O_RDONLY);
+	if (fanotify_fd == -1) {
+		if (errno == EINVAL)
+			tst_brk(TCONF,
+				"FAN_REPORT_FID not supported in kernel");
+		tst_brk(TBROK | TERRNO,
+			"fanotify_init(FAN_REPORT_FID, O_RDONLY) failed");
+	}
+
 	SAFE_MKDIR(TEST_DIR, 0755);
-	REQUIRE_FANOTIFY_INIT_FLAGS_SUPPORTED_ON_FS(FAN_REPORT_FID, TEST_DIR);
-	fanotify_fd = SAFE_FANOTIFY_INIT(FAN_REPORT_FID, O_RDONLY);
 }
 
 static void do_cleanup(void)
@@ -287,14 +236,9 @@ static struct tst_test test = {
 	.mount_device = 1,
 	.mntpoint = MOUNT_POINT,
 	.all_filesystems = 1,
-	.test = do_test,
-	.tcnt = ARRAY_SIZE(test_cases),
+	.test_all = do_test,
 	.setup = do_setup,
-	.cleanup = do_cleanup,
-	.tags = (const struct tst_tag[]) {
-		{"linux-git", "f367a62a7cad"},
-		{}
-	}
+	.cleanup = do_cleanup
 };
 
 #else

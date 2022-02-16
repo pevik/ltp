@@ -2,9 +2,9 @@
 
 /*
  * Copyright (C) 2008, Linux Foundation,
- * Copyright (c) 2020 Petr Vorel <petr.vorel@gmail.com>
  * written by Michael Kerrisk <mtk.manpages@gmail.com>
  * Initial Porting to LTP by Subrata <subrata@linux.vnet.ibm.com>
+ *
  */
 
 #define _GNU_SOURCE
@@ -17,7 +17,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#include <linux/net.h>
 
 #include "tst_test.h"
 #include "lapi/fcntl.h"
@@ -25,17 +24,25 @@
 
 #define PORT_NUM 33333
 
-static const char *variant_desc[] = {
-	"libc accept4()",
-	"__NR_accept4 syscall",
-	"__NR_socketcall SYS_ACCEPT4 syscall"};
+#ifndef SOCK_CLOEXEC
+# define SOCK_CLOEXEC    O_CLOEXEC
+#endif
+#ifndef SOCK_NONBLOCK
+# define SOCK_NONBLOCK   O_NONBLOCK
+#endif
+
+#if defined(SYS_ACCEPT4)	/* the socketcall() number */
+#define USE_SOCKETCALL 1
+#endif
 
 static struct sockaddr_in *conn_addr, *accept_addr;
 static int listening_fd;
 
-static int socketcall_accept4(int fd, struct sockaddr *sockaddr, socklen_t
-			      *addrlen, int flags)
+#if !(__GLIBC_PREREQ(2, 10))
+static int
+accept4_01(int fd, struct sockaddr *sockaddr, socklen_t *addrlen, int flags)
 {
+#if USE_SOCKETCALL
 	long args[6];
 
 	args[0] = fd;
@@ -44,7 +51,11 @@ static int socketcall_accept4(int fd, struct sockaddr *sockaddr, socklen_t
 	args[3] = flags;
 
 	return tst_syscall(__NR_socketcall, SYS_ACCEPT4, args);
+#else
+	return tst_syscall(__NR_accept4, fd, sockaddr, addrlen, flags);
+#endif
 }
+#endif
 
 static int create_listening_socket(void)
 {
@@ -69,8 +80,6 @@ static int create_listening_socket(void)
 
 static void setup(void)
 {
-	tst_res(TINFO, "Testing variant: %s", variant_desc[tst_variant]);
-
 	memset(conn_addr, 0, sizeof(*conn_addr));
 	conn_addr->sin_family = AF_INET;
 	conn_addr->sin_addr.s_addr = htonl(INADDR_LOOPBACK);
@@ -97,7 +106,6 @@ static struct test_case {
 static void verify_accept4(unsigned int nr)
 {
 	struct test_case *tcase = &tcases[nr];
-	int flags = tcase->cloexec | tcase->nonblock;
 	int connfd, acceptfd;
 	int fdf, flf, fdf_pass, flf_pass, fd_cloexec, fd_nonblock;
 	socklen_t addrlen;
@@ -106,24 +114,19 @@ static void verify_accept4(unsigned int nr)
 	SAFE_CONNECT(connfd, (struct sockaddr *)conn_addr, sizeof(*conn_addr));
 	addrlen = sizeof(*accept_addr);
 
-	switch (tst_variant) {
-	case 0:
-		TEST(accept4(listening_fd, (struct sockaddr *)accept_addr,
-			     &addrlen, flags));
-	break;
-	case 1:
-		TEST(tst_syscall(__NR_accept4, listening_fd,
-				 (struct sockaddr *)accept_addr,
-				 &addrlen, flags));
-	break;
-	case 2:
-		TEST(socketcall_accept4(listening_fd, (struct sockaddr *)accept_addr,
-				&addrlen, flags));
-	break;
+#if !(__GLIBC_PREREQ(2, 10))
+	TEST(accept4_01(listening_fd, (struct sockaddr *)accept_addr, &addrlen,
+				tcase->cloexec | tcase->nonblock));
+#else
+	TEST(accept4(listening_fd, (struct sockaddr *)accept_addr, &addrlen,
+				tcase->cloexec | tcase->nonblock));
+#endif
+	if (TST_RET == -1) {
+		if (TST_ERR == ENOSYS)
+			tst_brk(TCONF, "syscall __NR_accept4 not supported");
+		else
+			tst_brk(TBROK | TTERRNO, "accept4 failed");
 	}
-
-	if (TST_RET == -1)
-		tst_brk(TBROK | TTERRNO, "accept4 failed");
 
 	acceptfd = TST_RET;
 
@@ -158,7 +161,6 @@ static struct tst_test test = {
 	.tcnt = ARRAY_SIZE(tcases),
 	.setup = setup,
 	.cleanup = cleanup,
-	.test_variants = 3,
 	.test = verify_accept4,
 	.bufs = (struct tst_buffers []) {
 		{&conn_addr, .size = sizeof(*conn_addr)},

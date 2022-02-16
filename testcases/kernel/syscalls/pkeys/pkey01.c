@@ -36,6 +36,12 @@
 #define PATH_VM_NRHPS "/proc/sys/vm/nr_hugepages"
 
 static int size;
+static int no_hugepage;
+
+static const char * const save_restore[] = {
+	"?/proc/sys/vm/nr_hugepages",
+	NULL,
+};
 
 static struct tcase {
 	unsigned long flags;
@@ -50,12 +56,21 @@ static void setup(void)
 {
 	int i, fd;
 
-	check_pkey_support();
-
-	if (tst_hugepages == test.request_hugepages)
-		size = SAFE_READ_MEMINFO("Hugepagesize:") * 1024;
-	else
+	if (access("/sys/kernel/mm/hugepages/", F_OK)) {
+		tst_res(TINFO, "Huge page is not supported");
 		size = getpagesize();
+		no_hugepage = 1;
+	} else {
+		int val;
+		SAFE_FILE_PRINTF(PATH_VM_NRHPS, "%d", 1);
+		SAFE_FILE_SCANF(PATH_VM_NRHPS, "%d", &val);
+		if (val != 1)
+			tst_brk(TBROK, "nr_hugepages = %d, but expect %d",
+					val, 1);
+		size = SAFE_READ_MEMINFO("Hugepagesize:") * 1024;
+	}
+
+	check_pkey_support();
 
 	fd = SAFE_OPEN(TEST_FILE, O_RDWR | O_CREAT, 0664);
 	for (i = 0; i < 128; i++)
@@ -132,7 +147,7 @@ static void pkey_test(struct tcase *tc, struct mmap_param *mpa)
 	int pkey, status;
 	int fd = mpa->fd;
 
-	if (!tst_hugepages && (mpa->flags & MAP_HUGETLB)) {
+	if (no_hugepage && (mpa->flags & MAP_HUGETLB)) {
 		tst_res(TINFO, "Skip test on (%s) buffer", flag_to_str(mpa->flags));
 		return;
 	}
@@ -221,5 +236,5 @@ static struct tst_test test = {
 	.forks_child = 1,
 	.test = verify_pkey,
 	.setup = setup,
-	.request_hugepages = 1,
+	.save_restore = save_restore,
 };

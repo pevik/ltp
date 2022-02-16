@@ -63,7 +63,6 @@
 
 static LIST_HEAD(_threads);
 static atomic_t _thread_count = { -1 };
-static unsigned long iters_per_us;
 
 pthread_mutex_t _buffer_mutex;
 char *_print_buffer = NULL;

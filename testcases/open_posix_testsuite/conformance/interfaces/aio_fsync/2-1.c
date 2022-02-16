@@ -18,7 +18,6 @@
 #include <time.h>
 
 #include "posixtest.h"
-#include "tempfile.h"
 
 #define TNAME "aio_fsync/2-1.c"
 
@@ -26,7 +25,7 @@
 
 int main(void)
 {
-	char tmpfname[PATH_MAX];
+	char tmpfname[256];
 	char buf[BUF_SIZE];
 	int fd, ret;
 	struct aiocb aiocb_write;
@@ -36,7 +35,8 @@ int main(void)
 	if (sysconf(_SC_ASYNCHRONOUS_IO) < 200112L)
 		return PTS_UNSUPPORTED;
 
-	PTS_GET_TMP_FILENAME(tmpfname, "pts_aio_fsync_2_1");
+	snprintf(tmpfname, sizeof(tmpfname), "/tmp/pts_aio_fsync_2_1_%d",
+		 getpid());
 	unlink(tmpfname);
 	fd = open(tmpfname, O_CREAT | O_RDWR | O_EXCL, S_IRUSR | S_IWUSR);
 	if (fd == -1) {

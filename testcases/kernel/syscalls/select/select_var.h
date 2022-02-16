@@ -6,7 +6,6 @@
 #define SELECT_VAR__
 
 #include "lapi/syscalls.h"
-#include "tst_timer.h"
 
 struct compat_sel_arg_struct {
 	long _n;
@@ -16,10 +15,7 @@ struct compat_sel_arg_struct {
 	long _tvp;
 };
 
-#define GLIBC_SELECT_VARIANT 0
-
-static int do_select_faulty_to(int nfds, fd_set *readfds, fd_set *writefds,
-		fd_set *exceptfds, struct timeval *timeout, int faulty_to)
+static int do_select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout)
 {
 	switch (tst_variant) {
 	case 0:
@@ -42,49 +38,16 @@ static int do_select_faulty_to(int nfds, fd_set *readfds, fd_set *writefds,
 	}
 	case 2: {
 		int ret;
-		struct __kernel_old_timespec _ts;
-		void *ts;
-
-		if (faulty_to) {
-			ts = timeout;
-		} else {
-			ts = &_ts;
-			_ts.tv_sec = timeout->tv_sec;
-			_ts.tv_nsec = timeout->tv_usec * 1000;
-		}
-
-		ret = tst_syscall(__NR_pselect6, nfds, readfds, writefds, exceptfds, ts, NULL);
-		if (!faulty_to) {
-			timeout->tv_sec = _ts.tv_sec;
-			timeout->tv_usec = _ts.tv_nsec / 1000;
-		}
+		struct timespec ts = {
+			.tv_sec = timeout->tv_sec,
+			.tv_nsec = timeout->tv_usec * 1000,
+		};
+		ret = tst_syscall(__NR_pselect6, nfds, readfds, writefds, exceptfds, &ts, NULL);
+		timeout->tv_sec = ts.tv_sec;
+		timeout->tv_usec = ts.tv_nsec / 1000;
 		return ret;
 	}
-	case 3: {
-		int ret = 0;
-#if (__NR_pselect6_time64 != __LTP__NR_INVALID_SYSCALL)
-		struct __kernel_timespec _ts;
-		void *ts;
-
-		if (faulty_to) {
-			ts = timeout;
-		} else {
-			ts = &_ts;
-			_ts.tv_sec = timeout->tv_sec;
-			_ts.tv_nsec = timeout->tv_usec * 1000;
-		}
-
-		ret = tst_syscall(__NR_pselect6_time64, nfds, readfds, writefds, exceptfds, ts, NULL);
-		if (!faulty_to) {
-			timeout->tv_sec = _ts.tv_sec;
-			timeout->tv_usec = _ts.tv_nsec / 1000;
-		}
-#else
-		tst_brk(TCONF, "__NR_pselect6 time64 variant not supported");
-#endif
-		return ret;
-	}
-	case 4:
+	case 3:
 #ifdef __NR__newselect
 		return tst_syscall(__NR__newselect, nfds, readfds, writefds, exceptfds, timeout);
 #else
@@ -94,12 +57,6 @@ static int do_select_faulty_to(int nfds, fd_set *readfds, fd_set *writefds,
 	}
 
 	return -1;
-}
-
-static inline int do_select(int nfds, fd_set *readfds, fd_set *writefds,
-			    fd_set *exceptfds, struct timeval *timeout)
-{
-	return do_select_faulty_to(nfds, readfds, writefds, exceptfds, timeout, 0);
 }
 
 static void select_info(void)
@@ -115,14 +72,11 @@ static void select_info(void)
 		tst_res(TINFO, "Testing SYS_pselect6 syscall");
 	break;
 	case 3:
-		tst_res(TINFO, "Testing SYS_pselect6 time64 syscall");
-	break;
-	case 4:
 		tst_res(TINFO, "Testing SYS__newselect syscall");
 	break;
 	}
 }
 
-#define TEST_VARIANTS 5
+#define TEST_VARIANTS 4
 
 #endif /* SELECT_VAR__ */

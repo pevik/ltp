@@ -20,7 +20,7 @@
 #include <signal.h>
 #include "posixtest.h"
 
-#define TEST "1-2"
+#define TEST "2-1"
 #define FUNCTION "sem_wait"
 #define ERROR_PREFIX "unexpected error: " FUNCTION " " TEST ": "
 

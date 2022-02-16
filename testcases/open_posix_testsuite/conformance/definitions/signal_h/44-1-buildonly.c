@@ -8,7 +8,7 @@
 
 typedef int (*sigrelse_test) (int);
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	sigrelse_test dummyvar;
 	dummyvar = sigrelse;

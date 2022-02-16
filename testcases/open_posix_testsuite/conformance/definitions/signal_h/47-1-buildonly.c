@@ -12,7 +12,7 @@ typedef int (*sigtimedwait_test) (const sigset_t * restrict,
 				  siginfo_t * restrict,
 				  const struct timespec * restrict);
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	sigtimedwait_test dummyvar;
 	dummyvar = sigtimedwait;

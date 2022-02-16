@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
- * Copyright (c) Linux Test Project, 2017-2020
  * Copyright (C) 2017  Red Hat, Inc.
  */
 
@@ -242,7 +241,7 @@ static void verify_memfd_create(unsigned int n)
 
 	tst_res(TINFO, "%s", tc->desc);
 
-	fd = CHECK_MFD_NEW("ltp_memfd_create01", MFD_DEF_SIZE, tc->flags);
+	fd = CHECK_MFD_NEW(TCID, MFD_DEF_SIZE, tc->flags);
 
 	tc->func(fd);
 
@@ -258,7 +257,7 @@ static void setup(void)
 	 * is this flag is missing.
 	 */
 	if (!MFD_FLAGS_AVAILABLE(MFD_ALLOW_SEALING)) {
-		tst_brk(TCONF | TERRNO,
+		tst_brk(TCONF | TTERRNO,
 			"memfd_create(%u) not implemented", MFD_ALLOW_SEALING);
 	}
 }

@@ -25,9 +25,9 @@
 #include <errno.h>
 #include "posixtest.h"
 
-static volatile sig_atomic_t wakeup = 1;
+volatile sig_atomic_t wakeup = 1;
 
-static void handler(int signo PTS_ATTRIBUTE_UNUSED)
+void handler(int signo LTP_ATTRIBUTE_UNUSED)
 {
 	printf("Caught SIGXCPU\n");
 	wakeup++;

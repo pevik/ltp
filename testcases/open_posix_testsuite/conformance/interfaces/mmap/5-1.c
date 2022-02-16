@@ -30,16 +30,14 @@
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
-
 #include "posixtest.h"
-#include "tempfile.h"
 
-static struct testcase {
+struct testcase {
 	int prot;
 	int flags;
 };
 
-static struct testcase testcases[] = {
+struct testcase testcases[] = {
 	{.flags = MAP_SHARED,.prot = PROT_NONE},
 	{.flags = MAP_SHARED,.prot = PROT_READ},
 	{.flags = MAP_SHARED,.prot = PROT_WRITE},
@@ -89,13 +87,13 @@ static void print_error(struct testcase *t, int saved_errno)
 
 int main(void)
 {
-	char tmpfname[PATH_MAX];
+	char tmpfname[256];
 	void *pa;
 	size_t size = 1024;
 	int fd, fail = 0;
 	unsigned int i;
 
-	PTS_GET_TMP_FILENAME(tmpfname, "pts_mmap_5_1");
+	snprintf(tmpfname, sizeof(tmpfname), "/tmp/pts_mmap_5_1_%d", getpid());
 	unlink(tmpfname);
 	fd = open(tmpfname, O_CREAT | O_RDWR | O_EXCL, S_IRUSR | S_IWUSR);
 	if (fd == -1) {

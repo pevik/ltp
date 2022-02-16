@@ -38,7 +38,7 @@
 char *TCID = "cap_bounds_r";
 int TST_TOTAL = 2;
 
-int main(void)
+int main(int argc, char *argv[])
 {
 #if HAVE_SYS_CAPABILITY_H
 #if HAVE_DECL_PR_CAPBSET_READ && HAVE_DECL_PR_CAPBSET_DROP
@@ -52,7 +52,7 @@ int main(void)
 	/* make sure we have the capability now */
 	ret = prctl(PR_CAPBSET_READ, CAP_SYS_ADMIN);
 	if (ret != 1) {
-		tst_brkm(TBROK, NULL, "Not starting with CAP_SYS_ADMIN");
+		tst_brkm(TBROK, NULL, "Not starting with CAP_SYS_ADMIN\n");
 	}
 
 	/* Make sure it's in pI */
@@ -60,21 +60,21 @@ int main(void)
 	if (!cur) {
 		tst_brkm(TBROK,
 			 NULL,
-			 "Failed to create cap_sys_admin+i cap_t (errno %d)",
+			 "Failed to create cap_sys_admin+i cap_t (errno %d)\n",
 			 errno);
 	}
 	ret = cap_set_proc(cur);
 	if (ret) {
 		tst_brkm(TBROK,
 			 NULL,
-			 "Failed to cap_set_proc with cap_sys_admin+i (ret %d errno %d)",
+			 "Failed to cap_set_proc with cap_sys_admin+i (ret %d errno %d)\n",
 			 ret, errno);
 	}
 	cap_free(cur);
 	cur = cap_get_proc();
 	ret = cap_get_flag(cur, CAP_SYS_ADMIN, CAP_INHERITABLE, &f);
 	if (ret || f != CAP_SET) {
-		tst_brkm(TBROK, NULL, "Failed to add CAP_SYS_ADMIN to pI");
+		tst_brkm(TBROK, NULL, "Failed to add CAP_SYS_ADMIN to pI\n");
 	}
 	cap_free(cur);
 
@@ -82,8 +82,8 @@ int main(void)
 	ret = prctl(PR_CAPBSET_DROP, CAP_SYS_ADMIN);
 	if (ret) {
 		tst_resm(TFAIL,
-			 "Failed to drop CAP_SYS_ADMIN from bounding set.");
-		tst_resm(TINFO, "(ret=%d, errno %d)", ret, errno);
+			 "Failed to drop CAP_SYS_ADMIN from bounding set.\n");
+		tst_resm(TINFO, "(ret=%d, errno %d)\n", ret, errno);
 		tst_exit();
 	}
 
@@ -93,22 +93,22 @@ int main(void)
 	if (ret || f != CAP_SET) {
 		tst_brkm(TFAIL,
 			 NULL,
-			 "CAP_SYS_ADMIN not in pI after dropping from bounding set");
+			 "CAP_SYS_ADMIN not in pI after dropping from bounding set\n");
 	}
 	tst_resm(TPASS,
-		 "CAP_SYS_ADMIN remains in pI after removing from bounding set");
+		 "CAP_SYS_ADMIN remains in pI after removing from bounding set\n");
 
 	tmpcap = cap_dup(cur);
 	v[0] = CAP_SYS_ADMIN;
 	ret = cap_set_flag(tmpcap, CAP_INHERITABLE, 1, v, CAP_CLEAR);
 	if (ret) {
 		tst_brkm(TFAIL, NULL,
-			 "Failed to drop CAP_SYS_ADMIN from cap_t");
+			 "Failed to drop CAP_SYS_ADMIN from cap_t\n");
 	}
 	ret = cap_set_proc(tmpcap);
 	if (ret) {
 		tst_brkm(TFAIL, NULL,
-			 "Failed to drop CAP_SYS_ADMIN from pI");
+			 "Failed to drop CAP_SYS_ADMIN from pI\n");
 	}
 	cap_free(tmpcap);
 	/* test 2: can we put it back in pI? */
@@ -116,12 +116,12 @@ int main(void)
 	if (ret == 0) {		/* success means pI was not bounded by X */
 		tst_brkm(TFAIL,
 			 NULL,
-			 "Managed to put CAP_SYS_ADMIN back into pI though not in X");
+			 "Managed to put CAP_SYS_ADMIN back into pI though not in X\n");
 	}
 	cap_free(cur);
 
 	tst_resm(TPASS,
-		 "Couldn't put CAP_SYS_ADMIN back into pI when not in bounding set");
+		 "Couldn't put CAP_SYS_ADMIN back into pI when not in bounding set\n");
 #else /* HAVE_LIBCAP */
 	tst_resm(TCONF, "System doesn't have POSIX capabilities.");
 #endif

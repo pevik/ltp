@@ -9,9 +9,9 @@
  */
 #include <time.h>
 
-static struct timespec this_type_should_exist, t;
+struct timespec this_type_should_exist, t;
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	time_t sec;
 	long nsec;

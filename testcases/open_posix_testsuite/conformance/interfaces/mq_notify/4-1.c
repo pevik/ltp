@@ -33,14 +33,14 @@
 #define MSG_SIZE	50
 #define ERROR_PREFIX "unexpected error: " FUNCTION " " TEST ": "
 
-static int enter_handler = 0;
+int enter_handler = 0;
 
-static void msg_handler()
+void msg_handler()
 {
 	enter_handler = 1;
 }
 
-static void mqclean(mqd_t queue, const char *qname)
+void mqclean(mqd_t queue, const char *qname)
 {
 	mq_close(queue);
 	mq_unlink(qname);

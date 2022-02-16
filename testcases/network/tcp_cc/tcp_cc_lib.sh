@@ -101,5 +101,11 @@ tcp_cc_test01()
 	tst_netload -H $(tst_ipaddr rhost) -A $TST_NET_MAX_PKT
 	local res1="$(cat tst_netload.res)"
 
-	tst_netload_compare $res0 $res1 $threshold
+	local per=$(( $res0 * 100 / $res1 - 100 ))
+
+	if [ "$per" -lt "$threshold" ]; then
+		tst_res TFAIL "$alg performance $per %"
+	else
+		tst_res TPASS "$alg performance $per %"
+	fi
 }

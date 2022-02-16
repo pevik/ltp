@@ -11,7 +11,7 @@
 
 #include <time.h>
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	int dummy;
 

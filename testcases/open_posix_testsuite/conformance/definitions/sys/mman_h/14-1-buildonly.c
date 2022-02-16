@@ -18,7 +18,7 @@
 
 typedef int (*mprotect_test) (void *, size_t, int);
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	mprotect_test dummyvar;
 	dummyvar = mprotect;

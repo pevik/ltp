@@ -14,7 +14,7 @@
 
 typedef struct tm *(*localtime_test) (const time_t *);
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	localtime_test dummyvar;
 	dummyvar = localtime;

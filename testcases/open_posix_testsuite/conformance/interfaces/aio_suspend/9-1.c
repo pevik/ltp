@@ -36,7 +36,6 @@
 #include <unistd.h>
 
 #include "posixtest.h"
-#include "tempfile.h"
 
 #define WAIT_FOR_AIOCB	6
 
@@ -50,7 +49,7 @@ static void sigrt1_handler()
 static int do_test(int num_aiocbs, size_t buf_size)
 {
 	struct timespec processing_completion_ts = {0, 10000000};
-	char tmpfname[PATH_MAX];
+	char tmpfname[256];
 	int fd;
 	struct aiocb *aiocbs[num_aiocbs];
 	struct aiocb *plist[2];
@@ -62,7 +61,8 @@ static int do_test(int num_aiocbs, size_t buf_size)
 	int err = PTS_UNRESOLVED;
 	int i;
 
-	PTS_GET_TMP_FILENAME(tmpfname, "pts_aio_suspend_9_1");
+	snprintf(tmpfname, sizeof(tmpfname), "/tmp/pts_aio_suspend_9_1_%d",
+		 getpid());
 	unlink(tmpfname);
 
 	fd = open(tmpfname, O_CREAT | O_RDWR | O_EXCL, S_IRUSR | S_IWUSR);

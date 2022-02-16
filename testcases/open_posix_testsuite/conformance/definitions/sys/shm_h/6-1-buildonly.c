@@ -21,9 +21,9 @@
 
 #include <sys/shm.h>
 
-static struct shmid_ds this_type_should_exist, t;
+struct shmid_ds this_type_should_exist, t;
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	struct ipc_perm perm = { 0 };
 	size_t sz = 0;
