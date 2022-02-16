@@ -53,7 +53,7 @@ static void *fn_chld(void *arg)
 	else if (rc != 0)
 		perror("child: pthread_barrier_wait");
 	else
-		printf("child: pthread_barrier_wait returned success\n");
+		printf("child: pthread_barrier_wait returned success");
 
 	thread_state = EXITING_THREAD;
 	return arg;

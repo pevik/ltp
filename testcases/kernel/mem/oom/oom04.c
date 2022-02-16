@@ -36,25 +36,24 @@
 
 #ifdef HAVE_NUMA_V2
 
-static const struct tst_cgroup_group *cg;
+static int cpuset_mounted;
 
 static void verify_oom(void)
 {
 #ifdef TST_ABI32
 	tst_brk(TCONF, "test is not designed for 32-bit system.");
 #endif
+
 	tst_res(TINFO, "OOM on CPUSET...");
 	testoom(0, 0, ENOMEM, 1);
 
-	if (is_numa(NULL, NH_MEMS, 2) &&
-	    SAFE_CGROUP_HAS(cg, "cpuset.memory_migrate")) {
+	if (is_numa(NULL, NH_MEMS, 2)) {
 		/*
 		 * Under NUMA system, the migration of cpuset's memory
 		 * is in charge of cpuset.memory_migrate, we can write
 		 * 1 to cpuset.memory_migrate to enable the migration.
 		 */
-		SAFE_CGROUP_PRINT(cg, "cpuset.memory_migrate", "1");
-
+		write_cpuset_files(CPATH_NEW, "memory_migrate", "1");
 		tst_res(TINFO, "OOM on CPUSET with mem migrate:");
 		testoom(0, 0, ENOMEM, 1);
 	}
@@ -70,8 +69,8 @@ static void setup(void)
 	overcommit = get_sys_tune("overcommit_memory");
 	set_sys_tune("overcommit_memory", 1, 1);
 
-	tst_cgroup_require("cpuset", NULL);
-	cg = tst_cgroup_get_test_group();
+	mount_mem("cpuset", "cpuset", NULL, CPATH, CPATH_NEW);
+	cpuset_mounted = 1;
 
 	/*
 	 * Some nodes do not contain memory, so use
@@ -83,15 +82,15 @@ static void setup(void)
 	if (ret < 0)
 		tst_brk(TBROK, "Failed to get a memory node "
 			      "using get_allowed_nodes()");
-	write_cpusets(cg, memnode);
-	SAFE_CGROUP_PRINTF(cg, "cgroup.procs", "%d", getpid());
+	write_cpusets(memnode);
 }
 
 static void cleanup(void)
 {
 	if (overcommit != -1)
 		set_sys_tune("overcommit_memory", overcommit, 0);
-	tst_cgroup_cleanup();
+	if (cpuset_mounted)
+		umount_mem(CPATH, CPATH_NEW);
 }
 
 static struct tst_test test = {

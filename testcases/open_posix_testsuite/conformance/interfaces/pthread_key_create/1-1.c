@@ -29,7 +29,7 @@
 #define NUM_OF_KEYS 10
 #define KEY_VALUE 0
 
-static pthread_key_t keys[NUM_OF_KEYS];
+pthread_key_t keys[NUM_OF_KEYS];
 
 int main(void)
 {

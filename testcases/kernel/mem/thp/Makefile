@@ -18,7 +18,6 @@
 #
 
 top_srcdir		?= ../../../..
-thp04:			LDLIBS += -lrt
 
 include $(top_srcdir)/include/mk/testcases.mk
 include $(top_srcdir)/testcases/kernel/mem/include/libmem.mk

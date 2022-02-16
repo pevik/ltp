@@ -15,7 +15,7 @@
 
 typedef int (*timer_delete_test) (timer_t);
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	timer_delete_test dummyvar;
 	dummyvar = timer_delete;

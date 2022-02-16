@@ -25,7 +25,7 @@
 
 CPPFLAGS		+= -I$(abs_srcdir) -I$(abs_srcdir)/../utils
 
-SRCS			?= $(sort $(wildcard $(abs_srcdir)/*.c))
+SRCS			?= $(wildcard $(abs_srcdir)/*.c)
 
 MAKE_TARGETS		:= $(notdir $(patsubst %.c,%,$(SRCS)))
 

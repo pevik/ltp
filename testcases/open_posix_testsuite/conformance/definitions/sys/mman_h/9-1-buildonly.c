@@ -12,4 +12,4 @@
 
 #include <sys/mman.h>
 
-static mode_t this_type_should_exist;
+mode_t this_type_should_exist;

@@ -45,6 +45,15 @@ static int merge_across_nodes = -1;
 static unsigned long nr_pages;
 
 static char *n_opt;
+static struct tst_option ksm_options[] = {
+	{"n:", &n_opt,  "-n x    Allocate x pages memory per node"},
+	{NULL, NULL, NULL}
+};
+
+static const char * const save_restore[] = {
+	"?/sys/kernel/mm/ksm/max_page_sharing",
+	NULL,
+};
 
 static void test_ksm(void)
 {
@@ -88,16 +97,10 @@ static void cleanup(void)
 
 static struct tst_test test = {
 	.needs_root = 1,
-	.options = (struct tst_option[]) {
-		{"n:", &n_opt,  "-n x    Allocate x pages memory per node"},
-		{}
-	},
+	.options = ksm_options,
 	.setup = setup,
 	.cleanup = cleanup,
-	.save_restore = (const char * const[]) {
-		"?/sys/kernel/mm/ksm/max_page_sharing",
-		NULL,
-	},
+	.save_restore = save_restore,
 	.test_all = test_ksm,
 };
 

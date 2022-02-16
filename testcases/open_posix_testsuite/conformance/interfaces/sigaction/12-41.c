@@ -20,9 +20,9 @@
 #include <stdlib.h>
 #include "posixtest.h"
 
-static stack_t current;
+stack_t current;
 
-static void handler(int signo PTS_ATTRIBUTE_UNUSED)
+void handler(int signo LTP_ATTRIBUTE_UNUSED)
 {
 	stack_t oss;
 

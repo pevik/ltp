@@ -40,9 +40,6 @@
 #define TESTDIR1 MNTPOINT "/testdir1"
 #define TESTDIR2 MNTPOINT "/testdir2"
 
-static char usrpath[] = USRPATH;
-static char testdir1[] = TESTDIR1;
-static char testdir2[] = TESTDIR2;
 static int32_t fmt_id = FMTID;
 static int32_t fmt_invalid = 999;
 static int test_invalid;
@@ -79,17 +76,17 @@ static struct tcase {
 	int exp_err;
 	int on_flag;
 } tcases[] = {
-	{QCMD(Q_QUOTAON, USRQUOTA), &fmt_id, testdir1, EACCES, 0},
-	{QCMD(Q_QUOTAON, USRQUOTA), &fmt_id, testdir2, ENOENT, 0},
-	{QCMD(Q_QUOTAON, USRQUOTA), &fmt_id, usrpath, EBUSY, 1},
+	{QCMD(Q_QUOTAON, USRQUOTA), &fmt_id, TESTDIR1, EACCES, 0},
+	{QCMD(Q_QUOTAON, USRQUOTA), &fmt_id, TESTDIR2, ENOENT, 0},
+	{QCMD(Q_QUOTAON, USRQUOTA), &fmt_id, USRPATH, EBUSY, 1},
 	{QCMD(Q_SETQUOTA, USRQUOTA), &fmt_id, NULL, EFAULT, 1},
-	{QCMD(OPTION_INVALID, USRQUOTA), &fmt_id, usrpath, EINVAL, 0},
-	{QCMD(Q_QUOTAON, USRQUOTA), &fmt_id, usrpath, ENOTBLK, 0},
+	{QCMD(OPTION_INVALID, USRQUOTA), &fmt_id, USRPATH, EINVAL, 0},
+	{QCMD(Q_QUOTAON, USRQUOTA), &fmt_id, USRPATH, ENOTBLK, 0},
 	{QCMD(Q_SETQUOTA, USRQUOTA), &test_id, &set_dq, ESRCH, 0},
-	{QCMD(Q_QUOTAON, USRQUOTA), &fmt_invalid, usrpath, ESRCH, 0},
-	{QCMD(Q_GETNEXTQUOTA, USRQUOTA), &test_invalid, usrpath, ESRCH, 0},
+	{QCMD(Q_QUOTAON, USRQUOTA), &fmt_invalid, USRPATH, ESRCH, 0},
+	{QCMD(Q_GETNEXTQUOTA, USRQUOTA), &test_invalid, USRPATH, ESRCH, 0},
 	{QCMD(Q_SETQUOTA, USRQUOTA), &test_id, &set_dqmax, ERANGE, 1},
-	{QCMD(Q_QUOTAON, USRQUOTA), &fmt_id, usrpath, EPERM, 0},
+	{QCMD(Q_QUOTAON, USRQUOTA), &fmt_id, USRPATH, EPERM, 0},
 };
 
 static void verify_quotactl(unsigned int n)
@@ -104,8 +101,7 @@ static void verify_quotactl(unsigned int n)
 	}
 
 	if (tc->on_flag) {
-		TEST(quotactl(QCMD(Q_QUOTAON, USRQUOTA), tst_device->dev,
-			FMTID, usrpath));
+		TEST(quotactl(QCMD(Q_QUOTAON, USRQUOTA), tst_device->dev, FMTID, USRPATH));
 		if (TST_RET == -1)
 			tst_brk(TBROK,
 				"quotactl with Q_QUOTAON returned %ld", TST_RET);
@@ -134,8 +130,7 @@ static void verify_quotactl(unsigned int n)
 	}
 
 	if (quota_on) {
-		TEST(quotactl(QCMD(Q_QUOTAOFF, USRQUOTA), tst_device->dev,
-			FMTID, usrpath));
+		TEST(quotactl(QCMD(Q_QUOTAOFF, USRQUOTA), tst_device->dev, FMTID, USRPATH));
 		if (TST_RET == -1)
 			tst_brk(TBROK,
 				"quotactl with Q_QUOTAOFF returned %ld", TST_RET);
@@ -151,14 +146,22 @@ static void verify_quotactl(unsigned int n)
 static void setup(void)
 {
 	const char *const cmd[] = {"quotacheck", "-uF", "vfsv0", MNTPOINT, NULL};
+	int ret;
 	unsigned int i;
 
-	SAFE_CMD(cmd, NULL, NULL);
+	ret = tst_run_cmd(cmd, NULL, NULL, 1);
+	switch (ret) {
+	case 0:
+		break;
+	case 255:
+		tst_brk(TCONF, "quotacheck binary not installed");
+		break;
+	default:
+		tst_brk(TBROK, "quotacheck exited with %i", ret);
+	}
 
 	if (access(USRPATH, F_OK) == -1)
 		tst_brk(TFAIL | TERRNO, "user quotafile didn't exist");
-
-	tst_require_quota_support(tst_device->dev, fmt_id, usrpath);
 
 	SAFE_MKDIR(TESTDIR1, 0666);
 	test_id = geteuid();
@@ -175,21 +178,19 @@ static void setup(void)
 	}
 }
 
+static const char *kconfigs[] = {
+	"CONFIG_QFMT_V2",
+	NULL
+};
+
 static struct tst_test test = {
 	.setup = setup,
-	.needs_kconfigs = (const char *[]) {
-		"CONFIG_QFMT_V2",
-		NULL
-	},
+	.needs_kconfigs = kconfigs,
 	.tcnt = ARRAY_SIZE(tcases),
 	.test = verify_quotactl,
 	.dev_fs_type = "ext4",
 	.mntpoint = MNTPOINT,
 	.mount_device = 1,
 	.mnt_data = "usrquota",
-	.needs_cmds = (const char *const []) {
-		"quotacheck",
-		NULL
-	},
 	.needs_root = 1,
 };

@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include "rpc.h"
+#include <rpc/rpc.h>
 #include "librpc01.h"
 
 int debug = 0;

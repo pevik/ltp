@@ -103,10 +103,11 @@ int main(int ac, char **av)
 				tst_resm(TFAIL, "Failures reported above");
 
 			close(fd);
+			cleanup();
+
 		}
 	}
 
-	cleanup();
 	tst_exit();
 }
 

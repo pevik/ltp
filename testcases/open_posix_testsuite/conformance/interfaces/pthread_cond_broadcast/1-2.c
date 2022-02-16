@@ -97,7 +97,7 @@ static int max_thread_children = 1000;
 
 #endif
 
-static struct _scenar {
+struct _scenar {
 	int m_type;
 	int mc_pshared;
 	int c_clock;
@@ -164,10 +164,10 @@ struct testdata {
 	clockid_t cid;		/* clock used in the condvar */
 	char fork;		/* the children are processes */
 };
-static struct testdata *td;
+struct testdata *td;
 
 /* Child function (either in a thread or in a process) */
-static void *child(void *arg PTS_ATTRIBUTE_UNUSED)
+static void *child(void *arg LTP_ATTRIBUTE_UNUSED)
 {
 	int ret = 0;
 	struct timespec ts;
@@ -229,15 +229,15 @@ typedef struct _children {
 	struct _children *next;
 } children_t;
 
-static children_t sentinel = {.next = NULL };
+children_t sentinel = {.next = NULL };
 
-static children_t *children = &sentinel;
+children_t *children = &sentinel;
 
 /* Timeout thread */
 
-static sem_t sem_tmr;
+sem_t sem_tmr;
 
-static void *timer(void *arg PTS_ATTRIBUTE_UNUSED)
+void *timer(void *arg LTP_ATTRIBUTE_UNUSED)
 {
 	unsigned int to = TIMEOUT;
 	int ret;

@@ -24,7 +24,7 @@ int main(void)
 	}
 
 	if (sigismember(&signalset, SIGABRT) != 0) {
-		printf("sigismember dit not return 0\n");
+		printf("sigismember dit not return 0");
 		return PTS_FAIL;
 	}
 

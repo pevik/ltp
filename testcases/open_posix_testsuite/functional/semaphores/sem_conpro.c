@@ -33,9 +33,9 @@ typedef struct {
 	sem_t lock;
 } buf_t;
 
-static int in, out;
+int in, out;
 
-static int *producer(buf_t * buf)
+int *producer(buf_t * buf)
 {
 	int data;
 	int i;
@@ -65,7 +65,7 @@ static int *producer(buf_t * buf)
 	pthread_exit(NULL);
 }
 
-static int *consumer(buf_t * buf)
+int *consumer(buf_t * buf)
 {
 	int data;
 	int i;

@@ -25,10 +25,10 @@
 #include <unistd.h>
 #include "posixtest.h"
 
-static int ret;			/* Return value of pthread_setcancelstate(). */
+int ret;			/* Return value of pthread_setcancelstate(). */
 
 /* Function that the thread executes upon its creation */
-static void *a_thread_func()
+void *a_thread_func()
 {
 	/* Set cancel state to an invalid integer and save the return value. */
 	ret = pthread_setcancelstate(-100, NULL);

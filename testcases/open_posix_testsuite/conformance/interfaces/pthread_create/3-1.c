@@ -32,7 +32,7 @@
 
 static volatile int sem;
 
-static void *a_thread_func()
+void *a_thread_func()
 {
 	sem = 1;
 

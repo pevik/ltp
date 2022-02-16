@@ -71,9 +71,9 @@
 /********************************************************************************************/
 /***********************************    Test case   *****************************************/
 /********************************************************************************************/
-static char do_it = 1;
+char do_it = 1;
 #ifndef WITHOUT_XOPEN
-static int types[] = { PTHREAD_MUTEX_NORMAL,
+int types[] = { PTHREAD_MUTEX_NORMAL,
 	PTHREAD_MUTEX_ERRORCHECK,
 	PTHREAD_MUTEX_RECURSIVE,
 	PTHREAD_MUTEX_DEFAULT
@@ -81,7 +81,7 @@ static int types[] = { PTHREAD_MUTEX_NORMAL,
 #endif
 
 /******** Threads function *********/
-static void *threaded(void *arg)
+void *threaded(void *arg)
 {
 	int me = (int)arg;
 	pthread_mutex_t mtx;
@@ -159,7 +159,7 @@ static void *threaded(void *arg)
 }
 
 /******** Signal handler ************/
-static void sighdl(int sig)
+void sighdl(int sig)
 {
 	do {
 		do_it = 0;

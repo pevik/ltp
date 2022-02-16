@@ -90,7 +90,7 @@
 /***********************************    Real Test   *****************************************/
 /********************************************************************************************/
 
-static void *teststack(void *arg)
+void *teststack(void *arg)
 {
 	int ret = 0;
 	*(int **)arg = &ret;
@@ -98,7 +98,7 @@ static void *teststack(void *arg)
 }
 
 /* Thread function */
-static void *threaded(void *arg)
+void *threaded(void *arg)
 {
 	int ret;
 	int *child_stack;

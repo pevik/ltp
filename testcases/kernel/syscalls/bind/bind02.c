@@ -36,9 +36,16 @@ static void run(void)
 	servaddr.sin_family = AF_INET;
 	servaddr.sin_port = htons(TCP_PRIVILEGED_PORT);
 	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	TST_EXP_FAIL(bind(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr)),
-	             EACCES, "bind()");
+	TEST(bind(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr)));
 	SAFE_CLOSE(sockfd);
+
+	if (TST_RET != -1) {
+		tst_res(TFAIL, "bind() returned %li, expected -1", TST_RET);
+	} else if (TST_ERR == EACCES) {
+		tst_res(TPASS | TTERRNO, "bind() failed as expected");
+	} else {
+		tst_res(TFAIL | TTERRNO, "Unexpected error");
+	}
 }
 
 static void setup(void)

@@ -21,7 +21,7 @@
 #define CHILDPASS 1
 #define CHILDFAIL 0
 
-static void handler(int signo)
+void handler(int signo)
 {
 	(void) signo;
 

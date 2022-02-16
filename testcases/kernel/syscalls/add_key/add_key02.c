@@ -40,7 +40,6 @@ struct tcase {
 	{ "rxrpc_s",		 8 },
 	{ "user",		64 },
 	{ "logon",              64 },
-	{ "big_key",            64 },
 };
 
 static void verify_add_key(unsigned int i)

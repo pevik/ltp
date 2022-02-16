@@ -11,4 +11,4 @@
 
 #include <pthread.h>
 
-static pthread_spinlock_t dummy;
+pthread_spinlock_t dummy;

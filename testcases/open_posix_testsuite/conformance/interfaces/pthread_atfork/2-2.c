@@ -75,8 +75,8 @@
 /***************************    Test case   ***********************************/
 /******************************************************************************/
 
-static int iPrepare = 0, iParent = 0, iChild = 0;
-static pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
+int iPrepare = 0, iParent = 0, iChild = 0;
+pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
 
 /* pthread_atfork handlers */
 /* 0: NULL NULL NULL  (1)
@@ -89,53 +89,53 @@ static pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
  The ultimate combination is already tested in other testcase.
  tot:  50   84  104
  */
-static void p1(void)
+void p1(void)
 {
 	iPrepare |= 1 << 1;
 }
 
-static void p4(void)
+void p4(void)
 {
 	iPrepare |= 1 << 4;
 }
 
-static void p5(void)
+void p5(void)
 {
 	iPrepare |= 1 << 5;
 }
 
-static void pa2(void)
+void pa2(void)
 {
 	iParent |= 1 << 2;
 }
 
-static void pa4(void)
+void pa4(void)
 {
 	iParent |= 1 << 4;
 }
 
-static void pa6(void)
+void pa6(void)
 {
 	iParent |= 1 << 6;
 }
 
-static void c3(void)
+void c3(void)
 {
 	iChild |= 1 << 3;
 }
 
-static void c5(void)
+void c5(void)
 {
 	iChild |= 1 << 5;
 }
 
-static void c6(void)
+void c6(void)
 {
 	iChild |= 1 << 6;
 }
 
 /* Thread function */
-static void *threaded(void *arg PTS_ATTRIBUTE_UNUSED)
+void *threaded(void *arg LTP_ATTRIBUTE_UNUSED)
 {
 	int ret, status;
 	pid_t child, ctl;

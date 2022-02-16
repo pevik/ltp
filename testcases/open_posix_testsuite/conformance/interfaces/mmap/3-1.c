@@ -29,15 +29,13 @@
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
-
 #include "posixtest.h"
-#include "tempfile.h"
 
 #ifdef MAP_FIXED
 int main(void)
 {
-	char tmpfname[PATH_MAX];
-	char tmpfname2[PATH_MAX];
+	char tmpfname[256];
+	char tmpfname2[256];
 	char *data;
 	long total_size;
 	long page_size;
@@ -59,8 +57,10 @@ int main(void)
 	/* Size of the file */
 	total_size = 2 * page_size;
 
-	PTS_GET_TMP_FILENAME(tmpfname, "pts_mmap_3_1_1");
-	PTS_GET_TMP_FILENAME(tmpfname2, "pts_mmap_3_1_2");
+	snprintf(tmpfname, sizeof(tmpfname), "/tmp/pts_mmap_3_1_%d_1",
+		 getpid());
+	snprintf(tmpfname2, sizeof(tmpfname2), "/tmp/pts_mmap_3_1_%d_2",
+		 getpid());
 
 	unlink(tmpfname);
 	unlink(tmpfname2);

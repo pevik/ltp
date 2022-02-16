@@ -13,12 +13,9 @@ TST_NEEDS_TMPDIR=1
 
 setup()
 {
-
-	TRACEROUTE=traceroute${TST_IPV6}
-	tst_require_cmds $TRACEROUTE
-
-	tst_res TINFO "$TRACEROUTE version:"
-	tst_res TINFO $($TRACEROUTE -V 2>&1)
+	tst_res TINFO "traceroute version:"
+	tst_res TINFO $(traceroute --version 2>&1)
+	[ "$TST_IPV6" ] && tst_res TINFO "NOTE: tracepath6 from iputils is not supported"
 }
 
 run_trace()
@@ -27,23 +24,18 @@ run_trace()
 	local ip=$(tst_ipaddr rhost)
 	local pattern="^[ ]+1[ ]+$ip([ ]+[0-9]+[.][0-9]+ ms){3}"
 
-	if $TRACEROUTE $opts 2>&1 | grep -q "invalid option"; then
-		tst_res TCONF "$opts flag not supported"
-		return
-	fi
-
 	# According to man pages, default sizes:
 	local bytes=60
 	[ "$TST_IPV6" ] && bytes=80
 
-	EXPECT_PASS $TRACEROUTE $ip $bytes -n -m 2 $opts \>out.log
+	EXPECT_PASS traceroute $ip $bytes -n -m 2 $opts \>out.log 2>&1
 
 	grep -q "$bytes byte" out.log
 	if [ $? -ne 0 ]; then
 		cat out.log
 		tst_res TFAIL "'$bytes byte' not found"
 	else
-		tst_res TPASS "$TRACEROUTE use $bytes bytes"
+		tst_res TPASS "traceroute use $bytes bytes"
 	fi
 
 	tail -1 out.log | grep -qE "$pattern"
@@ -51,19 +43,19 @@ run_trace()
 		cat out.log
 		tst_res TFAIL "pattern '$pattern' not found in log"
 	else
-		tst_res TPASS "$TRACEROUTE test completed with 1 hop"
+		tst_res TPASS "traceroute test completed with 1 hop"
 	fi
 }
 
 test1()
 {
-	tst_res TINFO "run $TRACEROUTE with ICMP ECHO"
+	tst_res TINFO "run traceroute with ICMP ECHO"
 	run_trace -I
 }
 
 test2()
 {
-	tst_res TINFO "run $TRACEROUTE with TCP SYN"
+	tst_res TINFO "run traceroute with TCP SYN"
 	run_trace -T
 }
 

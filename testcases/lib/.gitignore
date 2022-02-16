@@ -2,7 +2,6 @@
 /tst_checkpoint
 /tst_device
 /tst_getconf
-/tst_get_median
 /tst_get_unused_port
 /tst_kvcmp
 /tst_net_iface_prefix

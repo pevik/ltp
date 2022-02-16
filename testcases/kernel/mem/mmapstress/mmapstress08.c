@@ -107,13 +107,13 @@ extern long sysconf(int name);
 /*****  LTP Port        *****/
 void ok_exit(void)
 {
-	tst_resm(TPASS, "Test passed");
+	tst_resm(TPASS, "Test passed\n");
 	tst_exit();
 }
 
 int anyfail(void)
 {
-	tst_brkm(TFAIL, NULL, "Test failed");
+	tst_brkm(TFAIL, NULL, "Test failed\n");
 }
 
 #else /* defined(__i386__) || defined(__x86_64__) */

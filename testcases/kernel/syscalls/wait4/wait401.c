@@ -25,19 +25,21 @@ static void run(void)
 
 	pid = SAFE_FORK();
 	if (!pid) {
-		TST_PROCESS_STATE_WAIT(getppid(), 'S', 0);
+		TST_PROCESS_STATE_WAIT(getppid(), 'S');
 		exit(0);
 	}
 
-	TST_EXP_PID_SILENT(wait4(pid, &status, 0, &rusage), "wait4()");
-	if (!TST_PASS)
+	TEST(wait4(pid, &status, 0, &rusage));
+	if (TST_RET == -1) {
+		tst_res(TFAIL | TERRNO, "wait4() failed");
 		return;
+	}
 
 	if (TST_RET != pid) {
-		tst_res(TFAIL, "wait4() returned wrong pid %li, expected %i",
+		tst_res(TFAIL, "waitpid() returned wrong pid %li, expected %i",
 			TST_RET, pid);
 	} else {
-		tst_res(TPASS, "wait4() returned correct pid %i", pid);
+		tst_res(TPASS, "waitpid() returned correct pid %i", pid);
 	}
 
 	if (!WIFEXITED(status)) {

@@ -14,7 +14,7 @@
 /* Include for printf */
 #include <stdio.h>
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	printf("%s\n", tzname[0]);
 	return 0;

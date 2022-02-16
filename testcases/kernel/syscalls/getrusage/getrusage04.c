@@ -118,14 +118,14 @@ int main(int argc, char *argv[])
 				tst_resm(TINFO, "utime:%12luus; stime:%12luus",
 					 usage.ru_utime.tv_usec,
 					 usage.ru_stime.tv_usec);
-				if ((long)udelta > 1000 + (BIAS_MAX * factor_nr)) {
+				if (udelta > 1000 + (BIAS_MAX * factor_nr)) {
 					sprintf(msg_string,
 						"utime increased > %ldus:",
 						1000 + BIAS_MAX * factor_nr);
 					tst_brkm(TFAIL, cleanup, msg_string,
 						 " delta = %luus", udelta);
 				}
-				if ((long)sdelta > 1000 + (BIAS_MAX * factor_nr)) {
+				if (sdelta > 1000 + (BIAS_MAX * factor_nr)) {
 					sprintf(msg_string,
 						"stime increased > %ldus:",
 						1000 + BIAS_MAX * factor_nr);

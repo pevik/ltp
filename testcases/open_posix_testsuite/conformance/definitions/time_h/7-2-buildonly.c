@@ -10,4 +10,4 @@
 
 #include <sys/types.h>
 
-static size_t dummy;
+size_t dummy;

@@ -9,9 +9,9 @@
  */
 #include <time.h>
 
-static struct itimerspec this_type_should_exist, t;
+struct itimerspec this_type_should_exist, t;
 
-static int dummyfcn(void)
+int dummyfcn(void)
 {
 	struct timespec interval;
 	struct timespec value;

@@ -95,7 +95,7 @@ int gcount;			/* # calls to gauss */
 
 static struct event *nextevent(void);
 
-int main(void)
+int main(int argc, char **argv)
 {
 	struct event *ev;
 

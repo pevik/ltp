@@ -74,7 +74,7 @@
 /******************************************************************************/
 
 /* This function checks the thread policy & priority */
-static void check_param(pthread_t thread, int policy, int priority)
+void check_param(pthread_t thread, int policy, int priority)
 {
 	int ret = 0;
 
@@ -105,7 +105,7 @@ static void check_param(pthread_t thread, int policy, int priority)
 }
 
 /* thread function 1 */
-static void *controler(void *arg)
+void *controler(void *arg)
 {
 	int ret = 0;
 
@@ -125,7 +125,7 @@ static void *controler(void *arg)
 }
 
 /* thread function 2 */
-static void *changer(void *arg)
+void *changer(void *arg)
 {
 	int ret = 0;
 

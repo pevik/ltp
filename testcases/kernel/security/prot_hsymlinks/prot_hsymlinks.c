@@ -227,9 +227,6 @@ static void setup(int argc, char *argv[])
 
 	tst_tmpdir();
 
-	/* fix for hsym user with umask 0077 */
-	umask(0);
-
 	init_base_dirs();
 
 	init_files_dirs();
@@ -237,7 +234,7 @@ static void setup(int argc, char *argv[])
 
 static int test_run(void)
 {
-	tst_resm(TINFO, " --- HARDLINKS AND SYMLINKS RESTRICTIONS TEST ---");
+	tst_resm(TINFO, " --- HARDLINKS AND SYMLINKS RESTRICTIONS TEST ---\n");
 
 	int	result_slink = 0,
 		result_hlink = 0,
@@ -259,8 +256,8 @@ static int test_run(void)
 	}
 
 	/* final results */
-	tst_resm(TINFO, "All test-cases have been completed, summary:"
-		" - symlinks  test:\t%s"
+	tst_resm(TINFO, "All test-cases have been completed, summary:\n"
+		" - symlinks  test:\t%s\n"
 		" - hardlinks test:\t%s",
 		(result_slink == 1) ? "FAIL" : "PASS",
 		(result_hlink == 1) ? "FAIL" : "PASS");

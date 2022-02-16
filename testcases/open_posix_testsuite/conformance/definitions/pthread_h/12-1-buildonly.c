@@ -12,10 +12,10 @@
 
 #include <pthread.h>
 
-static pthread_attr_t a;
-static int *detachstate;
+pthread_attr_t a;
+int *detachstate;
 
-static void dummy_func()
+void dummy_func()
 {
 
 	pthread_attr_getdetachstate(&a, detachstate);

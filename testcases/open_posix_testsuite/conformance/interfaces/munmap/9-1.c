@@ -21,15 +21,13 @@
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
-
 #include "posixtest.h"
-#include "tempfile.h"
 
 #define TNAME "munmap/9-1.c"
 
 int main(void)
 {
-	char tmpfname[PATH_MAX];
+	char tmpfname[256];
 	long file_size;
 
 	void *pa = NULL;
@@ -49,7 +47,8 @@ int main(void)
 	len = page_size + 1;
 
 	/* Create tmp file */
-	PTS_GET_TMP_FILENAME(tmpfname, "pts_munmap_9_1");
+	snprintf(tmpfname, sizeof(tmpfname), "/tmp/pts_munmap_1_1_%d",
+		 getpid());
 	unlink(tmpfname);
 	fd = open(tmpfname, O_CREAT | O_RDWR | O_EXCL, S_IRUSR | S_IWUSR);
 	if (fd == -1) {

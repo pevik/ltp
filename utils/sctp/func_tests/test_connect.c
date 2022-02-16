@@ -49,14 +49,13 @@
 #include <errno.h>
 #include <netinet/sctp.h>
 #include <sctputil.h>
-#include "tst_kernel.h"
 
 char *TCID = __FILE__;
 int TST_TOTAL = 5;
 int TST_CNT = 0;
 
 int
-main(void)
+main(int argc, char *argv[])
 {
 	int svr_sk, clt_sk1, clt_sk2, peeloff_sk;
 	sctp_assoc_t svr_associd1;
@@ -67,9 +66,6 @@ main(void)
 	int error;
 	char *big_buffer;
 	int flags;
-
-	if (tst_check_driver("sctp"))
-		tst_brkm(TCONF, tst_exit, "sctp driver not available");
 
         /* Rather than fflush() throughout the code, set stdout to 
 	 * be unbuffered.  
