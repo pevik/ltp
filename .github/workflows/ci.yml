@@ -55,6 +55,11 @@ jobs:
               TREE: out
               VARIANT: minimal
 
+          - container: "uos:stable"
+            env:
+              CC: gcc
+              METADATA: asciidoctor
+
           # other builds
           - container: "fedora:latest"
             env:
