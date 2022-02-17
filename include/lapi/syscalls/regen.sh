@@ -56,7 +56,7 @@ cat << EOF > "${output_pid}"
 		tst_ret = syscall(NR, ##__VA_ARGS__); \\
 	} \\
 	if (tst_ret == -1 && errno == ENOSYS) { \\
-		TST_SYSCALL_BRK__(NR); \\
+		tst_brk(TCONF, "syscall(%d) " #NR " not supported", NR); \\
 	} \\
 	tst_ret; \\
 })
