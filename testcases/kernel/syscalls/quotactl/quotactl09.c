@@ -32,7 +32,7 @@
 #define OPTION_INVALID 999
 
 static int32_t fmt_id = QFMT_VFS_V1;
-static int test_id;
+static int test_id, mount_flag;
 static int getnextquota_nsup, socket_fd = -1;
 
 static struct if_nextdqblk res_ndq;
@@ -144,6 +144,12 @@ static void setup(void)
 {
 	unsigned int i;
 
+	if (!tst_variant)
+		SAFE_MKDIR(MNTPOINT, 0777);
+
+	do_mount(tst_device->dev, MNTPOINT, tst_device->fs_type, 0, NULL);
+	mount_flag = 1;
+
 	quotactl_info();
 
 	socket_fd = SAFE_SOCKET(PF_INET, SOCK_STREAM, 0);
@@ -163,8 +169,12 @@ static void cleanup(void)
 {
 	if (fd > -1)
 		SAFE_CLOSE(fd);
+
 	if (socket_fd > -1)
 		SAFE_CLOSE(socket_fd);
+
+	if (mount_flag && tst_umount(MNTPOINT))
+		tst_res(TWARN | TERRNO, "umount(%s)", MNTPOINT);
 }
 
 static struct tst_test test = {
@@ -178,8 +188,8 @@ static struct tst_test test = {
 	.test = verify_quotactl,
 	.dev_fs_opts = (const char *const[]){"-O quota", NULL},
 	.dev_fs_type = "ext4",
-	.mntpoint = MNTPOINT,
-	.mount_device = 1,
+	//.mntpoint = MNTPOINT,
+	.format_device = 1,
 	.needs_root = 1,
 	.test_variants = QUOTACTL_SYSCALL_VARIANTS,
 	.needs_cmds = (const char *[]) {
