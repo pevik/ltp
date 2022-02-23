@@ -157,7 +157,7 @@ static void setup(void)
 	quotactl_info();
 
 	SAFE_MKFS(tst_device->dev, tst_device->fs_type, fs_opts, NULL);
-	SAFE_MOUNT(tst_device->dev, MNTPOINT, tst_device->fs_type, 0, NULL);
+	do_mount(tst_device->dev, MNTPOINT, tst_device->fs_type, 0, NULL);
 	mount_flag = 1;
 
 	fd = SAFE_OPEN(MNTPOINT, O_RDONLY);
