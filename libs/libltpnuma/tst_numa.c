@@ -129,6 +129,7 @@ static int node_has_enough_memory(int node, size_t min_kb)
 	char buf[1024];
 	long mem_total = 0;
 	long mem_used = 0;
+	long file_pages = 0;
 
 	/* Make sure there is some space for kernel upkeeping as well */
 	min_kb += 4096;
@@ -152,6 +153,9 @@ static int node_has_enough_memory(int node, size_t min_kb)
 
 		if (sscanf(buf, "%*s %*i MemUsed: %li", &val) == 1)
 			mem_used = val;
+
+		if (sscanf(buf, "%*s %*i FilePages: %li", &val) == 1)
+			file_pages = val;
 	}
 
 	fclose(fp);
@@ -161,7 +165,7 @@ static int node_has_enough_memory(int node, size_t min_kb)
 		return 0;
 	}
 
-	if (mem_total - mem_used < (long)min_kb) {
+	if (mem_total - mem_used + (9 * file_pages)/10 < (long)min_kb) {
 		tst_res(TINFO,
 		        "Not enough free RAM on node %i, have %likB needs %zukB",
 		        node, mem_total - mem_used, min_kb);
