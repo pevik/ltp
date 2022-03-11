@@ -55,6 +55,7 @@
 #define PASS_THRESHOLD (CHUNK_SZ / 4)
 #define PASS_THRESHOLD_KB (PASS_THRESHOLD / 1024)
 #define SWAPPINESS "60"
+#define OOM_SCORE_ADJ "-1000"
 
 static const char drop_caches_fname[] = "/proc/sys/vm/drop_caches";
 static int pg_sz, stat_refresh_sup;
@@ -115,9 +116,6 @@ static void setup(void)
 		tst_brk(TCONF, "System swap is too small (%li bytes needed)",
 			2 * CHUNK_SZ);
 	}
-
-	check_path("/proc/self/oom_score_adj");
-	SAFE_FILE_PRINTF("/proc/self/oom_score_adj", "%d", -1000);
 
 	SAFE_CG_PRINTF(tst_cg, "memory.max", "%ld", MEM_LIMIT);
 	if (SAFE_CG_HAS(tst_cg, "memory.swap.max"))
@@ -231,6 +229,7 @@ static struct tst_test test = {
 	.needs_root = 1,
 	.save_restore = (const struct tst_path_val const[]) {
 		{"?/proc/sys/vm/swappiness", SWAPPINESS},
+		{"/proc/self/oom_score_adj", OOM_SCORE_ADJ},
 		NULL
 	},
 	.needs_cgroup_ctrls = (const char *const []){ "memory", NULL },
