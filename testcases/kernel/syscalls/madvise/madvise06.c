@@ -54,6 +54,7 @@
 #define MEMSW_LIMIT (2 * CHUNK_SZ)
 #define PASS_THRESHOLD (CHUNK_SZ / 4)
 #define PASS_THRESHOLD_KB (PASS_THRESHOLD / 1024)
+#define SWAPPINESS "60"
 
 static const char drop_caches_fname[] = "/proc/sys/vm/drop_caches";
 static int pg_sz, stat_refresh_sup;
@@ -123,10 +124,9 @@ static void setup(void)
 		SAFE_CG_PRINTF(tst_cg, "memory.swap.max", "%ld", MEMSW_LIMIT);
 
 	if (SAFE_CG_HAS(tst_cg, "memory.swappiness")) {
-		SAFE_CG_PRINT(tst_cg, "memory.swappiness", "60");
+		SAFE_CG_PRINT(tst_cg, "memory.swappiness", SWAPPINESS);
 	} else {
 		check_path("/proc/sys/vm/swappiness");
-		SAFE_FILE_PRINTF("/proc/sys/vm/swappiness", "%d", 60);
 	}
 
 	SAFE_CG_PRINTF(tst_cg, "cgroup.procs", "%d", getpid());
@@ -229,8 +229,8 @@ static struct tst_test test = {
 	.min_kver = "3.10.0",
 	.needs_tmpdir = 1,
 	.needs_root = 1,
-	.save_restore = (const char * const[]) {
-		"?/proc/sys/vm/swappiness",
+	.save_restore = (const struct tst_path_val const[]) {
+		{"?/proc/sys/vm/swappiness", SWAPPINESS},
 		NULL
 	},
 	.needs_cgroup_ctrls = (const char *const []){ "memory", NULL },
