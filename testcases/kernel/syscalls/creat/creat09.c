@@ -56,6 +56,8 @@ static void setup(void)
 		(int)ltpuser->pw_gid);
 	free_gid = tst_get_free_gid(ltpuser->pw_gid);
 
+	umask(0);
+
 	/* Create directories and set permissions */
 	SAFE_MKDIR(WORKDIR, MODE_RWX);
 	SAFE_CHOWN(WORKDIR, ltpuser->pw_uid, free_gid);
