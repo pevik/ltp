@@ -122,6 +122,8 @@ static void setup(void)
 
 	cwd = tst_get_tmpdir();
 
+	umask(0);
+
 	SAFE_MKDIR(SERV_PATH, DEFAULT_MODE);
 	SAFE_MKDIR(CLI_PATH, DEFAULT_MODE);
 	SAFE_CREAT(SERV_FORCE_SYNC, DEFAULT_MODE);
