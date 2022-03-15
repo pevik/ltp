@@ -17,6 +17,7 @@
  * by (the real) root. So on the second level we reset dumpable to 1.
  *
  */
+
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,16 +31,12 @@
 
 static pid_t clone_newuser(void)
 {
-	const struct tst_clone_args cargs = {
-		CLONE_NEWUSER,
-		SIGCHLD
-	};
+	const struct tst_clone_args cargs = { CLONE_NEWUSER, SIGCHLD };
 
 	return SAFE_CLONE(&cargs);
 }
 
-static void write_mapping(const pid_t proc_in_ns,
-			  const char *const id_mapping)
+static void write_mapping(const pid_t proc_in_ns, const char *const id_mapping)
 {
 	char proc_path[PATH_MAX];
 	int proc_dir;
@@ -61,11 +58,11 @@ static void write_mapping(const pid_t proc_in_ns,
 static void ns_level2(void)
 {
 	if (prctl(PR_SET_DUMPABLE, 1, 0, 0, 0))
-		tst_res(TINFO | TERRNO, "Failed to set dumpable flag");
+		tst_brk(TBROK | TTERRNO, "Failed to set dumpable flag");
+
 	TST_CHECKPOINT_WAKE_AND_WAIT(1);
 
-	TST_EXP_FAIL(open("restricted", O_WRONLY), EACCES,
-		     "Denied write access to ./restricted");
+	TST_EXP_FAIL(open("restricted", O_WRONLY), EACCES, "Denied write access to ./restricted");
 
 	exit(0);
 }
@@ -89,7 +86,6 @@ static void ns_level1(void)
 	write_mapping(level2_proc, map_over_5);
 
 	TST_CHECKPOINT_WAKE(1);
-	tst_reap_children();
 
 	exit(0);
 }
@@ -111,7 +107,6 @@ static void run(void)
 	write_mapping(level1_proc, "0 100000 1000");
 
 	TST_CHECKPOINT_WAKE(0);
-	tst_reap_children();
 }
 
 static void setup(void)
