@@ -1,5 +1,12 @@
 OUTPUT_FORMAT(elf32-i386)
 
+PHDRS
+{
+	headers PT_PHDR PHDRS ;
+	text PT_LOAD FILEHDR PHDRS ;
+	bss PT_LOAD ;
+}
+
 SECTIONS
 {
 	/DISCARD/ :
@@ -13,7 +20,7 @@ SECTIONS
 		*(.init.protected_mode)
 		*(.data.gdt32)
 		*(.init.memlayout)
-	}
+	} :text
 
 	.text :
 	{
@@ -24,16 +31,15 @@ SECTIONS
 		*(.gnu.linkonce.t.*)
 	}
 
+	.init :
+	{
+		KEEP (*(SORT_NONE(.init)))
+	}
 
 	.data :
 	{
 		*(.data.strings)
 		*(.data)
-	}
-
-	.init :
-	{
-		KEEP (*(SORT_NONE(.init)))
 	}
 
 	.preinit_array :
@@ -54,7 +60,7 @@ SECTIONS
 	.bss.pgtables : ALIGN(4096)
 	{
 		*(.bss.pgtables)
-	}
+	} :bss
 
 	.bss : ALIGN(4096)
 	{
