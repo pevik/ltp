@@ -446,6 +446,14 @@ pid_t safe_clone(const char *file, const int lineno,
 
 	pid = tst_clone(args);
 
+	/* too fast creating namespaces => retrying */
+	if (pid < 0 && (errno == ENOSPC || errno == EUSERS)) {
+		tst_res_(file, lineno, TINFO | TERRNO, "%s() failed => retrying",
+				 pid == -2 ? "clone" : "clone3");
+		usleep(100000);
+		pid = tst_clone(args);
+	}
+
 	switch (pid) {
 	case -1:
 		tst_brk_(file, lineno, TBROK | TERRNO, "clone3 failed");
