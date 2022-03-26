@@ -476,6 +476,9 @@ testcases/bin/fs_bind/regression/test03
 # Depends on CONFIG_EXT4_FS_ENCRYPTION which is not required on Android.
 # b/123523766
 statx05
+# Depends on exportfs (NFS not supported on Android).
+# b/191236106
+statx07
 
 # Disabled from LTP20190517
 # b/136666217
