@@ -485,6 +485,11 @@ statx07
 # Needs pthread_cancel() and friends
 af_alg02
 
+# Depends on DNOTIFY (not enabled in Android).
+# b/191236494
+fcntl38
+fcntl38_64
+
 # Disable RPC tests as not available in Android.
 rpc01.sh
 rpc_lib.sh
