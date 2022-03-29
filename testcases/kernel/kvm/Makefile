@@ -5,10 +5,10 @@ top_srcdir		?= ../../..
 
 include $(top_srcdir)/include/mk/testcases.mk
 
-ASFLAGS =
 CPPFLAGS += -I$(abs_srcdir)/include
 GUEST_CPPFLAGS = $(CPPFLAGS) -DCOMPILE_PAYLOAD
 GUEST_CFLAGS = -ffreestanding -O2 -Wall -fno-asynchronous-unwind-tables -mno-mmx -mno-sse
+ASFLAGS := $(GUEST_CFLAGS)
 GUEST_LDFLAGS = -nostdlib -Wl,--build-id=none
 GUEST_LDLIBS =
 
@@ -18,7 +18,7 @@ ifeq ($(HOST_CPU),x86_64)
 	ifneq (,$(findstring m32,$(CFLAGS)))
 		HOST_CPU = x86
 		GUEST_CFLAGS += -m32
-		ASFLAGS += --32
+		ASFLAGS += -m32
 	endif
 endif
 
