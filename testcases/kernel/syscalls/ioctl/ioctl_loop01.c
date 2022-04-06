@@ -135,6 +135,12 @@ static void cleanup(void)
 		SAFE_CLOSE(dev_fd);
 	if (attach_flag)
 		tst_detach_device(dev_path);
+
+	if (!*sys_loop_partpath || !*loop_partpath)
+		return;
+
+	if (!access(sys_loop_partpath, F_OK) || !access(loop_partpath, F_OK))
+		tst_res(TWARN, "Partition info was not cleared from loop dev");
 }
 
 static struct tst_test test = {
