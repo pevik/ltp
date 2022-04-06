@@ -19,7 +19,7 @@
        ({ value ? TST_RETVAL_EQ0(x) : TST_RETVAL_NOTNULL(x); })
 
 static char dev_path[1024];
-static int dev_num, attach_flag, dev_fd;
+static int dev_num = -1, attach_flag, dev_fd;
 static char loop_partpath[1026], sys_loop_partpath[1026];
 
 static void change_partition(const char *const cmd[])
@@ -102,6 +102,16 @@ static void cleanup(void)
 		SAFE_CLOSE(dev_fd);
 	if (attach_flag)
 		tst_detach_device(dev_path);
+
+	if (dev_num < 0)
+		return;
+
+	sprintf(sys_loop_partpath, "/sys/block/loop%d/loop%dp1", dev_num,
+		dev_num);
+	sprintf(loop_partpath, "%sp1", dev_path);
+
+	if (!access(sys_loop_partpath, F_OK) || !access(loop_partpath, F_OK))
+		tst_res(TWARN, "Partition info was not cleared from loop dev");
 }
 
 static struct tst_test test = {
