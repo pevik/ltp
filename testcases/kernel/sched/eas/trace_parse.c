@@ -20,17 +20,11 @@
 
 #include "trace_parse.h"
 
-#define TRACEFS_MAX_PATH_LEN 512
-
 int num_trace_records = 0;
 struct trace_record *trace = NULL;
 
 static int trace_fd = -1;
 static char *trace_buffer = NULL;
-
-const char *tracefs_root = "/sys/kernel/tracing/";
-const char *debugfs_tracefs_root = "/sys/kernel/debug/tracing/";
-char *ftrace_root_dir;
 
 static int parse_event_type(char *event_name)
 {
@@ -92,28 +86,9 @@ void print_trace_record(struct trace_record *tr)
 		printf("(other)\n");
 }
 
-void trace_setup(void)
-{
-	struct stat buf;
-
-	if (stat("/sys/kernel/tracing/trace", &buf) == 0)
-		ftrace_root_dir = tracefs_root;
-	else
-		ftrace_root_dir = debugfs_tracefs_root;
-
-}
-
-void tracefs_write(const char *file_name, const char *value)
-{
-	char buf[TRACEFS_MAX_PATH_LEN];
-
-	snprintf(buf, sizeof(buf), "%s%s", ftrace_root_dir, file_name);
-	SAFE_FILE_PRINTF(buf, value);
-}
-
 void trace_cleanup(void)
 {
-	tracefs_write("tracing_on", "0");
+	SAFE_FILE_PRINTF(TRACING_DIR "tracing_on", "0");
 
 }
 
@@ -256,15 +231,15 @@ static void *parse_event_data(unsigned int event_type, char *data)
  * First 16 chars are the currently running thread name. Drop leading spaces.
  * Next char is a dash
  * Next 5 chars are PID. Drop trailing spaces.
- * Next is some number of spaces.
+ * Next char is a space.
  * Next five chars are the CPU, i.e. [001].
- * Next is some number of spaces.
+ * Next char is a space.
  * Next letter is whether IRQs are off.
  * Next letter is if NEED_RESCHED is set.
  * Next letter is if this is in hard or soft IRQ context.
  * Next letter is the preempt disable depth.
- * Next is some number of spaces.
- * Next twelve letters are the timestamp.
+ * Next char is a space.
+ * Next twelve letters are the timestamp. Drop leading spaces.
  * Next char is colon.
  * Next char is space.
  * Next twelve letters are the event name.
@@ -272,7 +247,7 @@ static void *parse_event_data(unsigned int event_type, char *data)
  * Rest of line is string specific to event.
  */
 static int parse_trace_record(struct trace_record *tr, char *line) {
-	unsigned int field_start, idx = 0;
+	unsigned int idx = 0;
 	char *found;
 
 	/* Skip leading spaces in the task name. */
@@ -291,100 +266,83 @@ static int parse_trace_record(struct trace_record *tr, char *line) {
 		return -1;
 	}
 	idx = 17;
-	while(line[idx] && line[idx] != '[') idx++;
-	if (!line[idx]) {
-		printf("Malformatted trace record, no open bracket for"
-		       "CPU after pid:\n");
+	if (line[22] != ' ') {
+		printf("Malformatted trace record, no space between"
+		       "pid and CPU:\n");
 		printf("%s", line);
 		return -1;
 	}
-	line[idx-1] = 0;
+	line[22] = 0;
 	if (sscanf(&line[17], "%hd", &tr->pid) != 1) {
 		printf("Malformatted trace record, error parsing"
 		       "pid:\n");
 		printf("%s", line);
 		return -1;
 	}
-	field_start = idx;
-	while(line[idx] && line[idx] != ']') idx++;
-	if (!line[idx]) {
-		printf("Malformatted trace record, no closing bracket for"
-		       "CPU:\n");
+	if (line[28] != ' ') {
+		printf("Malformatted trace record, no space between"
+		       "CPU and flags:\n");
 		printf("%s", line);
 		return -1;
 	}
-	idx++;
-	if (line[idx] != ' ') {
-		printf("Malformatted trace record, no space following CPU:\n");
-		printf("%s", line);
-		return -1;
-	}
-	line[idx] = 0;
-	idx++;
-	if (sscanf(&line[field_start], "[%hd]", &tr->cpu) != 1) {
+	line[28] = 0;
+	if (sscanf(&line[23], "[%hd]", &tr->cpu) != 1) {
 		printf("Malformatted trace record, error parsing CPU:\n");
 		printf("%s", line);
 		return -1;
 	}
-
-	if (line[idx] == 'd') {
+	if (line[29] == 'd') {
 		tr->flags |= TRACE_RECORD_IRQS_OFF;
-	} else if (line[idx] != '.') {
+	} else if (line[29] != '.') {
 		printf("Malformatted trace record, error parsing irqs-off:\n");
 		printf("%s", line);
 		return -1;
 	}
-	idx++;
-	if (line[idx] == 'N') {
+	if (line[30] == 'N') {
 		tr->flags |= TRACE_RECORD_TIF_NEED_RESCHED;
 		tr->flags |= TRACE_RECORD_PREEMPT_NEED_RESCHED;
-	} else if (line[idx] == 'n') {
+	} else if (line[30] == 'n') {
 		tr->flags |= TRACE_RECORD_TIF_NEED_RESCHED;
-	} else if (line[idx] == 'p') {
+	} else if (line[30] == 'p') {
 		tr->flags |= TRACE_RECORD_PREEMPT_NEED_RESCHED;
-	} else if (line[idx] != '.') {
+	} else if (line[30] != '.') {
 		printf("Malformatted trace record, error parsing "
 		       "need-resched:\n");
 		printf("%s", line);
 		return -1;
 	}
-	idx++;
 
-	if (line[idx] != IRQ_CONTEXT_NORMAL && line[idx] != IRQ_CONTEXT_SOFT &&
-	    line[idx] != IRQ_CONTEXT_HARD &&
-	    line[idx] != IRQ_CONTEXT_HARD_IN_SOFT &&
-	    line[idx] != IRQ_CONTEXT_NMI && line[idx] != IRQ_CONTEXT_NMI_IN_HARD) {
+	if (line[31] != IRQ_CONTEXT_NORMAL && line[31] != IRQ_CONTEXT_SOFT &&
+	    line[31] != IRQ_CONTEXT_HARD &&
+	    line[31] != IRQ_CONTEXT_HARD_IN_SOFT &&
+	    line[31] != IRQ_CONTEXT_NMI && line[31] != IRQ_CONTEXT_NMI_IN_HARD) {
 		printf("Malformatted trace record, error parsing irq "
 		       "context:\n");
 		printf("%s", line);
 		return -1;
 	}
-	tr->irq_context = line[idx];
-	idx++;
+	tr->irq_context = line[31];
 
-	if (line[idx+1] != ' ') {
+	if (line[33] != ' ') {
 		printf("Malformatted trace record, no space between"
 		       "flags and timestamp:\n");
 		printf("%s", line);
 		return -1;
 	}
-	line[idx+1] = 0;
-	if (line[idx] == '.') {
+	line[33] = 0;
+	if (line[32] == '.') {
 		tr->preempt_depth = 0;
-	} else if (sscanf(&line[idx], "%hx", &tr->preempt_depth) != 1) {
+	} else if (sscanf(&line[32], "%hx", &tr->preempt_depth) != 1) {
 		printf("Malformatted trace record, error parsing "
 		       "preempt-depth:\n");
 		printf("%s", line);
 		return -1;
 	}
-	idx += 2;
 
-	while (line[idx] && line[idx] == ' ') idx++;
-	if (!line[idx]) {
-		printf("Malformatted trace record, missing timestamp:\n");
-		printf("%s", line);
-		return -1;
-	}
+	/* timestamp starts as early as line[34], skip leading spaces */
+	idx = 34;
+	while (idx < 38 && line[idx] == ' ')
+		idx++;
 	if (sscanf(&line[idx], "%d.%d: ", &tr->ts.sec,
 		   &tr->ts.usec) != 2) {
 		printf("Malformatted trace record, error parsing "
@@ -422,15 +380,12 @@ static int refill_buffer(char *buffer, char *idx)
 	int bytes_to_read;
 	int bytes_read = 0;
 	int rv;
-	char buf[256];
 
 	bytes_in_buffer = TRACE_BUFFER_SIZE - (idx - buffer) - 1;
 	bytes_to_read = TRACE_BUFFER_SIZE - bytes_in_buffer - 1;
 
 	if (trace_fd == -1) {
-		snprintf(buf, sizeof(buf), "%strace", ftrace_root_dir);
-
-		trace_fd = open(buf, O_RDONLY);
+		trace_fd = open(TRACING_DIR "trace", O_RDONLY);
 		if (trace_fd == -1) {
 			printf("Could not open trace file!\n");
 			return 0;

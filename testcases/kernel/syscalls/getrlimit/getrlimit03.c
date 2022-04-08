@@ -35,20 +35,14 @@
  * The underlying syscall names vary across architectures, depending on whether
  * the architecture predates the "new" handler.  For clarity, this test
  * will call them getrlimit_long and getlimit_ulong internally.
- *
- * __NR_getrlimit has been deprecated from arm EABI and moved to OABI_COMPAT,
- * so the syscall on arm may or may not be available even if __NR_ugetrlimit
- * exists.
  */
-#if __NR_ugetrlimit != __LTP__NR_INVALID_SYSCALL
-# if !defined(__arm__) || __NR_getrlimit != __LTP__NR_INVALID_SYSCALL
-#  define SIGNED_GETRLIMIT
-# endif
-# define __NR_getrlimit_ulong		__NR_ugetrlimit
-# define __NR_getrlimit_ulong_str	"__NR_ugetrlimit"
+#define SIGNED_GETRLIMIT (__NR_ugetrlimit != __LTP__NR_INVALID_SYSCALL)
+#if SIGNED_GETRLIMIT
+#define __NR_getrlimit_ulong		__NR_ugetrlimit
+#define __NR_getrlimit_ulong_str	"__NR_ugetrlimit"
 #else
-# define __NR_getrlimit_ulong		__NR_getrlimit
-# define __NR_getrlimit_ulong_str	"__NR_getrlimit"
+#define __NR_getrlimit_ulong		__NR_getrlimit
+#define __NR_getrlimit_ulong_str	"__NR_getrlimit"
 #endif
 
 #ifndef HAVE_STRUCT_RLIMIT64
@@ -80,13 +74,12 @@ static int getrlimit_ulong(int resource, struct rlimit_ulong *rlim)
 	return syscall(__NR_getrlimit_ulong, resource, rlim);
 }
 
-const long RLIM_INFINITY_L = LONG_MAX;
-
-#ifdef SIGNED_GETRLIMIT
+#if SIGNED_GETRLIMIT
 struct rlimit_long {
 	long rlim_cur;
 	long rlim_max;
 };
+const long RLIM_INFINITY_L = LONG_MAX;
 
 static int getrlimit_long(int resource, struct rlimit_long *rlim)
 {
@@ -123,7 +116,7 @@ static int compare_u64_ulong(int resource, uint64_t val_u64,
 	return 0;
 }
 
-#ifdef SIGNED_GETRLIMIT
+#if SIGNED_GETRLIMIT
 static int compare_u64_long(int resource, uint64_t val_u64, long val_l,
 			    const char *kind)
 {
@@ -149,7 +142,7 @@ static void run(unsigned int resource)
 	int ret_ul;
 	int errno_ul;
 
-#ifdef SIGNED_GETRLIMIT
+#if SIGNED_GETRLIMIT
 	struct rlimit_long rlim_l;
 	int ret_l;
 	int errno_l;
@@ -174,7 +167,7 @@ static void run(unsigned int resource)
 	tst_res(TPASS, "__NR_prlimit64(%d) and %s(%d) gave consistent results",
 		resource, __NR_getrlimit_ulong_str, resource);
 
-#ifdef SIGNED_GETRLIMIT
+#if SIGNED_GETRLIMIT
 	errno = 0;
 	ret_l = getrlimit_long(resource, &rlim_l);
 	errno_l = errno;
