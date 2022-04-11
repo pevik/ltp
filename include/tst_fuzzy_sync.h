@@ -240,25 +240,6 @@ static inline void tst_fzsync_pair_cleanup(struct tst_fzsync_pair *pair)
 	}
 }
 
-/** To store the run_b pointer and pass to tst_fzsync_thread_wrapper */
-struct tst_fzsync_run_thread {
-	void *(*func)(void *);
-	void *arg;
-};
-
-/**
- * Wrap run_b for tst_fzsync_pair_reset to enable pthread cancel
- * at the start of the thread B.
- */
-static inline void *tst_fzsync_thread_wrapper(void *run_thread)
-{
-       struct tst_fzsync_run_thread t = *(struct tst_fzsync_run_thread *)run_thread;
-
-       pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
-       pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
-       return t.func(t.arg);
-}
-
 /**
  * Zero some stat fields
  *
