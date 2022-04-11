@@ -11,6 +11,13 @@
 #include "lapi/syscalls.h"
 #include "lapi/mmap.h"
 
+#if defined(__powerpc__) || defined(__ppc__)
+# undef PKEY_DISABLE_ACCESS
+# define PKEY_DISABLE_ACCESS 0x3
+# undef PKEY_DISABLE_WRITE
+# define PKEY_DISABLE_WRITE  0x2
+#endif
+
 #ifndef PKEY_DISABLE_ACCESS
 # define PKEY_DISABLE_ACCESS 0x1
 # define PKEY_DISABLE_WRITE  0x2
