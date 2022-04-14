@@ -27,7 +27,6 @@
 #include <sys/mount.h>
 #include <sys/syscall.h>
 #include "tst_test.h"
-#include <sys/fanotify.h>
 #include <sys/types.h>
 
 #ifdef HAVE_SYS_FANOTIFY_H
