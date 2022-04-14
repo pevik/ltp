@@ -490,6 +490,10 @@ af_alg02
 fcntl38
 fcntl38_64
 
+# Depends on HDLC line discipline (not enabled on Android).
+# b/191224903
+pty05
+
 # Disable RPC tests as not available in Android.
 rpc01.sh
 rpc_lib.sh
