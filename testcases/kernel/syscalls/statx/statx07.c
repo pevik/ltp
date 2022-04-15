@@ -133,7 +133,7 @@ static void setup(void)
 	snprintf(server_path, sizeof(server_path), ":%s/%s", cwd, SERV_PATH);
 
 	snprintf(cmd, sizeof(cmd),
-		 "exportfs -i -o no_root_squash,rw,sync,no_subtree_check,fsid=%d \"*%.1024s\"",
+		 "exportfs -i -o no_root_squash,rw,sync,no_subtree_check,fsid=%d *%.1024s",
 		 getpid(), server_path);
 	exported = 1;
 
@@ -157,7 +157,7 @@ static void cleanup(void)
 	if (!exported)
 		return;
 	snprintf(cmd, sizeof(cmd),
-		 "exportfs -u *:\"%s/%s\"", cwd, SERV_PATH);
+		 "exportfs -u *:%s/%s", cwd, SERV_PATH);
 
 	if (tst_system(cmd) == -1)
 		tst_res(TWARN | TST_ERR, "failed to clear exportfs");
