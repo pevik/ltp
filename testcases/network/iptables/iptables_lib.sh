@@ -353,7 +353,7 @@ test6()
 	fi
 
 	tst_res TINFO "Pinging $loc_addr"
-	$ping_cmd -c 10 $loc_addr -W 1 -i 0 > tst_iptables.out 2>&1
+	strace $ping_cmd -c 10 $loc_addr -W 1 -i 0 > tst_iptables.out 2>&1
 	if [ $? -eq 0 ]; then
 		sleep 2
 		logcnt=$(dmesg | grep -c "$logprefix")
