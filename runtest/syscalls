@@ -63,9 +63,7 @@ chdir04 chdir04
 
 chmod01 chmod01
 chmod01A symlink01 -T chmod01
-chmod02 chmod02
 chmod03 chmod03
-chmod04 chmod04
 chmod05 chmod05
 chmod06 chmod06
 chmod07 chmod07
@@ -136,6 +134,7 @@ creat05 creat05
 creat06 creat06
 creat07 creat07
 creat08 creat08
+creat09 creat09
 
 delete_module01 delete_module01
 delete_module02 delete_module02
@@ -154,18 +153,31 @@ dup202 dup202
 dup203 dup203
 dup204 dup204
 dup205 dup205
+dup206 dup206
+dup207 dup207
 
 dup3_01 dup3_01
 dup3_02 dup3_02
 
+epoll_create01 epoll_create01
+epoll_create02 epoll_create02
 epoll_create1_01 epoll_create1_01
+epoll_create1_02 epoll_create1_02
 epoll01 epoll-ltp
 epoll_ctl01 epoll_ctl01
 epoll_ctl02 epoll_ctl02
+epoll_ctl03 epoll_ctl03
+epoll_ctl04 epoll_ctl04
+epoll_ctl05 epoll_ctl05
 epoll_wait01 epoll_wait01
 epoll_wait02 epoll_wait02
 epoll_wait03 epoll_wait03
+epoll_wait04 epoll_wait04
 epoll_pwait01 epoll_pwait01
+epoll_pwait02 epoll_pwait02
+epoll_pwait03 epoll_pwait03
+epoll_pwait04 epoll_pwait04
+epoll_pwait05 epoll_pwait05
 
 eventfd01 eventfd01
 
@@ -593,6 +605,9 @@ fanotify16 fanotify16
 fanotify17 fanotify17
 fanotify18 fanotify18
 fanotify19 fanotify19
+fanotify20 fanotify20
+fanotify21 fanotify21
+fanotify22 fanotify22
 
 ioperm01 ioperm01
 ioperm02 ioperm02
@@ -606,14 +621,20 @@ ioprio_set02 ioprio_set02
 ioprio_set03 ioprio_set03
 
 io_cancel01 io_cancel01
+io_cancel02 io_cancel02
 io_destroy01 io_destroy01
+io_destroy02 io_destroy02
 io_getevents01 io_getevents01
+io_getevents02 io_getevents02
 
 io_pgetevents01 io_pgetevents01
 io_pgetevents02 io_pgetevents02
 
 io_setup01 io_setup01
+io_setup02 io_setup02
 io_submit01 io_submit01
+io_submit02 io_submit02
+io_submit03 io_submit03
 
 keyctl01 keyctl01
 keyctl02 keyctl02
@@ -638,6 +659,7 @@ kill09 kill09
 kill10 kill10
 kill11 kill11
 kill12 kill12
+kill13 kill13
 
 lchown01 lchown01
 lchown01_16 lchown01_16
@@ -654,8 +676,6 @@ link02 link02
 link03 link03
 link04 link04
 link05 link05
-link06 link06
-link07 link07
 link08 link08
 
 #linkat test cases
@@ -691,6 +711,8 @@ lstat02 lstat02
 lstat02_64 lstat02_64
 
 mallinfo02 mallinfo02
+
+mallinfo2_01 mallinfo2_01
 
 mallopt01 mallopt01
 
@@ -975,8 +997,6 @@ pread01 pread01
 pread01_64 pread01_64
 pread02 pread02
 pread02_64 pread02_64
-pread03 pread03
-pread03_64 pread03_64
 
 preadv01 preadv01
 preadv01_64 preadv01_64
@@ -1052,6 +1072,8 @@ quotactl04 quotactl04
 quotactl05 quotactl05
 quotactl06 quotactl06
 quotactl07 quotactl07
+quotactl08 quotactl08
+quotactl09 quotactl09
 
 read01 read01
 read02 read02
@@ -1074,7 +1096,6 @@ readlinkat02 readlinkat02
 
 readv01 readv01
 readv02 readv02
-readv03 readv03
 
 realpath01 realpath01
 
@@ -1380,6 +1401,7 @@ setsockopt04 setsockopt04
 setsockopt05 setsockopt05
 setsockopt06 setsockopt06
 setsockopt07 setsockopt07
+setsockopt08 setsockopt08
 
 settimeofday01 settimeofday01
 settimeofday02 settimeofday02
@@ -1411,11 +1433,11 @@ shmctl08 shmctl08
 shmdt01 shmdt01
 shmdt02 shmdt02
 
-shmget01 shmget01
 shmget02 shmget02
 shmget03 shmget03
 shmget04 shmget04
 shmget05 shmget05
+shmget06 shmget06
 
 sigaction01 sigaction01
 sigaction02 sigaction02
@@ -1540,7 +1562,6 @@ sysfs02 sysfs02
 sysfs03 sysfs03
 sysfs04 sysfs04
 sysfs05 sysfs05
-sysfs06 sysfs06
 
 sysinfo01 sysinfo01
 sysinfo02 sysinfo02
@@ -1672,6 +1693,7 @@ wait02 wait02
 
 wait401 wait401
 wait402 wait402
+wait403 wait403
 
 waitpid01 waitpid01
 waitpid02 waitpid02
@@ -1695,6 +1717,7 @@ write02 write02
 write03 write03
 write04 write04
 write05 write05
+write06 write06
 
 writev01 writev01
 writev02 writev02
@@ -1735,8 +1758,12 @@ statx04 statx04
 statx05 statx05
 statx06 statx06
 statx07 statx07
+statx08 statx08
 
 membarrier01 membarrier01
 
 io_uring01 io_uring01
 io_uring02 io_uring02
+
+# Tests below may cause kernel memory leak
+perf_event_open03 perf_event_open03

@@ -1,8 +1,5 @@
-#
-# Read COPYING for licensing details.
-#
+# SPDX-License-Identifier: GPL-2.0-or-later
 # Ngie Cooper, June 2010
-#
 
 # Makefiles that are considered critical to execution; if they don't exist
 # all of the Makefiles will be rebuilt by default.
@@ -41,7 +38,7 @@ endif
 clean: $(CRITICAL_MAKEFILE)
 	@rm -f $(LOGFILE)*
 	@for dir in $(SUBDIRS) tools; do \
-	    $(MAKE) -C $$dir clean >/dev/null; \
+		$(MAKE) -C $$dir clean >/dev/null; \
 	done
 
 distclean: distclean-makefiles
@@ -54,7 +51,7 @@ distclean-makefiles:
 
 generate-makefiles: distclean-makefiles
 	@env top_srcdir=$(top_srcdir) \
-	    $(top_srcdir)/scripts/generate-makefiles.sh
+		$(top_srcdir)/scripts/generate-makefiles.sh
 
 install: bin-install conformance-install functional-install stress-install
 
@@ -102,8 +99,12 @@ tools-all:
 	@$(MAKE) -C tools all
 
 $(CRITICAL_MAKEFILE): \
-    $(top_srcdir)/scripts/generate-makefiles.sh	\
-    $(top_srcdir)/CFLAGS			\
-    $(top_srcdir)/LDFLAGS			\
-    $(top_srcdir)/LDLIBS
+	$(top_srcdir)/scripts/generate-makefiles.sh	\
+	$(top_srcdir)/CFLAGS			\
+	$(top_srcdir)/LDFLAGS			\
+	$(top_srcdir)/LDLIBS
 	@$(MAKE) generate-makefiles
+
+.PHONY: check
+check:
+	@echo "Checker not yet supported by Open POSIX testsuite"

@@ -27,6 +27,15 @@ fi
 # Post 4.16 kernel updates stat in batch (> 32 pages) every time
 PAGESIZES=$(($PAGESIZE * 33))
 
+# On recent Linux kernels (at least v5.4) updating stats happens in batches
+# (PAGESIZES) and also might depend on workload and number of CPUs.  The kernel
+# caches the data and does not prioritize stats precision.  This is especially
+# visible for max_usage_in_bytes where it usually exceeds
+# actual memory allocation.
+# When checking for usage_in_bytes and max_usage_in_bytes accept also higher values
+# from given range:
+MEM_USAGE_RANGE=$((PAGESIZES))
+
 HUGEPAGESIZE=$(awk '/Hugepagesize/ {print $2}' /proc/meminfo)
 [ -z $HUGEPAGESIZE ] && HUGEPAGESIZE=0
 HUGEPAGESIZE=$(($HUGEPAGESIZE * 1024))
@@ -54,30 +63,61 @@ memcg_require_hierarchy_disabled()
 	fi
 }
 
+# Kernel memory allocated for the process is also charged.  It might depend on
+# the number of CPUs and number of nodes. For example on kernel v5.11
+# additionally total_cpus (plus 1 or 2) pages are charged to the group via
+# kernel memory.  For a two-node machine, additional 108 pages kernel memory
+# are charged to the group.
+#
+# Adjust the limit to account such per-CPU and per-node kernel memory.
+# $1 - expected cgroup memory limit value to adjust
+memcg_adjust_limit_for_kmem()
+{
+	[ $# -ne 1 ] && tst_brk TBROK "memcg_adjust_limit_for_kmem expects 1 parameter"
+
+	local limit=$1
+
+	# Total number of CPUs
+	local total_cpus=`tst_ncpus`
+
+	# Total number of nodes
+	if [ ! -d /sys/devices/system/node/node0 ]; then
+		total_nodes=1
+	else
+		total_nodes=`ls /sys/devices/system/node/ | grep -c "node[0-9][0-9]*"`
+	fi
+
+	local node_mem=0
+	if [ $total_nodes -gt 1 ]; then
+		node_mem=$((total_nodes - 1))
+		node_mem=$((node_mem * PAGESIZE * 128))
+	fi
+
+	limit=$((limit + 4 * PAGESIZE + total_cpus * PAGESIZE + node_mem))
+
+	echo $limit
+}
+
 memcg_setup()
 {
 	if ! is_cgroup_subsystem_available_and_enabled "memory"; then
 		tst_brk TCONF "Either kernel does not support Memory Resource Controller or feature not enabled"
 	fi
 
-	# Setup IPC
-	LTP_IPC_PATH="/dev/shm/ltp_${TCID}_$$"
-	LTP_IPC_SIZE=$PAGESIZE
-	ROD_SILENT dd if=/dev/zero of="$LTP_IPC_PATH" bs="$LTP_IPC_SIZE" count=1
-	ROD_SILENT chmod 600 "$LTP_IPC_PATH"
-	export LTP_IPC_PATH
-	# Setup IPC end
-
 	ROD mkdir /dev/memcg
 	ROD mount -t cgroup -omemory memcg /dev/memcg
 
-	# The default value for memory.use_hierarchy is 0 and some of tests
-	# (memcg_stat_test.sh and memcg_use_hierarchy_test.sh) expect it so
-	# while there are distributions (RHEL7U0Beta for example) that sets
-	# it to 1.
+	# For kernels older than v5.11 the default value for
+	# memory.use_hierarchy is 0 and some of tests (memcg_stat_test.sh and
+	# memcg_use_hierarchy_test.sh) expect it so while there are
+	# distributions (RHEL7U0Beta for example) that sets it to 1.
 	# Note: If there are already subgroups created it is not possible,
 	# to set this back to 0.
 	# This seems to be the default for all systems using systemd.
+	#
+	# Starting with kernel v5.11, the non-hierarchical mode is not
+	# available. See Linux kernel commit bef8620cd8e0 ("mm: memcg:
+	# deprecate the non-hierarchical mode").
 	orig_memory_use_hierarchy=$(cat /dev/memcg/memory.use_hierarchy)
 	if [ -z "$orig_memory_use_hierarchy" ];then
 		tst_res TINFO "cat /dev/memcg/ failed"
@@ -140,7 +180,8 @@ shmmax_cleanup()
 
 # Check size in memcg
 # $1 - Item name
-# $2 - Expected size
+# $2 - Expected size lower bound
+# $3 - Expected size upper bound (optional)
 check_mem_stat()
 {
 	local item_size
@@ -151,7 +192,13 @@ check_mem_stat()
 		item_size=$(grep -w $1 memory.stat | cut -d " " -f 2)
 	fi
 
-	if [ "$2" = "$item_size" ]; then
+	if [ "$3" ]; then
+		if [ $item_size -ge $2 ] && [ $item_size -le $3 ]; then
+			tst_res TPASS "$1 is ${2}-${3} as expected"
+		else
+			tst_res TFAIL "$1 is $item_size, ${2}-${3} expected"
+		fi
+	elif [ "$2" = "$item_size" ]; then
 		tst_res TPASS "$1 is $2 as expected"
 	else
 		tst_res TFAIL "$1 is $item_size, $2 expected"
@@ -193,7 +240,7 @@ signal_memcg_process()
 
 		loops=$((loops - 1))
 		if [ $loops -le 0 ]; then
-			tst_brk TBROK "timed out on memory.usage_in_bytes"
+			tst_brk TBROK "timed out on memory.usage_in_bytes" $usage $usage_start $size
 		fi
 	done
 }
@@ -232,8 +279,10 @@ test_mem_stat()
 	local size=$2
 	local total_size=$3
 	local stat_name=$4
-	local exp_stat_size=$5
-	local check_after_free=$6
+	local exp_stat_size_low=$5
+	local exp_stat_size_up=$6
+	local check_after_free=$7
+	local kmem_stat_name="${stat_name##*.}"
 
 	start_memcg_process $memtypes -s $size
 
@@ -244,7 +293,20 @@ test_mem_stat()
 	echo $MEMCG_PROCESS_PID > tasks
 	signal_memcg_process $size
 
-	check_mem_stat $stat_name $exp_stat_size
+	if [ "$kmem_stat_name" = "max_usage_in_bytes" ] ||
+	   [ "$kmem_stat_name" = "usage_in_bytes" ]; then
+		local kmem=$(cat "memory.kmem.${kmem_stat_name}")
+		if [ $? -eq 0 ]; then
+			exp_stat_size_low=$((exp_stat_size_low + kmem))
+			exp_stat_size_up=$((exp_stat_size_up + kmem))
+		fi
+	fi
+
+	if [ "$exp_stat_size_low" = "$exp_stat_size_up" ]; then
+		check_mem_stat $stat_name $exp_stat_size_low
+	else
+		check_mem_stat $stat_name $exp_stat_size_low $exp_stat_size_up
+	fi
 
 	signal_memcg_process $size
 	if $check_after_free; then
@@ -314,7 +376,7 @@ test_limit_in_bytes()
 	local use_memsw=$2
 	local elimit
 
-	echo $limit > memory.limit_in_bytes
+	EXPECT_PASS echo $limit \> memory.limit_in_bytes
 	if [ $use_memsw -eq 1 ]; then
 		memcg_require_memsw
 		echo $limit > memory.memsw.limit_in_bytes

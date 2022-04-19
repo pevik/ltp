@@ -54,6 +54,42 @@ pid_t safe_getpgid(const char *file, const int lineno, pid_t pid)
 	return pgid;
 }
 
+int safe_setgroups(const char *file, const int lineno, size_t size, const gid_t *list)
+{
+	int rval;
+
+	rval = setgroups(size, list);
+
+	if (rval == -1) {
+		tst_brk_(file, lineno, TBROK | TERRNO,
+			"setgroups(%zu, %p) failed", size, list);
+	} else if (rval) {
+		tst_brk_(file, lineno, TBROK | TERRNO,
+			"Invalid setgroups(%zu, %p) return value %d", size,
+			list, rval);
+	}
+
+	return rval;
+}
+
+int safe_getgroups(const char *file, const int lineno, int size, gid_t list[])
+{
+	int rval;
+
+	rval = getgroups(size, list);
+
+	if (rval == -1) {
+		tst_brk_(file, lineno, TBROK | TERRNO,
+			"getgroups(%i, %p)", size, list);
+	} else if (rval < 0) {
+		tst_brk_(file, lineno, TBROK | TERRNO,
+			"Invalid getgroups(%i, %p) return value %d", size,
+			list, rval);
+	}
+
+	return rval;
+}
+
 int safe_personality(const char *filename, unsigned int lineno,
 		    unsigned long persona)
 {
@@ -109,6 +145,45 @@ int safe_setreuid(const char *file, const int lineno,
 	return rval;
 }
 
+int safe_setresgid(const char *file, const int lineno,
+	gid_t rgid, gid_t egid, gid_t sgid)
+{
+	int ret;
+
+	ret = setresgid(rgid, egid, sgid);
+
+	if (ret == -1) {
+		tst_brk_(file, lineno, TBROK | TERRNO,
+			"setregid(%li, %li, %li) failed", (long)rgid,
+			(long)egid, (long)sgid);
+	} else if (ret) {
+		tst_brk_(file, lineno, TBROK | TERRNO,
+			"Invalid setregid(%li, %li, %li) return value %d",
+			(long)rgid, (long)egid, (long)sgid, ret);
+	}
+
+	return ret;
+}
+
+int safe_setresuid(const char *file, const int lineno,
+	uid_t ruid, uid_t euid, uid_t suid)
+{
+	int ret;
+
+	ret = setresuid(ruid, euid, suid);
+
+	if (ret == -1) {
+		tst_brk_(file, lineno, TBROK | TERRNO,
+			"setreuid(%li, %li, %li) failed", (long)ruid,
+			(long)euid, (long)suid);
+	} else if (ret) {
+		tst_brk_(file, lineno, TBROK | TERRNO,
+			"Invalid setreuid(%li, %li, %li) return value %d",
+			(long)ruid, (long)euid, (long)suid, ret);
+	}
+
+	return ret;
+}
 
 int safe_sigaction(const char *file, const int lineno,
                    int signum, const struct sigaction *act,

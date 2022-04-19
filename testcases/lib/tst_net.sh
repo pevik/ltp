@@ -1,7 +1,7 @@
 #!/bin/sh
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright (c) 2014-2017 Oracle and/or its affiliates. All Rights Reserved.
-# Copyright (c) 2016-2019 Petr Vorel <pvorel@suse.cz>
+# Copyright (c) 2016-2021 Petr Vorel <pvorel@suse.cz>
 # Author: Alexey Kodanev <alexey.kodanev@oracle.com>
 
 [ -n "$TST_LIB_NET_LOADED" ] && return 0
@@ -109,14 +109,14 @@ init_ltp_netspace()
 		tst_require_root
 
 		tst_require_drivers veth
-		ROD ip li add name ltp_ns_veth1 type veth peer name ltp_ns_veth2
+		ROD ip link add name ltp_ns_veth1 type veth peer name ltp_ns_veth2
 		pid="$(ROD ns_create net,mnt)"
 		mkdir -p /var/run/netns
 		ROD ln -s /proc/$pid/ns/net /var/run/netns/ltp_ns
 		ROD ns_exec $pid net,mnt mount --make-rprivate /sys
 		ROD ns_exec $pid net,mnt mount -t sysfs none /sys
 		ROD ns_ifmove ltp_ns_veth1 $pid
-		ROD ns_exec $pid net,mnt ip li set lo up
+		ROD ns_exec $pid net,mnt ip link set lo up
 	elif [ -n "$LTP_NETNS" ]; then
 		tst_res_ TINFO "using not default LTP netns: '$LTP_NETNS'"
 	fi
@@ -212,6 +212,7 @@ tst_rhost_run()
 # -l LPARAM: parameter passed to CMD in lhost
 # -r RPARAM: parameter passed to CMD in rhost
 # -q: quiet mode (suppress failure warnings)
+# -i: ignore errors on rhost
 # CMD: command to run (this must be binary, not shell builtin/function due
 # tst_rhost_run() limitation)
 # RETURN: 0 on success, 1 on missing CMD or exit code on lhost or rhost
@@ -227,12 +228,13 @@ tst_net_run()
 	local quiet
 
 	local OPTIND
-	while getopts l:qr:s opt; do
+	while getopts l:qr:si opt; do
 		case "$opt" in
 		l) lparams="$OPTARG" ;;
 		q) quiet=1 ;;
 		r) rparams="$OPTARG" ;;
 		s) lsafe="ROD"; rsafe="-s" ;;
+		i) rsafe="" ;;
 		*) tst_brk_ TBROK "tst_net_run: unknown option: $OPTARG" ;;
 		esac
 	done
@@ -408,7 +410,7 @@ tst_ipaddr_un()
 	local max_net_id=$default_max
 	local min_net_id=0
 
-	local counter host_id host_range is_counter max_host_id min_host_id net_id prefix tmp type
+	local counter host_id host_range is_counter max_host_id min_host_id net_id prefix= tmp type
 
 	local OPTIND
 	while getopts "c:h:n:p" opt; do
@@ -515,6 +517,7 @@ tst_init_iface()
 		ip link set $iface down || return $?
 		ip route flush dev $iface || return $?
 		ip addr flush dev $iface || return $?
+		sysctl -qw net.ipv6.conf.$iface.accept_dad=0 || return $?
 		ip link set $iface up
 		return $?
 	fi
@@ -526,6 +529,7 @@ tst_init_iface()
 	tst_rhost_run -c "ip link set $iface down" || return $?
 	tst_rhost_run -c "ip route flush dev $iface" || return $?
 	tst_rhost_run -c "ip addr flush dev $iface" || return $?
+	tst_rhost_run -c "sysctl -qw net.ipv6.conf.$iface.accept_dad=0" || return $?
 	tst_rhost_run -c "ip link set $iface up"
 }
 
@@ -618,10 +622,10 @@ tst_wait_ipv6_dad()
 	local iface_rmt=${2:-$(tst_iface rhost)}
 
 	for i in $(seq 1 50); do
-		ip a sh $iface_loc | grep -q tentative
+		ip addr sh $iface_loc | grep -q tentative
 		ret=$?
 
-		tst_rhost_run -c "ip a sh $iface_rmt | grep -q tentative"
+		tst_rhost_run -c "ip addr sh $iface_rmt | grep -q tentative"
 
 		[ $ret -ne 0 -a $? -ne 0 ] && return
 
@@ -811,7 +815,7 @@ tst_netload_compare()
 
 tst_ping_opt_unsupported()
 {
-	ping $@ 2>&1 | grep -q "invalid option"
+	ping $@ 2>&1 | grep -qE "(invalid|unrecognized) option"
 }
 
 # tst_ping -c COUNT -s MESSAGE_SIZES -p PATTERN -I IFACE -H HOST
@@ -916,9 +920,9 @@ tst_set_sysctl()
 	[ "$3" = "safe" ] && safe="-s"
 
 	local rparam=
-	[ "$TST_USE_NETNS" = "yes" ] && rparam="-r '-e'"
+	[ "$TST_USE_NETNS" = "yes" ] && rparam="-i -r '-e'"
 
-	tst_net_run $safe $rparam "sysctl -q -w $name=$value"
+	tst_net_run $safe -q $rparam "sysctl" "-q -w $name=$value"
 }
 
 tst_cleanup_rhost()
@@ -932,6 +936,8 @@ tst_default_max_pkt()
 
 	echo "$((mtu + mtu / 10))"
 }
+
+[ -n "$TST_NET_SKIP_VARIABLE_INIT" ] && return 0
 
 # Management Link
 [ -z "$RHOST" ] && TST_USE_NETNS="yes"

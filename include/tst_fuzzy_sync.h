@@ -209,7 +209,7 @@ struct tst_fzsync_pair {
  *
  * @sa tst_fzsync_pair_reset()
  */
-static void tst_fzsync_pair_init(struct tst_fzsync_pair *pair)
+static inline void tst_fzsync_pair_init(struct tst_fzsync_pair *pair)
 {
 	CHK(avg_alpha, 0, 1, 0.25);
 	CHK(min_samples, 20, INT_MAX, 1024);
@@ -229,7 +229,7 @@ static void tst_fzsync_pair_init(struct tst_fzsync_pair *pair)
  *
  * Call this from your cleanup function.
  */
-static void tst_fzsync_pair_cleanup(struct tst_fzsync_pair *pair)
+static inline void tst_fzsync_pair_cleanup(struct tst_fzsync_pair *pair)
 {
 	if (pair->thread_b) {
 		/* Revoke thread B if parent hits accidental break */
@@ -240,12 +240,31 @@ static void tst_fzsync_pair_cleanup(struct tst_fzsync_pair *pair)
 	}
 }
 
+/** To store the run_b pointer and pass to tst_fzsync_thread_wrapper */
+struct tst_fzsync_run_thread {
+	void *(*func)(void *);
+	void *arg;
+};
+
+/**
+ * Wrap run_b for tst_fzsync_pair_reset to enable pthread cancel
+ * at the start of the thread B.
+ */
+static inline void *tst_fzsync_thread_wrapper(void *run_thread)
+{
+       struct tst_fzsync_run_thread t = *(struct tst_fzsync_run_thread *)run_thread;
+
+       pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
+       pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
+       return t.func(t.arg);
+}
+
 /**
  * Zero some stat fields
  *
  * @relates tst_fzsync_stat
  */
-static void tst_init_stat(struct tst_fzsync_stat *s)
+static inline void tst_init_stat(struct tst_fzsync_stat *s)
 {
 	s->avg = 0;
 	s->avg_dev = 0;
@@ -269,7 +288,7 @@ static void tst_init_stat(struct tst_fzsync_stat *s)
  *
  * @sa tst_fzsync_pair_init()
  */
-static void tst_fzsync_pair_reset(struct tst_fzsync_pair *pair,
+static inline void tst_fzsync_pair_reset(struct tst_fzsync_pair *pair,
 				  void *(*run_b)(void *))
 {
 	tst_fzsync_pair_cleanup(pair);
@@ -312,7 +331,7 @@ static inline void tst_fzsync_stat_info(struct tst_fzsync_stat stat,
  *
  * @relates tst_fzsync_pair
  */
-static void tst_fzsync_pair_info(struct tst_fzsync_pair *pair)
+static inline void tst_fzsync_pair_info(struct tst_fzsync_pair *pair)
 {
 	tst_res(TINFO, "loop = %d, delay_bias = %d",
 		pair->exec_loop, pair->delay_bias);
@@ -465,7 +484,7 @@ static inline void tst_upd_diff_stat(struct tst_fzsync_stat *s,
  *
  * @relates tst_fzsync_pair
  */
-static void tst_fzsync_pair_update(struct tst_fzsync_pair *pair)
+static inline void tst_fzsync_pair_update(struct tst_fzsync_pair *pair)
 {
 	float alpha = pair->avg_alpha;
 	float per_spin_time, time_delay;

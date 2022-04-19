@@ -21,7 +21,8 @@ export TST_LIB_LOADED=1
 . tst_security.sh
 
 # default trap function
-trap "tst_brk TBROK 'test interrupted or timed out'" INT
+trap "tst_brk TBROK 'test interrupted'" INT
+trap "unset _tst_setup_timer_pid; tst_brk TBROK 'test terminated'" TERM
 
 _tst_do_exit()
 {
@@ -29,7 +30,7 @@ _tst_do_exit()
 	TST_DO_EXIT=1
 
 	if [ -n "$TST_DO_CLEANUP" -a -n "$TST_CLEANUP" -a -z "$TST_NO_CLEANUP" ]; then
-		if type $TST_CLEANUP >/dev/null 2>/dev/null; then
+		if command -v $TST_CLEANUP >/dev/null 2>/dev/null; then
 			$TST_CLEANUP
 		else
 			tst_res TWARN "TST_CLEANUP=$TST_CLEANUP declared, but function not defined (or cmd not found)"
@@ -46,6 +47,10 @@ _tst_do_exit()
 		cd "$LTPROOT"
 		rm -r "$TST_TMPDIR"
 		[ "$TST_TMPDIR_RHOST" = 1 ] && tst_cleanup_rhost
+	fi
+
+	if [ -n "$TST_NEEDS_CHECKPOINTS" -a -f "$LTP_IPC_PATH" ]; then
+		rm $LTP_IPC_PATH
 	fi
 
 	_tst_cleanup_timer
@@ -125,7 +130,9 @@ tst_brk()
 
 ROD_SILENT()
 {
-	local tst_out="$(tst_rod $@ 2>&1)"
+	local tst_out
+
+	tst_out="$(tst_rod $@ 2>&1)"
 	if [ $? -ne 0 ]; then
 		echo "$tst_out"
 		tst_brk TBROK "$@ failed"
@@ -252,6 +259,27 @@ TST_RTNL_CHK()
 	tst_brk TBROK "$@ failed: $output"
 }
 
+TST_CHECKPOINT_WAIT()
+{
+	ROD tst_checkpoint wait 10000 "$1"
+}
+
+TST_CHECKPOINT_WAKE()
+{
+	ROD tst_checkpoint wake 10000 "$1" 1
+}
+
+TST_CHECKPOINT_WAKE2()
+{
+	ROD tst_checkpoint wake 10000 "$1" "$2"
+}
+
+TST_CHECKPOINT_WAKE_AND_WAIT()
+{
+	TST_CHECKPOINT_WAKE "$1"
+	TST_CHECKPOINT_WAIT "$1"
+}
+
 tst_mount()
 {
 	local mnt_opt mnt_err
@@ -276,31 +304,35 @@ tst_mount()
 
 tst_umount()
 {
-	local device="${1:-$TST_DEVICE}"
+	local mntpoint="${1:-$TST_MNTPOINT}"
 	local i=0
 
-	[ -z "$device" ] && return
+	[ -z "$mntpoint" ] && return
 
-	if ! grep -q "$device" /proc/mounts; then
-		tst_res TINFO "The $device is not mounted, skipping umount"
+	if ! echo "$mntpoint" | grep -q ^/; then
+		tst_brk TCONF "The '$mntpoint' is not an absolute path"
+	fi
+
+	if ! grep -q "${mntpoint%/}" /proc/mounts; then
+		tst_res TINFO "The '$mntpoint' is not mounted, skipping umount"
 		return
 	fi
 
 	while [ "$i" -lt 50 ]; do
-		if umount "$device" > /dev/null; then
+		if umount "$mntpoint" > /dev/null; then
 			return
 		fi
 
 		i=$((i+1))
 
-		tst_res TINFO "umount($device) failed, try $i ..."
+		tst_res TINFO "umount($mntpoint) failed, try $i ..."
 		tst_res TINFO "Likely gvfsd-trash is probing newly mounted "\
 		              "fs, kill it to speed up tests."
 
 		tst_sleep 100ms
 	done
 
-	tst_res TWARN "Failed to umount($device) after 50 retries"
+	tst_res TWARN "Failed to umount($mntpoint) after 50 retries"
 }
 
 tst_mkfs()
@@ -325,20 +357,27 @@ tst_mkfs()
 	ROD_SILENT mkfs.$fs_type $fs_opts $device
 }
 
+# Detect whether running under hypervisor: Microsoft Hyper-V
+# Return 0: running under Hyper-V
+# Return 1: not running under Hyper-V (bare metal, other hypervisor or
+#           failure of detection)
+tst_virt_hyperv()
+{
+	local v
+
+	tst_cmd_available systemd-detect-virt || return 1
+
+	v="$(systemd-detect-virt)"
+
+	[ $? -eq 0 ] || return 1
+	[ "$v" = "microsoft" ] || return 1
+
+	return 0
+}
+
 tst_cmd_available()
 {
-	if type command > /dev/null 2>&1; then
-		command -v $1 > /dev/null 2>&1 || return 1
-	else
-		which $1 > /dev/null 2>&1
-		if [ $? -eq 0 ]; then
-			return 0
-		elif [ $? -eq 127 ]; then
-			tst_brk TCONF "missing which command"
-		else
-			return 1
-		fi
-	fi
+	command -v $1 >/dev/null 2>&1
 }
 
 tst_require_cmds()
@@ -370,6 +409,26 @@ tst_require_drivers()
 	drv="$(tst_check_drivers $@ 2>&1)"
 
 	[ $? -ne 0 ] && tst_brk TCONF "$drv driver not available"
+	return 0
+}
+
+tst_require_kconfigs()
+{
+	local delim
+
+	if [ $# -gt 2 ]; then
+		return 0
+	elif [ $# -eq 1 ]; then
+		delim="$TST_NEEDS_KCONFIGS_IFS"
+	else
+		delim="$2"
+	fi
+
+	[ -z "$1" ] && return 0
+
+	tst_check_kconfigs "$1" "$delim" > /dev/null
+
+	[ $? -ne 0 ] && tst_brk TCONF "Aborting due to unsuitable kernel config, see above!"
 	return 0
 }
 
@@ -435,45 +494,12 @@ _tst_multiply_timeout()
 	return 0
 }
 
-_tst_kill_test()
-{
-	local i=10
-
-	trap '' INT
-	tst_res TBROK "Test timeouted, sending SIGINT! If you are running on slow machine, try exporting LTP_TIMEOUT_MUL > 1"
-	kill -INT -$pid
-	tst_sleep 100ms
-
-	while kill -0 $pid >/dev/null 2>&1 && [ $i -gt 0 ]; do
-		tst_res TINFO "Test is still running, waiting ${i}s"
-		sleep 1
-		i=$((i-1))
-	done
-
-	if kill -0 $pid >/dev/null 2>&1; then
-		tst_res TBROK "Test still running, sending SIGKILL"
-		kill -KILL -$pid
-	fi
-}
-
 _tst_cleanup_timer()
 {
 	if [ -n "$_tst_setup_timer_pid" ]; then
 		kill -TERM $_tst_setup_timer_pid 2>/dev/null
 		wait $_tst_setup_timer_pid 2>/dev/null
 	fi
-}
-
-_tst_timeout_process()
-{
-	local sleep_pid
-
-	sleep $sec &
-	sleep_pid=$!
-	trap "kill $sleep_pid; exit" TERM
-	wait $sleep_pid
-	trap - TERM
-	_tst_kill_test
 }
 
 _tst_setup_timer()
@@ -500,9 +526,21 @@ _tst_setup_timer()
 
 	_tst_cleanup_timer
 
-	_tst_timeout_process &
+	tst_timeout_kill $sec $pid &
 
 	_tst_setup_timer_pid=$!
+
+	while true; do
+		local state
+
+		state=$(cut -d' ' -f3 "/proc/$_tst_setup_timer_pid/stat")
+
+		if [ "$state" = "S" ]; then
+			break;
+		fi
+
+		tst_sleep 1ms
+	done
 }
 
 tst_require_root()
@@ -539,6 +577,20 @@ tst_set_timeout()
 	_tst_setup_timer
 }
 
+_tst_init_checkpoints()
+{
+	local pagesize
+
+	LTP_IPC_PATH="/dev/shm/ltp_${TST_ID}_$$"
+	pagesize=$(tst_getconf PAGESIZE)
+	if [ $? -ne 0 ]; then
+		tst_brk TBROK "tst_getconf PAGESIZE failed"
+	fi
+	ROD_SILENT dd if=/dev/zero of="$LTP_IPC_PATH" bs="$pagesize" count=1
+	ROD_SILENT chmod 600 "$LTP_IPC_PATH"
+	export LTP_IPC_PATH
+}
+
 tst_run()
 {
 	local _tst_i
@@ -555,9 +607,13 @@ tst_run()
 			NEEDS_ROOT|NEEDS_TMPDIR|TMPDIR|NEEDS_DEVICE|DEVICE);;
 			NEEDS_CMDS|NEEDS_MODULE|MODPATH|DATAROOT);;
 			NEEDS_DRIVERS|FS_TYPE|MNTPOINT|MNT_PARAMS);;
+			NEEDS_KCONFIGS|NEEDS_KCONFIGS_IFS);;
 			IPV6|IPV6_FLAG|IPVER|TEST_DATA|TEST_DATA_IFS);;
 			RETRY_FUNC|RETRY_FN_EXP_BACKOFF|TIMEOUT);;
 			NET_DATAROOT|NET_MAX_PKT|NET_RHOST_RUN_DEBUG|NETLOAD_CLN_NUMBER);;
+			NET_SKIP_VARIABLE_INIT|NEEDS_CHECKPOINTS);;
+			CHECKPOINT_WAIT|CHECKPOINT_WAKE);;
+			CHECKPOINT_WAKE2|CHECKPOINT_WAKE_AND_WAIT);;
 			*) tst_res TWARN "Reserved variable TST_$_tst_i used!";;
 			esac
 		done
@@ -592,6 +648,7 @@ tst_run()
 	[ "$TST_DISABLE_SELINUX" = 1 ] && tst_disable_selinux
 
 	tst_require_cmds $TST_NEEDS_CMDS
+	tst_require_kconfigs "$TST_NEEDS_KCONFIGS"
 	tst_require_drivers $TST_NEEDS_DRIVERS
 
 	if [ -n "$TST_MIN_KVER" ]; then
@@ -617,7 +674,7 @@ tst_run()
 		cd "$TST_TMPDIR"
 	fi
 
-	TST_MNTPOINT="${TST_MNTPOINT:-mntpoint}"
+	TST_MNTPOINT="${TST_MNTPOINT:-$PWD/mntpoint}"
 	if [ "$TST_NEEDS_DEVICE" = 1 ]; then
 
 		TST_DEVICE=$(tst_device acquire)
@@ -632,8 +689,10 @@ tst_run()
 
 	[ -n "$TST_NEEDS_MODULE" ] && tst_require_module "$TST_NEEDS_MODULE"
 
+	[ -n "$TST_NEEDS_CHECKPOINTS" ] && _tst_init_checkpoints
+
 	if [ -n "$TST_SETUP" ]; then
-		if type $TST_SETUP >/dev/null 2>/dev/null; then
+		if command -v $TST_SETUP >/dev/null 2>/dev/null; then
 			TST_DO_CLEANUP=1
 			$TST_SETUP
 		else
@@ -665,7 +724,7 @@ _tst_run_tests()
 
 	TST_DO_CLEANUP=1
 	for _tst_i in $(seq ${TST_CNT:-1}); do
-		if type ${TST_TESTFUNC}1 > /dev/null 2>&1; then
+		if command -v ${TST_TESTFUNC}1 > /dev/null 2>&1; then
 			_tst_run_test "$TST_TESTFUNC$_tst_i" $_tst_i "$_tst_data"
 		else
 			_tst_run_test "$TST_TESTFUNC" $_tst_i "$_tst_data"
@@ -710,6 +769,8 @@ if [ -z "$TST_NO_DEFAULT_RUN" ]; then
 	fi
 
 	TST_TEST_DATA_IFS="${TST_TEST_DATA_IFS:- }"
+
+	TST_NEEDS_KCONFIGS_IFS="${TST_NEEDS_KCONFIGS_IFS:-,}"
 
 	if [ -n "$TST_CNT" ]; then
 		if ! tst_is_int "$TST_CNT"; then
