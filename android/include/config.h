@@ -20,6 +20,9 @@
 /* Define to 1 if you have __builtin___clear_cache */
 #define HAVE_BUILTIN_CLEAR_CACHE 1
 
+/* Define to 1 if you have close_range */
+#define HAVE_CLOSE_RANGE 1
+
 /* Define to 1 if you have the `copy_file_range' function. */
 /* #undef HAVE_COPY_FILE_RANGE */
 
