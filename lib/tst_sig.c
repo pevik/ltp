@@ -69,7 +69,6 @@
 
 #include <errno.h>
 #include <string.h>
-#include <signal.h>
 #include <unistd.h>
 #include "test.h"
 #include "lapi/signal.h"
@@ -93,9 +92,6 @@ static void (*tst_setup_signal(int, void (*)(int))) (int);
 void tst_sig(int fork_flag, void (*handler) (), void (*cleanup) ())
 {
 	int sig;
-#ifdef _SC_SIGRT_MIN
-	long sigrtmin, sigrtmax;
-#endif
 
 	/*
 	 * save T_cleanup and handler function pointers
@@ -106,10 +102,6 @@ void tst_sig(int fork_flag, void (*handler) (), void (*cleanup) ())
 		/* use default handler */
 		handler = def_handler;
 	}
-#ifdef _SC_SIGRT_MIN
-	sigrtmin = sysconf(_SC_SIGRT_MIN);
-	sigrtmax = sysconf(_SC_SIGRT_MAX);
-#endif
 
 	/*
 	 * now loop through all signals and set the handlers
@@ -123,54 +115,13 @@ void tst_sig(int fork_flag, void (*handler) (), void (*cleanup) ())
 		 * SIGINFO is used for file quotas and should be expected
 		 */
 
-#ifdef _SC_SIGRT_MIN
-		if (sig >= sigrtmin && sig <= sigrtmax)
+		if (tst_signal_is_kern_rt(sig))
 			continue;
-#endif
 
 		switch (sig) {
 		case SIGKILL:
 		case SIGSTOP:
 		case SIGCONT:
-#if !defined(_SC_SIGRT_MIN) && defined(__SIGRTMIN) && defined(__SIGRTMAX)
-			/* Ignore all real-time signals */
-		case __SIGRTMIN:
-		case __SIGRTMIN + 1:
-		case __SIGRTMIN + 2:
-		case __SIGRTMIN + 3:
-		case __SIGRTMIN + 4:
-		case __SIGRTMIN + 5:
-		case __SIGRTMIN + 6:
-		case __SIGRTMIN + 7:
-		case __SIGRTMIN + 8:
-		case __SIGRTMIN + 9:
-		case __SIGRTMIN + 10:
-		case __SIGRTMIN + 11:
-		case __SIGRTMIN + 12:
-		case __SIGRTMIN + 13:
-		case __SIGRTMIN + 14:
-		case __SIGRTMIN + 15:
-/* __SIGRTMIN is 37 on HPPA rather than 32 *
- * as on i386, etc.                        */
-#if !defined(__hppa__)
-		case __SIGRTMAX - 15:
-		case __SIGRTMAX - 14:
-		case __SIGRTMAX - 13:
-		case __SIGRTMAX - 12:
-		case __SIGRTMAX - 11:
-#endif
-		case __SIGRTMAX - 10:
-		case __SIGRTMAX - 9:
-		case __SIGRTMAX - 8:
-		case __SIGRTMAX - 7:
-		case __SIGRTMAX - 6:
-		case __SIGRTMAX - 5:
-		case __SIGRTMAX - 4:
-		case __SIGRTMAX - 3:
-		case __SIGRTMAX - 2:
-		case __SIGRTMAX - 1:
-		case __SIGRTMAX:
-#endif
 #ifdef SIGSWAP
 		case SIGSWAP:
 #endif /* SIGSWAP */

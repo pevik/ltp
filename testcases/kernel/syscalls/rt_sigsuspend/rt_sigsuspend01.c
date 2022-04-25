@@ -50,7 +50,7 @@ static void verify_rt_sigsuspend(void)
 
 	SAFE_RT_SIGPROCMASK(0, NULL, &set2, SIGSETSIZE);
 	for (i = 1; i < SIGRTMAX; i++) {
-		if (i >= __SIGRTMIN && i < SIGRTMIN)
+		if (tst_signal_is_reserved_rt(i))
 			continue;
 		if (sigismember(&set1, i) != sigismember(&set2, i))
 			tst_brk(TFAIL, "signal mask not preserved");

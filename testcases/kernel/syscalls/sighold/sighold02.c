@@ -17,7 +17,7 @@
  */
 
 #define _XOPEN_SOURCE 600
-#include <signal.h>
+#include "lapi/signal.h"
 #include "tst_test.h"
 
 #ifndef NSIG
@@ -33,7 +33,7 @@ static int sigs_map[NUMSIGS];
 
 static int skip_sig(int sig)
 {
-	if (sig >= 32 && sig < SIGRTMIN)
+	if (tst_signal_is_reserved_rt(sig))
 		return 1;
 
 	switch (sig) {
