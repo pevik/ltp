@@ -191,6 +191,14 @@ AC_CHECK_TYPES([struct mmsghdr],,,[
 
 AC_CHECK_TYPES([struct msqid64_ds],,,[#include <sys/msgbuf.h>])
 
+AC_CHECK_TYPES([struct mount_attr],,,[
+#ifdef HAVE_LINUX_MOUNT_H
+# include <linux/mount.h>
+#else
+# include <sys/mount.h>
+#endif
+])
+
 AC_CHECK_TYPES([struct rlimit64],,,[
 #define _LARGEFILE64_SOURCE
 #include <sys/resource.h>
