@@ -9,14 +9,18 @@
 
 static void run(void)
 {
-	do {
-		sleep(1);
-	} while (tst_timeout_remaining() >= 4);
+	int runtime;
 
-	tst_res(TPASS, "Timeout remaining: %d", tst_timeout_remaining());
+	do {
+		runtime = tst_remaining_runtime();
+		tst_res(TINFO, "Remaining runtime %d", runtime);
+		sleep(1);
+	} while (runtime);
+
+	tst_res(TPASS, "Finished loop!");
 }
 
 static struct tst_test test = {
 	.test_all = run,
-	.timeout = 5
+	.max_iteration_runtime = 5
 };
