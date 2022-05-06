@@ -44,6 +44,13 @@ static void run(unsigned int n)
 	};
 	int fd = -1, res;
 
+	// <5.9 fails with -1/ENOSYS due to lack of system call
+	// -- we'll just skip the test entirely if system call not implemented
+	//    due to tst_syscall calling tst_brk(TCONF, ...) in this case
+	// 5.9+ fails with -1/EINVAL due to min (1) and max (0) being out of order
+	// -- this call then becomes a no-op and execution will continue with the rest of the test
+	tst_syscall(__NR_close_range, /* min_fd */ 1, /* max_fd */ 0, /* flags */ 0);
+
 	switch (n) {
 	case 0:
 		fd = SAFE_OPEN("/", O_PATH);
