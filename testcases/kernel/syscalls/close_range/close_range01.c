@@ -41,6 +41,9 @@ static inline void do_close_range(unsigned int fd, unsigned int max_fd,
 	if (!ret)
 		return;
 
+	// Match external/ltp include/lapi/syscalls/regen.sh:72
+	if (ret == -1 && errno == ENOSYS) tst_brk(TCONF, "close_range not supported");
+
 	if (errno == EINVAL) {
 		if (flags & CLOSE_RANGE_UNSHARE)
 			tst_brk(TCONF | TERRNO, "No CLOSE_RANGE_UNSHARE");
