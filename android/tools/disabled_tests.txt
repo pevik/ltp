@@ -476,11 +476,23 @@ testcases/bin/fs_bind/regression/test03
 # Depends on CONFIG_EXT4_FS_ENCRYPTION which is not required on Android.
 # b/123523766
 statx05
+# Depends on exportfs (NFS not supported on Android).
+# b/191236106
+statx07
 
 # Disabled from LTP20190517
 # b/136666217
 # Needs pthread_cancel() and friends
 af_alg02
+
+# Depends on DNOTIFY (not enabled in Android).
+# b/191236494
+fcntl38
+fcntl38_64
+
+# Depends on HDLC line discipline (not enabled on Android).
+# b/191224903
+pty05
 
 # Disable RPC tests as not available in Android.
 rpc01.sh
