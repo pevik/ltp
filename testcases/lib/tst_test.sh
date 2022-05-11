@@ -603,7 +603,7 @@ _tst_init_checkpoints()
 _prepare_device()
 {
 	if [ "$TST_FORMAT_DEVICE" = 1 ]; then
-		tst_clear_device $TST_DEVICE
+		tst_device clear "$TST_DEVICE"
 		tst_mkfs $TST_FS_TYPE $TST_DEV_FS_OPTS $TST_DEVICE $TST_DEV_EXTRA_OPTS
 	fi
 
