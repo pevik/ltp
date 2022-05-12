@@ -1,6 +1,7 @@
 #!/bin/sh
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright (c) 2021 SUSE LLC <mdoucha@suse.cz>
+# Copyright (c) Linux Test Project, 2022
 #
 # DESCRIPTION: Create a large number of files and directories on NFS volume.
 # Then check whether they can be listed via NFS.
@@ -12,6 +13,7 @@ TST_PARSE_ARGS="do_parse_args"
 TST_TESTFUNC="do_test"
 TST_SETUP="do_setup"
 TST_USAGE="show_usage"
+TST_ALL_FILESYSTEMS=1
 
 do_parse_args()
 {
@@ -28,6 +30,10 @@ show_usage()
 
 do_setup()
 {
+	echo "1: PWD: '$PWD', OLDPWD: '$OLDPWD'" # FIXME: debug
+	cd $TST_MNTPOINT
+	echo "2: PWD: '$PWD', OLDPWD: '$OLDPWD'" # FIXME: debug
+
 	nfs_setup
 
 	local rpath=$(nfs_get_remote_path | sed -e 's/%/%%/g')
@@ -41,6 +47,15 @@ do_setup()
 do_test()
 {
 	local count
+
+	# FIXME: debug
+	df -hT
+	echo "---"
+	mount
+	echo "---"
+	df -hT .
+	echo "---"
+	# FIXME: debug
 
 	# Pass the list of files through `sort -u` in case `ls` doesn't filter
 	# out potential duplicate filenames returned by buggy NFS
