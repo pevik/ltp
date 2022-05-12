@@ -28,7 +28,7 @@ NFS_PARSE_ARGS_CALLER="$TST_PARSE_ARGS"
 TST_OPTS="v:t:$TST_OPTS"
 TST_PARSE_ARGS=nfs_parse_args
 TST_USAGE=nfs_usage
-TST_NEEDS_TMPDIR=1
+TST_ALL_FILESYSTEMS=1
 TST_NEEDS_ROOT=1
 TST_NEEDS_CMDS="$TST_NEEDS_CMDS mount exportfs mount.nfs"
 TST_SETUP="${TST_SETUP:-nfs_setup}"
@@ -63,7 +63,7 @@ nfs_get_remote_path()
 	done
 
 	v=${1:-$v}
-	echo "$TST_TMPDIR/$v/$type"
+	echo "$TST_MNTPOINT/$v/$type"
 }
 
 nfs_server_udp_enabled()
@@ -162,8 +162,8 @@ nfs_setup()
 			tst_brk TCONF "UDP support disabled on NFS server"
 		fi
 
-		local_dir="$TST_TMPDIR/$i/$n"
-		remote_dir="$TST_TMPDIR/$i/$type"
+		local_dir="$TST_MNTPOINT/$i/$n"
+		remote_dir="$TST_MNTPOINT/$i/$type"
 		mkdir -p $local_dir
 
 		nfs_setup_server $(($$ + n))
@@ -174,7 +174,7 @@ nfs_setup()
 	done
 
 	if [ "$n" -eq 1 ]; then
-		cd ${VERSION}/0
+		cd $TST_MNTPOINT/$VERSION/0
 	fi
 }
 
@@ -190,19 +190,22 @@ nfs_cleanup()
 
 	local n=0
 	for i in $VERSION; do
-		local_dir="$TST_TMPDIR/$i/$n"
-		grep -q "$local_dir" /proc/mounts && umount $local_dir
+		type=$(get_socket_type $n)
+		remote_dir="$TST_MNTPOINT/$i/$type"
+		tst_rhost_run -c "test -d $remote_dir && exportfs -u *:$remote_dir"
+		tst_rhost_run -c "test -d $remote_dir && rm -rf $remote_dir"
 		n=$(( n + 1 ))
 	done
 
 	n=0
 	for i in $VERSION; do
-		type=$(get_socket_type $n)
-		remote_dir="$TST_TMPDIR/$i/$type"
-		tst_rhost_run -c "test -d $remote_dir && exportfs -u *:$remote_dir"
-		tst_rhost_run -c "test -d $remote_dir && rm -rf $remote_dir"
+		local_dir="$TST_MNTPOINT/$i/$n"
+
+		grep -q "$local_dir" /proc/mounts && umount $local_dir
 		n=$(( n + 1 ))
 	done
+
+	systemctl restart nfs-server
 }
 
 . tst_net.sh
