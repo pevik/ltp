@@ -1,6 +1,7 @@
 #!/bin/sh
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright (c) 2021 SUSE LLC <mdoucha@suse.cz>
+# Copyright (c) Linux Test Project, 2022
 #
 # DESCRIPTION: Create a large number of files and directories on NFS volume.
 # Then check whether they can be listed via NFS.
@@ -12,6 +13,7 @@ TST_PARSE_ARGS="do_parse_args"
 TST_TESTFUNC="do_test"
 TST_SETUP="do_setup"
 TST_USAGE="show_usage"
+TST_ALL_FILESYSTEMS=1
 
 do_parse_args()
 {
