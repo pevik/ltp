@@ -538,6 +538,7 @@ _tst_setup_timer()
 	tst_timeout_kill $sec $pid &
 
 	_tst_setup_timer_pid=$!
+	echo "pev: pid of tst_timeout_kill: $(readlink -f /proc/$_tst_setup_timer_pid/cwd)" # FIXME: debug
 
 	while true; do
 		local state
@@ -707,6 +708,7 @@ tst_run()
 
 		TST_STARTWD=$(pwd)
 		cd "$TST_TMPDIR"
+		echo "1: TST_TMPDIR: $TST_TMPDIR; cd into $TST_TMPDIR" # FIXME: debug
 	fi
 
 	[ -n "$TST_NEEDS_CHECKPOINTS" ] && _tst_init_checkpoints
@@ -728,6 +730,7 @@ _tst_run_iterations()
 	local _tst_i=$TST_ITERATIONS
 
 	[ "$TST_NEEDS_TMPDIR" = 1 ] && cd "$TST_TMPDIR"
+	[ "$TST_NEEDS_TMPDIR" = 1 ] && echo "2: TST_TMPDIR: $TST_TMPDIR; cd into $TST_TMPDIR" # FIXME: debug
 
 	_tst_setup_timer
 
@@ -764,6 +767,7 @@ _tst_run_iterations()
 	fi
 
 	if [ "$TST_MOUNT_FLAG" = 1 ]; then
+		echo "running tst_umount" # FIXME: debug
 		tst_umount
 	fi
 

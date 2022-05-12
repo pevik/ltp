@@ -28,7 +28,7 @@ NFS_PARSE_ARGS_CALLER="$TST_PARSE_ARGS"
 TST_OPTS="v:t:$TST_OPTS"
 TST_PARSE_ARGS=nfs_parse_args
 TST_USAGE=nfs_usage
-TST_NEEDS_TMPDIR=1
+TST_ALL_FILESYSTEMS=1
 TST_NEEDS_ROOT=1
 TST_NEEDS_CMDS="$TST_NEEDS_CMDS mount exportfs mount.nfs"
 TST_SETUP="${TST_SETUP:-nfs_setup}"
@@ -63,7 +63,7 @@ nfs_get_remote_path()
 	done
 
 	v=${1:-$v}
-	echo "$TST_TMPDIR/$v/$type"
+	echo "$TST_MNTPOINT/$v/$type"
 }
 
 nfs_server_udp_enabled()
@@ -142,6 +142,13 @@ nfs_setup()
 	local remote_dir
 	local mount_dir
 
+	#pwd # FIXME: debug
+	#df -hT . # FIXME: debug
+	#cd $TST_MNTPOINT
+	#pwd # FIXME: debug
+	#df -hT . # FIXME: debug
+	#df -hT $TST_MNTPOINT # FIXME: debug
+
 	if [ "$(stat -f . | grep "Type: nfs")" ]; then
 		tst_brk TCONF "Cannot run nfs-stress test on mounted NFS"
 	fi
@@ -163,7 +170,7 @@ nfs_setup()
 		fi
 
 		local_dir="$TST_TMPDIR/$i/$n"
-		remote_dir="$TST_TMPDIR/$i/$type"
+		remote_dir="$TST_MNTPOINT/$i/$type"
 		mkdir -p $local_dir
 
 		nfs_setup_server $(($$ + n))
@@ -181,24 +188,57 @@ nfs_setup()
 nfs_cleanup()
 {
 	tst_res TINFO "Cleaning up testcase"
+	pwd # FIXME: debug
+	echo "LTPROOT '$LTPROOT'" # FIXME: debug
 	cd $LTPROOT
+	pwd # FIXME: debug
 
 	local i
 	local type
 	local local_dir
 	local remote_dir
 
+	# FIXME: debug
+	for i in $(ps -o pid=); do echo "$i: $(readlink -f /proc/$i/cwd)"; done
+	df -hT $TST_MNTPOINT $TMPDIR $TST_TMPDIR .
+	# FIXME: debug
+
 	local n=0
 	for i in $VERSION; do
 		local_dir="$TST_TMPDIR/$i/$n"
-		grep -q "$local_dir" /proc/mounts && umount $local_dir
+
+		# FIXME: debug
+		echo "fuser -mv $TST_MNTPOINT"
+		fuser -mv $TST_MNTPOINT
+		echo "fuser -mv $local_dir"
+		fuser -mv $local_dir
+		echo "* umounting local_dir $local_dir"
+		# FIXME: debug
+
+		grep -q "$local_dir" /proc/mounts && umount -f -l -r $local_dir
+		# FIXME: debug
+		res=$?
+		sync
+		sleep 1
+		echo "result: $res" >&2 # FIXME: debug
+
+		echo "fuser -km $local_dir"
+		fuser -km $local_dir
+		grep -q "$local_dir" /proc/mounts && umount -f -l -r $local_dir
+		# FIXME: debug
+		res=$?
+		sync
+		sleep 1
+		echo "2 result: $res" >&2 # FIXME: debug
+		# FIXME: debug
+
 		n=$(( n + 1 ))
 	done
 
 	n=0
 	for i in $VERSION; do
 		type=$(get_socket_type $n)
-		remote_dir="$TST_TMPDIR/$i/$type"
+		remote_dir="$TST_MNTPOINT/$i/$type"
 		tst_rhost_run -c "test -d $remote_dir && exportfs -u *:$remote_dir"
 		tst_rhost_run -c "test -d $remote_dir && rm -rf $remote_dir"
 		n=$(( n + 1 ))

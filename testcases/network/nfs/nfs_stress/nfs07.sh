@@ -1,6 +1,7 @@
 #!/bin/sh
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright (c) 2021 SUSE LLC <mdoucha@suse.cz>
+# Copyright (c) Linux Test Project, 2022
 #
 # DESCRIPTION: Create a large number of files and directories on NFS volume.
 # Then check whether they can be listed via NFS.
