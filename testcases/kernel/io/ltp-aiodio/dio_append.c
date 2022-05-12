@@ -71,6 +71,9 @@ static void run(void)
 
 	io_append(filename, 0, O_DIRECT | O_WRONLY | O_CREAT, writesize, appends);
 
+	if (!tst_remaining_runtime())
+		tst_res(TINFO, "Test out of runtime, exitting");
+
 	if (SAFE_WAITPID(-1, &status, WNOHANG))
 		tst_res(TFAIL, "Non zero bytes read");
 	else
@@ -87,6 +90,7 @@ static struct tst_test test = {
 	.cleanup = cleanup,
 	.needs_tmpdir = 1,
 	.forks_child = 1,
+	.max_runtime = 1800,
 	.options = (struct tst_option[]) {
 		{"n:", &str_numchildren, "Number of processes (default 16)"},
 		{"w:", &str_writesize, "Write size for each append (default 64K)"},
