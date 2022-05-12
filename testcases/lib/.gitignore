@@ -1,6 +1,7 @@
 /tst_check_drivers
 /tst_check_kconfigs
 /tst_checkpoint
+/tst_clear_device
 /tst_device
 /tst_getconf
 /tst_get_free_pids
