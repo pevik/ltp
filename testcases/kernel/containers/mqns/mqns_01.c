@@ -13,7 +13,7 @@
  */
 
 #include <mqueue.h>
-#include "common.h"
+#include "mqns.h"
 
 #define MQNAME "/MQ1"
 

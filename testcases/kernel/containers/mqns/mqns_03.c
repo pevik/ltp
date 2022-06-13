@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <mqueue.h>
 #include "tst_safe_stdio.h"
-#include "common.h"
+#include "mqns.h"
 
 #define MQNAME1 "/MQ1"
 #define MQNAME2 "/MQ2"
