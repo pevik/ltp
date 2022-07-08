@@ -15173,36 +15173,6 @@ cc_test {
 }
 
 cc_test {
-    name: "ltp_shmctl05",
-    stem: "shmctl05",
-    defaults: ["ltp_test_defaults"],
-    srcs: ["testcases/kernel/syscalls/ipc/shmctl/shmctl05.c"],
-    local_include_dirs: ["include/old"],
-    static_libs: ["libltp_ltp"],
-}
-
-cc_test {
-    name: "ltp_shmctl06",
-    stem: "shmctl06",
-    defaults: ["ltp_test_defaults"],
-    srcs: ["testcases/kernel/syscalls/ipc/shmctl/shmctl06.c"],
-    local_include_dirs: ["include/old"],
-    static_libs: [
-        "libltp_ltp",
-        "libltp_ltpnewipc",
-    ],
-}
-
-cc_test {
-    name: "ltp_shmctl08",
-    stem: "shmctl08",
-    defaults: ["ltp_test_defaults"],
-    srcs: ["testcases/kernel/syscalls/ipc/shmctl/shmctl08.c"],
-    local_include_dirs: ["include/old"],
-    static_libs: ["libltp_ltp"],
-}
-
-cc_test {
     name: "ltp_shmget06",
     stem: "shmget06",
     defaults: ["ltp_test_defaults"],

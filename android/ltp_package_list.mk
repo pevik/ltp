@@ -1397,9 +1397,6 @@ ltp_packages := \
   ltp_setxattr02 \
   ltp_setxattr03 \
   ltp_sgetmask01 \
-  ltp_shmctl05 \
-  ltp_shmctl06 \
-  ltp_shmctl08 \
   ltp_shmget06 \
   ltp_sigaction01 \
   ltp_sigaction02 \
