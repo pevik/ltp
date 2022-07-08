@@ -1587,7 +1587,6 @@ ltp_packages := \
   ltp_testcases_bin_cleanup_lvm.sh \
   ltp_testcases_bin_clockdiff01.sh \
   ltp_testcases_bin_cmdlib.sh \
-  ltp_testcases_bin_cn_pec.sh \
   ltp_testcases_bin_cp_tests.sh \
   ltp_testcases_bin_cpio_tests.sh \
   ltp_testcases_bin_cpuacct.sh \

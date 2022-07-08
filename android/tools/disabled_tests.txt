@@ -592,3 +592,7 @@ rpc_svcudp_create_performance
 rpc_svcudp_create_stress
 rpc_xprt_register
 rpc_xprt_unregister
+
+# Depends on /proc/net/connector and /dev/shm (not available on Android)
+# b/229724819
+cn_pec.sh
