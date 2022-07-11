@@ -63,14 +63,21 @@ static void run(void)
 	TST_EXP_EQ_LI(stat_buf.st_atime, NEW_ACCESS_TIME);
 }
 
+static const char *const resource_files[] = {
+	TEST_APP,
+	NULL
+};
+
 static struct tst_test test = {
 	.test_all = run,
 	.setup = setup,
 	.needs_root = 1,
 	.needs_tmpdir = 1,
 	.mount_device = 1,
+	.format_device = 1,
 	.mntpoint = MNT_POINT,
 	.all_filesystems = 1,
+	.resource_files = resource_files,
 	.skip_filesystems = (const char *const[]) {
 		"vfat",
 		"exfat",
