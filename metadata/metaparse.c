@@ -757,16 +757,22 @@ static void check_normalize_types(struct data_node *res)
 {
 	unsigned int i;
 
+	fprintf(stderr, "%s:%d %s(): START\n", __FILE__, __LINE__, __func__); // FIXME:
+
 	for (i = 0; tst_test_typemap[i].id; i++) {
 		struct data_node *n;
 		struct typemap *typemap = &tst_test_typemap[i];
 
 		n = data_node_hash_get(res, typemap->id);
-		if (!n)
+		if (!n) {
+			fprintf(stderr, "%s:%d %s(): CONTINUE!\n", __FILE__, __LINE__, __func__); // FIXME:
 			continue;
+		}
 
-		if (n->type == typemap->type)
+		if (n->type == typemap->type) {
+			fprintf(stderr, "%s:%d %s(): CONTINUE!!\n", __FILE__, __LINE__, __func__); // FIXME:
 			continue;
+		}
 
 		if (n->type == DATA_STRING && typemap->type == DATA_INT) {
 			convert_str2int(res, typemap->id, n->string.val);
@@ -866,32 +872,48 @@ int main(int argc, char *argv[])
 	if (!res)
 		return 0;
 
+	fprintf(stderr, "%s:%d %s(): === %s ===\n", __FILE__, __LINE__, __func__, argv[optind]); // FIXME: debug
+
 	/* Filter out useless data */
 	for (i = 0; filter_out[i]; i++)
 		data_node_hash_del(res, filter_out[i]);
 
 	/* Normalize the result */
+	fprintf(stderr, "%s:%d %s(): i START\n", __FILE__, __LINE__, __func__); // FIXME:
 	for (i = 0; implies[i].flag; i++) {
+		fprintf(stderr, "%s:%d %s(): * i: %d, flag: '%s'\n", __FILE__, __LINE__, __func__, i, implies[i].flag); // FIXME: debug
 		if (data_node_hash_get(res, implies[i].flag)) {
 			for (j = 0; implies[i].implies[j]; j++) {
+				fprintf(stderr, "%s:%d %s(): ** j: %d, implies: '%s'\n", __FILE__, __LINE__, __func__, j, implies[i].implies[j]); // FIXME: debug
 				if (data_node_hash_get(res, implies[i].implies[j]))
 					fprintf(stderr, "%s: useless tag: %s\n",
 						argv[optind], implies[i].implies[j]);
 			}
+			fprintf(stderr, "%s:%d %s(): END of inner for\n", __FILE__, __LINE__, __func__); // FIXME:
 		}
+		fprintf(stderr, "%s:%d %s(): END of outer for\n", __FILE__, __LINE__, __func__); // FIXME:
 	}
+
+	fprintf(stderr, "%s:%d %s(): before check_normalize_types()\n", __FILE__, __LINE__, __func__); // FIXME:
 
 	/* Normalize types */
 	check_normalize_types(res);
 
+	fprintf(stderr, "%s:%d %s(): i START\n", __FILE__, __LINE__, __func__); // FIXME:
 	for (i = 0; implies[i].flag; i++) {
+		fprintf(stderr, "%s:%d %s(): * i: %d, flag: '%s'\n", __FILE__, __LINE__, __func__, i, implies[i].flag); // FIXME: debug
 		if (data_node_hash_get(res, implies[i].flag)) {
 			for (j = 0; implies[i].implies[j]; j++) {
-				if (!data_node_hash_get(res, implies[i].implies[j]))
+				fprintf(stderr, "%s:%d %s(): ** j: %d, implies: '%s'\n", __FILE__, __LINE__, __func__, j, implies[i].implies[j]); // FIXME: debug
+				if (!data_node_hash_get(res, implies[i].implies[j])) {
+					fprintf(stderr, "%s:%d %s(): !implies\n", __FILE__, __LINE__, __func__); // FIXME: debug
 					data_node_hash_add(res, implies[i].implies[j],
 							   data_node_string("1"));
+				}
 			}
+			fprintf(stderr, "%s:%d %s(): END of inner for\n", __FILE__, __LINE__, __func__); // FIXME:
 		}
+		fprintf(stderr, "%s:%d %s(): END of outer for\n", __FILE__, __LINE__, __func__); // FIXME:
 	}
 
 	data_node_hash_add(res, "fname", data_node_string(argv[optind]));

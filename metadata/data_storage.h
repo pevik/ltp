@@ -179,6 +179,7 @@ static inline int data_node_hash_del(struct data_node *self, const char *id)
 {
 	unsigned int i;
 	struct data_node_hash *hash = &self->hash;
+	fprintf(stderr, "%s:%d %s(): id: '%s'\n", __FILE__, __LINE__, __func__, id); // FIXME: // debug
 
 	for (i = 0; i < hash->elems_used; i++) {
 		if (!strcmp(hash->elems[i].id, id))
@@ -200,6 +201,8 @@ static struct data_node *data_node_hash_get(struct data_node *self, const char *
 {
 	unsigned int i;
 	struct data_node_hash *hash = &self->hash;
+
+	fprintf(stderr, "%s:%d %s(): id: '%s'\n", __FILE__, __LINE__, __func__, id); // FIXME: // debug
 
 	for (i = 0; i < hash->elems_used; i++) {
 		if (!strcmp(hash->elems[i].id, id))
