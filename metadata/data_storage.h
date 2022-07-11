@@ -57,7 +57,7 @@ struct data_node {
 	};
 };
 
-static inline const char* data_type_name(enum data_type type)
+static inline const char *data_type_name(enum data_type type)
 {
 	switch (type) {
 	case DATA_ARRAY:
@@ -68,6 +68,41 @@ static inline const char* data_type_name(enum data_type type)
 		return "string";
 	case DATA_INT:
 		return "int";
+	default:
+		return "???";
+	}
+}
+
+enum flag_type {
+	FLAG_ALL_FILESYSTEMS,
+	FLAG_FORMAT_DEVICE,
+	FLAG_MOUNT_DEVICE,
+	FLAG_NEEDS_CHECKPOINTS,
+	FLAG_NEEDS_DEVICE,
+	FLAG_NEEDS_TMPDIR,
+	FLAG_RESOURCE_FILES,
+	FLAG_TEST_VARIANTS,
+};
+
+static inline const char *flag_type_name(enum flag_type type)
+{
+	switch (type) {
+	case FLAG_ALL_FILESYSTEMS:
+		return "all_filesystems";
+	case FLAG_FORMAT_DEVICE:
+		return "format_device";
+	case FLAG_MOUNT_DEVICE:
+		return "mount_device";
+	case FLAG_NEEDS_CHECKPOINTS:
+		return "needs_checkpoints";
+	case FLAG_NEEDS_DEVICE:
+		return "needs_device";
+	case FLAG_NEEDS_TMPDIR:
+		return "needs_tmpdir";
+	case FLAG_RESOURCE_FILES:
+		return "resource_files";
+	case FLAG_TEST_VARIANTS:
+		return "test_variants";
 	default:
 		return "???";
 	}
@@ -179,6 +214,7 @@ static inline int data_node_hash_del(struct data_node *self, const char *id)
 {
 	unsigned int i;
 	struct data_node_hash *hash = &self->hash;
+	fprintf(stderr, "%s:%d %s(): id: '%s'\n", __FILE__, __LINE__, __func__, id); // FIXME: // debug
 
 	for (i = 0; i < hash->elems_used; i++) {
 		if (!strcmp(hash->elems[i].id, id))
@@ -200,6 +236,8 @@ static struct data_node *data_node_hash_get(struct data_node *self, const char *
 {
 	unsigned int i;
 	struct data_node_hash *hash = &self->hash;
+
+	fprintf(stderr, "%s:%d %s(): id: '%s'\n", __FILE__, __LINE__, __func__, id); // FIXME: // debug
 
 	for (i = 0; i < hash->elems_used; i++) {
 		if (!strcmp(hash->elems[i].id, id))

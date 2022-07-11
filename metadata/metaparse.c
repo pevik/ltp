@@ -16,6 +16,10 @@
 
 #include "data_storage.h"
 
+#ifndef ARRAY_SIZE
+# define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
+#endif
+
 #define INCLUDE_PATH_MAX 5
 
 static int verbose;
@@ -726,55 +730,68 @@ static struct data_node *parse_file(const char *fname)
 }
 
 static struct typemap {
-	const char *id;
+	enum flag_type id;
 	enum data_type type;
 } tst_test_typemap[] = {
-	{.id = "test_variants", .type = DATA_INT},
+	{.id = FLAG_TEST_VARIANTS, .type = DATA_INT},
 	{}
 };
 
-static void convert_str2int(struct data_node *res, const char *id, const char *str_val)
+static void convert_str2int(struct data_node *res, enum flag_type id, const char *str_val)
 {
 	long val;
 	char *endptr;
+	const char *ids = flag_type_name(id);
+	fprintf(stderr, "%s:%d %s(): ids: '%s'\n", __FILE__, __LINE__, __func__, ids); // FIXME:
 
 	errno = 0;
 	val = strtol(str_val, &endptr, 10);
 
 	if (errno || *endptr) {
-		fprintf(stderr,	"Cannot convert %s value %s to int!\n", id, str_val);
+		fprintf(stderr,	"Cannot convert %s value %s to int!\n",
+			flag_type_name(id), str_val);
 		exit(1);
 	}
 
 	if (verbose)
-		fprintf(stderr, "NORMALIZING %s TO INT %li\n", id, val);
+		fprintf(stderr, "NORMALIZING %s TO INT %li\n",
+			ids, val);
 
-	data_node_hash_del(res, id);
-	data_node_hash_add(res, id, data_node_int(val));
+	data_node_hash_del(res, ids);
+	data_node_hash_add(res, ids, data_node_int(val));
 }
 
 static void check_normalize_types(struct data_node *res)
 {
 	unsigned int i;
 
+	fprintf(stderr, "%s:%d %s(): START\n", __FILE__, __LINE__, __func__); // FIXME:
+
 	for (i = 0; tst_test_typemap[i].id; i++) {
 		struct data_node *n;
 		struct typemap *typemap = &tst_test_typemap[i];
+		const char *ids = flag_type_name(typemap->id);
+		fprintf(stderr, "%s:%d %s(): ids: '%s'\n", __FILE__, __LINE__, __func__, ids); // FIXME:
 
-		n = data_node_hash_get(res, typemap->id);
-		if (!n)
+		n = data_node_hash_get(res, ids);
+		if (!n) {
+			fprintf(stderr, "%s:%d %s(): CONTINUE!\n", __FILE__, __LINE__, __func__); // FIXME:
 			continue;
+		}
 
-		if (n->type == typemap->type)
+		if (n->type == typemap->type) {
+			fprintf(stderr, "%s:%d %s(): CONTINUE!!\n", __FILE__, __LINE__, __func__); // FIXME:
 			continue;
+		}
 
+		fprintf(stderr, "%s:%d %s(): n->type: %d, typemap->type: %d\n", __FILE__, __LINE__, __func__, n->type, typemap->type); // FIXME:
 		if (n->type == DATA_STRING && typemap->type == DATA_INT) {
 			convert_str2int(res, typemap->id, n->string.val);
 			continue;
 		}
 
-		fprintf(stderr, "Cannot convert %s from %s to %s!\n",
-			typemap->id, data_type_name(n->type),
+		fprintf(stderr, "Cannot convert %s from %s to %s!\n", ids,
+			data_type_name(n->type),
 			data_type_name(typemap->type));
 		exit(1);
 	}
@@ -792,19 +809,18 @@ static const char *filter_out[] = {
 };
 
 static struct implies {
-	const char *flag;
+	int flag;
 	const char **implies;
 } implies[] = {
-	{"mount_device", (const char *[]) {"format_device", "needs_device",
-		"needs_tmpdir", NULL}},
-	{"format_device", (const char *[]) {"needs_device", "needs_tmpdir",
-		NULL}},
-	{"all_filesystems", (const char *[]) {"needs_device", "needs_tmpdir",
-		NULL}},
-	{"needs_device", (const char *[]) {"needs_tmpdir", NULL}},
-	{"needs_checkpoints", (const char *[]) {"needs_tmpdir", NULL}},
-	{"resource_files", (const char *[]) {"needs_tmpdir", NULL}},
-	{NULL, (const char *[]) {NULL}}
+	{FLAG_MOUNT_DEVICE, (const char *[]) {"format_device", "needs_device",
+	       "needs_tmpdir", NULL}},
+	{FLAG_FORMAT_DEVICE, (const char *[]) {"needs_device", "needs_tmpdir",
+	       NULL}},
+	{FLAG_ALL_FILESYSTEMS, (const char *[]) {"needs_device", "needs_tmpdir",
+	       NULL}},
+	{FLAG_NEEDS_DEVICE, (const char *[]) {"needs_tmpdir", NULL}},
+	{FLAG_NEEDS_CHECKPOINTS, (const char *[]) {"needs_tmpdir", NULL}},
+	{FLAG_RESOURCE_FILES, (const char *[]) {"needs_tmpdir", NULL}},
 };
 
 const char *strip_name(char *path)
@@ -866,32 +882,50 @@ int main(int argc, char *argv[])
 	if (!res)
 		return 0;
 
+	fprintf(stderr, "%s:%d %s(): === %s ===\n", __FILE__, __LINE__, __func__, argv[optind]); // FIXME: debug
+
 	/* Filter out useless data */
 	for (i = 0; filter_out[i]; i++)
 		data_node_hash_del(res, filter_out[i]);
 
 	/* Normalize the result */
+	fprintf(stderr, "%s:%d %s(): i max: %ld\n", __FILE__, __LINE__, __func__, ARRAY_SIZE(implies)); // FIXME:
+	//for (i = 0; ARRAY_SIZE(implies); i++) {
 	for (i = 0; implies[i].flag; i++) {
-		if (data_node_hash_get(res, implies[i].flag)) {
+		fprintf(stderr, "%s:%d %s(): * i: %d, flag: '%s' (%d)\n", __FILE__, __LINE__, __func__, i, flag_type_name(implies[i].flag), implies[i].flag); // FIXME: debug
+		if (data_node_hash_get(res, flag_type_name(implies[i].flag))) {
 			for (j = 0; implies[i].implies[j]; j++) {
+				fprintf(stderr, "%s:%d %s(): ** j: %d, implies: '%s'\n", __FILE__, __LINE__, __func__, j, implies[i].implies[j]); // FIXME: debug
 				if (data_node_hash_get(res, implies[i].implies[j]))
 					fprintf(stderr, "%s: useless tag: %s\n",
 						argv[optind], implies[i].implies[j]);
 			}
+			fprintf(stderr, "%s:%d %s(): END of inner for\n", __FILE__, __LINE__, __func__); // FIXME:
 		}
+		fprintf(stderr, "%s:%d %s(): END of outer for\n", __FILE__, __LINE__, __func__); // FIXME:
 	}
+
+	fprintf(stderr, "%s:%d %s(): before check_normalize_types()\n", __FILE__, __LINE__, __func__); // FIXME:
 
 	/* Normalize types */
 	check_normalize_types(res);
 
+	fprintf(stderr, "%s:%d %s(): i max: %ld\n", __FILE__, __LINE__, __func__, ARRAY_SIZE(implies)); // FIXME:
+	//for (i = 0; ARRAY_SIZE(implies); i++) {
 	for (i = 0; implies[i].flag; i++) {
-		if (data_node_hash_get(res, implies[i].flag)) {
+		fprintf(stderr, "%s:%d %s(): * i: %d, flag: '%s' (%d)\n", __FILE__, __LINE__, __func__, i, flag_type_name(implies[i].flag), implies[i].flag); // FIXME: debug
+		if (data_node_hash_get(res, flag_type_name(implies[i].flag))) {
 			for (j = 0; implies[i].implies[j]; j++) {
-				if (!data_node_hash_get(res, implies[i].implies[j]))
+				fprintf(stderr, "%s:%d %s(): ** j: %d, implies: '%s'\n", __FILE__, __LINE__, __func__, j, implies[i].implies[j]); // FIXME: debug
+				if (!data_node_hash_get(res, implies[i].implies[j])) {
+					fprintf(stderr, "%s:%d %s(): !implies\n", __FILE__, __LINE__, __func__); // FIXME: debug
 					data_node_hash_add(res, implies[i].implies[j],
 							   data_node_string("1"));
+				}
 			}
+			fprintf(stderr, "%s:%d %s(): END of inner for\n", __FILE__, __LINE__, __func__); // FIXME:
 		}
+		fprintf(stderr, "%s:%d %s(): END of outer for\n", __FILE__, __LINE__, __func__); // FIXME:
 	}
 
 	data_node_hash_add(res, "fname", data_node_string(argv[optind]));
