@@ -69,7 +69,7 @@ setup()
 
 zram_makefs()
 {
-	local i=0
+	local i=$dev_start
 	local fs
 
 	for fs in $zram_filesystems; do
@@ -90,7 +90,7 @@ zram_mount()
 {
 	local i=0
 
-	for i in $(seq 0 $(($dev_num - 1))); do
+	for i in $(seq $dev_start $dev_end); do
 		tst_res TINFO "mount /dev/zram$i"
 		mkdir zram$i
 		ROD mount /dev/zram$i zram$i
@@ -102,7 +102,7 @@ zram_mount()
 
 zram_fill_fs()
 {
-	for i in $(seq 0 $(($dev_num - 1))); do
+	for i in $(seq $dev_start $dev_end); do
 		tst_res TINFO "filling zram$i (it can take long time)"
 		local b=0
 		while true; do
@@ -125,8 +125,8 @@ zram_fill_fs()
 			continue
 		fi
 
-		local compr_size=`awk '{print $2}' "/sys/block/zram$i/mm_stat"`
-		local v=$((100 * 1024 * $b / $compr_size))
+		local mem_used_total=`awk '{print $3}' "/sys/block/zram$i/mm_stat"`
+		local v=$((100 * 1024 * $b / $mem_used_total))
 		local r=`echo "scale=2; $v / 100 " | bc`
 
 		if [ "$v" -lt 100 ]; then

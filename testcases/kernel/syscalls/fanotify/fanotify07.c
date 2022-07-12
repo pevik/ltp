@@ -26,7 +26,6 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/fcntl.h>
 #include <sys/wait.h>
 #include <errno.h>
 #include <string.h>
@@ -86,13 +85,23 @@ static int stop_children(void)
 	int child_ret;
 	int i, ret = 0;
 
-	for (i = 0; i < MAX_CHILDREN; i++)
+	for (i = 0; i < MAX_CHILDREN; i++) {
+		if (!child_pid[i])
+			continue;
+
 		SAFE_KILL(child_pid[i], SIGKILL);
+	}
 
 	for (i = 0; i < MAX_CHILDREN; i++) {
+		if (!child_pid[i])
+			continue;
+
 		SAFE_WAITPID(child_pid[i], &child_ret, 0);
+
 		if (!WIFSIGNALED(child_ret))
 			ret = 1;
+
+		child_pid[i] = 0;
 	}
 
 	return ret;
@@ -190,6 +199,8 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	stop_children();
+
 	if (fd_notify > 0)
 		SAFE_CLOSE(fd_notify);
 }

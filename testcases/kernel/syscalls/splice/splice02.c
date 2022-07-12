@@ -5,7 +5,7 @@
  */
 
 /*\
- * [DESCRIPTION]
+ * [Description]
  * Original reproducer for kernel fix
  * bf40d3435caf NFS: add support for splice writes
  * from v2.6.31-rc1.
@@ -157,7 +157,7 @@ static struct tst_test test = {
 	.forks_child = 1,
 	.min_kver = "2.6.17",
 	.options = (struct tst_option[]) {
-		{"s:", &sarg, "-s x     Size of output file in bytes (default: 16x max pipe size, i.e. 1M on intel)"},
+		{"s:", &sarg, "Size of output file in bytes (default: 16x max pipe size, i.e. 1M on intel)"},
 		{}
 	},
 };

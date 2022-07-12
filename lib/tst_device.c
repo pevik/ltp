@@ -194,6 +194,48 @@ int tst_attach_device(const char *dev, const char *file)
 	return 0;
 }
 
+uint64_t tst_get_device_size(const char *dev_path)
+{
+	int fd;
+	uint64_t size;
+	struct stat st;
+
+	if (!dev_path)
+		tst_brkm(TBROK, NULL, "No block device path");
+
+	if (stat(dev_path, &st)) {
+		tst_resm(TWARN | TERRNO, "stat() failed");
+		return -1;
+	}
+
+	if (!S_ISBLK(st.st_mode)) {
+		tst_resm(TWARN, "%s is not a block device", dev_path);
+		return -1;
+	}
+
+	fd = open(dev_path, O_RDONLY);
+	if (fd < 0) {
+		tst_resm(TWARN | TERRNO,
+				"open(%s, O_RDONLY) failed", dev_path);
+		return -1;
+	}
+
+	if (ioctl(fd, BLKGETSIZE64, &size)) {
+		tst_resm(TWARN | TERRNO,
+				"ioctl(fd, BLKGETSIZE64, ...) failed");
+		close(fd);
+		return -1;
+	}
+
+	if (close(fd)) {
+		tst_resm(TWARN | TERRNO,
+				"close(fd) failed");
+		return -1;
+	}
+
+	return size/1024/1024;
+}
+
 int tst_detach_device_by_fd(const char *dev, int dev_fd)
 {
 	int ret, i;
@@ -243,7 +285,7 @@ int tst_dev_sync(int fd)
 
 const char *tst_acquire_loop_device(unsigned int size, const char *filename)
 {
-	unsigned int acq_dev_size = MAX(size, DEV_SIZE_MB);
+	unsigned int acq_dev_size = size ? size : DEV_SIZE_MB;
 
 	if (tst_prealloc_file(filename, 1024 * 1024, acq_dev_size)) {
 		tst_resm(TWARN | TERRNO, "Failed to create %s", filename);
@@ -261,50 +303,18 @@ const char *tst_acquire_loop_device(unsigned int size, const char *filename)
 
 const char *tst_acquire_device__(unsigned int size)
 {
-	int fd;
 	const char *dev;
-	struct stat st;
 	unsigned int acq_dev_size;
 	uint64_t ltp_dev_size;
 
-	acq_dev_size = MAX(size, DEV_SIZE_MB);
+	acq_dev_size = size ? size : DEV_SIZE_MB;
 
 	dev = getenv("LTP_DEV");
 
 	if (dev) {
 		tst_resm(TINFO, "Using test device LTP_DEV='%s'", dev);
 
-		if (stat(dev, &st)) {
-			tst_resm(TWARN | TERRNO, "stat() failed");
-			return NULL;
-		}
-
-		if (!S_ISBLK(st.st_mode)) {
-			tst_resm(TWARN, "%s is not a block device", dev);
-			return NULL;
-		}
-
-		fd = open(dev, O_RDONLY);
-		if (fd < 0) {
-			tst_resm(TWARN | TERRNO,
-				 "open(%s, O_RDONLY) failed", dev);
-			return NULL;
-		}
-
-		if (ioctl(fd, BLKGETSIZE64, &ltp_dev_size)) {
-			tst_resm(TWARN | TERRNO,
-				 "ioctl(fd, BLKGETSIZE64, ...) failed");
-			close(fd);
-			return NULL;
-		}
-
-		if (close(fd)) {
-			tst_resm(TWARN | TERRNO,
-				 "close(fd) failed");
-			return NULL;
-		}
-
-		ltp_dev_size = ltp_dev_size/1024/1024;
+		ltp_dev_size = tst_get_device_size(dev);
 
 		if (acq_dev_size <= ltp_dev_size)
 			return dev;
