@@ -26,8 +26,10 @@
  * an IPC stress test on systems with large numbers of weak cores. This can be
  * overridden with the 'w' parameters.
  */
+#include <signal.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <lapi/fnmatch.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -43,7 +45,9 @@
 #include <pwd.h>
 #include <grp.h>
 
+#include "tst_clocks.h"
 #include "tst_test.h"
+#include "tst_timer.h"
 
 #define QUEUE_SIZE 16384
 #define BUFFER_SIZE 1024
@@ -60,6 +64,7 @@ struct queue {
 struct worker {
 	pid_t pid;
 	struct queue *q;
+	int last_seen;
 };
 
 enum dent_action {
@@ -80,6 +85,8 @@ static char *str_max_workers;
 static long max_workers = 15;
 static struct worker *workers;
 static char *drop_privs;
+static char *str_worker_timeout;
+static int worker_timeout = 1000;
 
 static char *blacklist[] = {
 	NULL, /* reserved for -e parameter */
@@ -227,10 +234,14 @@ static int worker_run(struct worker *self)
 		.sa_flags = 0,
 	};
 	struct queue *q = self->q;
+	struct timespec now;
 
 	sigaction(SIGTTIN, &term_sa, NULL);
 
 	while (1) {
+		tst_clock_gettime(CLOCK_MONOTONIC_RAW, &now);
+		tst_atomic_store(tst_timespec_to_ms(now), &self->last_seen);
+
 		if (!queue_pop(q, buf))
 			break;
 
@@ -270,11 +281,15 @@ static void spawn_workers(void)
 {
 	int i;
 	struct worker *wa = workers;
+	struct timespec now;
+
+	tst_clock_gettime(CLOCK_MONOTONIC_RAW, &now);
 
 	memset(workers, 0, worker_count * sizeof(*workers));
 
 	for (i = 0; i < worker_count; i++) {
 		wa[i].q = queue_init();
+		wa[i].last_seen = tst_timespec_to_ms(now);
 		wa[i].pid = SAFE_FORK();
 		if (!wa[i].pid) {
 			maybe_drop_privs();
@@ -283,9 +298,52 @@ static void spawn_workers(void)
 	}
 }
 
+static void restart_worker(struct worker *const worker)
+{
+	int wstatus, ret, i, q_len;
+	struct timespec now;
+
+	kill(worker->pid, SIGKILL);
+	ret = waitpid(worker->pid, &wstatus, 0);
+
+	if (ret != worker->pid) {
+		tst_brk(TBROK | TERRNO, "waitpid(%d, ...) = %d",
+			worker->pid, ret);
+	}
+
+	/* Make sure the queue length and semaphore match. Threre is a
+	 * race in qeuue_pop where the semaphore can be decremented
+	 * then the worker killed before updating q->front
+	 */
+	q_len = 0;
+	i = worker->q->front;
+	while (i != worker->q->back) {
+		if (!worker->q->data[i])
+			q_len++;
+
+		i = (i + 1) % QUEUE_SIZE;
+	}
+
+	ret = sem_destroy(&worker->q->sem);
+	if (ret == -1)
+		tst_brk(TBROK | TERRNO, "sem_destroy");
+	ret = sem_init(&worker->q->sem, 1, q_len);
+	if (ret == -1)
+		tst_brk(TBROK | TERRNO, "sem_init");
+
+	tst_clock_gettime(CLOCK_MONOTONIC_RAW, &now);
+	worker->last_seen = tst_timespec_to_ms(now);
+	worker->pid = SAFE_FORK();
+
+	if (!worker->pid)
+		exit(worker_run(worker));
+}
+
 static void work_push_retry(int worker, const char *buf)
 {
 	int i, ret, worker_min, worker_max, usleep_time = 100;
+	struct timespec now;
+	int elapsed;
 
 	if (worker < 0) {
 		/* pick any, try -worker first */
@@ -299,9 +357,24 @@ static void work_push_retry(int worker, const char *buf)
 	i = worker_min;
 
 	for (;;) {
-		ret = queue_push(workers[i].q, buf);
+		struct worker *const w = workers + i;
+
+		ret = queue_push(w->q, buf);
 		if (ret == 1)
 			break;
+
+		tst_clock_gettime(CLOCK_MONOTONIC_RAW, &now);
+		elapsed =
+			tst_timespec_to_ms(now) - tst_atomic_load(&w->last_seen);
+
+		if (elapsed > worker_timeout) {
+			if (!quiet) {
+				tst_res(TINFO,
+					"Worker %d (%d) stuck for %dms, restarting it",
+					i, w->pid, elapsed);
+			}
+			restart_worker(w);
+		}
 
 		if (++i >= worker_max) {
 			i = worker_min;
@@ -368,6 +441,12 @@ static void setup(void)
 	if (!worker_count)
 		worker_count = MIN(MAX(tst_ncpus() - 1, 1), max_workers);
 	workers = SAFE_MALLOC(worker_count * sizeof(*workers));
+
+	if (tst_parse_int(str_worker_timeout, &worker_timeout, 1, INT_MAX)) {
+		tst_brk(TBROK,
+			"Invalid worker timeout (-t) argument: '%s'",
+			str_worker_count);
+	}
 }
 
 static void cleanup(void)
@@ -465,6 +544,8 @@ static struct tst_test test = {
 		 "Count Override the worker count. Ignores (-w) and the processor count."},
 		{"p", &drop_privs,
 		 "Drop privileges; switch to the nobody user."},
+		{"t:", &str_worker_timeout,
+		 "Milliseconds a worker has to read a file before it is restarted"},
 		{}
 	},
 	.setup = setup,
