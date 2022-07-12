@@ -65,7 +65,7 @@ char altstack[4096 * 10] __attribute__((aligned(4096)));
 
 void test(void)
 {
-	int loop = 0;
+	volatile int loop = 0;
 	int pid = getpid();
 
 	D = VALUE;
