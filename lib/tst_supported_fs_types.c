@@ -80,7 +80,7 @@ static enum tst_fs_impl has_kernel_support(const char *fs_type)
 
 	snprintf(template, sizeof(template), "%s/mountXXXXXX", tmpdir);
 	if (!mkdtemp(template))
-		tst_brk(TBROK | TERRNO , "mkdtemp(%s) failed", template);
+		tst_brk(TBROK | TERRNO, "mkdtemp(%s) failed", template);
 
 	ret = mount("/dev/zero", template, fs_type, 0, NULL);
 	if ((ret && errno != ENODEV) || !ret) {
@@ -139,8 +139,17 @@ const char **tst_get_supported_fs_types(const char *const *skiplist)
 	unsigned int i, j = 0;
 	int skip_fuse;
 	enum tst_fs_impl sup;
+	const char *only_fs;
 
 	skip_fuse = tst_fs_in_skiplist("fuse", skiplist);
+	only_fs = getenv("LTP_SINGLE_FS_TYPE");
+
+	if (only_fs) {
+		tst_res(TINFO, "WARNING: testing only %s", only_fs);
+		if (tst_fs_is_supported(only_fs))
+			fs_types[0] = only_fs;
+		return fs_types;
+	}
 
 	for (i = 0; fs_type_whitelist[i]; i++) {
 		if (tst_fs_in_skiplist(fs_type_whitelist[i], skiplist)) {
@@ -167,14 +176,16 @@ const char **tst_get_supported_fs_types(const char *const *skiplist)
 
 int tst_check_quota_support(const char *device, int format, char *quotafile)
 {
-	TEST(quotactl(QCMD(Q_QUOTAON, USRQUOTA), device, format, quotafile));
+	const long ret = quotactl(QCMD(Q_QUOTAON, USRQUOTA), device, format,
+				  quotafile);
 
 	/* Not supported */
-	if (TST_RET == -1 && TST_ERR == ESRCH)
+
+	if (ret == -1 && errno == ESRCH)
 		return 0;
 
 	/* Broken */
-	if (TST_RET)
+	if (ret)
 		return -1;
 
 	quotactl(QCMD(Q_QUOTAOFF, USRQUOTA), device, 0, 0);
@@ -192,5 +203,5 @@ void tst_require_quota_support_(const char *file, const int lineno,
 	}
 
 	if (status < 0)
-		tst_brk_(file, lineno, TBROK|TTERRNO, "FS quotas are broken");
+		tst_brk_(file, lineno, TBROK|TERRNO, "FS quotas are broken");
 }

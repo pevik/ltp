@@ -78,7 +78,7 @@ static void child_alloc(int testcase, int lite, int threads)
 	pthread_t *th;
 
 	if (lite) {
-		int ret = alloc_mem(TESTMEM + MB, testcase);
+		int ret = alloc_mem(TESTMEM * 2 + MB, testcase);
 		exit(ret);
 	}
 
@@ -129,8 +129,11 @@ void oom(int testcase, int lite, int retcode, int allow_sigkill)
 	pid_t pid;
 	int status, threads;
 
+	tst_enable_oom_protection(0);
+
 	switch (pid = SAFE_FORK()) {
 	case 0:
+		tst_disable_oom_protection(0);
 		threads = MAX(1, tst_ncpus() - 1);
 		child_alloc(testcase, lite, threads);
 	default:

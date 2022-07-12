@@ -82,7 +82,8 @@ struct cgroup_root {
 /* Controller sub-systems */
 enum cgroup_ctrl_indx {
 	CTRL_MEMORY = 1,
-	CTRL_CPUSET = 2,
+	CTRL_CPU,
+	CTRL_CPUSET,
 };
 #define CTRLS_MAX CTRL_CPUSET
 
@@ -140,20 +141,19 @@ struct tst_cgroup_group {
 /* Always use first item for unified hierarchy */
 static struct cgroup_root roots[ROOTS_MAX + 1];
 
-/* Lookup tree for item names. */
-typedef struct cgroup_file files_t[];
-
-static const files_t cgroup_ctrl_files = {
+static const struct cgroup_file cgroup_ctrl_files[] = {
 	/* procs exists on V1, however it was read-only until kernel v3.0. */
 	{ "cgroup.procs", "tasks", 0 },
+	{ "cgroup.controllers", NULL, 0 },
 	{ "cgroup.subtree_control", NULL, 0 },
 	{ "cgroup.clone_children", "cgroup.clone_children", 0 },
 	{ }
 };
 
-static const files_t memory_ctrl_files = {
+static const struct cgroup_file memory_ctrl_files[] = {
 	{ "memory.current", "memory.usage_in_bytes", CTRL_MEMORY },
 	{ "memory.max", "memory.limit_in_bytes", CTRL_MEMORY },
+	{ "memory.stat", "memory.stat", CTRL_MEMORY },
 	{ "memory.swappiness", "memory.swappiness", CTRL_MEMORY },
 	{ "memory.swap.current", "memory.memsw.usage_in_bytes", CTRL_MEMORY },
 	{ "memory.swap.max", "memory.memsw.limit_in_bytes", CTRL_MEMORY },
@@ -162,17 +162,33 @@ static const files_t memory_ctrl_files = {
 	{ }
 };
 
-static const files_t cpuset_ctrl_files = {
+static const struct cgroup_file cpu_ctrl_files[] = {
+	/* The V1 quota and period files were combined in the V2 max
+	 * file. The quota is in the first column and if we just print
+	 * a single value to the file, it will be treated as the
+	 * quota. To get or set the period we need to branch on the
+	 * API version.
+	 */
+	{ "cpu.max", "cpu.cfs_quota_us", CTRL_CPU },
+	{ "cpu.cfs_period_us", "cpu.cfs_period_us", CTRL_CPU },
+	{ }
+};
+
+static const struct cgroup_file cpuset_ctrl_files[] = {
 	{ "cpuset.cpus", "cpuset.cpus", CTRL_CPUSET },
 	{ "cpuset.mems", "cpuset.mems", CTRL_CPUSET },
 	{ "cpuset.memory_migrate", "cpuset.memory_migrate", CTRL_CPUSET },
 	{ }
 };
 
+/* Lookup tree for item names. */
 static struct cgroup_ctrl controllers[] = {
 	[0] = { "cgroup", cgroup_ctrl_files, 0, NULL, 0 },
 	[CTRL_MEMORY] = {
 		"memory", memory_ctrl_files, CTRL_MEMORY, NULL, 0
+	},
+	[CTRL_CPU] = {
+		"cpu", cpu_ctrl_files, CTRL_CPU, NULL, 0
 	},
 	[CTRL_CPUSET] = {
 		"cpuset", cpuset_ctrl_files, CTRL_CPUSET, NULL, 0
@@ -183,12 +199,13 @@ static struct cgroup_ctrl controllers[] = {
 static const struct tst_cgroup_opts default_opts = { 0 };
 
 /* We should probably allow these to be set in environment
- * variables */
-static const char *ltp_cgroup_dir = "ltp";
-static const char *ltp_cgroup_drain_dir = "drain";
-static char test_cgroup_dir[NAME_MAX + 1];
-static const char *ltp_mount_prefix = "/tmp/cgroup_";
-static const char *ltp_v2_mount = "unified";
+ * variables
+ */
+static const char *cgroup_ltp_dir = "ltp";
+static const char *cgroup_ltp_drain_dir = "drain";
+static char cgroup_test_dir[NAME_MAX + 1];
+static const char *cgroup_mount_ltp_prefix = "/tmp/cgroup_";
+static const char *cgroup_v2_ltp_mount = "unified";
 
 #define first_root				\
 	(roots[0].ver ? roots : roots + 1)
@@ -223,12 +240,6 @@ static void add_ctrl(uint32_t *const ctrl_field,
 		     const struct cgroup_ctrl *const ctrl)
 {
 	*ctrl_field |= 1 << ctrl->ctrl_indx;
-}
-
-__attribute__ ((warn_unused_result))
-struct cgroup_root *tst_cgroup_root_get(void)
-{
-	return roots[0].ver ? roots : roots + 1;
 }
 
 static int cgroup_v2_mounted(void)
@@ -361,7 +372,8 @@ static void cgroup_root_scan(const char *const mnt_type,
 	SAFE_FILE_READAT(mnt_dfd, "cgroup.controllers", buf, sizeof(buf));
 
 	for (tok = strtok(buf, " "); tok; tok = strtok(NULL, " ")) {
-		if ((const_ctrl = cgroup_find_ctrl(tok)))
+		const_ctrl = cgroup_find_ctrl(tok);
+		if (const_ctrl)
 			add_ctrl(&ctrl_field, const_ctrl);
 	}
 
@@ -377,7 +389,8 @@ static void cgroup_root_scan(const char *const mnt_type,
 
 v1:
 	for (tok = strtok(mnt_opts, ","); tok; tok = strtok(NULL, ",")) {
-		if ((const_ctrl = cgroup_find_ctrl(tok)))
+		const_ctrl = cgroup_find_ctrl(tok);
+		if (const_ctrl)
 			add_ctrl(&ctrl_field, const_ctrl);
 
 		no_prefix |= !strcmp("noprefix", tok);
@@ -394,7 +407,7 @@ v1:
 			goto discard;
 
 		tst_brk(TBROK,
-			"The intersection of two distinct sets of mounted controllers should be null?"
+			"The intersection of two distinct sets of mounted controllers should be null? "
 			"Check '%s' and '%s'", root->mnt_path, mnt_dir);
 	}
 
@@ -453,7 +466,7 @@ static void cgroup_mount_v2(void)
 {
 	char mnt_path[PATH_MAX];
 
-	sprintf(mnt_path, "%s%s", ltp_mount_prefix, ltp_v2_mount);
+	sprintf(mnt_path, "%s%s", cgroup_mount_ltp_prefix, cgroup_v2_ltp_mount);
 
 	if (!mkdir(mnt_path, 0777)) {
 		roots[0].mnt_dir.we_created_it = 1;
@@ -495,7 +508,7 @@ static void cgroup_mount_v1(struct cgroup_ctrl *const ctrl)
 	char mnt_path[PATH_MAX];
 	int made_dir = 0;
 
-	sprintf(mnt_path, "%s%s", ltp_mount_prefix, ctrl->ctrl_name);
+	sprintf(mnt_path, "%s%s", cgroup_mount_ltp_prefix, ctrl->ctrl_name);
 
 	if (!mkdir(mnt_path, 0777)) {
 		made_dir = 1;
@@ -589,13 +602,18 @@ void tst_cgroup_require(const char *const ctrl_name,
 	struct cgroup_ctrl *const ctrl = cgroup_find_ctrl(ctrl_name);
 	struct cgroup_root *root;
 
+	if (!ctrl) {
+		tst_brk(TBROK, "'%s' controller is unknown to LTP", ctrl_name);
+		tst_brk(TBROK, "Calling %s in cleanup?", __func__);
+		return;
+	}
+
 	if (!options)
 		options = &default_opts;
 
-	if (ctrl->we_require_it) {
-		tst_res(TWARN, "Duplicate tst_cgroup_require(%s, )",
-			ctrl->ctrl_name);
-	}
+	if (ctrl->we_require_it)
+		tst_res(TWARN, "Duplicate %s(%s, )", __func__, ctrl->ctrl_name);
+
 	ctrl->we_require_it = 1;
 
 	if (ctrl->ctrl_root)
@@ -636,7 +654,7 @@ mkdirs:
 	}
 
 	if (!root->ltp_dir.dir_fd)
-		cgroup_dir_mk(&root->mnt_dir, ltp_cgroup_dir, &root->ltp_dir);
+		cgroup_dir_mk(&root->mnt_dir, cgroup_ltp_dir, &root->ltp_dir);
 	else
 		root->ltp_dir.ctrl_field |= root->mnt_dir.ctrl_field;
 
@@ -651,10 +669,10 @@ mkdirs:
 			cgroup_copy_cpuset(root);
 	}
 
-	cgroup_dir_mk(&root->ltp_dir, ltp_cgroup_drain_dir, &root->drain_dir);
+	cgroup_dir_mk(&root->ltp_dir, cgroup_ltp_drain_dir, &root->drain_dir);
 
-	sprintf(test_cgroup_dir, "test-%d", getpid());
-	cgroup_dir_mk(&root->ltp_dir, test_cgroup_dir, &root->test_dir);
+	sprintf(cgroup_test_dir, "test-%d", getpid());
+	cgroup_dir_mk(&root->ltp_dir, cgroup_test_dir, &root->test_dir);
 }
 
 static void cgroup_drain(const enum tst_cgroup_ver ver,
@@ -782,7 +800,8 @@ void tst_cgroup_cleanup(void)
 			continue;
 
 		/* This probably does not result in the CGroup root
-		 * being destroyed */
+		 * being destroyed
+		 */
 		if (umount2(root->mnt_path, MNT_DETACH))
 			continue;
 
@@ -801,7 +820,7 @@ clear_data:
 	memset(roots, 0, sizeof(roots));
 }
 
-__attribute__ ((nonnull (1)))
+__attribute__((nonnull(1)))
 static void cgroup_group_init(struct tst_cgroup_group *const cg,
 			      const char *const group_name)
 {
@@ -816,22 +835,32 @@ static void cgroup_group_init(struct tst_cgroup_group *const cg,
 	strcpy(cg->group_name, group_name);
 }
 
-__attribute__ ((nonnull))
-static void cgroup_group_add_dir(struct tst_cgroup_group *const cg,
+__attribute__((nonnull(2, 3)))
+static void cgroup_group_add_dir(const struct tst_cgroup_group *const parent,
+				 struct tst_cgroup_group *const cg,
 				 struct cgroup_dir *const dir)
 {
 	const struct cgroup_ctrl *ctrl;
 	int i;
 
-	if (dir->dir_root->ver == TST_CGROUP_V2)
+	if (dir->dir_root->ver != TST_CGROUP_V1)
 		cg->dirs_by_ctrl[0] = dir;
 
 	for_each_ctrl(ctrl) {
-		if (has_ctrl(dir->ctrl_field, ctrl))
-			cg->dirs_by_ctrl[ctrl->ctrl_indx] = dir;
+		if (!has_ctrl(dir->ctrl_field, ctrl))
+			continue;
+
+		cg->dirs_by_ctrl[ctrl->ctrl_indx] = dir;
+
+		if (!parent || dir->dir_root->ver == TST_CGROUP_V1)
+			continue;
+
+		SAFE_CGROUP_PRINTF(parent, "cgroup.subtree_control",
+				   "+%s", ctrl->ctrl_name);
 	}
 
-	for (i = 0; cg->dirs[i]; i++);
+	for (i = 0; cg->dirs[i]; i++)
+		;
 	cg->dirs[i] = dir;
 }
 
@@ -849,10 +878,15 @@ tst_cgroup_group_mk(const struct tst_cgroup_group *const parent,
 	for_each_dir(parent, 0, dir) {
 		new_dir = SAFE_MALLOC(sizeof(*new_dir));
 		cgroup_dir_mk(*dir, group_name, new_dir);
-		cgroup_group_add_dir(cg, new_dir);
+		cgroup_group_add_dir(parent, cg, new_dir);
 	}
 
 	return cg;
+}
+
+const char *tst_cgroup_group_name(const struct tst_cgroup_group *const cg)
+{
+	return cg->group_name;
 }
 
 struct tst_cgroup_group *tst_cgroup_group_rm(struct tst_cgroup_group *const cg)
@@ -893,7 +927,7 @@ static const struct cgroup_file *cgroup_file_find(const char *const file,
 	memcpy(ctrl_name, file_name, len);
 	ctrl_name[len] = '\0';
 
-        ctrl = cgroup_find_ctrl(ctrl_name);
+	ctrl = cgroup_find_ctrl(ctrl_name);
 
 	if (!ctrl) {
 		tst_brk_(file, lineno, TBROK,
@@ -977,10 +1011,11 @@ int safe_cgroup_has(const char *const file, const int lineno,
 		return 0;
 
 	for_each_dir(cg, cfile->ctrl_indx, dir) {
-		if (!(alias = cgroup_file_alias(cfile, *dir)))
-		    continue;
+		alias = cgroup_file_alias(cfile, *dir);
+		if (!alias)
+			continue;
 
-		if (!faccessat((*dir)->dir_fd, file_name, F_OK, 0))
+		if (!faccessat((*dir)->dir_fd, alias, F_OK, 0))
 			return 1;
 
 		if (errno == ENOENT)
@@ -1008,7 +1043,7 @@ static struct tst_cgroup_group *cgroup_group_from_roots(const size_t tree_off)
 		dir = (typeof(dir))(((char *)root) + tree_off);
 
 		if (dir->ctrl_field)
-			cgroup_group_add_dir(cg, dir);
+			cgroup_group_add_dir(NULL, cg, dir);
 	}
 
 	if (cg->dirs[0]) {
@@ -1043,17 +1078,19 @@ ssize_t safe_cgroup_read(const char *const file, const int lineno,
 	const char *alias;
 	size_t prev_len = 0;
 	char prev_buf[BUFSIZ];
+	ssize_t read_ret = 0;
 
 	for_each_dir(cg, cfile->ctrl_indx, dir) {
-		if (!(alias = cgroup_file_alias(cfile, *dir)))
+		alias = cgroup_file_alias(cfile, *dir);
+		if (!alias)
 			continue;
 
 		if (prev_len)
 			memcpy(prev_buf, out, prev_len);
 
-		TEST(safe_file_readat(file, lineno,
-				      (*dir)->dir_fd, alias, out, len));
-		if (TST_RET < 0)
+		read_ret = safe_file_readat(file, lineno,
+					    (*dir)->dir_fd, alias, out, len);
+		if (read_ret < 0)
 			continue;
 
 		if (prev_len && memcmp(out, prev_buf, prev_len)) {
@@ -1063,12 +1100,12 @@ ssize_t safe_cgroup_read(const char *const file, const int lineno,
 			break;
 		}
 
-		prev_len = MIN(sizeof(prev_buf), (size_t)TST_RET);
+		prev_len = MIN(sizeof(prev_buf), (size_t)read_ret);
 	}
 
-	out[MAX(TST_RET, 0)] = '\0';
+	out[MAX(read_ret, 0)] = '\0';
 
-	return TST_RET;
+	return read_ret;
 }
 
 void safe_cgroup_printf(const char *const file, const int lineno,
@@ -1083,8 +1120,9 @@ void safe_cgroup_printf(const char *const file, const int lineno,
 	va_list va;
 
 	for_each_dir(cg, cfile->ctrl_indx, dir) {
-		if (!(alias = cgroup_file_alias(cfile, *dir)))
-		    continue;
+		alias = cgroup_file_alias(cfile, *dir);
+		if (!alias)
+			continue;
 
 		va_start(va, fmt);
 		safe_file_vprintfat(file, lineno,
@@ -1109,7 +1147,8 @@ void safe_cgroup_scanf(const char *const file, const int lineno,
 		return;
 
 	va_start(va, fmt);
-	if ((ret = vsscanf(buf, fmt, va)) < 1) {
+	ret = vsscanf(buf, fmt, va);
+	if (ret < 1) {
 		tst_brk_(file, lineno, TBROK | TERRNO,
 			 "'%s': vsscanf('%s', '%s', ...)", file_name, buf, fmt);
 	}
@@ -1121,4 +1160,49 @@ void safe_cgroup_scanf(const char *const file, const int lineno,
 	tst_brk_(file, lineno, TBROK,
 		 "'%s': vsscanf('%s', '%s', ..): Less conversions than expected: %d != %d",
 		 file_name, buf, fmt, ret, conv_cnt);
+}
+
+void safe_cgroup_lines_scanf(const char *const file, const int lineno,
+			     const struct tst_cgroup_group *const cg,
+			     const char *const file_name,
+			     const char *const fmt, ...)
+{
+	va_list va;
+	char buf[BUFSIZ];
+	ssize_t len = safe_cgroup_read(file, lineno,
+				       cg, file_name, buf, sizeof(buf));
+	const int conv_cnt = tst_count_scanf_conversions(fmt);
+	int ret = 0;
+	char *line, *buf_ptr;
+
+	if (len < 1)
+		return;
+
+	line = strtok_r(buf, "\n", &buf_ptr);
+	while (line && ret != conv_cnt) {
+		va_start(va, fmt);
+		ret = vsscanf(line, fmt, va);
+		va_end(va);
+
+		line = strtok_r(NULL, "\n", &buf_ptr);
+	}
+
+	if (conv_cnt == ret)
+		return;
+
+	tst_brk_(file, lineno, TBROK,
+		 "'%s': vsscanf('%s', '%s', ..): Less conversions than expected: %d != %d",
+		 file_name, buf, fmt, ret, conv_cnt);
+}
+
+int safe_cgroup_occursin(const char *const file, const int lineno,
+			 const struct tst_cgroup_group *const cg,
+			 const char *const file_name,
+			 const char *const needle)
+{
+	char buf[BUFSIZ];
+
+	safe_cgroup_read(file, lineno, cg, file_name, buf, sizeof(buf));
+
+	return !!strstr(buf, needle);
 }

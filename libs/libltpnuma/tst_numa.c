@@ -1,6 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*
- * SPDX-License-Identifier: GPL-2.0-or-later
- *
  * Copyright (c) 2018 Cyril Hrubis <chrubis@suse.cz>
  */
 
@@ -16,6 +15,7 @@
 #define TST_NO_DEFAULT_MAIN
 #include "tst_test.h"
 #include "tst_numa.h"
+#include "lapi/numaif.h"
 
 void tst_nodemap_print_counters(struct tst_nodemap *nodes)
 {
@@ -45,17 +45,19 @@ void tst_nodemap_free(struct tst_nodemap *nodes)
 
 #ifdef HAVE_NUMA_V2
 
-const char *tst_numa_mode_name(int mode)
+const char *tst_mempolicy_mode_name(int mode)
 {
 	switch (mode) {
 	case MPOL_DEFAULT:
 		return "MPOL_DEFAULT";
-	case MPOL_BIND:
-		return "MPOL_BIND";
 	case MPOL_PREFERRED:
 		return "MPOL_PREFERRED";
+	case MPOL_BIND:
+		return "MPOL_BIND";
 	case MPOL_INTERLEAVE:
 		return "MPOL_INTERLEAVE";
+	case MPOL_LOCAL:
+		return "MPOL_LOCAL";
 	default:
 		return "???";
 	}
