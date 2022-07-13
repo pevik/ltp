@@ -8,6 +8,7 @@ TST_NEEDS_TMPDIR=1
 TST_TESTFUNC=do_test
 TST_SETUP=tst_ipsec_setup
 TST_CLEANUP=tst_ipsec_cleanup
+TST_TIMEOUT=600
 
 do_test()
 {
