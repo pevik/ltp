@@ -26,11 +26,6 @@
 static struct rusage ru;
 static long maxrss_init;
 
-static const char *const resource[] = {
-	TESTBIN,
-	NULL,
-};
-
 static void inherit_fork1(void)
 {
 	SAFE_GETRUSAGE(RUSAGE_SELF, &ru);
@@ -176,7 +171,10 @@ static void run(unsigned int i)
 static struct tst_test test = {
 	.forks_child = 1,
 	.child_needs_reinit = 1,
-	.resource_files = resource,
+	.resource_files = (const char *[]) {
+		"getrusage03_child",
+		NULL,
+	},
 	.min_kver = "2.6.32",
 	.min_mem_avail = 512,
 	.tags = (const struct tst_tag[]) {

@@ -122,7 +122,7 @@ static struct tst_test test = {
 	.needs_root = 1,
 	.needs_checkpoints = 1,
 	.resource_files = (const char *[]) {
-		TEST_APP,
+		"userns06_capcheck",
 		NULL,
 	},
 	.needs_kconfigs = (const char *[]) {
