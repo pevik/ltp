@@ -12,7 +12,7 @@
  * the isolated/forked child namespace.
  */
 
-#include "common.h"
+#include "mqns.h"
 
 #define MQNAME "/MQ1"
 

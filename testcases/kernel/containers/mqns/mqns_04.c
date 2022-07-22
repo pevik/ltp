@@ -24,7 +24,7 @@
 #define _GNU_SOURCE
 
 #include <stdio.h>
-#include "common.h"
+#include "mqns.h"
 #include "tst_safe_stdio.h"
 
 #define CHECK_MQ_OPEN_RET(x) ((x) >= 0 || ((x) == -1 && errno != EMFILE))

@@ -12,7 +12,7 @@
  * then check namespace isolation.
  */
 
-#include "common.h"
+#include "mqns.h"
 
 #define MQNAME "/MQ1"
 

@@ -25,7 +25,7 @@
 #define _GNU_SOURCE
 
 #include <stdio.h>
-#include "common.h"
+#include "mqns.h"
 #include "tst_safe_stdio.h"
 
 #define MQNAME1 "/MQ1"
