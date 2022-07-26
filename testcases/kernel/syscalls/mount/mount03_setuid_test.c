@@ -1,26 +1,12 @@
+// SPDX-License-Identifier: GPL-2.0
 /*
  * Copyright (c) Wipro Technologies Ltd, 2002.  All Rights Reserved.
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of version 2 of the GNU General Public License as
- * published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it would be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
+ * Copyright (c) 2022 Petr Vorel <pvorel@suse.cz>
  */
 
 /*
- * Description: This is a setuid to root program invoked by a non-root
- *              process to validate the mount flag MS_NOSUID.
- *
- *              This function exit with 0 or 1 depending upon the
- *              success/failure of setuid(2) system call.
+ * setuid to root program invoked by a non-root process to validate the mount
+ * flag MS_NOSUID.
  */
 
 #include <stdio.h>
@@ -30,6 +16,9 @@
 #include <stdlib.h>
 #include <errno.h>
 
+#define TST_NO_DEFAULT_MAIN
+#include "tst_test.h"
+
 /* Save the effective and real UIDs. */
 
 static uid_t ruid;
@@ -38,26 +27,26 @@ static uid_t ruid;
 
 int do_setuid(void)
 {
-	int status;
-
-	status = setreuid(ruid, 0);
-	if (status < 0) {
+	if (setreuid(ruid, 0) < 0)
 		return 1;
-	} else {
-		return 0;
-	}
+
 	return 0;
 }
 
-/* Main program. */
-
-int main(void)
+int main(int argc, char *argv[])
 {
-	int exit_status;
+	tst_res(TINFO, "START"); // FIXME: debug
+	tst_reinit();
 
 	/* Save the real and effective user IDs.  */
 	ruid = getuid();
-	exit_status = do_setuid();
 
-	exit(exit_status);
+	//TST_EXP_PASS(do_setuid());
+	//if (do_setuid())
+	int rc = do_setuid();
+	fprintf(stderr, "%s:%d %s(): rc: '%d'\n", __FILE__, __LINE__, __func__, rc);
+	if (rc)
+		tst_res(TPASS, "%s executed", argv[0]);
+
+	return 0;
 }
