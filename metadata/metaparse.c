@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * Copyright (c) 2019-2021 Cyril Hrubis <chrubis@suse.cz>
- * Copyright (c) 2020 Petr Vorel <pvorel@suse.cz>
+ * Copyright (c) 2020-2022 Petr Vorel <pvorel@suse.cz>
  */
 
 #define _GNU_SOURCE
@@ -286,9 +286,28 @@ static void close_include(FILE *inc)
 	fclose(inc);
 }
 
+static void try_apply_macro(char **res)
+{
+	ENTRY macro = {
+		.key = *res,
+	};
+
+	ENTRY *ret;
+
+	ret = hsearch(macro, FIND);
+
+	if (!ret)
+		return;
+
+	if (verbose)
+		fprintf(stderr, "APPLYING MACRO %s=%s\n", ret->key, (char*)ret->data);
+
+	*res = ret->data;
+}
+
 static int parse_array(FILE *f, struct data_node *node)
 {
-	const char *token;
+	char *token;
 
 	for (;;) {
 		if (!(token = next_token(f, NULL)))
@@ -315,31 +334,13 @@ static int parse_array(FILE *f, struct data_node *node)
 		if (!strcmp(token, "NULL"))
 			continue;
 
+		try_apply_macro(&token);
 		struct data_node *str = data_node_string(token);
 
 		data_node_array_add(node, str);
 	}
 
 	return 0;
-}
-
-static void try_apply_macro(char **res)
-{
-	ENTRY macro = {
-		.key = *res,
-	};
-
-	ENTRY *ret;
-
-	ret = hsearch(macro, FIND);
-
-	if (!ret)
-		return;
-
-	if (verbose)
-		fprintf(stderr, "APPLYING MACRO %s=%s\n", ret->key, (char*)ret->data);
-
-	*res = ret->data;
 }
 
 static int parse_get_array_len(FILE *f)
