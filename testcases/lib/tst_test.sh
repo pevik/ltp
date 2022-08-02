@@ -33,19 +33,27 @@ _tst_do_exit()
 	local ret=0
 	TST_DO_EXIT=1
 
+	tst_res TINFO "start _tst_do_exit" # FIXME: debug
+
+	tst_res TINFO "_tst_do_exit: before cleanup: '$TST_CLEANUP'" # FIXME: debug
 	if [ -n "$TST_DO_CLEANUP" -a -n "$TST_CLEANUP" -a -z "$TST_NO_CLEANUP" ]; then
 		if command -v $TST_CLEANUP >/dev/null 2>/dev/null; then
+			tst_res TINFO "before call TST_CLEANUP: $TST_CLEANUP" # FIXME: debug
 			$TST_CLEANUP
+			tst_res TINFO "after call TST_CLEANUP: $TST_CLEANUP" # FIXME: debug
 		else
 			tst_res TWARN "TST_CLEANUP=$TST_CLEANUP declared, but function not defined (or cmd not found)"
 		fi
 	fi
 
+	tst_res TINFO "TST_MOUNT_FLAG: '$TST_MOUNT_FLAG'" # FIXME: debug
 	if [ "$TST_MOUNT_FLAG" = 1 ]; then
+		tst_res TINFO "call tst_umount" # FIXME: debug
 		tst_umount
 	fi
 
 	if [ "$TST_NEEDS_DEVICE" = 1 -a "$TST_DEVICE_FLAG" = 1 ]; then
+		tst_res TINFO "before: tst_device release $TST_DEVICE, PID: $$, PPID: $PPID, pwd: $PWD; df -hT"; df -hT # FIXME: debug
 		if ! tst_device release "$TST_DEVICE"; then
 			tst_res TWARN "Failed to release device '$TST_DEVICE'"
 		fi
@@ -61,6 +69,7 @@ _tst_do_exit()
 		rm $LTP_IPC_PATH
 	fi
 
+	tst_res TINFO "_tst_do_exit: before call _tst_cleanup_timer" # FIXME: debug
 	_tst_cleanup_timer
 
 	if [ $TST_FAIL -gt 0 ]; then
@@ -82,6 +91,7 @@ _tst_do_exit()
 	if [ $TST_BROK -gt 0 -o $TST_FAIL -gt 0 -o $TST_WARN -gt 0 ]; then
 		_tst_check_security_modules
 	fi
+	tst_res TINFO "_tst_do_exit: ret: $ret" # FIXME: debug
 
 	echo
 	echo "Summary:"
@@ -315,6 +325,7 @@ tst_umount()
 	local mntpoint="${1:-$TST_MNTPOINT}"
 	local i=0
 
+	echo "START tst_umount, PWD: '$PWD'"
 	[ -z "$mntpoint" ] && return
 
 	if ! echo "$mntpoint" | grep -q ^/; then
@@ -519,6 +530,8 @@ _tst_multiply_timeout()
 
 _tst_cleanup_timer()
 {
+	tst_res TINFO "start _tst_cleanup_timer" # FIXME: debug
+
 	if [ -n "$_tst_setup_timer_pid" ]; then
 		kill -TERM $_tst_setup_timer_pid 2>/dev/null
 		wait $_tst_setup_timer_pid 2>/dev/null
@@ -547,6 +560,7 @@ _tst_setup_timer()
 
 	tst_res TINFO "timeout per run is ${h}h ${m}m ${s}s"
 
+	tst_res TINFO "before call _tst_cleanup_timer" # FIXME: debug
 	_tst_cleanup_timer
 
 	tst_timeout_kill $sec $pid &
@@ -597,6 +611,7 @@ tst_require_module()
 tst_set_timeout()
 {
 	TST_TIMEOUT="$1"
+	tst_res TINFO "tst_set_timeout: call _tst_setup_timer" # FIXME: debug
 	_tst_setup_timer
 }
 
@@ -669,6 +684,7 @@ tst_run()
 			tst_brk TCONF "test requires kernel $TST_MIN_KVER+"
 	fi
 
+	tst_res TINFO "tst_run: call _tst_setup_timer" # FIXME: debug
 	_tst_setup_timer
 
 	[ "$TST_MOUNT_DEVICE" = 1 ] && TST_FORMAT_DEVICE=1
@@ -692,6 +708,7 @@ tst_run()
 	TST_MNTPOINT="${TST_MNTPOINT:-$PWD/mntpoint}"
 	if [ "$TST_NEEDS_DEVICE" = 1 ]; then
 
+		tst_res TINFO "before: tst_device acquire" # FIXME: debug
 		TST_DEVICE=$(tst_device acquire)
 
 		if [ ! -b "$TST_DEVICE" -o $? -ne 0 ]; then
@@ -715,6 +732,7 @@ tst_run()
 
 	[ -n "$TST_NEEDS_CHECKPOINTS" ] && _tst_init_checkpoints
 
+	tst_res TINFO "TST_SETUP: '$TST_SETUP'" # FIXME: debug
 	if [ -n "$TST_SETUP" ]; then
 		if command -v $TST_SETUP >/dev/null 2>/dev/null; then
 			TST_DO_CLEANUP=1
