@@ -10,11 +10,13 @@ TST_DEV_EXTRA_OPTS="5m"
 
 test1()
 {
+	tst_res TINFO "pev: start test1" # FIXME: debug
 	tst_res TPASS "device formatted"
 }
 
 test2()
 {
+	tst_res TINFO "pev: start test2" # FIXME: debug
 	tst_check_cmds df || return
 	EXPECT_PASS "df $TST_DEVICE | grep -q /dev"
 }

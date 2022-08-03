@@ -8,6 +8,7 @@ TST_CNT=2
 
 test1()
 {
+	tst_res TINFO "pev: start test1" # FIXME: debug
 	tst_res TPASS "device using filesystem"
 }
 
@@ -15,6 +16,8 @@ test2()
 {
 	local pattern
 
+
+	tst_res TINFO "pev: start test2" # FIXME: debug
 
 	if [ "$TST_FS_TYPE" = "exfat" -o "$TST_FS_TYPE" = "ntfs" ]; then
 		pattern="|fuseblk"

@@ -9,16 +9,19 @@ TST_CNT=3
 
 test1()
 {
+	tst_res TINFO "pev: start test1" # FIXME: debug
 	EXPECT_PASS "cd $TST_MNTPOINT"
 }
 
 test2()
 {
+	tst_res TINFO "pev: start test2" # FIXME: debug
 	EXPECT_PASS "grep '$TST_MNTPOINT $TST_FS_TYPE' /proc/mounts"
 }
 
 test3()
 {
+	tst_res TINFO "pev: start test3" # FIXME: debug
 	tst_brk TCONF "quit early to test early tst_umount"
 }
 

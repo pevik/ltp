@@ -727,7 +727,7 @@ tst_run()
 
 _tst_run_iterations()
 {
-	local _tst_i
+	local _tst_i _tst_j
 
 	[ "$TST_NEEDS_TMPDIR" = 1 ] && cd "$TST_TMPDIR"
 
@@ -745,18 +745,20 @@ _tst_run_iterations()
 	fi
 
 	#TODO check that test reports some results for each test function call
-	while [ $TST_ITERATIONS -gt 0 ]; do
+	tst_res TINFO "pev: TST_ITERATIONS: '$TST_ITERATIONS'" # FIXME: debug
+	_tst_i=$TST_ITERATIONS
+	while [ $_tst_i -gt 0 ]; do
 		if [ -n "$TST_TEST_DATA" ]; then
 			tst_require_cmds cut tr wc
 			_tst_max=$(( $(echo $TST_TEST_DATA | tr -cd "$TST_TEST_DATA_IFS" | wc -c) +1))
-			for _tst_i in $(seq $_tst_max); do
-				_tst_data="$(echo "$TST_TEST_DATA" | cut -d"$TST_TEST_DATA_IFS" -f$_tst_i)"
+			for _tst_j in $(seq $_tst_max); do
+				_tst_data="$(echo "$TST_TEST_DATA" | cut -d"$TST_TEST_DATA_IFS" -f$_tst_j)"
 				_tst_run_tests "$_tst_data"
 			done
 		else
 			_tst_run_tests
 		fi
-		TST_ITERATIONS=$((TST_ITERATIONS-1))
+		_tst_i=$((_tst_i-1))
 	done
 
 	if [ -n "$TST_DO_CLEANUP" -a -n "$TST_CLEANUP" -a -z "$TST_NO_CLEANUP" ]; then
@@ -777,11 +779,16 @@ _tst_run_iterations()
 
 _tst_run_tests()
 {
+
+	tst_res TINFO "pev: START _tst_run_tests" # FIXME: debug
+
 	local _tst_data="$1"
 	local _tst_i
 
 	TST_DO_CLEANUP=1
+	tst_res TINFO "pev: _tst_i: '$_tst_i', TST_CNT: '$TST_CNT'" # FIXME: debug
 	for _tst_i in $(seq ${TST_CNT:-1}); do
+		tst_res TINFO "pev: RUN _tst_i: '$_tst_i', TST_CNT: '$TST_CNT'" # FIXME: debug
 		if command -v ${TST_TESTFUNC}1 > /dev/null 2>&1; then
 			_tst_run_test "$TST_TESTFUNC$_tst_i" $_tst_i "$_tst_data"
 		else
