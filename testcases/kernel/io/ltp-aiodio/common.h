@@ -19,7 +19,7 @@ static inline char *check_zero(char *buf, int size)
 		if (*buf != 0) {
 			tst_res(TINFO,
 				"non zero buffer at buf[%lu] => 0x%02x,%02x,%02x,%02x",
-				buf - p, (unsigned int)buf[0],
+				(long)(buf - p), (unsigned int)buf[0],
 				size > 1 ? (unsigned int)buf[1] : 0,
 				size > 2 ? (unsigned int)buf[2] : 0,
 				size > 3 ? (unsigned int)buf[3] : 0);
@@ -78,8 +78,8 @@ static inline void io_read(const char *filename, int filesize, volatile int *run
 			if (r > 0) {
 				bufoff = check_zero(buff, r);
 				if (bufoff) {
-					tst_res(TINFO, "non-zero read at offset %zu",
-						offset + (bufoff - buff));
+					tst_res(TINFO, "non-zero read at offset %lu",
+						(long int)offset + (bufoff - buff));
 					break;
 				}
 				offset += r;
