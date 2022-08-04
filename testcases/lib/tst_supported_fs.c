@@ -81,10 +81,11 @@ int main(int argc, char *argv[])
 	}
 
 	if (optind < argc) {
-		ret = tst_fs_is_supported(argv[optind]);
+		ret = tst_fs_is_supported_skiplist(argv[optind],
+						   (const char * const*)skiplist);
 
 		if (ret == TST_FS_UNSUPPORTED)
-			tst_brk(TCONF, "%s is not supported", argv[optind]);
+			tst_brk(TCONF, "%s is skipped or not supported", argv[optind]);
 
 		return !ret;
 	}
@@ -92,7 +93,7 @@ int main(int argc, char *argv[])
 	filesystems = tst_get_supported_fs_types((const char * const*)skiplist);
 
 	if (!filesystems[0])
-		tst_brk(TCONF, "There are no supported filesystems");
+		tst_brk(TCONF, "There are no supported filesystems or all skipped");
 
 	for (i = 0; filesystems[i]; i++)
 		printf("%s\n", filesystems[i]);
