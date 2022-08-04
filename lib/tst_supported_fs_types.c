@@ -134,6 +134,22 @@ enum tst_fs_impl tst_fs_is_supported(const char *fs_type)
 	return TST_FS_UNSUPPORTED;
 }
 
+enum tst_fs_impl tst_fs_is_supported_skiplist(const char *fs_type, const char
+					      *const *skiplist)
+{
+	int ret;
+
+	ret = tst_fs_is_supported(fs_type);
+
+	if (!ret)
+		return ret;
+
+	if (tst_fs_in_skiplist(fs_type, skiplist))
+		return TST_FS_UNSUPPORTED;
+
+	return ret;
+}
+
 const char **tst_get_supported_fs_types(const char *const *skiplist)
 {
 	unsigned int i, j = 0;

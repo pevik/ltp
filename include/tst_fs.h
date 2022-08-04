@@ -184,6 +184,16 @@ enum tst_fs_impl {
 enum tst_fs_impl tst_fs_is_supported(const char *fs_type);
 
 /*
+ * Check filesystem support (@see tst_fs_is_supported()), but consider also
+ * filesystems to skip.
+ *
+ * @fs_type A filesystem name to check the support for.
+ * @skiplist A NULL terminated array of filesystems to skip.
+ */
+enum tst_fs_impl tst_fs_is_supported_skiplist(const char *fs_type, const char
+					      *const *skiplist);
+
+/*
  * Returns NULL-terminated array of kernel-supported filesystems.
  *
  * @skiplist A NULL terminated array of filesystems to skip.
