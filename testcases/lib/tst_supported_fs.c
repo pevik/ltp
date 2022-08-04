@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (optind < argc)
-		return !tst_fs_is_supported(argv[optind]);
+		return !tst_fs_is_supported_skiplist(argv[optind], (const char * const*)skiplist);
 
 	filesystems = tst_get_supported_fs_types((const char * const*)skiplist);
 	for (i = 0; filesystems[i]; i++)
