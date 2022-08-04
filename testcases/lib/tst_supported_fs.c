@@ -80,14 +80,19 @@ int main(int argc, char *argv[])
 		return 2;
 	}
 
-	if (optind < argc)
-		return !tst_fs_is_supported(argv[optind]);
+	if (optind < argc) {
+		if (tst_fs_in_skiplist(argv[optind], (const char * const*)skiplist))
+			tst_brk(TCONF, "%s is not supported by the test", argv[optind]);
 
+		tst_res(TINFO, "%s is supported by the test", argv[optind]);
+
+		return 0;
+	}
 
 	filesystems = tst_get_supported_fs_types((const char * const*)skiplist);
 
 	if (!filesystems[0])
-		tst_brk(TCONF, "There are no supported filesystems");
+		tst_brk(TCONF, "There are no supported filesystems or all skipped");
 
 	for (i = 0; filesystems[i]; i++)
 		printf("%s\n", filesystems[i]);
