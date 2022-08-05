@@ -30,6 +30,7 @@
 #define _GNU_SOURCE
 
 #include <sys/statvfs.h>
+#include <sys/mount.h>
 #include "tst_test.h"
 #include "lapi/fsmount.h"
 #include "lapi/stat.h"

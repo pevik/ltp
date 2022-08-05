@@ -12,8 +12,10 @@
 #include <sys/syscall.h>
 #include <sys/types.h>
 
-#ifdef HAVE_LINUX_MOUNT_H
-# include <linux/mount.h>
+#ifndef HAVE_FSOPEN
+# ifdef HAVE_LINUX_MOUNT_H
+#  include <linux/mount.h>
+# endif
 #endif
 
 #include "lapi/fcntl.h"

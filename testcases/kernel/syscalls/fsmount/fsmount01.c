@@ -6,6 +6,7 @@
  * Basic fsmount() test.
  */
 
+#include <sys/mount.h>
 #include "tst_test.h"
 #include "lapi/fsmount.h"
 

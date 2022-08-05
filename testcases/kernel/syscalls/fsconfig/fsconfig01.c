@@ -5,6 +5,7 @@
  * Basic fsconfig() test which tries to configure and mount the filesystem as
  * well.
  */
+#include <sys/mount.h>
 #include "tst_test.h"
 #include "lapi/fsmount.h"
 
