@@ -133,6 +133,7 @@ shmget02
 shmget03
 shmget04
 shmget05
+shmget06
 shmnstest
 shmt02
 shmt03
@@ -311,6 +312,7 @@ userns05
 userns06
 userns06_capcheck
 userns07
+userns08
 utstest
 
 # Following test require 'syslogd' running on device which Android doesn't
@@ -335,6 +337,9 @@ chown04_16
 creat06
 df01.sh
 mkfs01.sh
+
+# Requires mksquashfs
+squashfs01
 
 # Requires glob()
 epoll-test
@@ -600,3 +605,10 @@ rpc_xprt_unregister
 # Depends on /proc/net/connector and /dev/shm (not available on Android)
 # b/229724819
 cn_pec.sh
+
+# numa
+set_mempolicy01
+set_mempolicy02
+set_mempolicy03
+set_mempolicy04
+set_mempolicy05
