@@ -242,4 +242,14 @@ extern void *TST_RET_PTR;
 #define TST_EXP_EQ_SSZ(VAL_A, VAL_B) \
 		TST_EXP_EQ_(VAL_A, #VAL_A, VAL_B, #VAL_B, ssize_t, "%zi")
 
+#define TST_EXP_EQ_STR(STR_A, STR_B) do {\
+	if (strcmp(STR_A, STR_B)) { \
+		tst_res_(__FILE__, __LINE__, TFAIL, \
+			"'%s' != '%s'", STR_A, STR_B); \
+	} else { \
+		tst_res_(__FILE__, __LINE__, TPASS, \
+			"'%s' == '%s'", STR_A, STR_B); \
+	} \
+} while (0)
+
 #endif	/* TST_TEST_MACROS_H__ */
