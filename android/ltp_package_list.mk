@@ -1274,11 +1274,6 @@ ltp_packages := \
   ltp_sendto01 \
   ltp_sendto02 \
   ltp_sendto03 \
-  ltp_set_mempolicy01 \
-  ltp_set_mempolicy02 \
-  ltp_set_mempolicy03 \
-  ltp_set_mempolicy04 \
-  ltp_set_mempolicy05 \
   ltp_set_robust_list01 \
   ltp_set_thread_area01 \
   ltp_set_tid_address01 \
@@ -1397,7 +1392,6 @@ ltp_packages := \
   ltp_setxattr02 \
   ltp_setxattr03 \
   ltp_sgetmask01 \
-  ltp_shmget06 \
   ltp_sigaction01 \
   ltp_sigaction02 \
   ltp_sigaltstack01 \
@@ -1436,7 +1430,6 @@ ltp_packages := \
   ltp_splice03 \
   ltp_splice04 \
   ltp_splice05 \
-  ltp_squashfs01 \
   ltp_ssetmask01 \
   ltp_stack_clash \
   ltp_stack_space \
@@ -2577,7 +2570,6 @@ ltp_packages := \
   ltp_unshare01 \
   ltp_unshare02 \
   ltp_userfaultfd01 \
-  ltp_userns08 \
   ltp_ustat01 \
   ltp_ustat02 \
   ltp_utime01 \
