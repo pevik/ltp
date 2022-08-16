@@ -120,6 +120,16 @@ int safe_setreuid(const char *file, const int lineno,
 #define SAFE_SETREUID(ruid, euid) \
 	safe_setreuid(__FILE__, __LINE__, (ruid), (euid))
 
+int safe_setresgid(const char *file, const int lineno,
+	gid_t rgid, gid_t egid, gid_t sgid);
+#define SAFE_SETRESGID(rgid, egid, sgid) \
+	safe_setresgid(__FILE__, __LINE__, (rgid), (egid), (sgid))
+
+int safe_setresuid(const char *file, const int lineno,
+		  uid_t ruid, uid_t euid, uid_t suid);
+#define SAFE_SETRESUID(ruid, euid, suid) \
+	safe_setresuid(__FILE__, __LINE__, (ruid), (euid), (suid))
+
 #define SAFE_GETRESUID(ruid, euid, suid) \
 	safe_getresuid(__FILE__, __LINE__, NULL, (ruid), (euid), (suid))
 
@@ -135,6 +145,16 @@ pid_t safe_getpgid(const char *file, const int lineno, pid_t pid);
 
 #define SAFE_GETPGID(pid) \
 	safe_getpgid(__FILE__, __LINE__, (pid))
+
+int safe_setgroups(const char *file, const int lineno, size_t size, const gid_t *list);
+
+#define SAFE_SETGROUPS(size, list) \
+	safe_setgroups(__FILE__, __LINE__, (size), (list))
+
+int safe_getgroups(const char *file, const int lineno, int size, gid_t list[]);
+
+#define SAFE_GETGROUPS(size, list) \
+	safe_getgroups(__FILE__, __LINE__, (size), (list))
 
 #define SAFE_UNLINK(pathname) \
 	safe_unlink(__FILE__, __LINE__, NULL, (pathname))
@@ -230,7 +250,7 @@ pid_t safe_getpgid(const char *file, const int lineno, pid_t pid);
 
 /*
  * following functions are inline because the behaviour may depend on
- * -D_FILE_OFFSET_BITS=64 -DOFF_T=off64_t compile flags
+ * -D_FILE_OFFSET_BITS=64 compile flag
  */
 
 static inline void *safe_mmap(const char *file, const int lineno,

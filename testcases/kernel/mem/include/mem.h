@@ -1,9 +1,14 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+/*
+ * Copyright (c) Linux Test Project, 2011-2021
+ */
 #ifndef _MEM_H
 #define _MEM_H
 #include "config.h"
 #include "tst_test.h"
 #include "tst_cgroup.h"
 #include "ksm_helper.h"
+#include "tst_memutils.h"
 
 #if defined(__powerpc__) || defined(__powerpc64__)
 #define MAXNODES		256

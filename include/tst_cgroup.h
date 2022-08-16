@@ -5,7 +5,7 @@
  * Copyright (c) 2020-2021 SUSE LLC <rpalethorpe@suse.com>
  */
 /*\
- * [DESCRIPTION]
+ * [Description]
  *
  * The LTP CGroups API tries to present a consistent interface to the
  * many possible CGroup configurations a system could have.
@@ -133,6 +133,10 @@ struct tst_cgroup_group *
 tst_cgroup_group_mk(const struct tst_cgroup_group *const parent,
 		    const char *const group_name)
 		    __attribute__ ((nonnull, warn_unused_result));
+const char *
+tst_cgroup_group_name(const struct tst_cgroup_group *const cg)
+		      __attribute__ ((nonnull, warn_unused_result));
+
 /* Remove a descendant CGroup */
 struct tst_cgroup_group *
 tst_cgroup_group_rm(struct tst_cgroup_group *const cg)
@@ -145,6 +149,9 @@ enum tst_cgroup_ver tst_cgroup_ver(const char *const file, const int lineno,
 				   const struct tst_cgroup_group *const cg,
 				   const char *const ctrl_name)
 				   __attribute__ ((nonnull, warn_unused_result));
+
+#define TST_CGROUP_VER_IS_V1(cg, ctrl_name) \
+	(TST_CGROUP_VER((cg), (ctrl_name)) == TST_CGROUP_V1)
 
 #define SAFE_CGROUP_HAS(cg, file_name) \
 	safe_cgroup_has(__FILE__, __LINE__, (cg), (file_name))
@@ -184,8 +191,26 @@ void safe_cgroup_printf(const char *const file, const int lineno,
 void safe_cgroup_scanf(const char *file, const int lineno,
 		       const struct tst_cgroup_group *const cg,
 		       const char *const file_name,
-		       const char *fmt, ...)
+		       const char *const fmt, ...)
 		       __attribute__ ((format (scanf, 5, 6), nonnull));
 
+#define SAFE_CGROUP_LINES_SCANF(cg, file_name, fmt, ...)		\
+	safe_cgroup_lines_scanf(__FILE__, __LINE__,			\
+				(cg), (file_name), (fmt), __VA_ARGS__)
+
+void safe_cgroup_lines_scanf(const char *const file, const int lineno,
+			     const struct tst_cgroup_group *const cg,
+			     const char *const file_name,
+			     const char *const fmt, ...)
+			__attribute__ ((format (scanf, 5, 6), nonnull));
+
+#define SAFE_CGROUP_OCCURSIN(cg, file_name, needle)		\
+	safe_cgroup_occursin(__FILE__, __LINE__,		\
+			     (cg), (file_name), (needle))
+
+int safe_cgroup_occursin(const char *file, const int lineno,
+			 const struct tst_cgroup_group *const cg,
+			 const char *const file_name,
+			 const char *const needle);
 
 #endif /* TST_CGROUP_H */

@@ -6,8 +6,8 @@
  * Mostly copied/adapted from <linux/io_uring.h>
  */
 
-#ifndef IO_URING_H__
-#define IO_URING_H__
+#ifndef LAPI_IO_URING_H__
+#define LAPI_IO_URING_H__
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -296,14 +296,15 @@ static inline int io_uring_enter(int fd, unsigned int to_submit,
 
 static inline void io_uring_setup_supported_by_kernel(void)
 {
+	long ret;
 	if ((tst_kvercmp(5, 1, 0)) < 0) {
-		TEST(syscall(__NR_io_uring_setup, NULL, 0));
-		if (TST_RET != -1)
-			SAFE_CLOSE(TST_RET);
-		else if (TST_ERR == ENOSYS)
+		ret = syscall(__NR_io_uring_setup, NULL, 0);
+		if (ret != -1)
+			SAFE_CLOSE(ret);
+		else if (errno == ENOSYS)
 			tst_brk(TCONF,
 				"Test not supported on kernel version < v5.1");
 	}
 }
 
-#endif /* IO_URING_H__ */
+#endif /* LAPI_IO_URING_H__ */
