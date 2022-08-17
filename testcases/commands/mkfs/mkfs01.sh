@@ -37,6 +37,7 @@ setup()
 	if [ -n "$TST_FS_TYPE" ]; then
 		tst_require_cmds mkfs.${TST_FS_TYPE}
 	fi
+	tst_res TINFO "df01.sh: QA_CHECK_FS: '$QA_CHECK_FS'" # FIXME: debug
 
 	ROD_SILENT mkdir -p mntpoint
 }
@@ -114,7 +115,8 @@ mkfs_test()
 		fi
 	fi
 
-	${mkfs_cmd} >temp 2>&1
+	tst_res TINFO "cmd: $mkfs_cmd" # FIXME: debug
+	strace ${mkfs_cmd} >temp 2>&1
 	if [ $? -ne 0 ]; then
 		grep -q -E "unknown option | invalid option" temp
 		if [ $? -eq 0 ]; then

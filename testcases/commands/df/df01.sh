@@ -35,6 +35,7 @@ parse_args()
 setup()
 {
 	DF_FS_TYPE=$(mount | grep "$TST_DEVICE" | awk 'NR==1{print $5}')
+	tst_res TINFO "df01.sh: QA_CHECK_FS: '$QA_CHECK_FS'" # FIXME: debug
 }
 
 df_test()

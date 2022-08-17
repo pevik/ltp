@@ -671,10 +671,12 @@ tst_run()
 
 	_tst_setup_timer
 
+	export QA_CHECK_FS=1
 	[ "$TST_MOUNT_DEVICE" = 1 ] && TST_FORMAT_DEVICE=1
 	[ "$TST_FORMAT_DEVICE" = 1 ] && TST_NEEDS_DEVICE=1
 	if [ "$TST_NEEDS_DEVICE" = 1 ]; then
 		export TEST_DIR=1 TEST_DEV=1 QA_CHECK_FS=1
+		tst_res TINFO "QA_CHECK_FS: '$QA_CHECK_FS'" # FIXME: debug
 		TST_NEEDS_TMPDIR=1
 	fi
 
@@ -708,7 +710,7 @@ tst_run()
 	[ -n "$TST_NEEDS_MODULE" ] && tst_require_module "$TST_NEEDS_MODULE"
 
 	if [ "$TST_FORMAT_DEVICE" = 1 ]; then
-		tst_mkfs $TST_FS_TYPE $TST_DEV_FS_OPTS $TST_DEVICE $TST_DEV_EXTRA_OPTS
+		QA_CHECK_FS=1 strace tst_mkfs $TST_FS_TYPE $TST_DEV_FS_OPTS $TST_DEVICE $TST_DEV_EXTRA_OPTS
 	fi
 
 	if [ "$TST_MOUNT_DEVICE" = 1 ]; then
