@@ -1160,6 +1160,13 @@ static void do_setup(int argc, char *argv[])
 	if (tst_test->all_filesystems)
 		tst_test->needs_device = 1;
 
+	/* allow to use XFS filesystem < 300 MB */
+	if (tst_test->needs_device) {
+		putenv("TEST_DIR=1");
+		putenv("TEST_DEV=1");
+		putenv("QA_CHECK_FS=1");
+	}
+
 	if (tst_test->min_cpus > (unsigned long)tst_ncpus())
 		tst_brk(TCONF, "Test needs at least %lu CPUs online", tst_test->min_cpus);
 

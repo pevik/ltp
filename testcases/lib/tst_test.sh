@@ -671,7 +671,11 @@ tst_run()
 
 	[ "$TST_MOUNT_DEVICE" = 1 ] && TST_FORMAT_DEVICE=1
 	[ "$TST_FORMAT_DEVICE" = 1 ] && TST_NEEDS_DEVICE=1
-	[ "$TST_NEEDS_DEVICE" = 1 ] && TST_NEEDS_TMPDIR=1
+	if [ "$TST_NEEDS_DEVICE" = 1 ]; then
+		TST_NEEDS_TMPDIR=1
+		# allow to use XFS filesystem < 300 MB
+		export TEST_DIR=1 TEST_DEV=1 QA_CHECK_FS=1
+	fi
 
 	if [ "$TST_NEEDS_TMPDIR" = 1 ]; then
 		if [ -z "$TMPDIR" ]; then
