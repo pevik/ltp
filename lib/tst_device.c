@@ -44,7 +44,25 @@
 #define LOOP_CONTROL_FILE "/dev/loop-control"
 
 #define DEV_FILE "test_dev.img"
-#define DEV_SIZE_MB 256u
+
+// xfs: 300u, btrfs: 256u
+//#define DEV_SIZE_MB 300u
+//#define DEV_SIZE_MB 256u // ext[234], ntfs, vfat
+//#define DEV_SIZE_MB 200u // ext[234], ntfs, vfat, btrfs
+//#define DEV_SIZE_MB 100u // ext[234], ntfs, vfat
+//#define DEV_SIZE_MB 120u // ext[234], ntfs, vfat
+//#define DEV_SIZE_MB 114u // ext[234], ntfs, vfat
+//#define DEV_SIZE_MB 110u // ext[234], ntfs, vfat
+
+/*
+ * ERROR: '/dev/loop0' is too small to make a usable filesystem
+ * ERROR: minimum size for each btrfs device is 114294784
+ */
+//#define DEV_SIZE_MB 109u // ext[234], ntfs, vfat, btrfs (fixed)
+
+//#define DEV_SIZE_MB 3u // ext[234], vfat, ntfs, exfat
+#define DEV_SIZE_MB 2u // ext[234], vfat, ntfs, exfat
+//#define DEV_SIZE_MB 1u // vfat, exfat, ext[24]
 
 static char dev_path[1024];
 static int device_acquired;
