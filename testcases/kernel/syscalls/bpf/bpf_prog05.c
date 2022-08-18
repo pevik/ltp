@@ -209,6 +209,11 @@ static struct tst_test test = {
 		{&msg, .size = sizeof(MSG)},
 		{}
 	},
+	.needs_root = 1,
+	.save_restore = (const struct tst_path_val[]) {
+		{"?/proc/sys/kernel/unprivileged_bpf_disabled", "0"},
+		{}
+	},
 	.tags = (const struct tst_tag[]) {
 		{"linux-git", "f6b1b3bf0d5f"},
 		{"linux-git", "468f6eafa6c4"},
