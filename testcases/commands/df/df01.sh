@@ -64,6 +64,9 @@ df_test()
 	fi
 
 	ROD_SILENT rm -rf $TST_MNTPOINT/testimg
+	# Ensure free space change can be seen by statfs
+	fsfreeze -f $TST_MNTPOINT
+	fsfreeze -u $TST_MNTPOINT
 
 	# flush file system buffers, then we can get the actual sizes.
 	sync
