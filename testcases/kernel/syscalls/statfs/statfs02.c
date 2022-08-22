@@ -32,6 +32,8 @@
  *		ELOOP.
  */
 
+#include <setjmp.h>
+#include <signal.h>
 #include <sys/types.h>
 #include <sys/statfs.h>
 #include <sys/stat.h>
@@ -70,6 +72,10 @@ static struct test_case_t {
 };
 
 int TST_TOTAL = ARRAY_SIZE(TC);
+
+static int sig_caught;
+static sigjmp_buf env;
+
 static void setup(void);
 static void cleanup(void);
 static void statfs_verify(const struct test_case_t *);
@@ -85,17 +91,37 @@ int main(int ac, char **av)
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 		tst_count = 0;
-		for (i = 0; i < TST_TOTAL; i++)
-			statfs_verify(&TC[i]);
+		for (i = 0; i < TST_TOTAL; i++) {
+			sig_caught = 0;
+			if (sigsetjmp(env, 1) == 0)
+				statfs_verify(&TC[i]);
+
+			if (!sig_caught)
+				continue;
+
+			if (TC[i].exp_error == EFAULT && sig_caught == SIGSEGV) {
+				tst_resm(TINFO, "received SIGSEGV instead of returning EFAULT");
+				tst_resm(TPASS | TTERRNO, "expected failure");
+				continue;
+			}
+
+			tst_resm(TFAIL, "Received an unexpected signal: %d", sig_caught);
+		}
 	}
 
 	cleanup();
 	tst_exit();
 }
 
+static void sighandler(int sig)
+{
+	sig_caught = sig;
+	siglongjmp(env, 1);
+}
+
 static void setup(void)
 {
-	tst_sig(NOFORK, DEF_HANDLER, cleanup);
+	tst_sig(NOFORK, sighandler, cleanup);
 
 	TEST_PAUSE;
 

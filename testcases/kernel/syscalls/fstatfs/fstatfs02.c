@@ -21,15 +21,14 @@
  *	Testcase to check fstatfs() sets errno correctly.
  */
 
+#include <setjmp.h>
+#include <signal.h>
 #include <sys/vfs.h>
 #include <sys/types.h>
 #include <sys/statfs.h>
 #include <errno.h>
 #include "test.h"
 #include "safe_macros.h"
-
-static void setup(void);
-static void cleanup(void);
 
 char *TCID = "fstatfs02";
 
@@ -53,6 +52,13 @@ static struct test_case_t {
 
 int TST_TOTAL = ARRAY_SIZE(TC);
 
+static int sig_caught;
+static sigjmp_buf env;
+
+static void setup(void);
+static void cleanup(void);
+static void fstatfs_verify(const struct test_case_t *);
+
 int main(int ac, char **av)
 {
 	int lc;
@@ -67,23 +73,20 @@ int main(int ac, char **av)
 		tst_count = 0;
 
 		for (i = 0; i < TST_TOTAL; i++) {
+			sig_caught = 0;
+			if (sigsetjmp(env, 1) == 0)
+				fstatfs_verify(&TC[i]);
 
-			TEST(fstatfs(TC[i].fd, TC[i].sbuf));
+			if (!sig_caught)
+				continue;
 
-			if (TEST_RETURN != -1) {
-				tst_resm(TFAIL, "call succeeded unexpectedly");
+			if (TC[i].error == EFAULT && sig_caught == SIGSEGV) {
+				tst_resm(TINFO, "received SIGSEGV instead of returning EFAULT");
+				tst_resm(TPASS | TTERRNO, "expected failure");
 				continue;
 			}
 
-			if (TEST_ERRNO == TC[i].error) {
-				tst_resm(TPASS, "expected failure - "
-					 "errno = %d : %s", TEST_ERRNO,
-					 strerror(TEST_ERRNO));
-			} else {
-				tst_resm(TFAIL, "unexpected error - %d : %s - "
-					 "expected %d", TEST_ERRNO,
-					 strerror(TEST_ERRNO), TC[i].error);
-			}
+			tst_resm(TFAIL, "Received an unexpected signal: %d", sig_caught);
 		}
 	}
 	cleanup();
@@ -91,9 +94,16 @@ int main(int ac, char **av)
 	tst_exit();
 }
 
+static void sighandler(int sig)
+{
+	sig_caught = sig;
+	siglongjmp(env, 1);
+
+}
+
 static void setup(void)
 {
-	tst_sig(NOFORK, DEF_HANDLER, cleanup);
+	tst_sig(NOFORK, sighandler, cleanup);
 
 	TEST_PAUSE;
 
@@ -101,6 +111,24 @@ static void setup(void)
 #ifndef UCLINUX
 	TC[1].fd = SAFE_OPEN(cleanup, "tempfile", O_RDWR | O_CREAT, 0700);
 #endif
+}
+
+static void fstatfs_verify(const struct test_case_t *test)
+{
+	TEST(fstatfs(test->fd, test->sbuf));
+
+	if (TEST_RETURN != -1) {
+		tst_resm(TFAIL, "call succeeded unexpectedly");
+		return;
+	}
+
+	if (TEST_ERRNO == test->error) {
+		tst_resm(TPASS, "expected failure - errno = %d : %s",
+			 TEST_ERRNO, strerror(TEST_ERRNO));
+	} else {
+		tst_resm(TFAIL, "unexpected error - %d : %s - expected %d",
+			 TEST_ERRNO, strerror(TEST_ERRNO), test->error);
+	}
 }
 
 static void cleanup(void)
