@@ -280,4 +280,5 @@ static struct tst_test test = {
 	.all_filesystems = 1,
 	.max_runtime = 60,
 	.needs_root = 1,
+	.dev_min_size = 230,
 };

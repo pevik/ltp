@@ -43,7 +43,7 @@ static int acquire_device(int argc, char *argv[])
 	if (argc >= 4)
 		device = tst_acquire_loop_device(size, argv[3]);
 	else
-		device = tst_acquire_device__(size);
+		device = tst_acquire_device__(size, TST_ALL_FILESYSTEMS);
 
 	if (!device)
 		return 1;
