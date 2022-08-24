@@ -1030,7 +1030,7 @@ static const char *limit_tmpfs_mount_size(const char *mnt_data,
 		return mnt_data;
 
 	if (!tst_test->dev_min_size)
-		tmpfs_size = 32;
+		tmpfs_size = tst_min_fs_size(TST_TMPFS_MAGIC);
 	else
 		tmpfs_size = tdev.size;
 
