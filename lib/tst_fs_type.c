@@ -43,6 +43,34 @@ long tst_fs_type_(void (*cleanup)(void), const char *path)
 	return sbuf.f_type;
 }
 
+long tst_fs_name_type(const char *fs)
+{
+	if (!strcmp(fs, "btrfs"))
+		return TST_BTRFS_MAGIC;
+	else if (!strcmp(fs, "exfat"))
+		return TST_EXFAT_MAGIC;
+	else if (!strcmp(fs, "ext2"))
+		return TST_EXT2_OLD_MAGIC;
+	else if (!strcmp(fs, "ext3") || !strcmp(fs, "ext4"))
+		return TST_EXT234_MAGIC;
+	else if (!strcmp(fs, "minix"))
+		return TST_MINIX3_MAGIC;
+	else if (!strcmp(fs, "msdos"))
+		return TST_VFAT_MAGIC;
+	else if (!strcmp(fs, "ntfs"))
+		return TST_NTFS_MAGIC;
+	else if (!strcmp(fs, "squashfs"))
+		return TST_SQUASHFS_MAGIC;
+	else if (!strcmp(fs, "tmpfs"))
+		return TST_TMPFS_MAGIC;
+	else if (!strcmp(fs, "vfat"))
+		return TST_VFAT_MAGIC;
+	else if (!strcmp(fs, "xfs"))
+		return TST_XFS_MAGIC;
+
+	return -1;
+}
+
 const char *tst_fs_type_name(long f_type)
 {
 	switch (f_type) {

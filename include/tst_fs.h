@@ -5,6 +5,8 @@
 #ifndef TST_FS_H__
 #define TST_FS_H__
 
+#define TST_ALL_FILESYSTEMS	0
+
 /* man 2 statfs or kernel-source/include/uapi/linux/magic.h */
 #define TST_BTRFS_MAGIC    0x9123683E
 #define TST_NFS_MAGIC      0x6969
@@ -50,6 +52,15 @@ enum {
 #define OVL_MNT		OVL_BASE_MNTPOINT"/ovl"
 
 /*
+ * Returns minimum requested for filesystem size.
+ * This size is enforced for all but tmpfs.
+ *
+ * @fs_type filesystem to be searched for, 0 is for the biggest size of all
+ * supported filesystems (used for .all_filesystems).
+ */
+unsigned int tst_min_fs_size(long f_type);
+
+/*
  * @path: path is the pathname of any file within the mounted file system
  * @mult: mult should be TST_KB, TST_MB or TST_GB
  * the required free space is calculated by @size * @mult
@@ -86,6 +97,11 @@ long tst_fs_type_(void (*cleanup)(void), const char *path);
  * Returns filesystem name given magic.
  */
 const char *tst_fs_type_name(long f_type);
+
+/*
+ * Returns magic given filesystem name.
+ */
+long tst_fs_name_type(const char *fs);
 
 /*
  * Try to get maximum number of hard links to a regular file inside the @dir.

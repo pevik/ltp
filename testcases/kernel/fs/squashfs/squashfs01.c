@@ -104,6 +104,7 @@ static struct tst_test test = {
 	.needs_root = 1,
 	.needs_device = 1,
 	.dev_min_size = 1,
+	.dev_fs_type = "squashfs",
 	.needs_cmds = (const char *const []) {
 		"mksquashfs",
 		NULL

@@ -36,6 +36,7 @@
 #include "lapi/syscalls.h"
 #include "test.h"
 #include "safe_macros.h"
+#include "tst_fs.h"
 
 #ifndef LOOP_CTL_GET_FREE
 # define LOOP_CTL_GET_FREE 0x4C82
@@ -44,11 +45,27 @@
 #define LOOP_CONTROL_FILE "/dev/loop-control"
 
 #define DEV_FILE "test_dev.img"
-#define DEV_SIZE_MB 256u
+#define DEV_SIZE_MB_DEFAULT 16u
+#define DEV_SIZE_MB_BTRFS 110u
+#define DEV_SIZE_MB_SQUASHFS 1u
 
 static char dev_path[1024];
 static int device_acquired;
 static unsigned long prev_dev_sec_write;
+
+unsigned int tst_min_fs_size(long f_type)
+{
+	switch (f_type) {
+	case 0:
+		return MAX(DEV_SIZE_MB_BTRFS, DEV_SIZE_MB_DEFAULT);
+	case TST_BTRFS_MAGIC:
+		return DEV_SIZE_MB_BTRFS;
+	case TST_SQUASHFS_MAGIC:
+		return DEV_SIZE_MB_SQUASHFS;
+	default:
+		return DEV_SIZE_MB_DEFAULT;
+	}
+}
 
 static const char *dev_variants[] = {
 	"/dev/loop%i",
@@ -279,7 +296,7 @@ int tst_dev_sync(int fd)
 
 const char *tst_acquire_loop_device(unsigned int size, const char *filename)
 {
-	unsigned int acq_dev_size = size ? size : DEV_SIZE_MB;
+	unsigned int acq_dev_size = size ?: tst_min_fs_size(0);
 
 	if (tst_prealloc_file(filename, 1024 * 1024, acq_dev_size)) {
 		tst_resm(TWARN | TERRNO, "Failed to create %s", filename);
@@ -295,13 +312,20 @@ const char *tst_acquire_loop_device(unsigned int size, const char *filename)
 	return dev_path;
 }
 
-const char *tst_acquire_device__(unsigned int size)
+const char *tst_acquire_device__(unsigned int size, long f_type)
 {
 	const char *dev;
 	unsigned int acq_dev_size;
 	uint64_t ltp_dev_size;
+	unsigned int min_size = tst_min_fs_size(f_type);
 
-	acq_dev_size = size ? size : DEV_SIZE_MB;
+	if (size && size < min_size) {
+		tst_brkm(TBROK, NULL, "Request device size %u smaller than min size: %u",
+				 size, min_size);
+		return NULL;
+	}
+
+	acq_dev_size = size ?: min_size;
 
 	dev = getenv("LTP_DEV");
 
@@ -325,7 +349,7 @@ const char *tst_acquire_device__(unsigned int size)
 	return dev;
 }
 
-const char *tst_acquire_device_(void (cleanup_fn)(void), unsigned int size)
+const char *tst_acquire_device_(void (cleanup_fn)(void), unsigned int size, long f_type)
 {
 	const char *device;
 
@@ -340,7 +364,7 @@ const char *tst_acquire_device_(void (cleanup_fn)(void), unsigned int size)
 		return NULL;
 	}
 
-	device = tst_acquire_device__(size);
+	device = tst_acquire_device__(size, f_type);
 
 	if (!device) {
 		tst_brkm(TBROK, cleanup_fn, "Failed to acquire device");
