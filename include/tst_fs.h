@@ -6,6 +6,8 @@
 #ifndef TST_FS_H__
 #define TST_FS_H__
 
+#define TST_ALL_FILESYSTEMS	0
+
 /* man 2 statfs or kernel-source/include/uapi/linux/magic.h */
 #define TST_BTRFS_MAGIC    0x9123683E
 #define TST_NFS_MAGIC      0x6969
@@ -49,6 +51,17 @@ enum {
 #define OVL_UPPER	OVL_BASE_MNTPOINT"/upper"
 #define OVL_WORK	OVL_BASE_MNTPOINT"/work"
 #define OVL_MNT		OVL_BASE_MNTPOINT"/ovl"
+
+int get_max_required_fs_size(void);
+
+/*
+ * Returns minimum requested for filesystem size.
+ * This size is enforced for all but tmpfs.
+ *
+ * @fs_type filesystem to be searched for, TST_ALL_FILESYSTEMS is for the
+ * biggest size of all supported filesystems (used for .all_filesystems).
+ */
+unsigned int tst_min_fs_size(long f_type);
 
 /*
  * @path: path is the pathname of any file within the mounted file system

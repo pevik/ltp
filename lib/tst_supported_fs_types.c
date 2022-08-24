@@ -3,6 +3,7 @@
  * Copyright (c) 2017 Cyril Hrubis <chrubis@suse.cz>
  */
 
+#include <assert.h>
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -13,6 +14,10 @@
 #define TST_NO_DEFAULT_MAIN
 #include "tst_test.h"
 #include "tst_fs.h"
+
+#define DEV_SIZE_MB_DEFAULT 16u
+#define DEV_SIZE_MB_BTRFS 110u
+#define DEV_SIZE_MB_SQUASHFS 1u
 
 static const char *const fs_type_whitelist[] = {
 	"ext2",
@@ -172,4 +177,45 @@ const char **tst_get_supported_fs_types(const char *const *skiplist)
 	}
 
 	return fs_types;
+}
+
+static unsigned int _tst_min_fs_size(long f_type)
+{
+	assert(f_type != TST_ALL_FILESYSTEMS);
+
+	switch (f_type) {
+	case TST_BTRFS_MAGIC:
+		return DEV_SIZE_MB_BTRFS;
+	case TST_SQUASHFS_MAGIC:
+		return DEV_SIZE_MB_SQUASHFS;
+	default:
+		return DEV_SIZE_MB_DEFAULT;
+	}
+}
+
+unsigned int tst_min_fs_size(long f_type)
+{
+	if (f_type != TST_ALL_FILESYSTEMS)
+		return _tst_min_fs_size(f_type);
+
+	return get_max_required_fs_size();
+}
+
+int get_max_required_fs_size(void)
+{
+	static unsigned int max_size = 0;
+	unsigned int i;
+	long f_type;
+
+	if (max_size > 0)
+		return max_size;
+
+	const char *const *filesystems = tst_get_supported_fs_types(NULL);
+
+	for (i = 0; filesystems[i]; i++) {
+		f_type = tst_fs_name_type(filesystems[i]);
+		max_size = MAX(max_size, _tst_min_fs_size(f_type));
+	}
+
+	return max_size;
 }
