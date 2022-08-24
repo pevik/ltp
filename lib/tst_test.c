@@ -1218,7 +1218,12 @@ static void do_setup(int argc, char *argv[])
 	}
 
 	if (tst_test->needs_device && !mntpoint_mounted) {
-		tdev.dev = tst_acquire_device_(NULL, tst_test->dev_min_size);
+		long f_type = tst_fs_name_type(tst_test->dev_fs_type ?: DEFAULT_FS_TYPE);
+
+		if (tst_test->all_filesystems)
+			f_type = TST_ALL_FILESYSTEMS;
+
+		tdev.dev = tst_acquire_device_(NULL, tst_test->dev_min_size, f_type);
 
 		if (!tdev.dev)
 			tst_brk(TCONF, "Failed to acquire device");

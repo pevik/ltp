@@ -215,6 +215,7 @@ static struct tst_test test = {
 	.needs_root = 1,
 	.mount_device = 1,
 	.mntpoint = MOUNT_PATH,
+	.dev_min_size = 65,
 };
 #else
 	TST_TEST_TCONF("system doesn't have required fanotify support");

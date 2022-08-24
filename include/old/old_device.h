@@ -43,13 +43,13 @@ const char *tst_dev_fs_type(void);
  * Returns path to the device or NULL if it cannot be created.
  * Call tst_release_device() when you're done.
  */
-const char *tst_acquire_device_(void (cleanup_fn)(void), unsigned int size);
+const char *tst_acquire_device_(void (cleanup_fn)(void), unsigned int size, long f_type);
 
-const char *tst_acquire_device__(unsigned int size);
+const char *tst_acquire_device__(unsigned int size, long f_type);
 
 static inline const char *tst_acquire_device(void (cleanup_fn)(void))
 {
-	return tst_acquire_device_(cleanup_fn, 0);
+	return tst_acquire_device_(cleanup_fn, 0, TST_ALL_FILESYSTEMS);
 }
 
 /*
@@ -61,7 +61,7 @@ static inline const char *tst_acquire_device(void (cleanup_fn)(void))
  * The return value points to a static buffer and additional calls of
  * tst_acquire_loop_device() or tst_acquire_device() will overwrite it.
  */
-const char *tst_acquire_loop_device(unsigned int size, const char *filename);
+const char *tst_acquire_loop_device(unsigned int size, const char *filename, const char *const *filesystems);
 
 /*
  * @dev: device path returned by the tst_acquire_device()
