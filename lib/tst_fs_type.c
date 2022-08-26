@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
- * Copyright (c) 2005-2021 Linux Test Project
+ * Copyright (c) 2005-2022 Linux Test Project
  *
  * Cyril Hrubis <chrubis@suse.cz> 2014
  * Michal Simek <monstr@monstr.eu> 2009
@@ -70,6 +70,12 @@ const char *tst_fs_type_name(long f_type)
 		return "fuse";
 	case TST_EXFAT_MAGIC:
 		return "exfat";
+	case TST_NTFS_MAGIC:
+		return "ntfs";
+	case TST_SQUASHFS_MAGIC:
+		return "squashfs";
+	case TST_VFAT_MAGIC:
+		return "vfat";
 	default:
 		return "unknown";
 	}

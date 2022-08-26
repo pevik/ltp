@@ -6,7 +6,7 @@
 #ifndef TST_FS_H__
 #define TST_FS_H__
 
-/* man 2 statfs or kernel-source/include/linux/magic.h */
+/* man 2 statfs or kernel-source/include/uapi/linux/magic.h */
 #define TST_BTRFS_MAGIC    0x9123683E
 #define TST_NFS_MAGIC      0x6969
 #define TST_RAMFS_MAGIC    0x858458f6
@@ -33,6 +33,9 @@
 #define TST_FUSE_MAGIC     0x65735546
 #define TST_VFAT_MAGIC     0x4d44 /* AKA MSDOS */
 #define TST_EXFAT_MAGIC    0x2011BAB0UL
+#define TST_SQUASHFS_MAGIC 0x73717368
+/* kernel-source/fs/ntfs/ntfs.h */
+#define TST_NTFS_MAGIC     0x5346544e
 
 enum {
 	TST_BYTES = 1,
