@@ -694,7 +694,7 @@ tst_run()
 	TST_MNTPOINT="${TST_MNTPOINT:-$PWD/mntpoint}"
 	if [ "$TST_NEEDS_DEVICE" = 1 ]; then
 
-		TST_DEVICE=$(tst_device acquire)
+		TST_DEVICE=$(tst_device -f $TST_FS_TYPE acquire)
 
 		if [ ! -b "$TST_DEVICE" -o $? -ne 0 ]; then
 			unset TST_DEVICE
