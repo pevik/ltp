@@ -19,19 +19,19 @@ static struct tst_test test = {
 static void print_help(void)
 {
 	fprintf(stderr, "\nUsage:\n");
-	fprintf(stderr, "tst_device [-s size [-d /path/to/device]] acquire\n");
+	fprintf(stderr, "tst_device [-f filesystem] [-s size [-d /path/to/device]] acquire\n");
 	fprintf(stderr, "tst_device -d /path/to/device release\n");
 	fprintf(stderr, "tst_device -h\n\n");
 }
 
-static int acquire_device(const char *device_path, unsigned int size)
+static int acquire_device(const char *device_path, unsigned int size, long f_type)
 {
 	const char *device;
 
 	if (device_path)
 		device = tst_acquire_loop_device(size, device_path);
 	else
-		device = tst_acquire_device__(size, TST_ALL_FILESYSTEMS);
+		device = tst_acquire_device__(size, f_type);
 
 	if (!device)
 		return 1;
@@ -66,6 +66,7 @@ int main(int argc, char *argv[])
 {
 	char *device_path = NULL;
 	unsigned int size = 0;
+	long f_type = TST_ALL_FILESYSTEMS;
 	int ret;
 
 	/*
@@ -79,13 +80,20 @@ int main(int argc, char *argv[])
 	 */
 	tst_test = &test;
 
-	while ((ret = getopt(argc, argv, "d:hs:"))) {
+	while ((ret = getopt(argc, argv, "d:f:hs:"))) {
 		if (ret < 0)
 			break;
 
 		switch (ret) {
 		case 'd':
 			device_path = optarg;
+			break;
+		case 'f':
+			f_type = tst_fs_name_type(optarg);
+			if (f_type == -1) {
+				fprintf(stderr, "ERROR: Unsupported filesystem '%s'", optarg);
+				return 1;
+			}
 			break;
 		case 'h':
 			print_help();
@@ -104,7 +112,7 @@ int main(int argc, char *argv[])
 		goto help;
 
 	if (!strcmp(argv[optind], "acquire")) {
-		if (acquire_device(device_path, size))
+		if (acquire_device(device_path, size, f_type))
 			goto help;
 	} else if (!strcmp(argv[optind], "release")) {
 		if (release_device(device_path))
