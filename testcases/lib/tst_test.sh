@@ -32,7 +32,7 @@ _tst_do_exit()
 	[ "$TST_MOUNT_FLAG" = 1 ] && tst_umount
 
 	if [ "$TST_NEEDS_DEVICE" = 1 -a "$TST_DEVICE_FLAG" = 1 ]; then
-		if ! tst_device release "$TST_DEVICE"; then
+		if ! tst_device -d "$TST_DEVICE" release; then
 			tst_res TWARN "Failed to release device '$TST_DEVICE'"
 		fi
 	fi

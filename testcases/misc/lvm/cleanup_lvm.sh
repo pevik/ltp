@@ -24,7 +24,7 @@ cleanup_lvm()
 	ROD vgremove -y ltp_test_vg2
 
 	for devname in $DEVLIST; do
-		ROD tst_device release $devname
+		ROD tst_device -d $devname release
 	done
 
 	rm -rf $LVM_DIR/ltp

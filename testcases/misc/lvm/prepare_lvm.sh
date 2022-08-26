@@ -43,17 +43,17 @@ prepare_mounts()
 	FSNAME1=$1
 	FSNAME2=$2
 	shift 2
-	LVM_DEV1=`tst_device acquire 1040 "$LVM_IMGDIR/lvm_pv1.img"`
+	LVM_DEV1=`tst_device -s 1040 -d "$LVM_IMGDIR/lvm_pv1.img" acquire`
 	error_check
-	LVM_DEV2=`tst_device acquire 1040 "$LVM_IMGDIR/lvm_pv2.img"`
+	LVM_DEV2=`tst_device -s 1040 -d "$LVM_IMGDIR/lvm_pv2.img" acquire`
 	error_check
 
 	# DEVSIZE=($# * 1GB / 2) + 16MB. The extra 16MB is for LVM physical
 	# volume headers
 	DEVSIZE=$(( $# * 512 + 16 ))
-	LVM_DEV3=`tst_device acquire $DEVSIZE "$LVM_IMGDIR/lvm_pv3.img"`
+	LVM_DEV3=`tst_device -s $DEVSIZE -d "$LVM_IMGDIR/lvm_pv3.img" acquire`
 	error_check
-	LVM_DEV4=`tst_device acquire $DEVSIZE "$LVM_IMGDIR/lvm_pv4.img"`
+	LVM_DEV4=`tst_device -s $DEVSIZE -d "$LVM_IMGDIR/lvm_pv4.img" acquire`
 	error_check
 	ROD pvcreate $LVM_DEV1 $LVM_DEV2 $LVM_DEV3 $LVM_DEV4
 	ROD vgcreate ltp_test_vg1 $LVM_DEV1 $LVM_DEV2
