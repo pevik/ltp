@@ -88,6 +88,12 @@ const char *tst_fs_type_name(long f_type)
 		return "fuse";
 	case TST_EXFAT_MAGIC:
 		return "exfat";
+	case TST_NTFS_MAGIC:
+		return "ntfs";
+	case TST_SQUASHFS_MAGIC:
+		return "squashfs";
+	case TST_VFAT_MAGIC:
+		return "vfat";
 	default:
 		return "unknown";
 	}
