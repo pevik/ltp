@@ -182,6 +182,7 @@ static void do_test(void)
 static struct tst_test test = {
 	.test_all = do_test,
 	.forks_child = 1,
+	.max_runtime = 10,
 	.options = (struct tst_option[]) {
 		{"b:", &opt_bug,  "Bug to test for (cve-2017-15299 or cve-2017-15951; default is both)"},
 		{}
