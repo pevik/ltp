@@ -89,6 +89,11 @@ long tst_fs_type_(void (*cleanup)(void), const char *path);
 const char *tst_fs_type_name(long f_type);
 
 /*
+ * Returns magic given filesystem name.
+ */
+long tst_fs_name_type(const char *fs);
+
+/*
  * Try to get maximum number of hard links to a regular file inside the @dir.
  *
  * Note: This number depends on the filesystem @dir is on.
