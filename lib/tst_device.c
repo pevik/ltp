@@ -371,6 +371,7 @@ int tst_release_device(const char *dev)
 
 int tst_clear_device(const char *dev)
 {
+	fprintf(stderr, "%s:%d %s(): call tst_fill_file()\n", __FILE__, __LINE__, __func__); // FIXME: debug
 	if (tst_fill_file(dev, 0, 1024, 512)) {
 		tst_resm(TWARN, "Failed to clear 512k block on %s", dev);
 		return 1;

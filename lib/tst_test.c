@@ -1589,6 +1589,7 @@ static int run_tcases_per_fs(void)
 {
 	int ret = 0;
 	unsigned int i;
+	fprintf(stderr, "%s:%d %s(): call tst_get_supported_fs_types() original\n", __FILE__, __LINE__, __func__); // FIXME: debug
 	const char *const *filesystems = tst_get_supported_fs_types(tst_test->skip_filesystems);
 
 	if (!filesystems[0])

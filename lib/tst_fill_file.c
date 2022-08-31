@@ -37,15 +37,24 @@ int tst_fill_fd(int fd, char pattern, size_t bs, size_t bcount)
 
 	/* Filling a memory buffer with provided pattern */
 	buf = malloc(bs);
-	if (buf == NULL)
+	if (buf == NULL) {
+		fprintf(stderr, "%s:%d %s(): tst_fill_fd buf == NULL\n", __FILE__, __LINE__, __func__); // FIXME:
 		return -1;
+	}
 
 	for (i = 0; i < bs; i++)
 		buf[i] = pattern;
 
 	/* Filling the file */
 	for (i = 0; i < bcount; i++) {
-		if (write(fd, buf, bs) != (ssize_t)bs) {
+		ssize_t ret = write(fd, buf, bs);
+		if (i <3)
+			fprintf(stderr, "%s:%d %s(): (write(fd, buf, bs): %lu (ssize_t)bs): %lu\n",
+					__FILE__, __LINE__, __func__, ret, bs); // FIXME:
+
+		if (ret != (ssize_t)bs) {
+			fprintf(stderr, "%s:%d %s(): (write(fd, buf, bs) != (ssize_t)bs): %lu %lu\n",
+					__FILE__, __LINE__, __func__, ret, bs); // FIXME:
 			free(buf);
 			return -1;
 		}
@@ -63,8 +72,11 @@ int tst_prealloc_size_fd(int fd, size_t bs, size_t bcount)
 	errno = 0;
 	ret = fallocate(fd, 0, 0, bs * bcount);
 
-	if (ret && errno == ENOSPC)
+	fprintf(stderr, "%s:%d %s(): ret: %d\n", __FILE__, __LINE__, __func__, ret); // FIXME: debug
+	if (ret && errno == ENOSPC) {
+		fprintf(stderr, "%s:%d %s(): errno: ENOSPC\n", __FILE__, __LINE__, __func__); // FIXME: debug
 		return ret;
+	}
 
 	if (ret)
 		ret = tst_fill_fd(fd, 0, bs, bcount);
@@ -77,16 +89,22 @@ int tst_fill_file(const char *path, char pattern, size_t bs, size_t bcount)
 	int fd;
 
 	fd = open(path, O_CREAT|O_WRONLY|O_TRUNC, S_IRUSR|S_IWUSR);
-	if (fd < 0)
+	if (fd < 0) {
+		fprintf(stderr, "%s:%d %s(): fd: %d\n", __FILE__, __LINE__, __func__, fd); // FIXME:
 		return -1;
+	}
 
-	if (tst_fill_fd(fd, pattern, bs, bcount)) {
+	int ret = tst_fill_fd(fd, pattern, bs, bcount);
+	fprintf(stderr, "%s:%d %s(): ret: %d\n", __FILE__, __LINE__, __func__, ret); // FIXME: debug
+	if (ret) {
+		fprintf(stderr, "%s:%d %s(): tst_fill_fd failed\n", __FILE__, __LINE__, __func__); // FIXME:
 		close(fd);
 		unlink(path);
 		return -1;
 	}
 
 	if (close(fd) < 0) {
+		fprintf(stderr, "%s:%d %s(): unlink failed\n", __FILE__, __LINE__, __func__); // FIXME:
 		unlink(path);
 
 		return -1;
@@ -103,6 +121,7 @@ int tst_prealloc_file(const char *path, size_t bs, size_t bcount)
 	if (fd < 0)
 		return -1;
 
+	fprintf(stderr, "%s:%d %s(): call tst_prealloc_size_fd\n", __FILE__, __LINE__, __func__); // FIXME: debug
 	if (tst_prealloc_size_fd(fd, bs, bcount)) {
 		close(fd);
 		unlink(path);
