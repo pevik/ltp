@@ -2,7 +2,7 @@
 # Copyright (c) 2018-2021 Petr Vorel <pvorel@suse.cz>
 set -ex
 
-zyp="zypper --non-interactive install --force-resolution --no-recommends"
+zyp="zypper --non-interactive --ignore-unknown install --force-resolution --no-recommends"
 
 $zyp \
 	asciidoc \
