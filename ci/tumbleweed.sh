@@ -1,8 +1,8 @@
 #!/bin/sh
-# Copyright (c) 2018-2021 Petr Vorel <pvorel@suse.cz>
+# Copyright (c) 2018-2022 Petr Vorel <pvorel@suse.cz>
 set -ex
 
-zyp="zypper --non-interactive install --force-resolution --no-recommends"
+zyp="zypper --non-interactive --no-gpg-checks --ignore-unknown install --force-resolution --no-recommends"
 
 $zyp \
 	asciidoc \
