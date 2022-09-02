@@ -307,6 +307,18 @@ tst_mount()
 	if [ $ret -ne 0 ]; then
 		tst_brk TBROK "Failed to mount device${mnt_err}: mount exit = $ret"
 	fi
+
+	mnt_real="$(grep -E "$TST_MNTPOINT ($TST_FS_TYPE|fuseblk)" /proc/mounts | awk 'NR==1{print $3}')"
+	case $mnt_real in
+		'') tst_brk TBROK 'Failed to found filesystem type in /proc/mounts';;
+		'fuseblk') TST_FS_TYPE_FUSE=1;;
+		*)
+			if [ "$mnt_real" != "$TST_FS_TYPE" ]; then
+				tst_brk TBROK "$mnt_real: unsupported type in /proc/mounts"
+			fi
+			TST_FS_TYPE_FUSE=
+		;;
+		esac
 }
 
 tst_umount()
@@ -636,7 +648,7 @@ tst_run()
 			OPTS|USAGE|PARSE_ARGS|POS_ARGS);;
 			NEEDS_ROOT|NEEDS_TMPDIR|TMPDIR|NEEDS_DEVICE|DEVICE);;
 			NEEDS_CMDS|NEEDS_MODULE|MODPATH|DATAROOT);;
-			NEEDS_DRIVERS|FS_TYPE|MNTPOINT|MNT_PARAMS);;
+			NEEDS_DRIVERS|FS_TYPE|FS_TYPE_FUSE|MNTPOINT|MNT_PARAMS);;
 			NEEDS_KCONFIGS|NEEDS_KCONFIGS_IFS);;
 			IPV6|IPV6_FLAG|IPVER|TEST_DATA|TEST_DATA_IFS);;
 			RETRY_FUNC|RETRY_FN_EXP_BACKOFF|TIMEOUT);;
