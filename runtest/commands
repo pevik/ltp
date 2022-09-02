@@ -16,15 +16,6 @@ mv01_sh mv_tests.sh
 du01_sh du01.sh
 df01_sh df01.sh
 mkfs01_sh mkfs01.sh
-mkfs01_ext2_sh mkfs01.sh -f ext2
-mkfs01_ext3_sh mkfs01.sh -f ext3
-mkfs01_ext4_sh mkfs01.sh -f ext4
-mkfs01_xfs_sh mkfs01.sh -f xfs
-mkfs01_btrfs_sh mkfs01.sh -f btrfs
-mkfs01_minix_sh mkfs01.sh -f minix
-mkfs01_msdos_sh mkfs01.sh -f msdos
-mkfs01_vfat_sh mkfs01.sh -f vfat
-mkfs01_ntfs_sh mkfs01.sh -f ntfs
 mkswap01_sh mkswap01.sh
 which01_sh which01.sh
 lsmod01_sh lsmod01.sh

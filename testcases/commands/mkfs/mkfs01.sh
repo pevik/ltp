@@ -1,36 +1,17 @@
 #!/bin/sh
 # SPDX-License-Identifier: GPL-2.0-or-later
+# Copyright (c) Linux Test Project, 2015-2022
 # Copyright (c) 2015 Fujitsu Ltd.
 # Author: Guangwen Feng <fenggw-fnst@cn.fujitsu.com>
 #
 # Test mkfs command with some basic options.
 
+TST_ALL_FILESYSTEMS=1
 TST_CNT=5
 TST_SETUP=setup
 TST_TESTFUNC=test
-TST_OPTS="f:"
-TST_USAGE=usage
-TST_PARSE_ARGS=parse_args
 TST_NEEDS_ROOT=1
-TST_NEEDS_DEVICE=1
 TST_NEEDS_CMDS="blkid df"
-
-usage()
-{
-	cat << EOF
-usage: $0 [-f <ext2|ext3|ext4|vfat|...>]
-
-OPTIONS
--f	Specify the type of filesystem to be built.  If not
-	specified, the default filesystem type (currently ext2)
-	is used.
-EOF
-}
-
-parse_args()
-{
-	TST_FS_TYPE="$2"
-}
 
 setup()
 {
