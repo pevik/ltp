@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
 {
 	const char *skiplist[] = {"tmpfs", NULL};
 	const char *const *filesystems;
-	int i;
+	int i, ret;
 
 	if (argc > 2) {
 		fprintf(stderr, "Can't specify multiple fs_type\n");
@@ -37,10 +37,20 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
-	if (argv[1])
-		return !tst_fs_is_supported(argv[1]);
+	if (argv[1]) {
+		ret = tst_fs_is_supported(argv[1]);
+
+		if (ret == TST_FS_UNSUPPORTED)
+			tst_brk(TCONF, "%s is not supported", argv[optind]);
+
+		return !ret;
+	}
 
 	filesystems = tst_get_supported_fs_types(skiplist);
+
+	if (!filesystems[0])
+		tst_brk(TCONF, "There are no supported filesystems");
+
 	for (i = 0; filesystems[i]; i++)
 		printf("%s\n", filesystems[i]);
 
