@@ -462,8 +462,6 @@ static void cleanup(void)
 
 	if (sk >= 0)
 		close(sk);
-
-	tst_reap_children();
 }
 
 static struct tst_test test = {

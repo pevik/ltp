@@ -128,7 +128,6 @@ static void setup(void)
 
 static void cleanup(void)
 {
-	tst_reap_children();
 	if (new_pidfd > 0)
 		SAFE_CLOSE(new_pidfd);
 	if (pidfd > 0)
