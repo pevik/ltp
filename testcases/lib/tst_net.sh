@@ -883,6 +883,17 @@ tst_ping()
 	echo "$dst_addr" | grep -q ':' && cmd="ping6"
 	tst_require_cmds $cmd
 
+	# FIXME: debug
+	#cmd="strace -o /tmp/ping.$$ $cmd" # FIXME: debug
+	#cmd="strace $cmd" # FIXME: debug
+
+	echo "lhost: ip addr show $(tst_iface)"
+	ip addr show $(tst_iface)
+
+	echo "rhost: ip addr show $(tst_iface rhost)"
+	tst_rhost_run -c "ip addr show $(tst_iface rhost)"
+	# FIXME: debug
+
 	if tst_ping_opt_unsupported $flood_opt; then
 		flood_opt="-i 0.01"
 		[ "$pattern_opt" ] && pattern_opt="-p aa"
@@ -893,7 +904,8 @@ tst_ping()
 
 	# ping cmd use 56 as default message size
 	for size in ${msg_sizes:-"56"}; do
-		EXPECT_PASS $cmd -I $src_iface -c $ping_count -s $size \
+		echo "EXPECT_PASS_BRK $cmd -I $src_iface -c $ping_count -s $size $flood_opt $pattern_opt $dst_addr" # FIXME: debug
+		EXPECT_PASS_BRK $cmd -I $src_iface -c $ping_count -s $size \
 			$flood_opt $pattern_opt $dst_addr \>/dev/null
 		ret=$?
 		[ "$ret" -ne 0 ] && break

@@ -159,6 +159,7 @@ _tst_expect_pass()
 	local fnc="$1"
 	shift
 
+	echo "tst_rod $@" # FIXME: debug
 	tst_rod "$@"
 	if [ $? -eq 0 ]; then
 		tst_res TPASS "$@ passed as expected"
