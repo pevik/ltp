@@ -348,10 +348,9 @@ require_evmctl()
 	fi
 }
 
-. tst_test.sh
-
 # loop device is needed to use only for tmpfs
 TMPDIR="${TMPDIR:-/tmp}"
 if [ "$(df -T $TMPDIR | tail -1 | awk '{print $2}')" != "tmpfs" -a -n "$TST_NEEDS_DEVICE" ]; then
 	unset TST_NEEDS_DEVICE
 fi
+. tst_test.sh
