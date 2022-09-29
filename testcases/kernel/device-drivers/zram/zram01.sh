@@ -41,9 +41,13 @@ initialize_vars()
 	for fs in $(tst_supported_fs -s tmpfs); do
 		size="26214400"
 		limit="25M"
+
 		if [ "$fs" = "btrfs" ]; then
-			check_space_for_btrfs || continue
+			check_space_for_btrfs "$fs" || continue
 			size="402653184"
+			limit="$((size/1024/1024))M"
+		elif [ "$fs" = "xfs" ]; then
+			size=314572800
 			limit="$((size/1024/1024))M"
 		fi
 
