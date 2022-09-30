@@ -6,7 +6,13 @@ TST_MOUNT_DEVICE=1
 TST_NEEDS_ROOT=1
 TST_FS_TYPE=ext4
 TST_TESTFUNC=test
+TST_CLEANUP=do_cleanup
 TST_CNT=3
+
+do_cleanup()
+{
+	tst_res TINFO "run cleanup"
+}
 
 test1()
 {
