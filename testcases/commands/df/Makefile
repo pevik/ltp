@@ -4,8 +4,9 @@
 
 top_srcdir		?= ../../..
 
-include $(top_srcdir)/include/mk/env_pre.mk
+include $(top_srcdir)/include/mk/testcases.mk
 
 INSTALL_TARGETS		:= df01.sh
+MAKE_TARGETS		:= df01_fsfreeze
 
 include $(top_srcdir)/include/mk/generic_leaf_target.mk
