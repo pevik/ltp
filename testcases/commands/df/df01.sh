@@ -46,6 +46,15 @@ df_test()
 
 	ROD_SILENT rm -rf $TST_MNTPOINT/testimg
 
+	if [ "$fs" = "xfs" ]; then
+		# Ensure free space change can be seen by statfs
+		#fsfreeze -f $TST_MNTPOINT
+		#fsfreeze -u $TST_MNTPOINT
+		echo "df01_fsfreeze $TST_MNTPOINT" # FIXME: debug
+		ROD df01_fsfreeze $TST_MNTPOINT
+		echo $? # FIXME: debug
+	fi
+
 	# flush file system buffers, then we can get the actual sizes.
 	sync
 }
