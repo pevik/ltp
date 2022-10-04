@@ -86,46 +86,36 @@
 #endif
 #define roundup(x, y)	((((x)+((y)-1))/(y))*(y))
 
-extern time_t time(time_t *);
-extern char *ctime(const time_t *);
-extern void *malloc(size_t);
-extern long lrand48(void);
-extern void srand(unsigned int);
-extern void srand48(long);
-extern int rand(void);
-extern int atoi(const char *);
-
 static char *usage =
-    "-p nprocs [-t minutes -f filesize -S sparseoffset -r -o -m -l -d]";
+	"-p nprocs [-t minutes -f filesize -S sparseoffset -r -o -m -l -d]";
 
 static unsigned int initrand(void);
 static void finish(int sig);
 static void child_mapper(char *file, unsigned int procno, unsigned int nprocs);
 static int fileokay(char *file, unsigned char *expbuf);
-static int finished = 0;
-static int leavefile = 0;
+static int finished;
+static int leavefile;
 
-static float alarmtime = 0;
-static unsigned int nprocs = 0;
+static float alarmtime;
+static unsigned int nprocs;
 
-static pid_t *pidarray = NULL;
+static pid_t *pidarray;
 static int wait_stat;
 static int check_for_sanity;
-static unsigned char *buf = NULL;
+static unsigned char *buf;
 
-
-static int debug = 0;
+static int debug;
 #ifdef LARGE_FILE
 static off64_t filesize = FILESIZE;
-static off64_t sparseoffset = 0;
+static off64_t sparseoffset;
 #else /* LARGE_FILE */
 static off_t filesize = FILESIZE;
-static off_t sparseoffset = 0;
+static off_t sparseoffset;
 #endif /* LARGE_FILE */
-static unsigned int randloops = 0;
-static unsigned int dosync = 0;
-static unsigned int do_offset = 0;
-static unsigned int pattern = 0;
+static unsigned int randloops;
+static unsigned int dosync;
+static unsigned int do_offset;
+static unsigned int pattern;
 
 int main(int argc, char *argv[])
 {
@@ -148,9 +138,8 @@ int main(int argc, char *argv[])
 #endif /* LARGE_FILE */
 
 	progname = *argv;
-	if (argc < 2) {
+	if (argc < 2)
 		tst_brk(TBROK, "usage: %s %s", progname, usage);
-	}
 
 	while ((c = getopt(argc, argv, "S:omdlrf:p:t:")) != -1) {
 		switch (c) {
@@ -192,7 +181,7 @@ int main(int argc, char *argv[])
 #endif /* LARGE_FILE */
 			if (sparseoffset % pagesize != 0)
 				tst_brk(TBROK,
-				        "sparseoffset must be pagesize multiple");
+					"sparseoffset must be pagesize multiple");
 			break;
 		default:
 			tst_brk(TBROK, "usage: %s %s", progname, usage);
@@ -208,15 +197,15 @@ int main(int argc, char *argv[])
 
 	if (debug) {
 #ifdef LARGE_FILE
-		tst_res(TINFO, "creating file <%s> with %Ld bytes, pattern %d",
-		        TEST_FILE, filesize, pattern);
+		tst_res(TINFO, "creating file <%s> with %lld bytes, pattern %d",
+			TEST_FILE, filesize, pattern);
 #else /* LARGE_FILE */
 		tst_res(TINFO, "creating file <%s> with %ld bytes, pattern %d",
-		        TEST_FILE, filesize, pattern);
+			TEST_FILE, filesize, pattern);
 #endif /* LARGE_FILE */
 		if (alarmtime)
 			tst_res(TINFO, "running for %f minutes",
-			        alarmtime / 60);
+				alarmtime / 60);
 		else
 			tst_res(TINFO, "running with no time limit");
 	}
@@ -280,7 +269,7 @@ int main(int argc, char *argv[])
 				tst_res(TINFO, "write error");
 			else
 				tst_res(TINFO, "write: wrote %d of %d bytes",
-				        c, write_cnt);
+					c, write_cnt);
 			(void)close(fd);
 			(void)unlink(TEST_FILE);
 			tst_brk(TFAIL, "write error");
@@ -329,13 +318,13 @@ int main(int argc, char *argv[])
 			if (!WIFEXITED(wait_stat)
 			    || WEXITSTATUS(wait_stat) != 0)
 				tst_brk(TFAIL, "child exit with err <x%x>",
-				        wait_stat);
+					wait_stat);
 			for (i = 0; i < nprocs; i++)
 				if (pid == pidarray[i])
 					break;
 			if (i == nprocs)
 				tst_brk(TFAIL, "unknown child pid %d, <x%x>",
-				        pid, wait_stat);
+					pid, wait_stat);
 
 			if ((pid = fork()) == -1) {
 				pidarray[i] = 0;
@@ -449,6 +438,7 @@ void child_mapper(char *file, unsigned int procno, unsigned int nprocs)
 	if (do_offset) {
 		int pageoffset = lrand48() % mappages;
 		int byteoffset = pageoffset * pagesize;
+
 		offset += byteoffset;
 		mapsize -= byteoffset;
 		mappages -= pageoffset;
@@ -457,14 +447,14 @@ void child_mapper(char *file, unsigned int procno, unsigned int nprocs)
 
 	if (debug)
 		tst_res(TINFO, "child %d (pid %d): seed %d, fsize %lld, mapsize %ld, off %lld, loop %d",
-		        procno, getpid(), seed, filesize, (long)mapsize,
-		        offset / pagesize, nloops);
+			procno, getpid(), seed, filesize, (long)mapsize,
+			offset / pagesize, nloops);
 #ifdef LARGE_FILE
 	if ((maddr = mmap64(0, mapsize, PROT_READ | PROT_WRITE, MAP_SHARED,
-	                    fd, (off64_t)offset)) == (caddr_t) - 1)
+			    fd, (off64_t)offset)) == (caddr_t) - 1)
 #else /* LARGE_FILE */
 	if ((maddr = mmap(0, mapsize, PROT_READ | PROT_WRITE, MAP_SHARED,
-	                  fd, (off_t)offset)) == (caddr_t) - 1)
+			  fd, (off_t)offset)) == (caddr_t) - 1)
 #endif /* LARGE_FILE */
 		tst_brk(TFAIL, "mmap error");
 
@@ -486,9 +476,9 @@ void child_mapper(char *file, unsigned int procno, unsigned int nprocs)
 			if (*((unsigned char *)(paddr + i))
 			    != ((procno + pattern) & 0xff))
 				tst_brk(TFAIL, "child %d: invalid data <x%x>\n"
-				        " at pg %d off %d, exp <x%x>", procno,
-				        *((unsigned char *)(paddr + i)),
-				        randpage, i, (procno + pattern) & 0xff);
+					" at pg %d off %d, exp <x%x>", procno,
+					*((unsigned char *)(paddr + i)),
+					randpage, i, (procno + pattern) & 0xff);
 
 			/*
 			 *  Now write it.
@@ -503,7 +493,7 @@ void child_mapper(char *file, unsigned int procno, unsigned int nprocs)
 		randpage = lrand48() % mappages;
 		paddr = maddr + (randpage * pagesize);	/* page address */
 		if (msync(paddr, (mappages - randpage) * pagesize,
-		          MS_SYNC) == -1)
+			  MS_SYNC) == -1)
 			tst_brk(TFAIL, "msync failed");
 	}
 	if (munmap(maddr, mapsize) == -1)
@@ -566,7 +556,7 @@ int fileokay(char *file, unsigned char *expbuf)
 			 */
 			if ((i * pagesize) + cnt != mapsize) {
 				tst_res(TINFO, "read %d of %ld bytes",
-				        (i * pagesize) + cnt, (long)mapsize);
+					(i * pagesize) + cnt, (long)mapsize);
 				close(fd);
 				return 0;
 			}
@@ -577,13 +567,13 @@ int fileokay(char *file, unsigned char *expbuf)
 		for (j = 0; j < (unsigned int)cnt; j++) {
 			if (expbuf[j] != readbuf[j]) {
 				tst_res(TINFO, "read bad data: exp %c got %c)",
-				        expbuf[j], readbuf[j]);
+					expbuf[j], readbuf[j]);
 #ifdef LARGE_FILE
 				tst_res(TINFO, ", pg %d off %d, "
-				        "(fsize %Ld)", i, j, statbuf.st_size);
+					"(fsize %lld)", i, j, statbuf.st_size);
 #else /* LARGE_FILE */
 				tst_res(TINFO, ", pg %d off %d, "
-				        "(fsize %ld)", i, j, statbuf.st_size);
+					"(fsize %ld)", i, j, statbuf.st_size);
 #endif /* LARGE_FILE */
 				close(fd);
 				return 0;
@@ -598,7 +588,6 @@ int fileokay(char *file, unsigned char *expbuf)
 void finish(int sig LTP_ATTRIBUTE_UNUSED)
 {
 	finished++;
-	return;
 }
 
 unsigned int initrand(void)
@@ -617,8 +606,8 @@ unsigned int initrand(void)
 	seed = rand();
 	srand((unsigned int)time(NULL));
 	seed = (seed ^ rand()) % 100000;
-	srand48((long int)seed);
-	return (seed);
+	srand48((long)seed);
+	return seed;
 }
 
 static struct tst_test test = {
