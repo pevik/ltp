@@ -227,12 +227,7 @@ static void run(void)
 	 *  Fork off mmap children.
 	 */
 	for (procno = 0; procno < nprocs; procno++) {
-		switch (pid = fork()) {
-
-		case -1:
-			tst_brk(TFAIL, "fork error");
-			break;
-
+		switch (pid = SAFE_FORK()) {
 		case 0:
 			child_mapper(TEST_FILE, (unsigned int)procno, (unsigned int)nprocs);
 			exit(0);
@@ -273,10 +268,8 @@ static void run(void)
 				tst_brk(TFAIL, "unknown child pid %d, <x%x>",
 					pid, wait_stat);
 
-			if ((pid = fork()) == -1) {
-				pidarray[i] = 0;
-				tst_brk(TFAIL, "fork error");
-			} else if (pid == 0) {	/* child */
+			pid = SAFE_FORK();
+			if (pid == 0) {	/* child */
 				child_mapper(TEST_FILE, (unsigned int)i, (unsigned int)nprocs);
 				exit(0);
 			} else {
@@ -485,4 +478,5 @@ static struct tst_test test = {
 	.options = options,
 	.cleanup = cleanup,
 	.needs_tmpdir = 1,
+	.forks_child = 1,
 };
