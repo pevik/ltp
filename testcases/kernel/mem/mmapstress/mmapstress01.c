@@ -72,26 +72,27 @@
 #define roundup(x, y)	((((x)+((y)-1))/(y))*(y))
 
 static unsigned int initrand(void);
-static void finish(int sig);
 static void child_mapper(char *file, unsigned int procno, unsigned int nprocs);
 static void fileokay(char *file, unsigned char *expbuf);
+static void sighandler(int sig);
 
 static char *debug;
 static char *do_sync;
 static char *do_offset;
-static char *randloops;
+static char *opt_alarmtime;
 static char *opt_filesize;
 static char *opt_nprocs;
 static char *opt_sparseoffset;
-static char *opt_alarmtime;
+static char *randloops;
 
 static int fd;
-static float alarmtime;
+static int finished;
 static int nprocs;
+static float alarmtime;
 static long long filesize = FILESIZE;
 static long long sparseoffset;
+static size_t pagesize;
 static unsigned int pattern;
-static int finished;
 
 static struct tst_option options[] = {
 	{"d", &debug, "Enable debug output"},
@@ -152,138 +153,6 @@ static void setup(void)
 	alarmtime *= 60;
 }
 
-static void run(void)
-{
-	int c;
-	int procno;
-	pid_t pid;
-	unsigned int seed;
-	int pagesize = sysconf(_SC_PAGE_SIZE);
-	struct sigaction sa;
-	int i;
-	int write_cnt;
-	unsigned char data;
-	off_t bytes_left;
-	sigset_t set_mask;
-	pid_t *pidarray = NULL;
-	int wait_stat;
-	unsigned char *buf;
-
-	seed = initrand();
-	pattern = seed & 0xff;
-
-	/*
-	 *  Plan for death by signal.  User may have specified
-	 *  a time limit, in which set an alarm and catch SIGALRM.
-	 *  Also catch and cleanup with SIGINT.
-	 */
-	sa.sa_handler = finish;
-	sa.sa_flags = 0;
-	SAFE_SIGEMPTYSET(&sa.sa_mask);
-	SAFE_SIGACTION(SIGINT, &sa, 0);
-	SAFE_SIGACTION(SIGQUIT, &sa, 0);
-	SAFE_SIGACTION(SIGTERM, &sa, 0);
-
-	if (alarmtime) {
-		SAFE_SIGACTION(SIGALRM, &sa, 0);
-		(void)alarm(alarmtime);
-	}
-	fd = SAFE_OPEN(TEST_FILE, O_CREAT | O_TRUNC | O_RDWR, 0664);
-
-	buf = SAFE_MALLOC(pagesize);
-	pidarray = SAFE_MALLOC(nprocs * sizeof(pid_t));
-
-	for (i = 0; i < nprocs; i++)
-		*(pidarray + i) = 0;
-
-	for (i = 0, data = 0; i < pagesize; i++) {
-		*(buf + i) = (data + pattern) & 0xff;
-		if (++data == nprocs)
-			data = 0;
-	}
-	SAFE_LSEEK(fd, (off_t)sparseoffset, SEEK_SET);
-	for (bytes_left = filesize; bytes_left; bytes_left -= c) {
-		write_cnt = MIN(pagesize, (int)bytes_left);
-		c = SAFE_WRITE(1, fd, buf, write_cnt);
-	}
-	SAFE_CLOSE(fd);
-
-	/*
-	 *  Fork off mmap children.
-	 */
-	for (procno = 0; procno < nprocs; procno++) {
-		switch (pid = SAFE_FORK()) {
-		case 0:
-			child_mapper(TEST_FILE, (unsigned int)procno, (unsigned int)nprocs);
-			exit(0);
-
-		default:
-			pidarray[procno] = pid;
-		}
-	}
-
-	/*
-	 *  Now wait for children and refork them as needed.
-	 */
-
-	SAFE_SIGEMPTYSET(&set_mask);
-	SAFE_SIGADDSET(&set_mask, SIGALRM);
-	SAFE_SIGADDSET(&set_mask, SIGINT);
-	while (!finished) {
-		pid = wait(&wait_stat);
-		/*
-		 *  Block signals while processing child exit.
-		 */
-
-		SAFE_SIGPROCMASK(SIG_BLOCK, &set_mask, NULL);
-
-		if (pid != -1) {
-			/*
-			 *  Check exit status, then refork with the
-			 *  appropriate procno.
-			 */
-			if (!WIFEXITED(wait_stat)
-			    || WEXITSTATUS(wait_stat) != 0)
-				tst_brk(TFAIL, "child exit with err <x%x>",
-					wait_stat);
-			for (i = 0; i < nprocs; i++)
-				if (pid == pidarray[i])
-					break;
-			if (i == nprocs)
-				tst_brk(TFAIL, "unknown child pid %d, <x%x>",
-					pid, wait_stat);
-
-			pid = SAFE_FORK();
-			if (pid == 0) {	/* child */
-				child_mapper(TEST_FILE, (unsigned int)i, (unsigned int)nprocs);
-				exit(0);
-			} else {
-				pidarray[i] = pid;
-			}
-		} else {
-			/*
-			 *  wait returned an error.  If EINTR, then
-			 *  normal finish, else it's an unexpected
-			 *  error...
-			 */
-			if (errno != EINTR || !finished)
-				tst_brk(TFAIL, "unexpected wait error");
-		}
-		SAFE_SIGPROCMASK(SIG_UNBLOCK, &set_mask, NULL);
-	}
-
-	SAFE_SIGEMPTYSET(&set_mask);
-	SAFE_SIGADDSET(&set_mask, SIGALRM);
-	SAFE_SIGPROCMASK(SIG_BLOCK, &set_mask, NULL);
-	(void)alarm(0);
-
-	/*
-	 *  Finished!  Check the file for sanity.
-	 */
-	fileokay(TEST_FILE, buf);
-	tst_res(TPASS, "file has expected data");
-}
-
 static void cleanup(void)
 {
 	if (fd > 0)
@@ -305,7 +174,6 @@ static void child_mapper(char *file, unsigned int procno, unsigned int nprocs)
 	size_t validsize;
 	size_t mapsize;
 	char *maddr = NULL, *paddr;
-	size_t pagesize = sysconf(_SC_PAGE_SIZE);
 	unsigned int randpage;
 	unsigned int seed;
 	unsigned int loopcnt;
@@ -389,13 +257,13 @@ static void child_mapper(char *file, unsigned int procno, unsigned int nprocs)
  */
 static void fileokay(char *file, unsigned char *expbuf)
 {
-	struct stat statbuf;
+	int cnt;
 	size_t mapsize;
+	struct stat statbuf;
+	unsigned char readbuf[pagesize];
+	unsigned int i, j;
 	unsigned int mappages;
 	unsigned int pagesize = sysconf(_SC_PAGE_SIZE);
-	unsigned char readbuf[pagesize];
-	int cnt;
-	unsigned int i, j;
 
 	fd = SAFE_OPEN(file, O_RDONLY);
 
@@ -432,7 +300,7 @@ static void fileokay(char *file, unsigned char *expbuf)
 	SAFE_CLOSE(fd);
 }
 
-static void finish(int sig LTP_ATTRIBUTE_UNUSED)
+static void sighandler(int sig LTP_ATTRIBUTE_UNUSED)
 {
 	finished++;
 }
@@ -455,6 +323,138 @@ static unsigned int initrand(void)
 	seed = (seed ^ rand()) % 100000;
 	srand48((long)seed);
 	return seed;
+}
+
+static void run(void)
+{
+	int c;
+	int i;
+	int procno;
+	int wait_stat;
+	off_t bytes_left;
+	pid_t pid;
+	pid_t *pidarray = NULL;
+	sigset_t set_mask;
+	size_t write_cnt;
+	struct sigaction sa;
+	unsigned char data;
+	unsigned char *buf;
+	unsigned int seed;
+
+	pagesize = sysconf(_SC_PAGE_SIZE);
+	seed = initrand();
+	pattern = seed & 0xff;
+
+	/*
+	 *  Plan for death by signal.  User may have specified
+	 *  a time limit, in which set an alarm and catch SIGALRM.
+	 *  Also catch and cleanup with SIGINT.
+	 */
+	sa.sa_handler = sighandler;
+	sa.sa_flags = 0;
+	SAFE_SIGEMPTYSET(&sa.sa_mask);
+	SAFE_SIGACTION(SIGINT, &sa, 0);
+	SAFE_SIGACTION(SIGQUIT, &sa, 0);
+	SAFE_SIGACTION(SIGTERM, &sa, 0);
+
+	if (alarmtime) {
+		SAFE_SIGACTION(SIGALRM, &sa, 0);
+		(void)alarm(alarmtime);
+	}
+	fd = SAFE_OPEN(TEST_FILE, O_CREAT | O_TRUNC | O_RDWR, 0664);
+
+	buf = SAFE_MALLOC(pagesize);
+	pidarray = SAFE_MALLOC(nprocs * sizeof(pid_t));
+
+	for (i = 0; i < nprocs; i++)
+		*(pidarray + i) = 0;
+
+	for (i = 0, data = 0; i < (int)pagesize; i++) {
+		*(buf + i) = (data + pattern) & 0xff;
+		if (++data == nprocs)
+			data = 0;
+	}
+	SAFE_LSEEK(fd, (off_t)sparseoffset, SEEK_SET);
+	for (bytes_left = filesize; bytes_left; bytes_left -= c) {
+		write_cnt = MIN((long long)pagesize, (long long)bytes_left);
+		c = SAFE_WRITE(1, fd, buf, write_cnt);
+	}
+	SAFE_CLOSE(fd);
+
+	/*
+	 *  Fork off mmap children.
+	 */
+	for (procno = 0; procno < nprocs; procno++) {
+		switch (pid = SAFE_FORK()) {
+		case 0:
+			child_mapper(TEST_FILE, (unsigned int)procno, (unsigned int)nprocs);
+			exit(0);
+
+		default:
+			pidarray[procno] = pid;
+		}
+	}
+
+	/*
+	 *  Now wait for children and refork them as needed.
+	 */
+
+	SAFE_SIGEMPTYSET(&set_mask);
+	SAFE_SIGADDSET(&set_mask, SIGALRM);
+	SAFE_SIGADDSET(&set_mask, SIGINT);
+	while (!finished) {
+		pid = wait(&wait_stat);
+		/*
+		 *  Block signals while processing child exit.
+		 */
+
+		SAFE_SIGPROCMASK(SIG_BLOCK, &set_mask, NULL);
+
+		if (pid != -1) {
+			/*
+			 *  Check exit status, then refork with the
+			 *  appropriate procno.
+			 */
+			if (!WIFEXITED(wait_stat)
+			    || WEXITSTATUS(wait_stat) != 0)
+				tst_brk(TFAIL, "child exit with err <x%x>",
+					wait_stat);
+			for (i = 0; i < nprocs; i++)
+				if (pid == pidarray[i])
+					break;
+			if (i == nprocs)
+				tst_brk(TFAIL, "unknown child pid %d, <x%x>",
+					pid, wait_stat);
+
+			pid = SAFE_FORK();
+			if (pid == 0) {	/* child */
+				child_mapper(TEST_FILE, (unsigned int)i, (unsigned int)nprocs);
+				exit(0);
+			} else {
+				pidarray[i] = pid;
+			}
+		} else {
+			/*
+			 *  wait returned an error.  If EINTR, then
+			 *  normal finish, else it's an unexpected
+			 *  error...
+			 */
+			if (errno != EINTR || !finished)
+				tst_brk(TFAIL, "unexpected wait error");
+		}
+		SAFE_SIGPROCMASK(SIG_UNBLOCK, &set_mask, NULL);
+	}
+
+	SAFE_SIGEMPTYSET(&set_mask);
+	SAFE_SIGADDSET(&set_mask, SIGALRM);
+	SAFE_SIGPROCMASK(SIG_BLOCK, &set_mask, NULL);
+	(void)alarm(0);
+
+	/*
+	 *  Finished!  Check the file for sanity.
+	 */
+	fileokay(TEST_FILE, buf);
+	tst_res(TPASS, "file has expected data");
 }
 
 static struct tst_test test = {
