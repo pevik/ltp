@@ -139,14 +139,14 @@ static void setup(void)
 		tst_brk(TBROK,
 			"missing number of mapping children, specify with -p nprocs");
 
-#ifdef LARGE_FILE
+#if _FILE_OFFSET_BITS == 64
 	if (tst_parse_filesize(opt_filesize, &filesize, 0, LONG_MAX))
 #else
 	if (tst_parse_filesize(opt_filesize, &filesize, 0, INT_MAX))
 #endif
 		tst_brk(TBROK, "invalid initial filesize '%s'", opt_filesize);
 
-#ifdef LARGE_FILE
+#if _FILE_OFFSET_BITS == 64
 	if (tst_parse_filesize(opt_sparseoffset, &sparseoffset, LONG_MIN, LONG_MAX))
 #else
 	if (tst_parse_filesize(opt_sparseoffset, &sparseoffset, INT_MIN, INT_MAX))
@@ -185,11 +185,7 @@ static void run(void)
 	int i;
 	int write_cnt;
 	unsigned char data;
-#ifdef LARGE_FILE
-	off64_t bytes_left;
-#else /* LARGE_FILE */
 	off_t bytes_left;
-#endif /* LARGE_FILE */
 
 	seed = initrand();
 	pattern = seed & 0xff;
@@ -216,13 +212,8 @@ static void run(void)
 			tst_brk(TFAIL, "sigaction error");
 		(void)alarm(alarmtime);
 	}
-#ifdef LARGE_FILE
-	if ((fd = open64(TEST_FILE, O_CREAT | O_TRUNC | O_RDWR, 0664)) == -1) {
-#else /* LARGE_FILE */
-	if ((fd = open(TEST_FILE, O_CREAT | O_TRUNC | O_RDWR, 0664)) == -1) {
-#endif /* LARGE_FILE */
+	if ((fd = open(TEST_FILE, O_CREAT | O_TRUNC | O_RDWR, 0664)) == -1)
 		tst_brk(TFAIL, "open error");
-	}
 
 	if ((buf = malloc(pagesize)) == NULL
 	    || (pidarray = malloc(nprocs * sizeof(pid_t))) == NULL) {
@@ -237,13 +228,8 @@ static void run(void)
 		if (++data == nprocs)
 			data = 0;
 	}
-#ifdef LARGE_FILE
-	if (lseek64(fd, (off64_t)sparseoffset, SEEK_SET) < 0) {
-#else /* LARGE_FILE */
-	if (lseek(fd, (off_t)sparseoffset, SEEK_SET) < 0) {
-#endif /* LARGE_FILE */
+	if (lseek(fd, (off_t)sparseoffset, SEEK_SET) < 0)
 		tst_brk(TFAIL, "lseek");
-	}
 	for (bytes_left = filesize; bytes_left; bytes_left -= c) {
 		write_cnt = MIN(pagesize, (int)bytes_left);
 		if ((c = write(fd, buf, write_cnt)) != write_cnt) {
@@ -374,15 +360,9 @@ static void cleanup(void)
  */
 void child_mapper(char *file, unsigned int procno, unsigned int nprocs)
 {
-#ifdef LARGE_FILE
-	struct stat64 statbuf;
-	off64_t filesize;
-	off64_t offset;
-#else /* LARGE_FILE */
 	struct stat statbuf;
 	off_t filesize;
 	off_t offset;
-#endif /* LARGE_FILE */
 	size_t validsize;
 	size_t mapsize;
 	char *maddr = NULL, *paddr;
@@ -397,19 +377,11 @@ void child_mapper(char *file, unsigned int procno, unsigned int nprocs)
 
 	seed = initrand();	/* initialize random seed */
 
-#ifdef LARGE_FILE
-	if (stat64(file, &statbuf) == -1)
-#else /* LARGE_FILE */
 	if (stat(file, &statbuf) == -1)
-#endif /* LARGE_FILE */
 		tst_brk(TFAIL, "stat error");
 	filesize = statbuf.st_size;
 
-#ifdef LARGE_FILE
-	if ((fd = open64(file, O_RDWR)) == -1)
-#else /* LARGE_FILE */
 	if ((fd = open(file, O_RDWR)) == -1)
-#endif /* LARGE_FILE */
 		tst_brk(TFAIL, "open error");
 
 	if (statbuf.st_size - sparseoffset > UINT_MAX)
@@ -431,13 +403,8 @@ void child_mapper(char *file, unsigned int procno, unsigned int nprocs)
 		tst_res(TINFO, "child %d (pid %d): seed %d, fsize %lld, mapsize %ld, off %lld, loop %d",
 			procno, getpid(), seed, (long long)filesize,
 			(long)mapsize, (long long)offset / pagesize, nloops);
-#ifdef LARGE_FILE
-	if ((maddr = mmap64(0, mapsize, PROT_READ | PROT_WRITE, MAP_SHARED,
-			    fd, offset)) == (caddr_t) - 1)
-#else /* LARGE_FILE */
 	if ((maddr = mmap(0, mapsize, PROT_READ | PROT_WRITE, MAP_SHARED,
 			  fd, offset)) == (caddr_t) - 1)
-#endif /* LARGE_FILE */
 		tst_brk(TFAIL, "mmap error");
 
 	(void)close(fd);
@@ -488,11 +455,7 @@ void child_mapper(char *file, unsigned int procno, unsigned int nprocs)
  */
 int fileokay(char *file, unsigned char *expbuf)
 {
-#ifdef LARGE_FILE
-	struct stat64 statbuf;
-#else /* LARGE_FILE */
 	struct stat statbuf;
-#endif /* LARGE_FILE */
 	size_t mapsize;
 	unsigned int mappages;
 	unsigned int pagesize = sysconf(_SC_PAGE_SIZE);
@@ -501,25 +464,13 @@ int fileokay(char *file, unsigned char *expbuf)
 	int cnt;
 	unsigned int i, j;
 
-#ifdef LARGE_FILE
-	if ((fd = open64(file, O_RDONLY)) == -1)
-#else /* LARGE_FILE */
 	if ((fd = open(file, O_RDONLY)) == -1)
-#endif /* LARGE_FILE */
 		tst_brk(TFAIL, "open error");
 
-#ifdef LARGE_FILE
-	if (fstat64(fd, &statbuf) == -1)
-#else /* LARGE_FILE */
 	if (fstat(fd, &statbuf) == -1)
-#endif /* LARGE_FILE */
 		tst_brk(TFAIL, "stat error");
 
-#ifdef LARGE_FILE
-	if (lseek64(fd, sparseoffset, SEEK_SET) < 0)
-#else /* LARGE_FILE */
 	if (lseek(fd, sparseoffset, SEEK_SET) < 0)
-#endif /* LARGE_FILE */
 		tst_brk(TFAIL, "lseek");
 
 	if (statbuf.st_size - sparseoffset > UINT_MAX)
@@ -548,15 +499,10 @@ int fileokay(char *file, unsigned char *expbuf)
 		 */
 		for (j = 0; j < (unsigned int)cnt; j++) {
 			if (expbuf[j] != readbuf[j]) {
-				tst_res(TINFO, "read bad data: exp %c got %c)",
-					expbuf[j], readbuf[j]);
-#ifdef LARGE_FILE
-				tst_res(TINFO, ", pg %d off %d, (fsize %lld)",
-					i, j, statbuf.st_size);
-#else /* LARGE_FILE */
-				tst_res(TINFO, ", pg %d off %d, (fsize %ld)",
-					i, j, statbuf.st_size);
-#endif /* LARGE_FILE */
+				tst_res(TINFO,
+					"read bad data: exp %c got %c, pg %d off %d, (fsize %lld)",
+					expbuf[j], readbuf[j], i, j,
+					(long long)statbuf.st_size);
 				close(fd);
 				return 0;
 			}
