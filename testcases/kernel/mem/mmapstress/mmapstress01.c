@@ -186,6 +186,7 @@ static void run(void)
 	int write_cnt;
 	unsigned char data;
 	off_t bytes_left;
+	sigset_t set_mask;
 
 	seed = initrand();
 	pattern = seed & 0xff;
@@ -197,28 +198,19 @@ static void run(void)
 	 */
 	sa.sa_handler = finish;
 	sa.sa_flags = 0;
-	if (sigemptyset(&sa.sa_mask))
-		tst_brk(TFAIL, "sigemptyset error");
-
-	if (sigaction(SIGINT, &sa, 0) == -1)
-		tst_brk(TFAIL, "sigaction error SIGINT");
-	if (sigaction(SIGQUIT, &sa, 0) == -1)
-		tst_brk(TFAIL, "sigaction error SIGQUIT");
-	if (sigaction(SIGTERM, &sa, 0) == -1)
-		tst_brk(TFAIL, "sigaction error SIGTERM");
+	SAFE_SIGEMPTYSET(&sa.sa_mask);
+	SAFE_SIGACTION(SIGINT, &sa, 0);
+	SAFE_SIGACTION(SIGQUIT, &sa, 0);
+	SAFE_SIGACTION(SIGTERM, &sa, 0);
 
 	if (alarmtime) {
-		if (sigaction(SIGALRM, &sa, 0) == -1)
-			tst_brk(TFAIL, "sigaction error");
+		SAFE_SIGACTION(SIGALRM, &sa, 0);
 		(void)alarm(alarmtime);
 	}
-	if ((fd = open(TEST_FILE, O_CREAT | O_TRUNC | O_RDWR, 0664)) == -1)
-		tst_brk(TFAIL, "open error");
+	fd = SAFE_OPEN(TEST_FILE, O_CREAT | O_TRUNC | O_RDWR, 0664);
 
-	if ((buf = malloc(pagesize)) == NULL
-	    || (pidarray = malloc(nprocs * sizeof(pid_t))) == NULL) {
-		tst_brk(TFAIL, "malloc error");
-	}
+	buf = SAFE_MALLOC(pagesize);
+	pidarray = SAFE_MALLOC(nprocs * sizeof(pid_t));
 
 	for (i = 0; i < nprocs; i++)
 		*(pidarray + i) = 0;
@@ -228,23 +220,12 @@ static void run(void)
 		if (++data == nprocs)
 			data = 0;
 	}
-	if (lseek(fd, (off_t)sparseoffset, SEEK_SET) < 0)
-		tst_brk(TFAIL, "lseek");
+	SAFE_LSEEK(fd, (off_t)sparseoffset, SEEK_SET);
 	for (bytes_left = filesize; bytes_left; bytes_left -= c) {
 		write_cnt = MIN(pagesize, (int)bytes_left);
-		if ((c = write(fd, buf, write_cnt)) != write_cnt) {
-			if (c == -1)
-				tst_res(TINFO, "write error");
-			else
-				tst_res(TINFO, "write: wrote %d of %d bytes",
-					c, write_cnt);
-			(void)close(fd);
-			(void)unlink(TEST_FILE);
-			tst_brk(TFAIL, "write error");
-		}
+		c = SAFE_WRITE(1, fd, buf, write_cnt);
 	}
-
-	(void)close(fd);
+	SAFE_CLOSE(fd);
 
 	/*
 	 *  Fork off mmap children.
@@ -269,14 +250,16 @@ static void run(void)
 	 *  Now wait for children and refork them as needed.
 	 */
 
+	SAFE_SIGEMPTYSET(&set_mask);
+	SAFE_SIGADDSET(&set_mask, SIGALRM);
+	SAFE_SIGADDSET(&set_mask, SIGINT);
 	while (!finished) {
 		pid = wait(&wait_stat);
 		/*
 		 *  Block signals while processing child exit.
 		 */
 
-		if (sighold(SIGALRM) || sighold(SIGINT))
-			tst_brk(TFAIL, "sighold error");
+		SAFE_SIGPROCMASK(SIG_BLOCK, &set_mask, NULL);
 
 		if (pid != -1) {
 			/*
@@ -312,8 +295,7 @@ static void run(void)
 			if (errno != EINTR || !finished)
 				tst_brk(TFAIL, "unexpected wait error");
 		}
-		if (sigrelse(SIGALRM) || sigrelse(SIGINT))
-			tst_brk(TFAIL, "sigrelse error");
+		SAFE_SIGPROCMASK(SIG_UNBLOCK, &set_mask, NULL);
 	}
 
 	/*
@@ -321,8 +303,9 @@ static void run(void)
 	 *  the children and done!.
 	 */
 
-	if (sighold(SIGALRM))
-		tst_brk(TFAIL, "sighold error");
+	SAFE_SIGEMPTYSET(&set_mask);
+	SAFE_SIGADDSET(&set_mask, SIGALRM);
+	SAFE_SIGPROCMASK(SIG_BLOCK, &set_mask, NULL);
 	(void)alarm(0);
 	check_for_sanity = 1;
 	tst_res(TPASS, "finished, cleaning up");
@@ -343,7 +326,7 @@ static void cleanup(void)
 		} else {
 			tst_res(TINFO, "file data okay");
 			if (!leavefile)
-				(void)unlink(TEST_FILE);
+				SAFE_UNLINK(TEST_FILE);
 			tst_res(TPASS, "test passed");
 		}
 	} else {
@@ -377,12 +360,10 @@ void child_mapper(char *file, unsigned int procno, unsigned int nprocs)
 
 	seed = initrand();	/* initialize random seed */
 
-	if (stat(file, &statbuf) == -1)
-		tst_brk(TFAIL, "stat error");
+	SAFE_STAT(file, &statbuf);
 	filesize = statbuf.st_size;
 
-	if ((fd = open(file, O_RDWR)) == -1)
-		tst_brk(TFAIL, "open error");
+	fd = SAFE_OPEN(file, O_RDWR);
 
 	if (statbuf.st_size - sparseoffset > UINT_MAX)
 		tst_brk(TFAIL, "size_t overflow when setting up map");
@@ -403,11 +384,10 @@ void child_mapper(char *file, unsigned int procno, unsigned int nprocs)
 		tst_res(TINFO, "child %d (pid %d): seed %d, fsize %lld, mapsize %ld, off %lld, loop %d",
 			procno, getpid(), seed, (long long)filesize,
 			(long)mapsize, (long long)offset / pagesize, nloops);
-	if ((maddr = mmap(0, mapsize, PROT_READ | PROT_WRITE, MAP_SHARED,
-			  fd, offset)) == (caddr_t) - 1)
-		tst_brk(TFAIL, "mmap error");
 
-	(void)close(fd);
+	maddr = SAFE_MMAP(0, mapsize, PROT_READ | PROT_WRITE, MAP_SHARED, fd,
+			  offset);
+	SAFE_CLOSE(fd);
 
 	/*
 	 *  Now loop read/writing random pages.
@@ -445,8 +425,7 @@ void child_mapper(char *file, unsigned int procno, unsigned int nprocs)
 			  MS_SYNC) == -1)
 			tst_brk(TFAIL, "msync failed");
 	}
-	if (munmap(maddr, mapsize) == -1)
-		tst_brk(TFAIL, "munmap failed");
+	SAFE_MUNMAP(maddr, mapsize);
 	exit(0);
 }
 
@@ -464,14 +443,10 @@ int fileokay(char *file, unsigned char *expbuf)
 	int cnt;
 	unsigned int i, j;
 
-	if ((fd = open(file, O_RDONLY)) == -1)
-		tst_brk(TFAIL, "open error");
+	fd = SAFE_OPEN(file, O_RDONLY);
 
-	if (fstat(fd, &statbuf) == -1)
-		tst_brk(TFAIL, "stat error");
-
-	if (lseek(fd, sparseoffset, SEEK_SET) < 0)
-		tst_brk(TFAIL, "lseek");
+	SAFE_FSTAT(fd, &statbuf);
+	SAFE_LSEEK(fd, sparseoffset, SEEK_SET);
 
 	if (statbuf.st_size - sparseoffset > UINT_MAX)
 		tst_brk(TFAIL, "size_t overflow when setting up map");
@@ -490,7 +465,7 @@ int fileokay(char *file, unsigned char *expbuf)
 			if ((i * pagesize) + cnt != mapsize) {
 				tst_res(TINFO, "read %d of %ld bytes",
 					(i * pagesize) + cnt, (long)mapsize);
-				close(fd);
+				SAFE_CLOSE(fd);
 				return 0;
 			}
 		}
@@ -503,12 +478,12 @@ int fileokay(char *file, unsigned char *expbuf)
 					"read bad data: exp %c got %c, pg %d off %d, (fsize %lld)",
 					expbuf[j], readbuf[j], i, j,
 					(long long)statbuf.st_size);
-				close(fd);
+				SAFE_CLOSE(fd);
 				return 0;
 			}
 		}
 	}
-	close(fd);
+	SAFE_CLOSE(fd);
 
 	return 1;
 }
