@@ -89,11 +89,9 @@
 static unsigned int initrand(void);
 static void finish(int sig);
 static void child_mapper(char *file, unsigned int procno, unsigned int nprocs);
-static int fileokay(char *file, unsigned char *expbuf);
-static int finished;
+static void fileokay(char *file, unsigned char *expbuf);
 
 static char *debug;
-static char *leavefile;
 static char *do_sync;
 static char *do_offset;
 static char *randloops;
@@ -102,21 +100,17 @@ static char *opt_nprocs;
 static char *opt_sparseoffset;
 static char *opt_alarmtime;
 
+static int fd;
 static float alarmtime;
 static int nprocs;
 static long long filesize = FILESIZE;
 static long long sparseoffset;
 static unsigned int pattern;
-
-static pid_t *pidarray;
-static int wait_stat;
-static int check_for_sanity;
-static unsigned char *buf;
+static int finished;
 
 static struct tst_option options[] = {
 	{"d", &debug, "Enable debug output"},
 	{"f:", &opt_filesize, "Initial filesize (default 4096)"},
-	{"l", &leavefile, "Don't remove the output file on program exit"},
 	{"m", &do_sync, "Do random msync/fsyncs as well"},
 	{"o", &do_offset, "Randomize the offset of file to map"},
 	{"p:", &opt_nprocs, "Number of mapping children to create (required)"},
@@ -175,7 +169,6 @@ static void setup(void)
 
 static void run(void)
 {
-	int fd;
 	int c;
 	int procno;
 	pid_t pid;
@@ -187,6 +180,9 @@ static void run(void)
 	unsigned char data;
 	off_t bytes_left;
 	sigset_t set_mask;
+	pid_t *pidarray = NULL;
+	int wait_stat;
+	unsigned char *buf;
 
 	seed = initrand();
 	pattern = seed & 0xff;
@@ -298,40 +294,22 @@ static void run(void)
 		SAFE_SIGPROCMASK(SIG_UNBLOCK, &set_mask, NULL);
 	}
 
-	/*
-	 *  Finished!  Check the file for sanity, then kill all
-	 *  the children and done!.
-	 */
-
 	SAFE_SIGEMPTYSET(&set_mask);
 	SAFE_SIGADDSET(&set_mask, SIGALRM);
 	SAFE_SIGPROCMASK(SIG_BLOCK, &set_mask, NULL);
 	(void)alarm(0);
-	check_for_sanity = 1;
-	tst_res(TPASS, "finished, cleaning up");
+
+	/*
+	 *  Finished!  Check the file for sanity.
+	 */
+	fileokay(TEST_FILE, buf);
+	tst_res(TPASS, "file has expected data");
 }
 
 static void cleanup(void)
 {
-	for (int i = 0; i < nprocs; i++)
-		(void)kill(pidarray[i], SIGKILL);
-
-	while (wait(&wait_stat) != -1 || errno != ECHILD)
-		continue;
-
-	if (check_for_sanity) {		/* only check file if no errors */
-		if (!fileokay(TEST_FILE, buf)) {
-			tst_res(TINFO, "  leaving file <%s>", TEST_FILE);
-			tst_brk(TFAIL, "file data incorrect");
-		} else {
-			tst_res(TINFO, "file data okay");
-			if (!leavefile)
-				SAFE_UNLINK(TEST_FILE);
-			tst_res(TPASS, "test passed");
-		}
-	} else {
-		tst_res(TINFO, "  leaving file <%s>", TEST_FILE);
-	}
+	if (fd > 0)
+		SAFE_CLOSE(fd);
 }
 
 /*
@@ -341,7 +319,7 @@ static void cleanup(void)
  *  determined based on nprocs & procno).  After a specific number of
  *  iterations, it exits.
  */
-void child_mapper(char *file, unsigned int procno, unsigned int nprocs)
+static void child_mapper(char *file, unsigned int procno, unsigned int nprocs)
 {
 	struct stat statbuf;
 	off_t filesize;
@@ -349,7 +327,6 @@ void child_mapper(char *file, unsigned int procno, unsigned int nprocs)
 	size_t validsize;
 	size_t mapsize;
 	char *maddr = NULL, *paddr;
-	int fd;
 	size_t pagesize = sysconf(_SC_PAGE_SIZE);
 	unsigned int randpage;
 	unsigned int seed;
@@ -432,14 +409,13 @@ void child_mapper(char *file, unsigned int procno, unsigned int nprocs)
 /*
  *  Make sure file has all the correct data.
  */
-int fileokay(char *file, unsigned char *expbuf)
+static void fileokay(char *file, unsigned char *expbuf)
 {
 	struct stat statbuf;
 	size_t mapsize;
 	unsigned int mappages;
 	unsigned int pagesize = sysconf(_SC_PAGE_SIZE);
 	unsigned char readbuf[pagesize];
-	int fd;
 	int cnt;
 	unsigned int i, j;
 
@@ -455,45 +431,35 @@ int fileokay(char *file, unsigned char *expbuf)
 	mappages = roundup(mapsize, pagesize) / pagesize;
 
 	for (i = 0; i < mappages; i++) {
-		cnt = read(fd, readbuf, pagesize);
-		if (cnt == -1) {
-			tst_brk(TFAIL, "read error");
-		} else if ((unsigned int)cnt != pagesize) {
+		cnt = SAFE_READ(0, fd, readbuf, pagesize);
+		if ((unsigned int)cnt != pagesize) {
 			/*
 			 *  Okay if at last page in file...
 			 */
-			if ((i * pagesize) + cnt != mapsize) {
-				tst_res(TINFO, "read %d of %ld bytes",
+			if ((i * pagesize) + cnt != mapsize)
+				tst_brk(TFAIL, "missing data: read %d of %ld bytes",
 					(i * pagesize) + cnt, (long)mapsize);
-				SAFE_CLOSE(fd);
-				return 0;
-			}
 		}
 		/*
 		 *  Compare read bytes of data.
 		 */
 		for (j = 0; j < (unsigned int)cnt; j++) {
-			if (expbuf[j] != readbuf[j]) {
-				tst_res(TINFO,
+			if (expbuf[j] != readbuf[j])
+				tst_brk(TFAIL,
 					"read bad data: exp %c got %c, pg %d off %d, (fsize %lld)",
 					expbuf[j], readbuf[j], i, j,
 					(long long)statbuf.st_size);
-				SAFE_CLOSE(fd);
-				return 0;
-			}
 		}
 	}
 	SAFE_CLOSE(fd);
-
-	return 1;
 }
 
-void finish(int sig LTP_ATTRIBUTE_UNUSED)
+static void finish(int sig LTP_ATTRIBUTE_UNUSED)
 {
 	finished++;
 }
 
-unsigned int initrand(void)
+static unsigned int initrand(void)
 {
 	unsigned int seed;
 
@@ -514,9 +480,9 @@ unsigned int initrand(void)
 }
 
 static struct tst_test test = {
-	.needs_tmpdir = 1,
 	.test_all = run,
 	.setup = setup,
 	.options = options,
 	.cleanup = cleanup,
+	.needs_tmpdir = 1,
 };
