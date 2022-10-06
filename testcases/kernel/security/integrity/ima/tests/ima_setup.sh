@@ -11,9 +11,7 @@ TST_CLEANUP_CALLER="$TST_CLEANUP"
 TST_CLEANUP="ima_cleanup"
 TST_NEEDS_ROOT=1
 TST_MOUNT_DEVICE=1
-
-# TST_MOUNT_DEVICE can be unset, therefore specify explicitly
-TST_NEEDS_TMPDIR=1
+TST_NEEDS_CMDS="$TST_NEEDS_CMDS blkid"
 
 SYSFS="/sys"
 UMOUNT=
@@ -178,6 +176,9 @@ ima_setup()
 	if [ "$TST_MOUNT_DEVICE" = 1 ]; then
 		tst_res TINFO "\$TMPDIR is on tmpfs => run on loop device"
 		cd "$TST_MNTPOINT"
+
+		FSUUID="fsuuid=$(blkid | grep $TST_DEVICE | cut -f2 -d'"')"
+		tst_res TINFO "LTP IMA policy rules based on $FSUUID"
 	fi
 
 	[ -n "$TST_SETUP_CALLER" ] && $TST_SETUP_CALLER
@@ -334,11 +335,5 @@ require_evmctl()
 		tst_brk TCONF "evmctl >= $required required"
 	fi
 }
-
-# loop device is needed to use only for tmpfs
-TMPDIR="${TMPDIR:-/tmp}"
-if tst_supported_fs -d $TMPDIR -s "tmpfs"; then
-	unset TST_MOUNT_DEVICE
-fi
 
 . tst_test.sh

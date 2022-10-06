@@ -27,7 +27,7 @@ verify_measurement()
 	ROD rm -f $test_file
 
 	tst_res TINFO "verify measuring user files when requested via $request"
-	ROD echo "measure $request=$value" \> $IMA_POLICY
+	ROD echo "measure $FSUUID $request=$value" \> $IMA_POLICY
 	ROD echo "$(cat /proc/uptime) $request test" \> $test_file
 
 	case "$request" in
