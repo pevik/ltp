@@ -178,6 +178,9 @@ ima_setup()
 	if [ "$TST_MOUNT_DEVICE" = 1 ]; then
 		tst_res TINFO "\$TMPDIR is on tmpfs => run on loop device"
 		cd "$TST_MNTPOINT"
+
+		FSUUID="fsuuid=$(blkid | grep $TST_DEVICE | cut -f2 -d'"')"
+		tst_res TINFO "LTP IMA policy rules based on $FSUUID"
 	fi
 
 	[ -n "$TST_SETUP_CALLER" ] && $TST_SETUP_CALLER
