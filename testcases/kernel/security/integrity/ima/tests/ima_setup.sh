@@ -11,9 +11,8 @@ TST_CLEANUP_CALLER="$TST_CLEANUP"
 TST_CLEANUP="ima_cleanup"
 TST_NEEDS_ROOT=1
 TST_MOUNT_DEVICE=1
-
-# TST_MOUNT_DEVICE can be unset, therefore specify explicitly
-TST_NEEDS_TMPDIR=1
+TST_NEEDS_CMDS="$TST_NEEDS_CMDS blkid"
+TST_MIN_KVER="3.9"
 
 SYSFS="/sys"
 UMOUNT=
@@ -160,6 +159,8 @@ print_ima_config()
 
 ima_setup()
 {
+	local uuid
+
 	SECURITYFS="$(mount_helper securityfs $SYSFS/kernel/security)"
 
 	IMA_DIR="$SECURITYFS/ima"
@@ -175,13 +176,13 @@ ima_setup()
 
 	print_ima_config
 
-	if [ "$TST_MOUNT_DEVICE" = 1 ]; then
-		tst_res TINFO "\$TMPDIR is on tmpfs => run on loop device"
-		cd "$TST_MNTPOINT"
+	tst_res TINFO "\$TMPDIR is on tmpfs => run on loop device"
+	cd "$TST_MNTPOINT"
 
-		FSUUID="fsuuid=$(blkid | grep $TST_DEVICE | cut -f2 -d'"')"
-		tst_res TINFO "LTP IMA policy rules based on $FSUUID"
-	fi
+	uuid="$(blkid | grep $TST_DEVICE | cut -f2 -d'"')"
+	[ "$uuid" ] || tst_brk TBROK "UUID of $TST_DEVICE not found"
+	FSUUID="fsuuid=$uuid"
+	tst_res TINFO "LTP IMA policy rules based on $FSUUID"
 
 	[ -n "$TST_SETUP_CALLER" ] && $TST_SETUP_CALLER
 }
@@ -337,11 +338,5 @@ require_evmctl()
 		tst_brk TCONF "evmctl >= $required required"
 	fi
 }
-
-# loop device is needed to use only for tmpfs
-TMPDIR="${TMPDIR:-/tmp}"
-if tst_supported_fs -d $TMPDIR -s "tmpfs"; then
-	unset TST_MOUNT_DEVICE
-fi
 
 . tst_test.sh

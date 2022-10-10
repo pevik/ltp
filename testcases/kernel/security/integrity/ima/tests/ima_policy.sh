@@ -27,11 +27,7 @@ load_policy()
 	exec 2>/dev/null 4>$IMA_POLICY
 	[ $? -eq 0 ] || exit 1
 
-	if [ -n "$FSUUID" ]; then
-		sed "s/measure /measure $FSUUID /" $1 >&4 2> /dev/null
-	else
-		cat $1 >&4 2> /dev/null
-	fi
+	sed "s/measure /measure $FSUUID /" $1 >&4 2> /dev/null
 
 	ret=$?
 	exec 4>&-
