@@ -281,6 +281,9 @@ const char *tst_acquire_loop_device(unsigned int size, const char *filename)
 {
 	unsigned int acq_dev_size = size ? size : DEV_SIZE_MB;
 
+	char cwd[1024];
+	fprintf(stderr, "%s:%d %s():, PWD: '%s'\n", __FILE__, __LINE__, __func__, getcwd(cwd, sizeof(cwd)));
+
 	if (tst_prealloc_file(filename, 1024 * 1024, acq_dev_size)) {
 		tst_resm(TWARN | TERRNO, "Failed to create %s", filename);
 		return NULL;
@@ -317,6 +320,8 @@ const char *tst_acquire_device__(unsigned int size)
 				ltp_dev_size, acq_dev_size);
 	}
 
+	char cwd[1024];
+	fprintf(stderr, "%s:%d %s():, PWD: '%s'\n", __FILE__, __LINE__, __func__, getcwd(cwd, sizeof(cwd)));
 	dev = tst_acquire_loop_device(acq_dev_size, DEV_FILE);
 
 	if (dev)
