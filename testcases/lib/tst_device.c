@@ -7,6 +7,7 @@
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #define TST_NO_DEFAULT_MAIN
 #include "tst_test.h"
 #include "old/old_device.h"
@@ -42,6 +43,8 @@ static int acquire_device(int argc, char *argv[])
 		}
 	}
 
+	char cwd[1024];
+	fprintf(stderr, "%s:%d %s():, PWD: '%s'\n", __FILE__, __LINE__, __func__, getcwd(cwd, sizeof(cwd)));
 	if (argc >= 4)
 		device = tst_acquire_loop_device(size, argv[3]);
 	else
