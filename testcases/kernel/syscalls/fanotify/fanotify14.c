@@ -38,6 +38,8 @@
 #define INODE_EVENTS (FAN_ATTRIB | FAN_CREATE | FAN_DELETE | FAN_MOVE | \
 		      FAN_DELETE_SELF | FAN_MOVE_SELF)
 
+#define FLAGS_DESC(flags) (flags), (#flags)
+
 static int fanotify_fd;
 static int fan_report_target_fid_unsupported;
 static int ignore_mark_unsupported;
@@ -49,100 +51,112 @@ static int ignore_mark_unsupported;
  */
 static struct test_case_t {
 	unsigned int init_flags;
+	const char *init_desc;
 	unsigned int mark_flags;
+	const char *mark_desc;
 	/* zero mask expects to fail on fanotify_init() */
 	unsigned long long mask;
+	const char *mask_desc;
 	int expected_errno;
 } test_cases[] = {
-	{
-		/* FAN_REPORT_FID without class FAN_CLASS_NOTIF is not valid */
-		FAN_CLASS_CONTENT | FAN_REPORT_FID, 0, 0, EINVAL
-	},
-	{
-		/* FAN_REPORT_FID without class FAN_CLASS_NOTIF is not valid */
-		FAN_CLASS_PRE_CONTENT | FAN_REPORT_FID, 0, 0, EINVAL
-	},
-	{
-		/* INODE_EVENTS in mask without class FAN_REPORT_FID are not valid */
-		FAN_CLASS_NOTIF, 0, INODE_EVENTS, EINVAL
-	},
-	{
-		/* INODE_EVENTS in mask with FAN_MARK_MOUNT are not valid */
-		FAN_CLASS_NOTIF | FAN_REPORT_FID, FAN_MARK_MOUNT, INODE_EVENTS, EINVAL
-	},
-	{
-		/* FAN_REPORT_NAME without FAN_REPORT_DIR_FID is not valid */
-		FAN_CLASS_NOTIF | FAN_REPORT_NAME, 0, 0, EINVAL
-	},
-	{
-		/* FAN_REPORT_NAME without FAN_REPORT_DIR_FID is not valid */
-		FAN_CLASS_NOTIF | FAN_REPORT_FID | FAN_REPORT_NAME, 0, 0, EINVAL
-	},
-	{
-		/* FAN_REPORT_TARGET_FID without FAN_REPORT_FID is not valid */
-		FAN_CLASS_NOTIF | FAN_REPORT_TARGET_FID | FAN_REPORT_DFID_NAME, 0, 0, EINVAL
-	},
-	{
-		/* FAN_REPORT_TARGET_FID without FAN_REPORT_NAME is not valid */
-		FAN_CLASS_NOTIF | FAN_REPORT_TARGET_FID | FAN_REPORT_DFID_FID, 0, 0, EINVAL
-	},
-	{
-		/* FAN_RENAME without FAN_REPORT_NAME is not valid */
-		FAN_CLASS_NOTIF | FAN_REPORT_DFID_FID, 0, FAN_RENAME, EINVAL
-	},
-	{
-		/* With FAN_MARK_ONLYDIR on non-dir is not valid */
-		FAN_CLASS_NOTIF, FAN_MARK_ONLYDIR, FAN_OPEN, ENOTDIR
-	},
-	{
-		/* With FAN_REPORT_TARGET_FID, FAN_DELETE on non-dir is not valid */
-		FAN_CLASS_NOTIF | FAN_REPORT_DFID_NAME_TARGET, 0, FAN_DELETE, ENOTDIR
-	},
-	{
-		/* With FAN_REPORT_TARGET_FID, FAN_RENAME on non-dir is not valid */
-		FAN_CLASS_NOTIF | FAN_REPORT_DFID_NAME_TARGET, 0, FAN_RENAME, ENOTDIR
-	},
-	{
-		/* With FAN_REPORT_TARGET_FID, FAN_ONDIR on non-dir is not valid */
-		FAN_CLASS_NOTIF | FAN_REPORT_DFID_NAME_TARGET, 0, FAN_OPEN | FAN_ONDIR, ENOTDIR
-	},
-	{
-		/* With FAN_REPORT_TARGET_FID, FAN_EVENT_ON_CHILD on non-dir is not valid */
-		FAN_CLASS_NOTIF | FAN_REPORT_DFID_NAME_TARGET, 0, FAN_OPEN | FAN_EVENT_ON_CHILD, ENOTDIR
-	},
-	{
-		/* FAN_MARK_IGNORE_SURV with FAN_DELETE on non-dir is not valid */
-		FAN_CLASS_NOTIF | FAN_REPORT_DFID_NAME, FAN_MARK_IGNORE_SURV, FAN_DELETE, ENOTDIR
-	},
-	{
-		/* FAN_MARK_IGNORE_SURV with FAN_RENAME on non-dir is not valid */
-		FAN_CLASS_NOTIF | FAN_REPORT_DFID_NAME, FAN_MARK_IGNORE_SURV, FAN_RENAME, ENOTDIR
-	},
-	{
-		/* FAN_MARK_IGNORE_SURV with FAN_ONDIR on non-dir is not valid */
-		FAN_CLASS_NOTIF | FAN_REPORT_DFID_NAME, FAN_MARK_IGNORE_SURV, FAN_OPEN | FAN_ONDIR, ENOTDIR
-	},
-	{
-		/* FAN_MARK_IGNORE_SURV with FAN_EVENT_ON_CHILD on non-dir is not valid */
-		FAN_CLASS_NOTIF | FAN_REPORT_DFID_NAME, FAN_MARK_IGNORE_SURV, FAN_OPEN | FAN_EVENT_ON_CHILD, ENOTDIR
-	},
-	{
-		/* FAN_MARK_IGNORE without FAN_MARK_IGNORED_SURV_MODIFY on directory is not valid */
-		FAN_CLASS_NOTIF, FAN_MARK_IGNORE, FAN_OPEN, EISDIR
-	},
-	{
-		/* FAN_MARK_IGNORE without FAN_MARK_IGNORED_SURV_MODIFY on mount mark is not valid */
-		FAN_CLASS_NOTIF, FAN_MARK_MOUNT | FAN_MARK_IGNORE, FAN_OPEN, EINVAL
-	},
-	{
-		/* FAN_MARK_IGNORE without FAN_MARK_IGNORED_SURV_MODIFY on filesystem mark is not valid */
-		FAN_CLASS_NOTIF, FAN_MARK_FILESYSTEM | FAN_MARK_IGNORE, FAN_OPEN, EINVAL
-	},
+	/* FAN_REPORT_FID without class FAN_CLASS_NOTIF is not valid */
+	{FLAGS_DESC(FAN_CLASS_CONTENT | FAN_REPORT_FID), 0, NULL, 0, NULL,
+		EINVAL},
+
+	/* FAN_REPORT_FID without class FAN_CLASS_NOTIF is not valid */
+	{FLAGS_DESC(FAN_CLASS_PRE_CONTENT | FAN_REPORT_FID), 0, NULL, 0, NULL,
+		EINVAL},
+
+	/* INODE_EVENTS in mask without class FAN_REPORT_FID are not valid */
+	{FLAGS_DESC(FAN_CLASS_NOTIF), FLAGS_DESC(0), FLAGS_DESC(INODE_EVENTS),
+		EINVAL},
+
+	/* INODE_EVENTS in mask with FAN_MARK_MOUNT are not valid */
+	{FLAGS_DESC(FAN_CLASS_NOTIF | FAN_REPORT_FID),
+		FLAGS_DESC(FAN_MARK_MOUNT), FLAGS_DESC(INODE_EVENTS), EINVAL},
+
+	/* FAN_REPORT_NAME without FAN_REPORT_DIR_FID is not valid */
+	{FLAGS_DESC(FAN_CLASS_NOTIF | FAN_REPORT_NAME), 0, NULL, 0, NULL,
+		EINVAL},
+
+	/* FAN_REPORT_NAME without FAN_REPORT_DIR_FID is not valid */
+	{FLAGS_DESC(FAN_CLASS_NOTIF | FAN_REPORT_FID | FAN_REPORT_NAME), 0,
+		NULL, 0, NULL, EINVAL},
+
+	/* FAN_REPORT_TARGET_FID without FAN_REPORT_FID is not valid */
+	{FLAGS_DESC(FAN_CLASS_NOTIF | FAN_REPORT_TARGET_FID | FAN_REPORT_DFID_NAME),
+		0, NULL, 0, NULL, EINVAL},
+
+	/* FAN_REPORT_TARGET_FID without FAN_REPORT_NAME is not valid */
+	{FLAGS_DESC(FAN_CLASS_NOTIF | FAN_REPORT_TARGET_FID | FAN_REPORT_DFID_FID),
+		0, NULL, 0, NULL, EINVAL},
+
+	/* FAN_RENAME without FAN_REPORT_NAME is not valid */
+	{FLAGS_DESC(FAN_CLASS_NOTIF | FAN_REPORT_DFID_FID), FLAGS_DESC(0),
+		FLAGS_DESC(FAN_RENAME), EINVAL},
+
+	/* With FAN_MARK_ONLYDIR on non-dir is not valid */
+	{FLAGS_DESC(FAN_CLASS_NOTIF), FLAGS_DESC(FAN_MARK_ONLYDIR),
+		FLAGS_DESC(FAN_OPEN), ENOTDIR},
+
+	/* With FAN_REPORT_TARGET_FID, FAN_DELETE on non-dir is not valid */
+	{FLAGS_DESC(FAN_CLASS_NOTIF | FAN_REPORT_DFID_NAME_TARGET),
+		FLAGS_DESC(0), FLAGS_DESC(FAN_DELETE), ENOTDIR},
+
+	/* With FAN_REPORT_TARGET_FID, FAN_RENAME on non-dir is not valid */
+	{FLAGS_DESC(FAN_CLASS_NOTIF | FAN_REPORT_DFID_NAME_TARGET),
+		FLAGS_DESC(0), FLAGS_DESC(FAN_RENAME), ENOTDIR},
+
+	/* With FAN_REPORT_TARGET_FID, FAN_ONDIR on non-dir is not valid */
+	{FLAGS_DESC(FAN_CLASS_NOTIF | FAN_REPORT_DFID_NAME_TARGET),
+		FLAGS_DESC(0), FLAGS_DESC(FAN_OPEN | FAN_ONDIR), ENOTDIR},
+
+	/* With FAN_REPORT_TARGET_FID, FAN_EVENT_ON_CHILD on non-dir is not valid */
+	{FLAGS_DESC(FAN_CLASS_NOTIF | FAN_REPORT_DFID_NAME_TARGET),
+		FLAGS_DESC(0), FLAGS_DESC(FAN_OPEN | FAN_EVENT_ON_CHILD),
+		ENOTDIR},
+
+	/* FAN_MARK_IGNORE_SURV with FAN_DELETE on non-dir is not valid */
+	{FLAGS_DESC(FAN_CLASS_NOTIF | FAN_REPORT_DFID_NAME),
+		FLAGS_DESC(FAN_MARK_IGNORE_SURV), FLAGS_DESC(FAN_DELETE),
+		ENOTDIR},
+
+	/* FAN_MARK_IGNORE_SURV with FAN_RENAME on non-dir is not valid */
+	{FLAGS_DESC(FAN_CLASS_NOTIF | FAN_REPORT_DFID_NAME),
+		FLAGS_DESC(FAN_MARK_IGNORE_SURV), FLAGS_DESC(FAN_RENAME),
+		ENOTDIR},
+
+	/* FAN_MARK_IGNORE_SURV with FAN_ONDIR on non-dir is not valid */
+	{FLAGS_DESC(FAN_CLASS_NOTIF | FAN_REPORT_DFID_NAME),
+		FLAGS_DESC(FAN_MARK_IGNORE_SURV),
+		FLAGS_DESC(FAN_OPEN | FAN_ONDIR), ENOTDIR},
+
+	/* FAN_MARK_IGNORE_SURV with FAN_EVENT_ON_CHILD on non-dir is not valid */
+	{FLAGS_DESC(FAN_CLASS_NOTIF | FAN_REPORT_DFID_NAME),
+		FLAGS_DESC(FAN_MARK_IGNORE_SURV),
+		FLAGS_DESC(FAN_OPEN | FAN_EVENT_ON_CHILD), ENOTDIR},
+
+	/* FAN_MARK_IGNORE without FAN_MARK_IGNORED_SURV_MODIFY on directory is not valid */
+	{FLAGS_DESC(FAN_CLASS_NOTIF), FLAGS_DESC(FAN_MARK_IGNORE),
+		FLAGS_DESC(FAN_OPEN), EISDIR},
+
+	/* FAN_MARK_IGNORE without FAN_MARK_IGNORED_SURV_MODIFY on mount mark is not valid */
+	{FLAGS_DESC(FAN_CLASS_NOTIF),
+		FLAGS_DESC(FAN_MARK_MOUNT | FAN_MARK_IGNORE),
+		FLAGS_DESC(FAN_OPEN), EINVAL},
+
+	/* FAN_MARK_IGNORE without FAN_MARK_IGNORED_SURV_MODIFY on filesystem mark is not valid */
+	{FLAGS_DESC(FAN_CLASS_NOTIF),
+		FLAGS_DESC(FAN_MARK_FILESYSTEM | FAN_MARK_IGNORE),
+		FLAGS_DESC(FAN_OPEN), EINVAL},
 };
 
 static void do_test(unsigned int number)
 {
 	struct test_case_t *tc = &test_cases[number];
+
+	tst_res(TINFO, "Test case %d: fanotify_init(%s, O_RDONLY)", number,
+		tc->init_desc);
 
 	if (fan_report_target_fid_unsupported && tc->init_flags & FAN_REPORT_TARGET_FID) {
 		FANOTIFY_INIT_FLAGS_ERR_MSG(FAN_REPORT_TARGET_FID,
@@ -155,8 +169,14 @@ static void do_test(unsigned int number)
 		return;
 	}
 
-	TST_EXP_FD_OR_FAIL(fanotify_fd = fanotify_init(tc->init_flags, O_RDONLY),
-			   !tc->mask && tc->expected_errno ? tc->expected_errno : 0);
+	if (!tc->mask && tc->expected_errno) {
+		TST_EXP_FAIL(fanotify_init(tc->init_flags, O_RDONLY),
+			tc->expected_errno);
+	} else {
+		TST_EXP_FD(fanotify_init(tc->init_flags, O_RDONLY));
+	}
+
+	fanotify_fd = TST_RET;
 
 	if (fanotify_fd < 0)
 		return;
@@ -167,6 +187,8 @@ static void do_test(unsigned int number)
 	/* Set mark on non-dir only when expecting error ENOTDIR */
 	const char *path = tc->expected_errno == ENOTDIR ? FILE1 : MNTPOINT;
 
+	tst_res(TINFO, "Testing fanotify_mark(FAN_MARK_ADD | %s, %s)",
+		tc->mark_desc, tc->mask_desc);
 	TST_EXP_FD_OR_FAIL(fanotify_mark(fanotify_fd, FAN_MARK_ADD | tc->mark_flags,
 					 tc->mask, AT_FDCWD, path),
 					 tc->expected_errno);
