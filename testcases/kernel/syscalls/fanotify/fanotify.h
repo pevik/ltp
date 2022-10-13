@@ -213,6 +213,26 @@ static inline int fanotify_init_flags_supported_by_kernel(unsigned int flags)
 	return fanotify_init_flags_supported_on_fs(flags, NULL);
 }
 
+/*
+ * Check support of given init flags one by one and return those which are
+ * supported.
+ */
+static inline unsigned int fanotify_get_supported_init_flags(unsigned int flags,
+	const char *fname)
+{
+	unsigned int flg, ret = 0;
+
+	for (flg = 1; flg; flg <<= 1) {
+		if (!(flags & flg))
+			continue;
+
+		if (!fanotify_init_flags_supported_on_fs(flg, fname))
+			ret |= flg;
+	}
+
+	return ret;
+}
+
 typedef void (*tst_res_func_t)(const char *file, const int lineno,
 			       int ttype, const char *fmt, ...);
 
