@@ -40,6 +40,10 @@
 #
 #----------------------------------------------------------------------
 
+TST_TESTFUNC=do_test
+TST_SETUP=do_setup
+TST_NEEDS_TMPDIR=1
+
 #-----------------------------------------------------------------------
 #
 # FUNCTION:  do_setup
@@ -50,25 +54,15 @@ do_setup()
 {
 
     TC=ftp
-    TCtmp=${TCtmp:-$LTPROOT/$TC${EXEC_SUFFIX}$$}
-    TCdat=${TCdat:-$LTPROOT/datafiles}
     SLEEPTIME=${SLEEPTIME:-0}
     ASCII_FILES=${ASCII_FILES:-"ascii.sm ascii.med ascii.lg ascii.jmb"}
     BIN_FILES=${BIN_FILES:-"bin.sm bin.med bin.lg bin.jmb"}
 
-    RHOST=${RHOST:-`hostname`}
     RUSER=${RUSER:-root}
-    PASSWD=${PASSWD:-.pasroot}
 
-    tst_setup
+    tst_require_cmds awk ftp
 
-    exists awk ftp rsh
-
-    cd "$TCtmp"
-
-    rsh -n -l root $RHOST mkdir -p "$TCtmp"
-    rsh -n -l root $RHOST chown -R ${RUSER} "$TCtmp"
-    [ $? = 0 ] || end_testcase "Check .rhosts file on remote machine."
+    [ $? = 0 ] || tst_brk TBROK "Check .rhosts file on remote machine."
 
 }
 
@@ -95,51 +89,39 @@ do_test()
                 if [ $a = "get" ]; then
                     {
                         echo user $RUSER $PASSWD
-                        echo lcd $TCtmp
                         echo $i
-                        echo cd $TCdat
+                        echo cd $TST_NET_DATAROOT
                         echo $a $j
                         echo quit
                     } | ftp -nv $RHOST
-                    SUM1=`ls -l $TCtmp/$j  | awk '{print $5}'`
-                    SUM2=`ls -l $TCdat/$j | awk '{print $5}'`
-                    rm -f $TCtmp/$j
+                    SUM1=`ls -l $j  | awk '{print $5}'`
+                    SUM2=`ls -l $TST_NET_DATAROOT/$j | awk '{print $5}'`
+                    rm -f $j
                 else
                     {
                         echo user $RUSER $PASSWD
-                        echo lcd $TCdat
+                        echo lcd $TST_NET_DATAROOT
                         echo $i
-                        echo cd $TCtmp
+                        echo cd $TST_TMPDIR
                         echo $a $j
                         echo quit
                     } | ftp -nv $RHOST
-                    SUM1=`rsh -n -l root $RHOST sum $TCtmp/$j | awk '{print $1}'`
-                    SUM2=`sum $TCdat/$j | awk '{print $1}'`
-                    rsh -n -l root $RHOST rm -f $TCtmp/$j
+                    SUM1=`tst_rhost_run -c "sum $TST_TMPDIR/$j" -s | awk '{print $1}'`
+                    SUM2=`sum $TST_NET_DATAROOT/$j | awk '{print $1}'`
+                    tst_rhost_run -c "rm -f $TST_TMPDIR/$j"
                 fi
 
                 if [ $SUM1 = $SUM2 ]; then
-                    tst_resm TINFO "Test Successful doing ftp $a $j $i"
+                    tst_res TINFO "Test Successful doing ftp $a $j $i"
                 else
-                    end_testcase "Test Fail: Wrong sum while performing ftp $a $j $i"
+                    tst_brk TFAIL "Test Fail: Wrong sum while performing ftp $a $j $i"
                 fi
                 sleep $SLEEPTIME
             done
         done
     done
-}
 
-
-#-----------------------------------------------------------------------
-#
-# FUNCTION:  do_cleanup
-#
-#-----------------------------------------------------------------------
-
-do_cleanup()
-{
-    rsh -n -l root $RHOST rmdir "$TCtmp"
-    tst_cleanup
+    tst_res TPASS "Test Successful"
 }
 
 #----------------------------------------------------------------------
@@ -150,9 +132,6 @@ do_cleanup()
 # OUTPUT:   A testcase run log with the results of the execution of this
 #           test.
 #----------------------------------------------------------------------
-. net_cmdlib.sh
+. tst_net.sh
 
-read_opts $*
-do_setup
-do_test
-end_testcase
+tst_run
