@@ -50,3 +50,6 @@ ADS1047 aio-stress -o1 -O -r32 -t8 -f8
 ADS1048 aio-stress -o1 -O -r64 -t8 -f8
 ADS1049 aio-stress -o1 -O -r128 -t8 -f8
 ADS1050 aio-stress -o1 -O -r256 -t2 -f2
+ADS1051 aio-stress -o3 -r8 -t2 -f2
+ADS1052 aio-stress -o3 -r16 -t2 -f2
+ADS1053 aio-stress -o3 -r32 -t4 -f4

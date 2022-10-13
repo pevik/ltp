@@ -103,15 +103,14 @@ static char *unlink_files;
  * latencies during io_submit are measured, these are the
  * granularities for deviations
  */
-#define DEVIATIONS 6
-static int deviations[DEVIATIONS] = { 100, 250, 500, 1000, 5000, 10000 };
+static int deviations[] = { 100, 250, 500, 1000, 5000, 10000 };
 
 struct io_latency {
 	double max;
 	double min;
 	double total_io;
 	double total_lat;
-	double deviations[DEVIATIONS];
+	double deviations[ARRAY_SIZE(deviations)];
 };
 
 /* container for a series of operations to a file */
@@ -278,7 +277,7 @@ static void calc_latency(struct timeval *start_tv, struct timeval *stop_tv,
 			 struct io_latency *lat)
 {
 	double delta;
-	int i;
+	size_t i;
 
 	delta = time_since(start_tv, stop_tv);
 	delta = delta * 1000;
@@ -289,7 +288,7 @@ static void calc_latency(struct timeval *start_tv, struct timeval *stop_tv,
 		lat->min = delta;
 	lat->total_io++;
 	lat->total_lat += delta;
-	for (i = 0; i < DEVIATIONS; i++) {
+	for (i = 0; i < ARRAY_SIZE(deviations); i++) {
 		if (delta < deviations[i]) {
 			lat->deviations[i]++;
 			break;
@@ -416,12 +415,12 @@ static void print_lat(char *str, struct io_latency *lat)
 	char out[4 * 1024];
 	char *ptr = out;
 	double avg = lat->total_lat / lat->total_io;
-	int i;
+	size_t i;
 	double total_counted = 0;
 
 	tst_res(TINFO, "%s min %.2f avg %.2f max %.2f", str, lat->min, avg, lat->max);
 
-	for (i = 0; i < DEVIATIONS; i++) {
+	for (i = 0; i < ARRAY_SIZE(deviations); i++) {
 		ptr += sprintf(ptr, "%.0f < %d", lat->deviations[i], deviations[i]);
 		total_counted += lat->deviations[i];
 	}
