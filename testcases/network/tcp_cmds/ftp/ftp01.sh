@@ -79,8 +79,8 @@ do_test()
                         echo $a $j
                         echo quit
                     } | ftp -nv $RHOST
-                    SUM1=`ls -l $j  | awk '{print $5}'`
-                    SUM2=`ls -l $TST_NET_DATAROOT/$j | awk '{print $5}'`
+                    SUM1="$(ls -l $j  | awk '{print $5}')"
+                    SUM2="$(ls -l $TST_NET_DATAROOT/$j | awk '{print $5}')"
                     rm -f $j
                 else
                     {
@@ -91,8 +91,8 @@ do_test()
                         echo $a $j
                         echo quit
                     } | ftp -nv $RHOST
-                    SUM1=`tst_rhost_run -c "sum $TST_TMPDIR/$j" -s | awk '{print $1}'`
-                    SUM2=`sum $TST_NET_DATAROOT/$j | awk '{print $1}'`
+                    SUM1="$(tst_rhost_run -c "sum $TST_TMPDIR/$j" -s | awk '{print $1}')"
+                    SUM2="$(sum $TST_NET_DATAROOT/$j | awk '{print $1}')"
                     tst_rhost_run -c "rm -f $TST_TMPDIR/$j"
                 fi
 
