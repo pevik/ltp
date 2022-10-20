@@ -45,12 +45,6 @@ TST_SETUP=do_setup
 TST_NEEDS_CMDS='awk ftp'
 TST_NEEDS_TMPDIR=1
 
-#-----------------------------------------------------------------------
-#
-# FUNCTION:  do_setup
-#
-#-----------------------------------------------------------------------
-
 do_setup()
 {
 
@@ -62,12 +56,6 @@ do_setup()
     RUSER=${RUSER:-root}
 
 }
-
-#-----------------------------------------------------------------------
-#
-# FUNCTION:  do_test
-#
-#-----------------------------------------------------------------------
 
 do_test()
 {
@@ -115,14 +103,6 @@ do_test()
     done
 }
 
-#----------------------------------------------------------------------
-# FUNCTION: MAIN
-# PURPOSE:  To invoke the functions to perform the tasks described in
-#           the prologue.
-# INPUT:    None.
-# OUTPUT:   A testcase run log with the results of the execution of this
-#           test.
-#----------------------------------------------------------------------
 . tst_net.sh
 
 tst_run
