@@ -58,6 +58,7 @@ do_setup()
 
 do_test()
 {
+    local sum1 sum2
 
     for i in binary ascii; do
 
@@ -78,8 +79,8 @@ do_test()
                         echo $a $j
                         echo quit
                     } | ftp -nv $RHOST
-                    SUM1="$(ls -l $j  | awk '{print $5}')"
-                    SUM2="$(ls -l $TST_NET_DATAROOT/$j | awk '{print $5}')"
+                    sum1="$(ls -l $j  | awk '{print $5}')"
+                    sum2="$(ls -l $TST_NET_DATAROOT/$j | awk '{print $5}')"
                     rm -f $j
                 else
                     {
@@ -90,12 +91,12 @@ do_test()
                         echo $a $j
                         echo quit
                     } | ftp -nv $RHOST
-                    SUM1="$(tst_rhost_run -c "sum $TST_TMPDIR/$j" -s | awk '{print $1}')"
-                    SUM2="$(sum $TST_NET_DATAROOT/$j | awk '{print $1}')"
+                    sum1="$(tst_rhost_run -c "sum $TST_TMPDIR/$j" -s | awk '{print $1}')"
+                    sum2="$(sum $TST_NET_DATAROOT/$j | awk '{print $1}')"
                     tst_rhost_run -c "rm -f $TST_TMPDIR/$j"
                 fi
 
-                EXPECT_PASS "[ '$SUM1' = '$SUM2' ]"
+                EXPECT_PASS "[ '$sum1' = '$sum2' ]"
             done
         done
     done
