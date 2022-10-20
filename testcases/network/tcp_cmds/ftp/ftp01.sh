@@ -49,7 +49,6 @@ do_setup()
 {
 
     TC=ftp
-    SLEEPTIME=${SLEEPTIME:-0}
     ASCII_FILES=${ASCII_FILES:-"ascii.sm ascii.med ascii.lg ascii.jmb"}
     BIN_FILES=${BIN_FILES:-"bin.sm bin.med bin.lg bin.jmb"}
 
@@ -97,7 +96,6 @@ do_test()
                 fi
 
                 EXPECT_PASS "[ '$SUM1' = '$SUM2' ]"
-                sleep $SLEEPTIME
             done
         done
     done
