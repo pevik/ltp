@@ -15,7 +15,7 @@ jobs:
       contents: write # for git push
 
     runs-on: ubuntu-latest
-    if: ${{ github.repository == 'linux-test-project/ltp' }}
+    if: ${{ github.repository == 'pevik/ltp' }}
     steps:
       - name: Checkout LTP
         uses: actions/checkout@v2
@@ -25,7 +25,7 @@ jobs:
       - name: Checkout LTP wiki
         uses: actions/checkout@v2
         with:
-          repository: "linux-test-project/ltp.wiki"
+          repository: "pevik/ltp.wiki"
           path: ltp.wiki
 
       - name: Copy files, push
