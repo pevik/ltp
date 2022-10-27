@@ -21,11 +21,9 @@ static void run(void)
 	uid_t invalid_uid, current_uid;
 
 	current_uid = geteuid();
-	invalid_uid = 1;
-	while (getpwuid(invalid_uid))
-		invalid_uid++;
+	invalid_uid = (uid_t)-1;
 
-	UID16_CHECK(invalid_uid, setfsuid);
+	UID16_CHECK(current_uid, setfsuid);
 
 	TST_EXP_VAL_SILENT(SETFSUID(invalid_uid), current_uid);
 	TST_EXP_VAL(SETFSUID(invalid_uid), current_uid,
