@@ -73,6 +73,13 @@ utstest_clone_3 utstest clone 3
 utstest_clone_4 utstest clone 4
 utstest_clone_5 utstest clone 5
 
+utsname01 utsname01
+utsname02 utsname02
+utsname03_clone utsname03 -m clone
+utsname03_unshare utsname03 -m unshare
+utsname04_clone utsname04 -m clone
+utsname04_unshare utsname04 -m unshare
+
 mountns01 mountns01
 mountns02 mountns02
 mountns03 mountns03
