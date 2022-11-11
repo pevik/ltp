@@ -5,14 +5,23 @@
 #ifndef TST_SYS_CONF_H__
 #define TST_SYS_CONF_H__
 
+#define TST_SR_FAIL_MISSING 0x1
+#define TST_SR_SKIP_MISSING 0x2
+#define TST_SR_FAIL_RO 0x4
+#define TST_SR_SKIP_RO 0x8
+#define TST_SR_IGNORE_ERR 0x10
+
+#define TST_SR_REQUIRED (TST_SR_FAIL_MISSING | TST_SR_FAIL_RO)
+#define TST_SR_COND_ACCESS (TST_SR_SKIP_MISSING | TST_SR_SKIP_RO)
+
 struct tst_path_val {
         const char *path;
         const char *val;
+	unsigned int flags;
 };
 
-int tst_sys_conf_save_str(const char *path, const char *value);
-int tst_sys_conf_save(const char *path);
-void tst_sys_conf_set(const char *path, const char *value);
+void tst_sys_conf_save_str(const char *path, const char *value);
+int tst_sys_conf_save(const struct tst_path_val *conf);
 void tst_sys_conf_restore(int verbose);
 void tst_sys_conf_dump(void);
 

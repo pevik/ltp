@@ -239,7 +239,7 @@ static struct tst_test test = {
 	.needs_tmpdir = 1,
 	.needs_root = 1,
 	.save_restore = (const struct tst_path_val[]) {
-		{"?/proc/sys/vm/swappiness", NULL},
+		{"/proc/sys/vm/swappiness", NULL, TST_SR_SKIP_MISSING},
 		{}
 	},
 	.needs_cgroup_ctrls = (const char *const []){ "memory", NULL },
