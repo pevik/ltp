@@ -39,7 +39,7 @@ initialize_vars()
 	local fs limit size stream=-1
 	dev_num=0
 
-	for fs in $(tst_supported_fs -s tmpfs); do
+	for fs in $(tst_supported_fs -s btrfs,xfs,tmpfs); do
 		size="26214400"
 		limit="25M"
 
@@ -114,7 +114,7 @@ zram_fill_fs()
 		tst_res TINFO "filling zram$i (it can take long time)"
 		b=0
 		while true; do
-			dd conv=notrunc if=/dev/zero of=zram${i}/file \
+			dd conv=notrunc if=/dev/urandom of=zram${i}/file \
 				oflag=append count=1 bs=1024 status=none \
 				>/dev/null 2>err.txt || break
 			b=$(($b + 1))
