@@ -39,7 +39,7 @@ initialize_vars()
 	local fs limit size stream=-1
 	dev_num=0
 
-	for fs in $(tst_supported_fs -s btrfs,xfs,tmpfs); do
+	for fs in $(tst_supported_fs -s btrfs,ext2,ext3,ext4,xfs,tmpfs); do
 		size="26214400"
 		limit="25M"
 
