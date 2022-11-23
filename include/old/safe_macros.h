@@ -59,9 +59,11 @@
 #define SAFE_MUNMAP(cleanup_fn, addr, length)	\
 	safe_munmap(__FILE__, __LINE__, (cleanup_fn), (addr), (length))
 
+#define __SAFE_OPEN(cleanup_fn, pathname, oflags, mode, ...)	\
+	safe_open(__FILE__, __LINE__, (cleanup_fn), (pathname), (oflags), (mode))
+
 #define SAFE_OPEN(cleanup_fn, pathname, oflags, ...)	\
-	safe_open(__FILE__, __LINE__, (cleanup_fn), (pathname), (oflags), \
-	    ##__VA_ARGS__)
+	__SAFE_OPEN((cleanup_fn), (pathname), (oflags), ##__VA_ARGS__, 0)
 
 #define SAFE_PIPE(cleanup_fn, fildes)	\
 	safe_pipe(__FILE__, __LINE__, cleanup_fn, (fildes))

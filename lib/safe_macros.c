@@ -234,20 +234,9 @@ int safe_munmap(const char *file, const int lineno, void (*cleanup_fn) (void),
 }
 
 int safe_open(const char *file, const int lineno, void (*cleanup_fn) (void),
-              const char *pathname, int oflags, ...)
+              const char *pathname, int oflags, mode_t mode)
 {
-	va_list ap;
 	int rval;
-	mode_t mode;
-
-	va_start(ap, oflags);
-
-	/* Android's NDK's mode_t is smaller than an int, which results in
-	 * SIGILL here when passing the mode_t type.
-	 */
-	mode = va_arg(ap, int);
-
-	va_end(ap);
 
 	rval = open(pathname, oflags, mode);
 
