@@ -11,9 +11,11 @@
 #include <unistd.h>
 #include <stdarg.h>
 
-#define SAFE_OPENAT(dirfd, path, oflags, ...)			\
-	safe_openat(__FILE__, __LINE__,				\
-		    (dirfd), (path), (oflags), ## __VA_ARGS__)
+#define __SAFE_OPENAT(dirfd, path, oflags, mode, ...)			\
+	safe_openat(__FILE__, __LINE__, (dirfd), (path), (oflags), (mode))
+
+#define SAFE_OPENAT(dirfd, path, oflags, ...)				\
+	__SAFE_OPENAT((dirfd), (path), (oflags), ##__VA_ARGS__, 0)
 
 #define SAFE_FILE_READAT(dirfd, path, buf, nbyte)			\
 	safe_file_readat(__FILE__, __LINE__,				\
@@ -38,7 +40,7 @@ const char *tst_decode_fd(const int fd)
 			  __attribute__((warn_unused_result));
 
 int safe_openat(const char *const file, const int lineno, const int dirfd,
-                const char *const path, const int oflags, ...)
+                const char *const path, const int oflags, const mode_t mode)
 		__attribute__((nonnull, warn_unused_result));
 
 ssize_t safe_file_readat(const char *const file, const int lineno,

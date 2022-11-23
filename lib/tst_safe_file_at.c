@@ -33,15 +33,10 @@ const char *tst_decode_fd(const int fd)
 }
 
 int safe_openat(const char *const file, const int lineno,
-		const int dirfd, const char *const path, const int oflags, ...)
+		const int dirfd, const char *const path, const int oflags,
+		const mode_t mode)
 {
-	va_list ap;
 	int fd;
-	mode_t mode;
-
-	va_start(ap, oflags);
-	mode = va_arg(ap, int);
-	va_end(ap);
 
 	fd = openat(dirfd, path, oflags, mode);
 	if (fd > -1)
@@ -58,7 +53,7 @@ ssize_t safe_file_readat(const char *const file, const int lineno,
 			 const int dirfd, const char *const path,
 			 char *const buf, const size_t nbyte)
 {
-	int fd = safe_openat(file, lineno, dirfd, path, O_RDONLY);
+	int fd = safe_openat(file, lineno, dirfd, path, O_RDONLY, 0);
 	ssize_t rval;
 
 	if (fd < 0)
