@@ -49,7 +49,7 @@ static void run(void)
 	/* child after exec() we are no longer allowed to set pgid */
 	child_pid = SAFE_FORK();
 	if (!child_pid)
-		SAFE_EXECLP(TEST_APP, TEST_APP, NULL);
+		SAFE_EXECLP(TEST_APP, TEST_APP, (char *)NULL);
 
 	TST_CHECKPOINT_WAIT(0);
 

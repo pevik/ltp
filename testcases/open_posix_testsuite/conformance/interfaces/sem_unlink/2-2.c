@@ -183,7 +183,7 @@ int main(void)
 
 	if (p3 == 0) {		/* child */
 		sem = common();
-		ret = execl("/bin/ls", "ls", NULL);
+		ret = execl("/bin/ls", "ls", (char *)NULL);
 		UNRESOLVED(errno, "Failed to exec");
 	}
 

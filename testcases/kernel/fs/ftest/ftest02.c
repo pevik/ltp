@@ -203,7 +203,7 @@ int main(void)
 	}
 
 	if (pid == 0) {
-		execl("/bin/rm", "rm", "-rf", homedir, NULL);
+		execl("/bin/rm", "rm", "-rf", homedir, (char *)NULL);
 		exit(1);
 	} else
 		wait(&status);
@@ -220,7 +220,7 @@ int main(void)
 	}
 
 	if (pid == 0) {
-		execl("/bin/rm", "rm", "-rf", dirname, NULL);
+		execl("/bin/rm", "rm", "-rf", dirname, (char *)NULL);
 		exit(1);
 	} else
 		wait(&status);

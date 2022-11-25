@@ -95,7 +95,7 @@ static void make_a_baby(int argc, char *argv[])
 		tst_exit();
 	}
 
-	execlp(argv[0], argv[0], "child", NULL);
+	execlp(argv[0], argv[0], "child", (char *)NULL);
 	tst_resm(TFAIL, "execlp() failed");
 	tst_exit();
 }

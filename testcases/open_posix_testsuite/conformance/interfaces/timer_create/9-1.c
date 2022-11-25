@@ -71,7 +71,7 @@ int main(void)
 		return PTS_UNRESOLVED;
 	}
 
-	if (execl("/bin/sleep", "sleep", "3", NULL) == -1) {
+	if (execl("/bin/sleep", "sleep", "3", (char *)NULL) == -1) {
 		printf("Test FAILED\n");
 		return PTS_FAIL;
 	}

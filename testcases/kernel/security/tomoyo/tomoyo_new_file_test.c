@@ -156,7 +156,7 @@ static void stage_file_test(void)
 	if (pipe(pipe_fd) == -1)
 		err(1, "pipe");
 	if (fork() == 0) {
-		execl("/bin/true", "/bin/true", NULL);
+		execl("/bin/true", "/bin/true", (char *)NULL);
 		if (write(pipe_fd[1], &errno, sizeof(errno)) == -1)
 			err(1, "write");
 		exit(0);
@@ -173,7 +173,7 @@ static void stage_file_test(void)
 	if (pipe(pipe_fd) == -1)
 		err(1, "pipe");
 	if (fork() == 0) {
-		execl("/bin/true", "/bin/true", NULL);
+		execl("/bin/true", "/bin/true", (char *)NULL);
 		if (write(pipe_fd[1], &errno, sizeof(errno)) == -1)
 			err(1, "write");
 		_exit(0);

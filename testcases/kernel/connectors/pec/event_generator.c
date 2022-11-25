@@ -68,7 +68,8 @@ static void gen_exec(void)
 	 * the shell script, before the first exec.
 	 */
 	sprintf(buf, "%u", nr_event - 1);
-	SAFE_EXECLP(prog_name, prog_name, "-e", "exec", "-n", buf, NULL);
+	SAFE_EXECLP(prog_name, prog_name, "-e", "exec", "-n", buf,
+		    (char *)NULL);
 }
 
 /*

@@ -25,7 +25,7 @@ static void verify_execl(void)
 
 	pid = SAFE_FORK();
 	if (pid == 0) {
-		TEST(execl(path, "execl01_child", "canary", NULL));
+		TEST(execl(path, "execl01_child", "canary", (char *)NULL));
 		tst_brk(TFAIL | TTERRNO,
 			"Failed to execute execl01_child");
 	}

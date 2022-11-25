@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
 		} else {
 			strcpy(path, argv[0]);
 		}
-		execl(path, argv[0], "verify", NULL);
+		execl(path, argv[0], "verify", (char *)NULL);
 		printf("Failed: execl() errno: %s\n", strerror(errno));
 		exit(PTS_UNRESOLVED);
 

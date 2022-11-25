@@ -711,7 +711,7 @@ static int generate_event(struct tcase *tc, unsigned long long expected_mask)
 
 		foreach_path(tc, path, event_path) {
 			if (expected_mask & FAN_OPEN_EXEC) {
-				SAFE_EXECL(path, path, NULL);
+				SAFE_EXECL(path, path, (char *)NULL);
 			} else {
 				fd = SAFE_OPEN(path, O_RDONLY);
 

@@ -61,7 +61,7 @@ static void test_noexec(void)
 {
 	snprintf(file, PATH_MAX, "%s/noexec", MNTPOINT);
 	otfd = SAFE_OPEN(file, O_CREAT | O_RDWR, 0700);
-	TST_EXP_FAIL(execlp(file, basename(file), NULL), EACCES);
+	TST_EXP_FAIL(execlp(file, basename(file), (char *)NULL), EACCES);
 }
 
 static void test_remount(void)
@@ -88,7 +88,7 @@ static void test_nosuid(void)
 			SAFE_CHMOD(BIN_PATH, SUID_MODE);
 
 		SAFE_SETREUID(nobody_uid, nobody_uid);
-		SAFE_EXECL(BIN_PATH, BIN_PATH, NULL);
+		SAFE_EXECL(BIN_PATH, BIN_PATH, (char *)NULL);
 		tst_brk(TFAIL | TTERRNO, "Failed to execute %s", BIN_PATH);
 	}
 

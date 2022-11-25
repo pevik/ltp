@@ -35,7 +35,7 @@ static void test_setrlimit(void)
 
 	child = SAFE_FORK();
 	if (child == 0)
-		SAFE_EXECLP("/bin/true", "/bin/true", NULL);
+		SAFE_EXECLP("/bin/true", "/bin/true", (char *)NULL);
 	SAFE_WAITPID(child, &status, 0);
 
 	if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {

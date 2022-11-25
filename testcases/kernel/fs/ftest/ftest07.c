@@ -237,7 +237,7 @@ static void runtest(void)
 	}
 
 	if (pid == 0) {
-		execl("/bin/rm", "rm", "-rf", fuss, NULL);
+		execl("/bin/rm", "rm", "-rf", fuss, (char *)NULL);
 		exit(1);
 	} else
 		wait(&status);

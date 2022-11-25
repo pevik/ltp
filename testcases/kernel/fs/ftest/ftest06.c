@@ -219,7 +219,7 @@ int main(int ac, char *av[])
 		}
 
 		if (pid == 0) {
-			execl("/bin/rm", "rm", "-rf", homedir, NULL);
+			execl("/bin/rm", "rm", "-rf", homedir, (char *)NULL);
 
 		} else
 			wait(&status);
@@ -234,7 +234,7 @@ int main(int ac, char *av[])
 			tst_brkm(TBROK | TERRNO, NULL, "fork failed");
 		}
 		if (pid == 0) {
-			execl("/bin/rm", "rm", "-rf", dirname, NULL);
+			execl("/bin/rm", "rm", "-rf", dirname, (char *)NULL);
 			exit(1);
 		} else
 			wait(&status);

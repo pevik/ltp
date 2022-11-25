@@ -76,7 +76,7 @@ static void grandchild_maxrss(void)
 {
 	if (!SAFE_FORK())
 		SAFE_EXECLP("getrusage03_child", "getrusage03_child",
-			    "grand_consume", "300", NULL);
+			    "grand_consume", "300", (char *)NULL);
 	tst_reap_children();
 	SAFE_GETRUSAGE(RUSAGE_CHILDREN, &ru);
 
@@ -96,7 +96,7 @@ static void zombie(void)
 
 	if (!pid)
 		SAFE_EXECLP("getrusage03_child", "getrusage03_child",
-			    "consume", "400", NULL);
+			    "consume", "400", (char *)NULL);
 
 	TST_PROCESS_STATE_WAIT(pid, 'Z', 0);
 	SAFE_GETRUSAGE(RUSAGE_CHILDREN, &ru);
@@ -125,7 +125,7 @@ static void sig_ign(void)
 
 	if (!pid)
 		SAFE_EXECLP("getrusage03_child", "getrusage03_child",
-			    "consume", "500", NULL);
+			    "consume", "500", (char *)NULL);
 
 	TST_PROCESS_EXIT_WAIT(pid, 0);
 	SAFE_GETRUSAGE(RUSAGE_CHILDREN, &ru);
@@ -149,7 +149,8 @@ static void inherit_exec(void)
 		sprintf(str_maxrss_child, "%ld", ru.ru_maxrss);
 
 		SAFE_EXECLP("getrusage03_child", "getrusage03_child",
-			    "compare", str_maxrss_self, str_maxrss_child, NULL);
+			    "compare", str_maxrss_self, str_maxrss_child,
+			    (char *)NULL);
 	}
 	tst_reap_children();
 }

@@ -205,7 +205,7 @@ static void test_cloexec(void)
 		tst_brkm(TBROK | TERRNO, cleanup, "fork() failed");
 
 	if (pid == 0) {
-		if (execlp("open12_child", "open12_child", buf, NULL))
+		if (execlp("open12_child", "open12_child", buf, (char *)NULL))
 			exit(2);
 	}
 

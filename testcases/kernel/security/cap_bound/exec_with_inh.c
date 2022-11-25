@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
 	}
 
 	/* execute "check_pe 1" */
-	execl("check_pe", "check_pe", "1", NULL);
+	execl("check_pe", "check_pe", "1", (char *)NULL);
 	tst_resm(TBROK, "Failed to execute check_pe (errno %d)", errno);
 #else /* HAVE_LIBCAP */
 	tst_resm(TCONF, "System doesn't have POSIX capabilities.");

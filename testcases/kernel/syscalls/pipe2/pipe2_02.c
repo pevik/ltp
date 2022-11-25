@@ -34,7 +34,7 @@ static void verify_pipe2(void)
 	sprintf(buf, "%d", fds[1]);
 	pid = SAFE_FORK();
 	if (pid == 0)
-		SAFE_EXECLP(TESTBIN, TESTBIN, buf, NULL);
+		SAFE_EXECLP(TESTBIN, TESTBIN, buf, (char *)NULL);
 
 	SAFE_WAIT(&status);
 	if (WIFEXITED(status)) {

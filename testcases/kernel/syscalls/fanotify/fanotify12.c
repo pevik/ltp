@@ -118,7 +118,7 @@ static int generate_events(void)
 		if (fd > 0)
 			SAFE_CLOSE(fd);
 
-		SAFE_EXECL(TEST_APP, TEST_APP, NULL);
+		SAFE_EXECL(TEST_APP, TEST_APP, (char *)NULL);
 		exit(1);
 	}
 

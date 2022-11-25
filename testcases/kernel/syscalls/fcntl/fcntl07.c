@@ -106,7 +106,7 @@ static void verify_cloexec(struct tcase *tc)
 		tst_resm(TBROK | TERRNO, "fork() failed");
 		return;
 	case 0:
-		execlp(TCID, TCID, "-T", pidname, NULL);
+		execlp(TCID, TCID, "-T", pidname, (char *)NULL);
 
 		/* the ONLY reason to do this is to get the errno printed out */
 		fprintf(stderr, "exec(%s, %s, -T, %s) failed.  Errno %s [%d]\n",

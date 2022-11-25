@@ -77,7 +77,7 @@ int main(void)
 	}
 
 	/* execute "check_pe 0" */
-	execl("check_pe", "check_pe", "0", NULL);
+	execl("check_pe", "check_pe", "0", (char *)NULL);
 	tst_resm(TBROK, "Failed to execute check_pe (errno %d)", errno);
 #else /* libcap */
 	tst_resm(TCONF, "System doesn't have POSIX capabilities.");

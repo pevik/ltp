@@ -165,7 +165,7 @@ void testfunc_cloexec(void)
 		tst_brkm(TBROK | TERRNO, cleanup, "fork() failed");
 
 	if (pid == 0) {
-		if (execlp(TEST_APP, TEST_APP, buf, NULL))
+		if (execlp(TEST_APP, TEST_APP, buf, (char *)NULL))
 			exit(2);
 	}
 

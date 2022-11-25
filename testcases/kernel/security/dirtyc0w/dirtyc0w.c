@@ -70,7 +70,7 @@ void dirtyc0w_test(void)
 	if (!pid) {
 		SAFE_SETGID(nobody_gid);
 		SAFE_SETUID(nobody_uid);
-		SAFE_EXECLP("dirtyc0w_child", "dirtyc0w_child", NULL);
+		SAFE_EXECLP("dirtyc0w_child", "dirtyc0w_child", (char *)NULL);
 	}
 
 	TST_CHECKPOINT_WAIT(0);

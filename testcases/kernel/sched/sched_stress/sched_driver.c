@@ -323,7 +323,8 @@ int start_testcase(char *name1, char *name2, char *param1, char *param2,
 	case -1:
 		exit(-1);
 	case 0:
-		execl(name1, name2, param1, param2, param3, param4, NULL);
+		execl(name1, name2, param1, param2, param3, param4,
+		      (char *)NULL);
 		printf("ERROR: start_testcase():  execl failed.\n");
 		exit(-1);
 	default:

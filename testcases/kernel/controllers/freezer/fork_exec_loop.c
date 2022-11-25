@@ -31,7 +31,7 @@ int main(int argc, char **argv)
 
 		for (i = 0; i < count; i++)
 			if (fork() == 0)
-				execlp("/bin/true", "true", NULL);
+				execlp("/bin/true", "true", (char *)NULL);
 
 		for (i = 0; i < count; i++)
 			wait(&s);

@@ -168,7 +168,7 @@ static int fork_drop_and_exec(int keepperms, cap_t expected_caps)
 		drop_root(keepperms);
 		print_my_caps();
 		sprintf(buf, "%d", seqno);
-		ret = execlp(TSTPATH, TSTPATH, buf, NULL);
+		ret = execlp(TSTPATH, TSTPATH, buf, (char *)NULL);
 		capstxt = cap_to_text(expected_caps, NULL);
 		snprintf(buf, 200, "failed to run as %s\n", capstxt);
 		cap_free(capstxt);

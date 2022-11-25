@@ -127,9 +127,9 @@ static int testfperm(const char *file_name, int flag, int user_id,
 			 * no binmft handler for it, execl does not.
 			 */
 			if (flag)
-				execl(file_name, file_name, NULL);
+				execl(file_name, file_name, (char *)NULL);
 			else
-				execlp(file_name, "test", NULL);
+				execlp(file_name, "test", (char *)NULL);
 
 			exit(1);
 			break;
