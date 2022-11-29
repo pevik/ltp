@@ -228,17 +228,9 @@ int safe_semget(const char *file, const int lineno, key_t key, int nsems,
 }
 
 int safe_semctl(const char *file, const int lineno, int semid, int semnum,
-		int cmd, ...)
+		int cmd, union semun un)
 {
 	int rval;
-	va_list va;
-	union semun un;
-
-	va_start(va, cmd);
-
-	un = va_arg(va, union semun);
-
-	va_end(va);
 
 	rval = semctl(semid, semnum, cmd, un);
 
