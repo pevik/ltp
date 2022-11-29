@@ -86,9 +86,11 @@ void *safe_realloc(const char *file, const int lineno, void *ptr, size_t size);
 #define SAFE_MUNMAP(addr, length) \
 	safe_munmap(__FILE__, __LINE__, NULL, (addr), (length))
 
+#define __SAFE_OPEN(pathname, oflags, mode, ...) \
+	safe_open(__FILE__, __LINE__, NULL, (pathname), (oflags), (mode))
+
 #define SAFE_OPEN(pathname, oflags, ...) \
-	safe_open(__FILE__, __LINE__, NULL, (pathname), (oflags), \
-	    ##__VA_ARGS__)
+	__SAFE_OPEN((pathname), (oflags), ##__VA_ARGS__, 0)
 
 #define SAFE_PIPE(fildes) \
 	safe_pipe(__FILE__, __LINE__, NULL, (fildes))

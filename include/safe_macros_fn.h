@@ -74,7 +74,8 @@ int safe_munmap(const char *file, const int lineno,
                 void (*cleanup_fn)(void), void *addr, size_t length);
 
 int safe_open(const char *file, const int lineno,
-              void (*cleanup_fn)(void), const char *pathname, int oflags, ...);
+              void (*cleanup_fn)(void), const char *pathname, int oflags,
+              mode_t mode);
 
 int safe_pipe(const char *file, const int lineno,
               void (*cleanup_fn)(void), int fildes[2]);
