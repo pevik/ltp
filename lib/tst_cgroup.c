@@ -1345,7 +1345,7 @@ int safe_cg_open(const char *const file, const int lineno,
 		if (!alias)
 			continue;
 
-		fds[i++] = safe_openat(file, lineno, (*dir)->dir_fd, alias, flags);
+		fds[i++] = safe_openat(file, lineno, (*dir)->dir_fd, alias, flags, 0);
 	}
 
 	return i;
