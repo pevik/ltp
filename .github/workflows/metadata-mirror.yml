@@ -1,0 +1,107 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Copyright (c) 2022 Petr Vorel <pvorel@suse.cz>
+
+name: "Mirror metadata doc to homepage"
+
+on:
+  push:
+    branches:
+      - master
+
+permissions: {}
+jobs:
+  metadata-mirror:
+    permissions:
+      contents: write # for git push
+
+    runs-on: ubuntu-latest
+    if: ${{ github.repository == 'linux-test-project/ltp' }}
+    steps:
+      - name: Check secret
+        env:
+          GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+        run: |
+          if [ -z "$GH_PERSONAL_ACCESS_TOKEN" ]; then
+            echo "::error::GH_PERSONAL_ACCESS_TOKEN environment variable is not set"
+            exit 1
+          fi
+
+      - name: Checkout LTP
+        uses: actions/checkout@v3
+        with:
+          path: ltp
+          # we need to fetch whole history to get 'git describe' working for correct version in docs
+          fetch-depth: 0
+
+      - name: Checkout LTP homepage
+        uses: actions/checkout@v3
+        with:
+          repository: "linux-test-project/linux-test-project.github.com"
+          path: linux-test-project.github.com
+          persist-credentials: false
+        env:
+          GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+
+      - name: Check metadata need to be updated
+        run: |
+          cd "$GITHUB_WORKSPACE/ltp/testcases/"
+          commit=$(git log --pretty=format:"%h" -1 .)
+          echo "::notice::LTP commit in testcases/: '$commit'"
+
+          # check for changes
+          cd "$GITHUB_WORKSPACE/linux-test-project.github.com"
+          git grep '<p><strong>Version</strong>:' metadata/metadata.nightly.html
+          sed -ne 's/.*<p><strong>Version<\/strong>: \(.*\)<\/p>/\1/p' metadata/metadata.nightly.html
+          old_commit=$(sed -ne 's/.*<p><strong>Version<\/strong>: \(.*\)<\/p>/\1/p' metadata/metadata.nightly.html)
+          old_commit=$(echo "$old_commit" | sed 's/.*-g\(.*\)/\1/')
+          echo "::notice::old commit in linux-test-project.github.com: '$old_commit'"
+
+          if [ "$commit" = "$old_commit" ]; then
+            echo "::notice::doc already contains '$old_commit'"
+            exit 0
+          fi
+
+      - name: Install dependencies
+        run: |
+          apt="apt install -y --no-install-recommends"
+          sudo $apt asciidoctor autoconf automake libjson-perl libwww-perl make
+
+          echo "which asciidoctor"
+          which asciidoctor || { echo "::error::missing asciidoctor"; exit 1; }
+
+      - name: Configure LTP
+        run: |
+          cd "$GITHUB_WORKSPACE/ltp/"
+          make autotools && ./configure --with-metadata-generator=asciidoctor && make Version || { echo "::error::LTP configure failed"; exit 1; }
+
+          echo "git describe"
+          git describe
+          echo "Version"
+          cat Version
+
+      - name: Generate html metadata doc
+        run: |
+          cd "$GITHUB_WORKSPACE/ltp/metadata/"
+          echo "going to generate metadata"
+          make -j$(nproc)
+          cp -v ../docparse/*.html "$GITHUB_WORKSPACE/linux-test-project.github.com/metadata/metadata.nightly.html"
+
+      - name: Push generated html metadata to LTP homepage
+        env:
+          GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "Metadata doc mirror"
+
+          cd "$GITHUB_WORKSPACE/ltp/"
+          commit_desc=$(git log --pretty=format:"%h (\"%s\")" -1 .)
+          echo "commit_desc: '$commit_desc'"
+
+          cd "$GITHUB_WORKSPACE/linux-test-project.github.com"
+          git add .
+
+          # only commit if there are changes
+          git diff-index --quiet HEAD -- || git commit -m "Update to $commit_desc" .
+
+          echo "::notice::GH_PERSONAL_ACCESS_TOKEN: $GH_PERSONAL_ACCESS_TOKEN"
+          git push https://${GH_PERSONAL_ACCESS_TOKEN}@github.com/linux-test-project/linux-test-project.github.com.git
