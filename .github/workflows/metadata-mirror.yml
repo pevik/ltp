@@ -1,0 +1,114 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Copyright (c) 2022 Petr Vorel <pvorel@suse.cz>
+
+name: "Mirror metadata doc to homepage"
+
+on:
+  push:
+    #branches:
+      #- master
+
+permissions: {}
+jobs:
+  mirror:
+    permissions:
+      contents: write # for git push
+
+    runs-on: ubuntu-latest
+    #if: ${{ github.repository == 'linux-test-project/ltp' }}
+    if: ${{ github.repository == 'pevik/ltp_foo' }}
+    steps:
+      - name: Check secret
+        env:
+          GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+        run: |
+          echo "GH_PERSONAL_ACCESS_TOKEN: '${GH_PERSONAL_ACCESS_TOKEN}'" # FIXME: debug
+          echo "::add-mask::${GH_PERSONAL_ACCESS_TOKEN}" # FIXME: debug
+          if [ -z "$GH_PERSONAL_ACCESS_TOKEN" ]; then
+            echo "GH_PERSONAL_ACCESS_TOKEN environment variable is not set"
+            exit 1
+          fi
+
+      - name: Checkout LTP
+        uses: actions/checkout@v2
+        with:
+          path: ltp
+
+      - name: Checkout LTP homepage
+        #uses: actions/checkout@v3
+        uses: actions/checkout@v2
+        with:
+          #repository: "linux-test-project/linux-test-project.github.com"
+          repository: "pevik/linux-test-project.github.com_foo"
+          path: linux-test-project.github.com
+          #repo-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+          persist-credentials: false
+        env:
+          GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+
+      - name: Check metadata need to be updated
+        run: |
+          cd "$GITHUB_WORKSPACE/ltp/testcases/"
+
+          commit=$(git log --pretty=format:"%h" -1 .)
+          echo "commit: '$commit'"
+
+          cd "$GITHUB_WORKSPACE/linux-test-project.github.com"
+
+          # check for changes
+          git grep '<p><strong>Version</strong>:' metadata/metadata.nightly.html
+          sed -ne 's/.*<p><strong>Version<\/strong>: \(.*\)<\/p>/\1/p' metadata/metadata.nightly.html
+          old_commit=$(sed -ne 's/.*<p><strong>Version<\/strong>: \(.*\)<\/p>/\1/p' metadata/metadata.nightly.html)
+          echo "old_commit: '$old_commit'"
+          old_commit=$(echo "$old_commit" | sed 's/.*-g\(.*\)/\1/')
+          echo "old_commit: '$old_commit'"
+
+          if [ "$commit" = "$old_commit" ]; then
+            echo "doc already contains '$old_commit'"
+            exit 0
+          fi
+
+      - name: Install dependencies
+        run: |
+          apt="apt install -y --no-install-recommends"
+          sudo $apt asciidoctor autoconf automake libjson-perl libwww-perl make
+
+      - name: Configure LTP
+        run: |
+          cd "$GITHUB_WORKSPACE/ltp/"
+          echo "going to generate metadata"
+          make autotools && ./configure --with-metadata-generator=asciidoctor
+
+      - name: Generate metadata doc
+        run: |
+          # generate metadata
+          cd "$GITHUB_WORKSPACE/ltp/"
+          commit_desc=$(git log --pretty=format:"%h (\"%s\")" -1 .)
+          echo "commit_desc: '$commit_desc'"
+          cd metadata/
+          echo "which asciidoctor"
+          which asciidoctor
+          make -j$(nproc)
+          pwd; echo "find"; find; echo "find ../docparse"; find ../docparse/
+          cp -v ../docparse/*.html "$GITHUB_WORKSPACE/linux-test-project.github.com/metadata/metadata.nightly.html"
+
+      - name: Push doc to homepage
+        env:
+          GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+        run: |
+          # git commit & push
+          git config --global user.email "actions@github.com"
+          git config --global user.name "Metadata doc mirror"
+
+          cd "$GITHUB_WORKSPACE/linux-test-project.github.com"
+          git add .
+
+          echo "GH_PERSONAL_ACCESS_TOKEN: '${GH_PERSONAL_ACCESS_TOKEN}'" # FIXME: debug
+          echo "::add-mask::${GH_PERSONAL_ACCESS_TOKEN}" # FIXME: debug
+          echo "::notice::$GH_PERSONAL_ACCESS_TOKEN"
+
+          # only commit if there are changes
+          git diff-index --quiet HEAD -- || git commit -m "Update to $commit_desc" .
+
+          #git push https://${GH_PERSONAL_ACCESS_TOKEN}@github.com/linux-test-project/linux-test-project.github.com.git
+          git push https://${GH_PERSONAL_ACCESS_TOKEN}@github.com/pevik/linux-test-project.github.com_foo.git
