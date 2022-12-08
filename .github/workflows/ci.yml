@@ -9,6 +9,7 @@ permissions:
 jobs:
   job:
     runs-on: ubuntu-latest
+    if: ${{ github.repository == 'linux-test-project/ltp' }}
 
     strategy:
       fail-fast: false
