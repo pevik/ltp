@@ -1039,12 +1039,10 @@ static int *worker(struct thread_info *t)
 	char *this_stage = NULL;
 	struct timeval stage_time;
 	int status = 0;
-	int iteration = 0;
 	int cnt;
 
 	aio_setup(&t->io_ctx, 512);
 
-restart:
 	if (num_threads > 1) {
 		if (pthread_barrier_wait(&worker_barrier))
 			gettimeofday(&global_stage_start_time, NULL);
@@ -1113,12 +1111,6 @@ restart:
 	if (num_threads > 1) {
 		if (pthread_barrier_wait(&worker_barrier))
 			global_thread_throughput(t, this_stage);
-	}
-
-	/* someone got restarted, go back to the beginning */
-	if (t->active_opers && cnt < iterations) {
-		iteration++;
-		goto restart;
 	}
 
 	/* finally, free all the ram */
