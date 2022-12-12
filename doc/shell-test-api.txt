@@ -656,14 +656,14 @@ with syntax similar to the shell test command.
 
 [source,sh]
 -------------------------------------------------------------------------------
-# Exit the test if kernel version is older or equal to 2.6.8
-if tst_kvcmp -le 2.6.8; then
-	tst_brk TCONF "Kernel newer than 2.6.8 is needed"
+# Exit the test if kernel version is older or equal to 5.0.0
+if tst_kvcmp -le 5.0.0; then
+	tst_brk TCONF "Kernel newer than 5.0.0 is needed"
 fi
 
-# Exit the test if kernel is newer than 3.8 and older than 4.0.1
-if tst_kvcmp -gt 3.8 -a -lt 4.0.1; then
-	tst_brk TCONF "Kernel must be older than 3.8 or newer than 4.0.1"
+# Exit the test if kernel is newer than 3.10 and older than 4.0.1
+if tst_kvcmp -gt 3.10 -a -lt 4.0.1; then
+	tst_brk TCONF "Kernel must be older than 3.10 or newer than 4.0.1"
 fi
 -------------------------------------------------------------------------------
 
@@ -680,7 +680,7 @@ fi
 | -o         | Does logical or between two expressions
 |=======================================================================
 
-The format for kernel version has to either be with one dot e.g. '2.6' or with
+The format for kernel version has to either be with one dot e.g. '3.10' or with
 two dots e.g. '4.8.1'.
 
 .tst_fs_has_free

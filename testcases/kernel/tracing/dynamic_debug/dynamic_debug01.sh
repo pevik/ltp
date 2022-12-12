@@ -46,10 +46,6 @@ mount_debugfs()
 
 setup()
 {
-	if tst_kvcmp -lt 2.6.30 ; then
-		tst_brk TCONF "Dynamic debug is available since version 2.6.30"
-	fi
-
 	mount_debugfs
 	if [ ! -d "$DEBUGFS_PATH/dynamic_debug" ] ; then
 		tst_brk TBROK "Unable to find $DEBUGFS_PATH/dynamic_debug"
@@ -59,10 +55,8 @@ setup()
 		tst_brk TBROK "Unable to find $DEBUGFS_CONTROL"
 	fi
 
-	if tst_kvcmp -ge 3.4 ; then
-		NEW_INTERFACE=1
-		EMPTY_FLAG="=_"
-	fi
+	NEW_INTERFACE=1
+	EMPTY_FLAG="=_"
 
 	grep -v "^#" "$DEBUGFS_CONTROL" > "$DYNDEBUG_STATEMENTS"
 }
@@ -87,10 +81,8 @@ do_all_flags()
 
 	for INPUT_LINE in $ALL_INPUTS; do
 		do_flag "+p" "$OPTION" "$INPUT_LINE"
-		if tst_kvcmp -ge 3.2 || [ $NEW_INTERFACE -eq 1 ] ; then
-			do_flag "+flmt" "$OPTION" "$INPUT_LINE"
-			do_flag "-flmt" "$OPTION" "$INPUT_LINE"
-		fi
+		do_flag "+flmt" "$OPTION" "$INPUT_LINE"
+		do_flag "-flmt" "$OPTION" "$INPUT_LINE"
 		do_flag "-p" "$OPTION" "$INPUT_LINE"
 	done
 
