@@ -249,27 +249,17 @@ int check_sync_event(struct input_event *iev)
 int no_events_queued(int fd, int stray_sync_event)
 {
 	struct pollfd fds = {.fd = fd, .events = POLLIN};
-	int ret, res, sync_event_ignored;
+	int ret, res;
 	struct input_event ev;
-
-	if (tst_kvercmp(3, 7, 0) < 0 && stray_sync_event)
-		sync_event_ignored = 1;
 
 	ret = poll(&fds, 1, 30);
 
 	if (ret > 0) {
 		res = read(fd, &ev, sizeof(ev));
-
 		if (res == sizeof(ev)) {
-			if (sync_event_ignored && check_sync_event(&ev)) {
-				ret = 0;
-				tst_resm(TINFO,
-					 "Ignoring stray sync event (known problem)");
-			} else {
-				tst_resm(TINFO,
-					 "Unexpected ev type=%i code=%i value=%i",
-					 ev.type, ev.code, ev.value);
-			}
+			tst_resm(TINFO,
+				"Unexpected ev type=%i code=%i value=%i",
+				ev.type, ev.code, ev.value);
 		}
 	}
 

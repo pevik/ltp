@@ -185,13 +185,7 @@ static void setup0(void)
 				 "errno: %s", strerror(errno));
 		}
 
-		/*
-		 * kernel commit 46ce341b2f176c2611f12ac390adf862e932eb02
-		 * changed -EINVAL to -ENOIOCTLCMD, so vfs_ioctl now
-		 * returns -ENOTTY.
-		 */
-		if ((tst_kvercmp(3, 5, 0)) >= 0)
-			tdat[testno].experrno = ENOTTY;
+		tdat[testno].experrno = ENOTTY;
 	}
 }
 
@@ -211,8 +205,7 @@ static void setup1(void)
 	sinlen = sizeof(fsin1);
 
 	if (strncmp(tdat[testno].desc, "ATMARK on UDP", 14) == 0) {
-		if ((tst_kvercmp(2, 6, 39)) >= 0)
-			tdat[testno].experrno = ENOTTY;
+		tdat[testno].experrno = ENOTTY;
 	}
 }
 

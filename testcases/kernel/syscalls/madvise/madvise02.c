@@ -97,14 +97,9 @@ static void tcases_filter(void)
 #endif /* if !defined(UCLINUX) */
 		break;
 		case MADV_REMOVE:
-			if ((tst_kvercmp(2, 6, 16)) < 0)
-				tc->skip = 1;
 		break;
 		case MADV_MERGEABLE:
 		case MADV_UNMERGEABLE:
-			if ((tst_kvercmp(2, 6, 32)) < 0)
-				tc->skip = 1;
-
 			/* kernel configured with CONFIG_KSM,
 			 * skip EINVAL test for MADV_MERGEABLE. */
 			if (access(KSM_SYS_DIR, F_OK) == 0)
@@ -114,8 +109,7 @@ static void tcases_filter(void)
 			/* In kernel commit 1998cc0, madvise(MADV_WILLNEED) to
 			 * anon mem doesn't return -EBADF now, as now we support
 			 * swap prefretch. */
-			if ((tst_kvercmp(3, 9, 0)) > 0 &&
-					tc->exp_errno == EBADF)
+			if (tc->exp_errno == EBADF)
 				tc->skip = 1;
 		break;
 		case MADV_FREE:
