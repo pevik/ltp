@@ -559,7 +559,8 @@ static struct tst_test test = {
 Testcases for newly added kernel functionality require kernel newer than a
 certain version to run. All you need to skip a test on older kernels is to
 set the '.min_kver' string in the 'struct tst_test' to a minimal required
-kernel version, e.g. '.min_kver = "2.6.30"'.
+kernel version, e.g. '.min_kver = "3.10.0"'. For ltp, the oldest supported
+kernel version is 3.0, so we don't add this check for old kernel ie 2.6.32.
 
 For more complicated operations such as skipping a test for a certain range
 of kernel versions, following functions could be used:
@@ -585,8 +586,7 @@ positive means that it's newer.
 
 The second function 'tst_kvercmp2()' allows for specifying per-vendor table of
 kernel versions as vendors typically backport fixes to their kernels and the
-test may be relevant even if the kernel version does not suggests so. See
-'testcases/kernel/syscalls/inotify/inotify04.c' for example usage.
+test may be relevant even if the kernel version does not suggests so.
 
 WARNING: The shell 'tst_kvercmp' maps the result into unsigned integer - the
          process exit value.
