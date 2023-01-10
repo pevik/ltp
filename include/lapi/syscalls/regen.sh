@@ -38,12 +38,12 @@ cat << EOF > "${output_pid}"
 #ifdef TST_TEST_H__
 #define TST_SYSCALL_BRK__(NR, SNR) ({ \\
 	tst_brk(TCONF, \\
-		"syscall(%d) " SNR " not supported on your arch", NR); \\
+		"syscall(%ld) " SNR " not supported on your arch", NR); \\
 })
 #else
 #define TST_SYSCALL_BRK__(NR, SNR) ({ \\
 	tst_brkm(TCONF, CLEANUP, \\
-		"syscall(%d) " SNR " not supported on your arch", NR); \\
+		"syscall(%ld) " SNR " not supported on your arch", NR); \\
 })
 #endif
 
