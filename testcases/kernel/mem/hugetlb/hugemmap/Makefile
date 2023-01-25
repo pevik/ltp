@@ -8,5 +8,5 @@ include $(top_srcdir)/include/mk/testcases.mk
 include $(abs_srcdir)/../Makefile.inc
 include $(top_srcdir)/include/mk/generic_leaf_target.mk
 
-hugemmap15: CFLAGS+=-O0
+hugemmap15: CFLAGS+=-O
 hugemmap06: CFLAGS+=-pthread
