@@ -11,12 +11,15 @@
 #include "config.h"
 #include <sys/syscall.h>
 #include <sys/types.h>
-#include <sys/mount.h>
 
 #ifndef HAVE_FSOPEN
 # ifdef HAVE_LINUX_MOUNT_H
 #  include <linux/mount.h>
+# else
+#  include <sys/mount.h>
 # endif
+#else
+# include <sys/mount.h>
 #endif
 
 #include "lapi/fcntl.h"
