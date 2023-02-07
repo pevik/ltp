@@ -25,6 +25,7 @@
 #include <termios.h>
 #include "tst_test.h"
 #include "lapi/ioctl.h"
+#include "tst_safe_macros.h"
 
 #define	INVAL_IOCTL	9999999
 #define	DEFAULT_TTY_DEVICE	"/dev/tty0"
@@ -70,10 +71,19 @@ static void verify_ioctl(unsigned int i)
 
 static void setup(void)
 {
+	struct stat st;
+
 	if (!device)
 		device = DEFAULT_TTY_DEVICE;
 
 	tst_res(TINFO, "Using device '%s'", device);
+
+	if (access(device, F_OK))
+		tst_brk(TCONF, "Device '%s' does not exist", device);
+
+	SAFE_STAT(device, &st);
+	if (!S_ISCHR(st.st_mode))
+		tst_brk(TCONF, "Device '%s' is not a char device", device);
 
 	fd = SAFE_OPEN(device, O_RDWR, 0777);
 	fd_file = SAFE_OPEN("x", O_CREAT, 0777);
