@@ -27,6 +27,7 @@
 #include "lapi/ioctl.h"
 
 #define	INVAL_IOCTL	9999999
+#define	DEFAULT_TTY_DEVICE	"/dev/tty0"
 
 static int fd, fd_file;
 static int bfd = -1;
@@ -70,7 +71,9 @@ static void verify_ioctl(unsigned int i)
 static void setup(void)
 {
 	if (!device)
-		tst_brk(TBROK, "You must specify a tty device with -D option");
+		device = DEFAULT_TTY_DEVICE;
+
+	tst_res(TINFO, "Using device '%s'", device);
 
 	fd = SAFE_OPEN(device, O_RDWR, 0777);
 	fd_file = SAFE_OPEN("x", O_CREAT, 0777);
