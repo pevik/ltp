@@ -22,7 +22,6 @@
  * - check /MQ2 existance
  * - umount
  */
-#define _GNU_SOURCE
 
 #include "tst_test.h"
 #include "lapi/sched.h"

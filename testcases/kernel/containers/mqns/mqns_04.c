@@ -21,7 +21,6 @@
  * - parent tries 'touch <tmpdir>/mqueue/MQ2' -> should fail
  * - parent umount mqueuefs
  */
-#define _GNU_SOURCE
 
 #include <sys/wait.h>
 #include "tst_test.h"
