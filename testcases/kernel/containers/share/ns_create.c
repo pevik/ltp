@@ -20,7 +20,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "tst_test.h"
-#include "ns_common.h"
+#include "tst_ns_common.h"
 
 extern struct tst_test *tst_test;
 
