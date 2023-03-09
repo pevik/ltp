@@ -13,10 +13,8 @@
 #include <sys/types.h>
 #include <sys/mount.h>
 
-#ifndef HAVE_FSOPEN
-# ifdef HAVE_LINUX_MOUNT_H
-#  include <linux/mount.h>
-# endif
+#ifdef HAVE_LINUX_MOUNT_H
+# include <linux/mount.h>
 #endif
 
 #include "lapi/fcntl.h"
