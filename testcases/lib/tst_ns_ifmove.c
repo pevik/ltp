@@ -58,7 +58,7 @@ int main(int argc, char **argv)
 	int intf_index, pid, rtnetlink_socket;
 
 	if (argc != 3) {
-		printf("ns_ifmove <INTERFACE_NAME> <NAMESPACE_PID>\n");
+		printf("tst_ns_ifmove <INTERFACE_NAME> <NAMESPACE_PID>\n");
 		return 1;
 	}
 
