@@ -3,6 +3,7 @@
  * Copyright (c) 2015 Red Hat, Inc.
  *               Matus Marhefka <mmarhefk@redhat.com>
  * Copyright (C) 2023 SUSE LLC Andrea Cervesato <andrea.cervesato@suse.com>
+ * Copyright (c) Linux Test Project, 2020-2023
  */
 
 /*\
@@ -32,7 +33,7 @@ static void print_help(void)
 {
 	int i;
 
-	printf("usage: ns_create <%s", params[0].name);
+	printf("usage: tst_ns_create <%s", params[0].name);
 
 	for (i = 1; params[i].name; i++)
 		printf("|,%s", params[i].name);

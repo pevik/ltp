@@ -8,7 +8,7 @@ LTP namespaces helper tools
 LTP provides helper tools for creating and working with namespaces. These are
 located in ltp/testcases/kernel/containers/share directory and include:
 
-* ns_create
+* tst_ns_create
 ** creates a child process in the new specified namespace(s)
 ** child is then daemonized and is running in the background
 ** PID of the daemonized child process is printed on the stdout
@@ -34,7 +34,7 @@ The following code shows how test cases can use the namespaces helper tools:
 -------------------------------------------------------------------------------
 # Creates a new network and ipc namespace and stores the PID of the daemonized
 # process inside that namespace into variable myns
-myns=$(ns_create net,ipc)
+myns=$(tst_ns_create net,ipc)
 
 ip link add veth0 type veth peer name veth1
 

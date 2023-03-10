@@ -20,7 +20,7 @@ TST_NET_SKIP_VARIABLE_INIT=1
 IPV4_NET16_UNUSED="10.23"
 IPV6_NET32_UNUSED="fd00:23"
 
-# Set to "net" for ns_create/tst_ns_exec as their options requires
+# Set to "net" for tst_ns_create/tst_ns_exec as their options requires
 # to specify a namespace type. Empty for ip command.
 NS_TYPE=
 
@@ -115,13 +115,13 @@ netns_ns_exec_setup()
 
 	NS_EXEC="tst_ns_exec"
 
-	NS_HANDLE0=$(ns_create $NS_TYPE)
+	NS_HANDLE0=$(tst_ns_create $NS_TYPE)
 	if [ $? -eq 1 ]; then
 		tst_res TINFO "$NS_HANDLE0"
 		tst_brk TBROK "unable to create a new network namespace"
 	fi
 
-	NS_HANDLE1=$(ns_create $NS_TYPE)
+	NS_HANDLE1=$(tst_ns_create $NS_TYPE)
 	if [ $? -eq 1 ]; then
 		tst_res TINFO "$NS_HANDLE1"
 		tst_brk TBROK "unable to create a new network namespace"

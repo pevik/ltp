@@ -115,12 +115,12 @@ init_ltp_netspace()
 	local pid
 
 	if [ ! -f /var/run/netns/ltp_ns -a -z "$LTP_NETNS" ]; then
-		tst_require_cmds ip ns_create tst_ns_exec ns_ifmove
+		tst_require_cmds ip tst_ns_create tst_ns_exec ns_ifmove
 		tst_require_root
 
 		tst_require_drivers veth
 		ROD ip link add name ltp_ns_veth1 type veth peer name ltp_ns_veth2
-		pid="$(ROD ns_create net,mnt)"
+		pid="$(ROD tst_ns_create net,mnt)"
 		mkdir -p /var/run/netns
 		ROD ln -s /proc/$pid/ns/net /var/run/netns/ltp_ns
 		ROD tst_ns_exec $pid net,mnt mount --make-rprivate /sys

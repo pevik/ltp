@@ -198,7 +198,7 @@ _fs_bind_setup_test()
 fs_bind_create_ns()
 {
 	[ -n "$FS_BIND_MNTNS_PID" ] && tst_brk TBROK "Namespace exist already"
-	FS_BIND_MNTNS_PID=$(ns_create mnt)
+	FS_BIND_MNTNS_PID=$(tst_ns_create mnt)
 }
 
 fs_bind_exec_ns()

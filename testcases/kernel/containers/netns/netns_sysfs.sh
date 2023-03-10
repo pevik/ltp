@@ -19,7 +19,7 @@ do_setup()
 	DUMMYDEV_HOST="dummy_test0"
 	DUMMYDEV="dummy_test1"
 
-	NS_HANDLE=$(ns_create $NS_TYPE)
+	NS_HANDLE=$(tst_ns_create $NS_TYPE)
 	if [ $? -eq 1 ]; then
 		tst_res TINFO "$NS_HANDLE"
 		tst_brk TBROK "unable to create a new network namespace"
