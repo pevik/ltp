@@ -54,25 +54,25 @@ static char dev_path[PATH_MAX];
 static int device_acquired;
 static unsigned long prev_dev_sec_write;
 
-static const char *dev_variants[] = {
+static const char *dev_loop_variants[] = {
 	"/dev/loop%i",
 	"/dev/loop/%i",
 	"/dev/block/loop%i"
 };
 
-static int set_dev_path(int dev, char *path, size_t path_len)
+static int set_dev_loop_path(int dev, char *path, size_t path_len)
 {
 	unsigned int i;
 	struct stat st;
 
-	for (i = 0; i < ARRAY_SIZE(dev_variants); i++) {
-		snprintf(path, path_len, dev_variants[i], dev);
+	for (i = 0; i < ARRAY_SIZE(dev_loop_variants); i++) {
+		snprintf(path, path_len, dev_loop_variants[i], dev);
 
 		if (stat(path, &st) == 0 && S_ISBLK(st.st_mode))
-			return 1;
+			return 0;
 	}
 
-	return 0;
+	return 1;
 }
 
 int tst_find_free_loopdev(char *path, size_t path_len)
@@ -88,8 +88,8 @@ int tst_find_free_loopdev(char *path, size_t path_len)
 		rc = ioctl(ctl_fd, LOOP_CTL_GET_FREE);
 		close(ctl_fd);
 		if (rc >= 0) {
-			if (path)
-				set_dev_path(rc, path, path_len);
+			if (!path || set_dev_loop_path(rc, path, path_len) != 0)
+				tst_brkm(TBROK, NULL, "Could not stat loop device %i", rc);
 			tst_resm(TINFO, "Found free device %d '%s'",
 				rc, path ?: "");
 			return rc;
@@ -116,7 +116,7 @@ int tst_find_free_loopdev(char *path, size_t path_len)
 	 */
 	for (i = 0; i < 256; i++) {
 
-		if (!set_dev_path(i, buf, sizeof(buf)))
+		if (set_dev_loop_path(i, buf, sizeof(buf)) != 0)
 			continue;
 
 		dev_fd = open(buf, O_RDONLY);
