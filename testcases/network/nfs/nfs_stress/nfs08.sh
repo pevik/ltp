@@ -8,7 +8,6 @@
 # Based on reproducer from Neil Brown <neilb@suse.de>
 
 TST_TESTFUNC="do_test"
-TST_SKIP_FILESYSTEMS="vfat,exfat"
 TST_SETUP="do_setup"
 
 do_setup()
