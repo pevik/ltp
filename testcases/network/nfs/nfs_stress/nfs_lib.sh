@@ -28,7 +28,10 @@ NFS_PARSE_ARGS_CALLER="$TST_PARSE_ARGS"
 TST_OPTS="v:t:$TST_OPTS"
 TST_PARSE_ARGS=nfs_parse_args
 TST_USAGE=nfs_usage
-TST_NEEDS_TMPDIR=1
+TST_ALL_FILESYSTEMS=1
+TST_SKIP_FILESYSTEMS="exfat,ext2,ext3,fuse,ntfs,vfat,tmpfs"
+TST_MOUNT_DEVICE=1
+TST_FORMAT_DEVICE=1
 TST_NEEDS_ROOT=1
 TST_NEEDS_CMDS="$TST_NEEDS_CMDS mount exportfs mount.nfs"
 TST_SETUP="${TST_SETUP:-nfs_setup}"
@@ -68,7 +71,7 @@ get_remote_dir()
 	local v="$1"
 	local n="$2"
 
-	echo "$TST_TMPDIR/$v/$n"
+	echo "$TST_MNTPOINT/$v/$n"
 }
 
 nfs_get_remote_path()
@@ -194,6 +197,38 @@ nfs_setup()
 	done
 }
 
+check_umount()
+{
+	local i
+	local dir="$1"
+	local type="${2:-lhost}"
+	#local cmd="grep -q '$dir' /proc/mounts"
+	local cmd="grep '$dir' /proc/mounts"
+
+	tst_res TINFO "!!! check '$dir' ($type): '$cmd'"
+	echo
+	$cmd
+	echo
+	grep LTP /proc/mounts
+	echo
+	mount |grep LTP
+	#cat /proc/mounts # FIXME: debug
+
+	fuser -vm "$dir"
+	for i in $(seq 50); do
+		tst_res TINFO "$i: $dir"
+		if [ "$type" = "lhost" ]; then
+			$cmd || return
+		else
+			tst_rhost_run -c "$cmd" || return
+		fi
+		umount $dir
+		tst_sleep 100ms
+	done
+	fuser -vm "$dir"
+	tst_res TWARN "Failed to umount '$dir'"
+}
+
 nfs_cleanup()
 {
 	tst_res TINFO "Cleaning up testcase"
@@ -207,24 +242,54 @@ nfs_cleanup()
 	local n=0
 	for i in $VERSION; do
 		local_dir="$(get_local_dir $i $n)"
-		grep -q "$local_dir" /proc/mounts && umount $local_dir
+		find /proc/fs/nfsd/clients/
+		for i in /proc/fs/nfsd/clients/*/*; do echo "$i"; cat $i; echo; done
+		cat /proc/fs/nfs/exports
+		umount $local_dir
+		echo "$local_dir" > /proc/fs/nfsd/unlock_filesystem
+		echo '*' > /proc/fs/nfsd/write_unlock_ip
+		echo "$(tst_ipaddr rhost)" > /proc/fs/nfsd/write_unlock_ip
+		#grep -q "$local_dir" /proc/mounts && umount $local_dir
+		sync
+		check_umount "$local_dir"
 		n=$(( n + 1 ))
 	done
 
 	n=0
+	local j
 	for i in $VERSION; do
 		type=$(get_socket_type $n)
 		remote_dir="$(get_remote_dir $i $type)"
 
 		if tst_net_use_netns; then
 			if test -d $remote_dir; then
+				find /proc/fs/nfsd/clients/
+				for i in /proc/fs/nfsd/clients/*/*; do echo "$i"; cat $i; echo; done
+				cat /proc/fs/nfs/exports
+				echo "exportfs !!!"
+				exportfs
 				exportfs -u *:$remote_dir
+				for j in $(seq 10); do
+					tst_res TINFO "$j: exportfs $remote_dir"
+					exportfs |grep $remote_dir || break
+					echo "$remote_dir" > /proc/fs/nfsd/unlock_filesystem
+					echo '*' > /proc/fs/nfsd/write_unlock_ip
+					echo "$(tst_ipaddr rhost)" > /proc/fs/nfsd/write_unlock_ip
+
+					tst_sleep 100ms
+				done
+				fuser -vm "$dir"
+				check_umount "$remote_dir"
+				check_umount "$TST_DEVICE"
 				rm -rf $remote_dir
 			fi
 		else
 			tst_rhost_run -c "test -d $remote_dir && exportfs -u *:$remote_dir"
+			tst_rhost_run -c "echo "$remote_dir" > /proc/fs/nfsd/unlock_filesystem"
+			check_umount "$remote_dir" rhost
 			tst_rhost_run -c "test -d $remote_dir && rm -rf $remote_dir"
 		fi
+
 		n=$(( n + 1 ))
 	done
 }
