@@ -16,17 +16,15 @@ int main(int argc, char **argv)
 	FILE *fp;
 
 	if (argc != 5) {
-		printf
-		    ("usage: <nfs_flock_dgen> <file> <char/line> <lines> <ctype>\n");
+		printf("usage: <nfs_flock_dgen> <file> <char/line> <lines> <ctype>\n");
 		exit(2);
 	}
 
 	fp = fopen(argv[1], "w");
 
-	nchars = atoi(argv[2]);
+	nchars = atoi(argv[2]) - 1;
 	if (nchars > BUFSIZ) {
-		printf("Exceeded the maximum limit of the buffer (%d)\n",
-		       BUFSIZ);
+		printf("Exceeded the maximum limit of the buffer (%d)\n", BUFSIZ);
 		exit(3);
 	}
 	nlines = atoi(argv[3]);
