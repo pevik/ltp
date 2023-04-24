@@ -1,4 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*
+ * Copyright (c) Linux Test Project, 2001-2023
+ *
  * This program generates data for testing file locking
  */
 

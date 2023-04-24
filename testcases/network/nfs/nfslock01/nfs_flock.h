@@ -1,3 +1,8 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+/*
+ * Copyright (c) Linux Test Project, 2001-2009
+ */
+
 #include <stdio.h>
 #include <sys/stat.h>
 #include <errno.h>

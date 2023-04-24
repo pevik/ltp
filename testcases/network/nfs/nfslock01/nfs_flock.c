@@ -1,4 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*
+ * Copyright (c) Linux Test Project, 2001-2023
+ *
  * Program for testing file locking. The original data file consists of
  * characters from 'A' to 'Z'. The data file after running this program
  * would consist of lines with 1's in even lines and 0's in odd lines.
