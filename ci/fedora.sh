@@ -25,3 +25,4 @@ $yum \
 # CentOS 8 fixes
 $yum libmnl-devel || $yum libmnl
 $yum rubygem-asciidoctor || true
+$yum rubygem-asciidoctor-pdf || true
