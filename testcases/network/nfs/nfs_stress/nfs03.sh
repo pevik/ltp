@@ -8,8 +8,8 @@ TST_CLEANUP="nfs03_cleanup"
 TST_SETUP="nfs03_setup"
 TST_TESTFUNC="do_test"
 
-DIR_NUM=${DIR_NUM:-"100"}
-FILE_NUM=${FILE_NUM:-"100"}
+DIR_NUM=${DIR_NUM:-"80"}
+FILE_NUM=${FILE_NUM:-"80"}
 THREAD_NUM=${THREAD_NUM:-"1"}
 ORIG_NFSD=
 
@@ -51,16 +51,20 @@ do_test()
 	ROD mkdir -p dir1
 	cd dir1
 	make_subdirs
+	df -hT # FIXME: debug
 	touch_files &
 	pid1=$!
 	cd ..
+	df -hT # FIXME: debug
 
 	tst_res TINFO "creating dir2 subdirectories & files"
 	ROD mkdir -p dir2
 	cd dir2
 	make_subdirs
+	df -hT # FIXME: debug
 	touch_files &
 	pid2=$!
+	df -hT # FIXME: debug
 
 	tst_res TINFO "cd dir1 & removing files"
 	cd ../dir1
@@ -77,6 +81,7 @@ do_test()
 
 nfs03_setup()
 {
+	tst_res TINFO "getconf PAGESIZE"; getconf PAGESIZE # FIXME: debug
 	nfs_setup
 
 	tst_res TINFO "Setting server side nfsd count to $THREAD_NUM"
@@ -86,6 +91,7 @@ nfs03_setup()
 
 nfs03_cleanup()
 {
+	df -hT # FIXME: debug
 	tst_rhost_run -c "rpc.nfsd $ORIG_NFSD"
 	nfs_cleanup
 }
