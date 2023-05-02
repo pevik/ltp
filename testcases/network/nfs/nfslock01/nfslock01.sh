@@ -15,6 +15,12 @@ TST_TESTFUNC="do_test"
 
 do_setup()
 {
+	local i
+
+	for i in $VERSION; do
+		[ "$v" = 3 ] && tst_brk TCONF "Test is known to fail on NFSv3"
+	done
+
 	nfs_setup
 
 	tst_res TINFO "creating test files"
