@@ -20,7 +20,6 @@
  */
 
 #include <sys/types.h>
-#include <sys/sysinfo.h>
 #include <sys/wait.h>
 #include <limits.h>
 #include <signal.h>
@@ -29,6 +28,7 @@
 #include <unistd.h>
 
 #include "lapi/abisize.h"
+#include "lapi/sysinfo.h"
 #include "tst_test.h"
 
 #define FIVE_HUNDRED_MB         (500ULL*1024*1024)

@@ -11,7 +11,6 @@
 #include <sys/wait.h>
 #include <sys/mount.h>
 #include <sys/xattr.h>
-#include <sys/sysinfo.h>
 #include <errno.h>
 #include <libgen.h>
 #include <limits.h>
@@ -22,6 +21,7 @@
 #include <malloc.h>
 #include <math.h>
 #include "lapi/fcntl.h"
+#include "lapi/sysinfo.h"
 #include "test.h"
 #include "safe_macros.h"
 

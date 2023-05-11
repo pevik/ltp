@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <limits.h>
-#include <sys/sysinfo.h>
+#include "lapi/sysinfo.h"
 #include <stdlib.h>
 
 #define TST_NO_DEFAULT_MAIN

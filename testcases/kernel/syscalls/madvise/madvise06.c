@@ -46,7 +46,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <sys/mount.h>
-#include <sys/sysinfo.h>
+#include "lapi/sysinfo.h"
 #include "tst_test.h"
 
 #define CHUNK_SZ (400*1024*1024L)

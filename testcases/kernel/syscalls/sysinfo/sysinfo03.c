@@ -13,8 +13,8 @@
 
  */
 
-#include <sys/sysinfo.h>
 #include "lapi/posix_clocks.h"
+#include <sys/sysinfo.h>
 #include "tst_test.h"
 #include "lapi/sched.h"
 
