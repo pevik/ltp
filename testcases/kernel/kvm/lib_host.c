@@ -272,6 +272,30 @@ void tst_kvm_destroy_instance(struct tst_kvm_instance *inst)
 	memset(inst->ram, 0, sizeof(inst->ram));
 }
 
+int tst_kvm_wait_guest(struct tst_kvm_instance *inst, int timeout)
+{
+	volatile struct tst_kvm_result *result = inst->result;
+	int32_t res;
+	time_t start = time(NULL);
+
+	while ((res = result->result) != KVM_TSYNC) {
+		if (res == KVM_TEXIT)
+			return res;
+
+		if (timeout >= 0 && start + timeout <= time(NULL))
+			return -1;
+
+		usleep(1000);
+	}
+
+	return 0;
+}
+
+void tst_kvm_clear_guest_signal(struct tst_kvm_instance *inst)
+{
+	inst->result->result = KVM_TNONE;
+}
+
 void tst_kvm_setup(void)
 {
 
