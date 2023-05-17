@@ -92,7 +92,7 @@ int safe_pthread_cancel(const char *file, const int lineno,
 int safe_pthread_barrier_init(const char *file, const int lineno,
 			      pthread_barrier_t *barrier,
 			      const pthread_barrierattr_t *attr,
-			      unsigned count)
+			      unsigned int count)
 {
 	int rval;
 
