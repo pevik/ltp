@@ -30,6 +30,7 @@ TST_PARSE_ARGS=nfs_parse_args
 TST_USAGE=nfs_usage
 TST_ALL_FILESYSTEMS=1
 TST_SKIP_FILESYSTEMS="exfat,ext2,ext3,fuse,ntfs,vfat,tmpfs"
+# TST_MNT_PARAMS="-o i_version"
 TST_MOUNT_DEVICE=1
 TST_FORMAT_DEVICE=1
 TST_NEEDS_ROOT=1

@@ -294,6 +294,15 @@ tst_mount()
 	if [ -n "$TST_FS_TYPE" ]; then
 		mnt_opt="-t $TST_FS_TYPE"
 		mnt_err=" $TST_FS_TYPE type"
+
+		# FIXME: debug
+		if [ "$TST_FS_TYPE" = 'ext4' ]; then
+			TST_MNT_PARAMS="-o i_version"
+			tst_res TINFO "YES TST_FS_TYPE: '$TST_FS_TYPE'" # FIXME: debug
+		else
+			TST_MNT_PARAMS=
+		fi
+		# FIXME: debug
 	fi
 	local cmd="mount $mnt_opt $TST_DEVICE $TST_MNTPOINT $TST_MNT_PARAMS"
 
