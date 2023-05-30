@@ -15,6 +15,9 @@ fcntl36_64: LDLIBS += -lpthread
 fcntl40: LDLIBS += -lpthread
 fcntl40_64: LDLIBS += -lpthread
 
+fcntl43: LDLIBS += -lpthread
+fcntl43_64: LDLIBS += -lpthread
+
 include $(top_srcdir)/include/mk/testcases.mk
 include $(abs_srcdir)/../utils/newer_64.mk
 
