@@ -49,7 +49,7 @@ jobs:
           - container: "alpine:latest"
             env:
               CC: gcc
-              METADATA: asciidoctor
+              METADATA: asciidoc-pdf
 
           # build with minimal dependencies
           - container: "debian:stable"
@@ -57,13 +57,14 @@ jobs:
               CC: gcc
               TREE: out
               VARIANT: minimal
+              METADATA: asciidoc-pdf
 
           # other builds
           - container: "fedora:latest"
             env:
               CC: clang
               MAKE_INSTALL: 1
-              METADATA: asciidoctor-pdf
+              METADATA: asciidoc-pdf
 
           - container: "centos:7"
             env:
@@ -74,7 +75,7 @@ jobs:
           - container: "debian:testing"
             env:
               CC: gcc
-              METADATA: asciidoctor-pdf
+              METADATA: asciidoc-pdf
 
           - container: "debian:oldstable"
             env:
@@ -89,17 +90,17 @@ jobs:
           - container: "debian:oldstable"
             env:
               CC: gcc
-              METADATA: asciidoctor
+              METADATA: asciidoc-pdf
 
           - container: "debian:testing"
             env:
               CC: clang
-              METADATA: asciidoctor-pdf
+              METADATA: asciidoc-pdf
 
           - container: "ubuntu:jammy"
             env:
               CC: gcc
-              METADATA: asciidoctor
+              METADATA: asciidoc-pdf
               TREE: out
 
           - container: "ubuntu:bionic"
