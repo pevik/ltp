@@ -46,6 +46,7 @@ $apt \
 	libtirpc-dev \
 	linux-libc-dev \
 	lsb-release \
+	iputils-ping curl wget \
 	pkg-config
 
 $apt ruby-asciidoctor-pdf || true
