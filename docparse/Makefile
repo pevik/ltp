@@ -14,7 +14,7 @@ METADATA_GENERATOR_PARAMS_HTML := -b xhtml
 METADATA_GENERATOR_PARAMS_PDF := -b pdf -r asciidoctor-pdf
 else ifeq ($(METADATA_GENERATOR),asciidoc)
 METADATA_GENERATOR_CMD := a2x
-METADATA_GENERATOR_PARAMS := --xsltproc-opts "--stringparam toc.section.depth 1" -d book -L  --resource="$(PWD)" metadata.txt
+METADATA_GENERATOR_PARAMS := --xsltproc-opts "--stringparam toc.section.depth 1" -d book -L  --resource="$(PWD)" -v -v metadata.txt
 METADATA_GENERATOR_PARAMS_HTML := -f xhtml
 METADATA_GENERATOR_PARAMS_PDF := -f pdf
 METADATA_GENERATOR_PARAMS_HTML_CHUNKED := -f chunked
