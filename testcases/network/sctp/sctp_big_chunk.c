@@ -133,11 +133,15 @@ static void setup_client(void)
 }
 
 static const char mtu_path[] = "/sys/class/net/lo/mtu";
+static const char hmac_algo_path[] = "/proc/sys/net/sctp/cookie_hmac_alg";
 static const unsigned int max_mtu = 65535;
 static unsigned int mtu;
 
 static void setup(void)
 {
+	char hmac_algo[CHAR_MAX];
+	int fips_enabled = tst_fips_enabled();
+
 	if (tst_parse_int(addr_param, &addr_num, 1, INT_MAX))
 		tst_brk(TBROK, "wrong address number '%s'", addr_param);
 
@@ -146,8 +150,18 @@ static void setup(void)
 	if (mtu < max_mtu)
 		tst_brk(TCONF, "Test needs that 'lo' MTU has %d", max_mtu);
 
+	SAFE_FILE_SCANF(hmac_algo_path, "%s", hmac_algo);
+
+	if (fips_enabled) {
+		if (!system("grep hmac\\(sha1\\) /proc/crypto"))
+			SAFE_FILE_PRINTF(hmac_algo_path, "%s", "sha1");
+		else
+			SAFE_FILE_PRINTF(hmac_algo_path, "%s", "none");
+	}
+
 	setup_server();
 	setup_client();
+	SAFE_FILE_PRINTF(hmac_algo_path, "%s", hmac_algo);
 }
 
 static void run(void)
