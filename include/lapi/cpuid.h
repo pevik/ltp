@@ -1,5 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#ifndef LAPI_CPUID_H__
+#define LAPI_CPUID_H__
+
+#include "config.h"
+
 #if !(defined(__i386__) || defined(__x86_64__))
 #  error "cpuid.h should only be included on x86"
 #endif
@@ -7,9 +12,6 @@
 #ifdef HAVE_CPUID_H
 #  include <cpuid.h>
 #endif
-
-#ifndef LAPI_CPUID_H__
-#define LAPI_CPUID_H__
 
 /*
  * gcc cpuid.h provides __cpuid_count() since v4.4.
