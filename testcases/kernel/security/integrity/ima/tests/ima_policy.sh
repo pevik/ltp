@@ -20,23 +20,6 @@ setup()
 	[ -f $INVALID_POLICY ] || tst_brk TCONF "missing $INVALID_POLICY"
 }
 
-load_policy()
-{
-	local ret
-
-	exec 2>/dev/null 4>$IMA_POLICY
-	[ $? -eq 0 ] || exit 1
-
-	cat $1 >&4 2> /dev/null
-	ret=$?
-	exec 4>&-
-
-	[ $ret -eq 0 ] && \
-		tst_res TINFO "IMA policy updated, please reboot after testing to restore settings"
-
-	return $ret
-}
-
 test1()
 {
 	tst_res TINFO "verify that invalid policy isn't loaded"

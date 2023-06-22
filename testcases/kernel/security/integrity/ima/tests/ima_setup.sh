@@ -335,6 +335,26 @@ require_evmctl()
 	fi
 }
 
+# NOTE: Don't check policy for write permission, because kernel < v4.18 has
+# write permission bit even on CONFIG_IMA_WRITE_POLICY=n.
+load_policy()
+{
+	local ret
+	local policy="$1"
+
+	exec 2>/dev/null 4> $IMA_POLICY
+	[ $? -eq 0 ] || exit 1
+
+	cat $policy >&4 2> /dev/null
+	ret=$?
+	exec 4>&-
+
+	[ $ret -eq 0 ] && \
+		tst_res TINFO "IMA policy updated, please reboot after testing to restore the settings"
+
+	return $ret
+}
+
 # loop device is needed to use only for tmpfs
 TMPDIR="${TMPDIR:-/tmp}"
 if tst_supported_fs -d $TMPDIR -s "tmpfs"; then
