@@ -355,6 +355,21 @@ load_policy()
 	return $ret
 }
 
+load_test_policy()
+{
+	# ima_policy.sh loads policy files itself
+	[ "$TST_ID" != "ima_policy" ] || return
+
+	local policy="$TST_DATAROOT/$TST_ID/$(echo $TST_ID | sed 's/^ima_//').policy"
+
+	if [ -f "$policy" ]; then
+		tst_res TINFO "loading policy $policy, it might be good to reboot SUT after the test"
+		load_policy $policy
+	else
+		tst_res TINFO "policy $policy is not available"
+	fi
+}
+
 # loop device is needed to use only for tmpfs
 TMPDIR="${TMPDIR:-/tmp}"
 if tst_supported_fs -d $TMPDIR -s "tmpfs"; then
@@ -362,3 +377,7 @@ if tst_supported_fs -d $TMPDIR -s "tmpfs"; then
 fi
 
 . tst_test.sh
+
+if [ "$IMA_LOAD_TEST_POLICY" = 1 ]; then
+	load_test_policy
+fi
