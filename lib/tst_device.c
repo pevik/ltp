@@ -17,6 +17,7 @@
 #include <sys/sysmacros.h>
 #include <linux/btrfs.h>
 #include <linux/limits.h>
+#include "lapi/fcntl.h"
 #include "lapi/syscalls.h"
 #include "test.h"
 #include "safe_macros.h"
@@ -154,7 +155,7 @@ int tst_attach_device(const char *dev, const char *file)
 	int dev_fd, file_fd;
 	struct loop_info loopinfo;
 
-	dev_fd = open(dev, O_RDWR);
+	dev_fd = open(dev, O_RDWR | O_DIRECT);
 	if (dev_fd < 0) {
 		tst_resm(TWARN | TERRNO, "open('%s', O_RDWR) failed", dev);
 		return 1;
