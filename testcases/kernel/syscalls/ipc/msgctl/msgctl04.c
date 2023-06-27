@@ -71,8 +71,8 @@ static void verify_msgctl(unsigned int i)
 	struct test_variants *tv = &variants[tst_variant];
 
 	if (tc[i].error == EFAULT &&
-		tv->msgctl == libc_msgctl) {
-		tst_res(TCONF, "EFAULT is skipped for libc variant");
+		tv->msgctl == libc_msgctl && tst_kernel_bits() == 32) {
+		tst_res(TCONF, "EFAULT is skipped for libc variant on 32bit");
 		return;
 	}
 
