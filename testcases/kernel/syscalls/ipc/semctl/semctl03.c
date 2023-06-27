@@ -75,8 +75,9 @@ static void verify_semctl(unsigned int n)
 	struct tcases *tc = &tests[n];
 	struct test_variants *tv = &variants[tst_variant];
 
-	if (tc->error == EFAULT && tv->semctl == libc_semctl) {
-		tst_res(TCONF, "EFAULT is skipped for libc variant");
+	if (tc->error == EFAULT && tv->semctl == libc_semctl &&
+		tst_kernel_bits() == 32) {
+		tst_res(TCONF, "EFAULT is skipped for libc variant on 32bit");
 		return;
 	}
 
