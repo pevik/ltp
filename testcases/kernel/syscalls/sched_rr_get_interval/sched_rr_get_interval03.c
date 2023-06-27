@@ -68,8 +68,9 @@ static void run(unsigned int i)
 	struct timerspec *ts;
 
 	if (tc->exp_errno == EFAULT
-		&& tv->sched_rr_get_interval == libc_sched_rr_get_interval) {
-		tst_res(TCONF, "EFAULT skipped for libc_variant");
+		&& tv->sched_rr_get_interval == libc_sched_rr_get_interval && 
+		tst_kernel_bits() == 32) {
+		tst_res(TCONF, "EFAULT skipped for libc_variant on 32bit");
 		return;
 	}
 
