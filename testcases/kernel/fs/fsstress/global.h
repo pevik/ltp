@@ -50,7 +50,6 @@
 #include <sys/ioctl.h>
 #include <sys/wait.h>
 #include <sys/types.h>
-#include <fcntl.h>
 #include <stdlib.h>
 #include <dirent.h>
 #include <errno.h>
@@ -58,9 +57,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
-
-#ifndef O_DIRECT
-#define O_DIRECT 040000
-#endif
+#include "lapi/fcntl.h"
 
 #endif
