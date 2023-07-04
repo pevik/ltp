@@ -24,5 +24,9 @@ $(pc_file):
 	test -d "$(@D)" || mkdir -p "$(@D)"
 	install -m $(INSTALL_MODE) "$(builddir)/$(@F)" "$@"
 
+.PHONY: ltp-version.h
+ltp-version.h: $(top_srcdir)/Version
+	echo "#define LTP_VERSION \"LTP version: $$(cat $(top_srcdir)/Version)\"" > "$(top_builddir)/lib/$(@F)"
+
 include $(top_srcdir)/include/mk/lib.mk
 include $(top_srcdir)/include/mk/generic_trunk_target.mk

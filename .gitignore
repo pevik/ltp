@@ -41,6 +41,7 @@ autom4te.cache
 /include/mk/config-openposix.mk
 /include/mk/features.mk
 /m4/ltp-version.m4
+/lib/ltp-version.h
 /lib/ltp.pc
 /pan/ltp-bump
 /pan/ltp-pan
