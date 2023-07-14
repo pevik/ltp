@@ -148,7 +148,7 @@ static struct tst_test test = {
 	.mntpoint = MNTPOINT,
 	.format_device = 1,
 	.dev_fs_type = "ext4",
-	.dev_fs_opts = (const char *const []){"-O verity", NULL},
+	.dev_fs_opts = (const char *const []){"-O verity", "-b 4096", NULL},
 	.needs_kconfigs = (const char *[]) {
 		"CONFIG_FS_VERITY",
 		NULL
