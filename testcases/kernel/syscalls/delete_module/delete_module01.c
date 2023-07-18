@@ -25,7 +25,11 @@ static int module_loaded;
 
 static void do_delete_module(void)
 {
+	tst_res(TINFO, "tst_secureboot_enabled: %d", tst_secureboot_enabled()); // FIXME: debug
+	tst_res(TINFO, "tst_lockdown_enabled: %d", tst_lockdown_enabled()); // FIXME: debug
+
 	if (!module_loaded) {
+		tst_res(TINFO, "call tst_module_load"); // FIXME: debug
 		tst_module_load(MODULE_NAME_KO, NULL);
 		module_loaded = 1;
 	}

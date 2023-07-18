@@ -48,15 +48,15 @@ int tst_lockdown_enabled(void)
 	char line[BUFSIZ];
 	FILE *file;
 
+	char tmp[BUFSIZ], tmp2[BUFSIZ], tmp3[BUFSIZ];
+	SAFE_FILE_SCANF(PATH_LOCKDOWN, "%s %s %s", tmp, tmp2, tmp3);
+	tst_res(TINFO, "%s: '%s' '%s' '%s'", PATH_LOCKDOWN, tmp, tmp2, tmp3);
+
+	/* SecureBoot enabled could mean integrity lockdown */
+	if (tst_secureboot_enabled() > 0)
+		return 1;
+
 	if (access(PATH_LOCKDOWN, F_OK) != 0) {
-		char flag;
-
-		flag = tst_kconfig_get("CONFIG_EFI_SECURE_BOOT_LOCK_DOWN");
-
-		/* SecureBoot enabled could mean integrity lockdown */
-		if (flag == 'y' && tst_secureboot_enabled() > 0)
-			return 1;
-
 		tst_res(TINFO, "Unable to determine system lockdown state");
 		return 0;
 	}
@@ -65,6 +65,8 @@ int tst_lockdown_enabled(void)
 	if (!fgets(line, sizeof(line), file))
 		tst_brk(TBROK | TERRNO, "fgets %s", PATH_LOCKDOWN);
 	SAFE_FCLOSE(file);
+	tst_res(TINFO, "strstr(line), \"[none]\"): '%s'", strstr(line, "[none]"));
+	tst_res(TINFO, "return: '%d'", strstr(line, "[none]") == NULL);
 
 	return (strstr(line, "[none]") == NULL);
 }
