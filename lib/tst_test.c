@@ -520,7 +520,6 @@ static struct option {
 	{"I:", "-I x     Execute test for n seconds"},
 	{"D",  "-D       Prints debug information"},
 	{"V",  "-V       Prints LTP version"},
-	{"C:", "-C ARG   Run child process with ARG arguments (used internally)"},
 };
 
 static void print_help(void)
@@ -660,11 +659,6 @@ static void parse_topt(unsigned int topts_len, int opt, char *optarg)
 	*(toptions[i].arg) = optarg ? optarg : "";
 }
 
-/* see self_exec.c */
-#ifdef UCLINUX
-extern char *child_args;
-#endif
-
 static void parse_opts(int argc, char *argv[])
 {
 	unsigned int i, topts_len = count_options();
@@ -703,15 +697,6 @@ static void parse_opts(int argc, char *argv[])
 				tst_test->max_runtime = SAFE_STRTOL(optarg, 1, INT_MAX);
 			else
 				duration = SAFE_STRTOF(optarg, 0.1, HUGE_VALF);
-		break;
-		case 'V':
-			fprintf(stderr, "LTP version: " LTP_VERSION "\n");
-			exit(0);
-		break;
-		case 'C':
-#ifdef UCLINUX
-			child_args = optarg;
-#endif
 		break;
 		default:
 			parse_topt(topts_len, opt, optarg);
