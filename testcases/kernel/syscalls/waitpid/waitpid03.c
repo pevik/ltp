@@ -102,7 +102,7 @@ int main(int argc, char **argv)
 		}
 
 		while (++ikids < MAXUPRC) {
-			pid[ikids] = FORK_OR_VFORK();
+			pid[ikids] = tst_fork();
 			if (pid[ikids] > 0) {
 				if (DEBUG)
 					tst_resm(TINFO, "child # %d", ikids);

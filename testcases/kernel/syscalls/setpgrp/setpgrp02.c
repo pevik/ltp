@@ -70,7 +70,7 @@ int main(int ac, char **av)
 		/* reset tst_count in case we are looping */
 		tst_count = 0;
 
-		if ((pid = FORK_OR_VFORK()) == -1) {
+		if ((pid = tst_fork()) == -1) {
 			tst_brkm(TBROK, cleanup, "fork() failed");
 		}
 

@@ -109,7 +109,7 @@ int main(int ac, char **av)
 
 			/*Initialize signal to its default action */
 			signal(sig, SIG_DFL);
-			pid = FORK_OR_VFORK();
+			pid = tst_fork();
 
 			if (pid == 0) {
 #ifdef UCLINUX

@@ -90,7 +90,7 @@ int main(int ac, char **av)
 		}
 		condition_number++;
 
-		if (FORK_OR_VFORK() == 0)
+		if (tst_fork() == 0)
 			exit(0);
 
 		pid = 1;

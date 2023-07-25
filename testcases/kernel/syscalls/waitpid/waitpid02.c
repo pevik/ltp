@@ -82,7 +82,7 @@ int main(int argc, char **argv)
 
 		sig = SIGFPE;
 
-		pid = FORK_OR_VFORK();
+		pid = tst_fork();
 
 		if (pid < 0)
 			tst_brkm(TBROK|TERRNO, NULL, "fork failed");
