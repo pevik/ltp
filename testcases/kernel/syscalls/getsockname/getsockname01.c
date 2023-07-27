@@ -83,8 +83,6 @@ struct test_case_t {		/* test case structure */
 	PF_INET, SOCK_STREAM, 0, (struct sockaddr *)&fsin1,
 		    &sinlen, -1, ENOTSOCK, setup0, cleanup0,
 		    "bad file descriptor"},
-#ifndef UCLINUX
-	    /* Skip since uClinux does not implement memory protection */
 	{
 	PF_INET, SOCK_STREAM, 0, NULL,
 		    &sinlen, -1, EFAULT, setup1, cleanup1,
@@ -97,7 +95,6 @@ struct test_case_t {		/* test case structure */
 	PF_INET, SOCK_STREAM, 0, (struct sockaddr *)&fsin1,
 		    (socklen_t *) 1, -1, EFAULT, setup1, cleanup1,
 		    "invalid unaligned salen"},
-#endif
 };
 
 int TST_TOTAL = sizeof(tdat) / sizeof(tdat[0]);
