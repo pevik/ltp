@@ -91,7 +91,6 @@ struct test_case_t {		/* test case structure */
 		    &optlen, (struct sockaddr *)&fsin1, sizeof(fsin1),
 		    -1, ENOTSOCK, setup0, cleanup0, "bad file descriptor"}
 	,
-#ifndef UCLINUX
 	{
 	PF_INET, SOCK_STREAM, 0, SOL_SOCKET, SO_OOBINLINE, 0, &optlen,
 		    (struct sockaddr *)&fsin1, sizeof(fsin1), -1,
@@ -101,7 +100,6 @@ struct test_case_t {		/* test case structure */
 		    (struct sockaddr *)&fsin1, sizeof(fsin1), -1,
 		    EFAULT, setup1, cleanup1, "invalid optlen"}
 	,
-#endif /* UCLINUX */
 	{
 	PF_INET, SOCK_STREAM, 0, 500, SO_OOBINLINE, &optval, &optlen,
 		    (struct sockaddr *)&fsin1, sizeof(fsin1), -1,
