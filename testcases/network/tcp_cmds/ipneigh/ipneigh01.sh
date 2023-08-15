@@ -19,14 +19,14 @@ do_setup()
 	case $CMD in
 	ip)
 		SHOW_CMD="ip neigh show"
-		DEL_CMD="ROD ip neigh del $(tst_ipaddr rhost) dev $(tst_iface)"
+		DEL_CMD="ip neigh del $(tst_ipaddr rhost) dev $(tst_iface)"
 		;;
 	arp)
 		if [ -n "$TST_IPV6" ]; then
 			tst_brk TCONF "'arp' doesn't support IPv6"
 		fi
 		SHOW_CMD="arp -an"
-		DEL_CMD="ROD arp -d $(tst_ipaddr rhost) -i $(tst_iface)"
+		DEL_CMD="arp -d $(tst_ipaddr rhost) -i $(tst_iface)"
 		;;
 	*)
 		tst_brk TBROK "unknown or missing command, use -c [ arp | ip ]"
@@ -56,6 +56,7 @@ do_test()
 	tst_res TINFO "stress auto-creation $entry_name cache entry deleted with '$CMD' $NUMLOOPS times"
 
 	for i in $(seq 1 $NUMLOOPS); do
+		$DEL_CMD
 
 		ping$TST_IPV6 -q -c1 $(tst_ipaddr rhost) -I $(tst_iface) > /dev/null || \
 			tst_brk TFAIL "cannot ping $(tst_ipaddr rhost)"
@@ -74,7 +75,7 @@ do_test()
 		[ "$ret" -ne 0 ] && \
 			tst_brk TFAIL "$entry_name entry '$(tst_ipaddr rhost)' not listed"
 
-		$DEL_CMD
+		ROD $DEL_CMD
 
 		$SHOW_CMD | grep -q "$(tst_ipaddr rhost).*$(tst_hwaddr rhost)" && \
 			tst_brk TFAIL "'$DEL_CMD' failed, entry has " \
