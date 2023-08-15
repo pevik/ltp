@@ -56,6 +56,7 @@ do_test()
 	tst_res TINFO "stress auto-creation $entry_name cache entry deleted with '$CMD' $NUMLOOPS times"
 
 	for i in $(seq 1 $NUMLOOPS); do
+		tst_rhost_run -c "arp -d $(tst_ipaddr lhost)"
 
 		ping$TST_IPV6 -q -c1 $(tst_ipaddr rhost) -I $(tst_iface) > /dev/null || \
 			tst_brk TFAIL "cannot ping $(tst_ipaddr rhost)"
