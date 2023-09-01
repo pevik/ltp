@@ -16,3 +16,5 @@ sched_cli_serv run_sched_cliserv.sh
 sched_stress sched_stress.sh
 
 autogroup01 autogroup01
+
+proc_sched_rt01
