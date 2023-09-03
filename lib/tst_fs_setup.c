@@ -42,7 +42,7 @@ int mount_overlay(const char *file, const int lineno, int skip)
 			tst_res_(file, lineno, TINFO,
 				TST_FS_SETUP_OVERLAYFS_MSG);
 		}
-	} else {
+	} else if (skip) {
 		tst_brk_(file, lineno, TBROK | TERRNO,
 			"overlayfs mount failed");
 	}
