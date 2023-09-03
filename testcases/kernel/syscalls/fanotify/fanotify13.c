@@ -287,6 +287,7 @@ static void do_setup(void)
 	 * Bind mount to either base fs or to overlayfs over base fs:
 	 * Variant #0: watch base fs - open files on base fs
 	 * Variant #1: watch upper fs - open files on overlayfs
+	 * Variant #2: watch overlayfs - open files on overlayfs
 	 *
 	 * Variant #1 tests a bug whose fix bc2473c90fca ("ovl: enable fsnotify
 	 * events on underlying real files") in kernel 6.5 is not likely to be
@@ -294,11 +295,13 @@ static void do_setup(void)
 	 * To avoid waiting for events that won't arrive when testing old kernels,
 	 * require that kernel supports encoding fid with new flag AT_HADNLE_FID,
 	 * also merged to 6.5 and not likely to be backported to older kernels.
+	 * Variant #2 tests overlayfs watch with FAN_REPORT_FID, which also
+	 * requires kernel with support for AT_HADNLE_FID.
 	 */
 	if (tst_variant) {
 		REQUIRE_HANDLE_TYPE_SUPPORTED_BY_KERNEL(AT_HANDLE_FID);
 		ovl_mounted = TST_MOUNT_OVERLAY();
-		mnt = OVL_UPPER;
+		mnt = tst_variant == 1 ? OVL_UPPER : OVL_MNT;
 	} else {
 		mnt = OVL_BASE_MNTPOINT;
 
@@ -343,7 +346,7 @@ static void do_cleanup(void)
 static struct tst_test test = {
 	.test = do_test,
 	.tcnt = ARRAY_SIZE(test_cases),
-	.test_variants = 2,
+	.test_variants = 3,
 	.setup = do_setup,
 	.cleanup = do_cleanup,
 	.needs_root = 1,
