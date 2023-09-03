@@ -96,6 +96,7 @@ static int fanotify_fd;
 static int filesystem_mark_unsupported;
 static char events_buf[BUF_SIZE];
 static struct event_t event_set[EVENT_MAX];
+static struct fanotify_fid_t base_fs_fid;
 
 static void create_objects(void)
 {
@@ -113,8 +114,19 @@ static void get_object_stats(void)
 {
 	unsigned int i;
 
+	fanotify_save_fid(OVL_BASE_MNTPOINT, &base_fs_fid);
 	for (i = 0; i < ARRAY_SIZE(objects); i++)
 		fanotify_save_fid(objects[i].path, &objects[i].fid);
+
+	/* Variant #2: watching overlayfs - expect fsid != base fs fsid */
+	if (ovl_mounted && tst_variant == 2 &&
+	    memcmp(&objects[0].fid.fsid, &base_fs_fid.fsid,
+		   sizeof(base_fs_fid.fsid)) == 0) {
+		tst_res(TFAIL,
+			"overlayfs fsid is the same as stat.f_fsid that was "
+			"obtained via statfs(2) on the base fs");
+	}
+
 }
 
 static int setup_marks(unsigned int fd, struct test_case_t *tc)
