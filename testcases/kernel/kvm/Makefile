@@ -46,7 +46,7 @@ MAKE_TARGETS =
 endif
 
 lib_guest.o $(ARCH_OBJ): CPPFLAGS	:= $(GUEST_CPPFLAGS)
-lib_guest.o $(ARCH_OBJ): CFLAGS		:= $(GUEST_CFLAGS)
+lib_guest.o $(ARCH_OBJ): CFLAGS		:= $(GUEST_CFLAGS) $(GUEST_LDFLAGS)
 
 kvm_svm03: CFLAGS += -pthread
 kvm_svm03: LDLIBS += -pthread
