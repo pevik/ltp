@@ -3,56 +3,106 @@ LTP Release Procedure
 
 This page contains quick summary of what needs to be done to do a LTP release. It's expected that LTP git is frozen and git HEAD was properly tested and that LTP git tree is cloned to a directory named 'ltp'.
 
-NOTE: The string YYYYMMDD should be substituted to the current date.
+1 Release eve work
+-------------------
 
-1. Tag the git
+[start=a]
+.. Collecting the (must have) patch list for new release
+.. Reviewing and merging the patch list of (a.)
+.. Widely testing, explicitly post results
+.. Tiny fix according to release testing
+.. Writing release notes
+
+2 Tag the git
 --------------
 
+Use './tools/tag-release.sh' script, which creates the tag and push it to github.
+
 [source,sh]
 --------------------------------------------------------------------
-cd ltp
-echo YYYYMMDD > VERSION
-git commit -s -m 'LTP YYYYMMDD' VERSION
-git tag -a YYYYMMDD -m 'LTP YYYYMMDD'
+$ ./tools/tag-release.sh
+===== git push =====
+echo "new tag: '20230516', previous tag: '20230127'"
+tag 20230516
+Tagger: Person-who-released LTP <foo@example.com>
+Date:   Tue May 16 07:08:27 2023 +0200
+
+LTP 20230516
+-----BEGIN PGP SIGNATURE-----
+
+iQJDBAABCAAtFiEEIBb+pIWLHDazLoM6wN7C7nLzOl8FAmRjD8sPHHB2b3JlbEBz
+...
+-----END PGP SIGNATURE-----
+
+commit 3ebc2dfa85c2445bb68d8c0d66e33c4da1e1b3a7
+gpg: Signature made Tue 16 May 2023 07:08:08 AM CEST
+gpg:                using RSA key 2016FEA4858B1C36B32E833AC0DEC2EE72F33A5F
+...
+Primary key fingerprint: 2016 FEA4 858B 1C36 B32E  833A C0DE C2EE 72F3 3A5F
+Author: Person-who-released LTP <foo@example.com>
+Date:   Tue May 16 07:08:08 2023 +0200
+
+    LTP 20230516
+
+    Signed-off-by: Person-who-released LTP <foo@example.com>
+
+diff --git a/VERSION b/VERSION
+index af4c41fec..ae488c0e7 100644
+--- a/VERSION
++++ b/VERSION
+@@ -1 +1 @@
+-20230127
++20230516
+
+Please check tag and signature. Proceed? [N/y]: y
+===== Creating skeleton file for release notes =====
+Skeleton file for release notes: /tmp/ltp-release-20230516
+
+Pushing changes to upstream git. Proceed? [N/y]: y
+Enumerating objects: 1, done.
+Counting objects: 100% (1/1), done.
+Writing objects: 100% (1/1), 811 bytes | 811.00 KiB/s, done.
+Total 1 (delta 0), reused 1 (delta 0), pack-reused 0
+To github.com:linux-test-project/ltp.git
+ * [new tag]             20230516 -> 20230516
 --------------------------------------------------------------------
 
-2. Push changes to github
--------------------------
+3 Prepare tarballs and metadata documentation
+----------------------------------------------
+
 [source,sh]
+Use './tools/create-tarballs-metadata.sh' script.
 --------------------------------------------------------------------
-git push
-git push --tags
---------------------------------------------------------------------
-
-3. Prepare tarballs
--------------------
-[source,sh]
---------------------------------------------------------------------
-cd ..
-git clone ltp ltp-full-YYYYMMDD
-cd ltp-full-YYYYMMDD
-# Update mce-inject submodule
-git submodule init
-git submodule update
-# Generate configure script
-make autotools
-# Prepare the archives
-cd ..
-tar -cjf ltp-full-YYYYMMDD.tar.bz2 ltp-full-YYYYMMDD --exclude .git
-tar -cJf ltp-full-YYYYMMDD.tar.xz ltp-full-YYYYMMDD --exclude .git
+$ ./tools/create-tarballs-metadata.sh
+===== git clone =====
+Cloning into 'ltp-full-20230516'...
+done.
+Submodule 'testcases/kernel/mce-test' (git://git.kernel.org/pub/scm/linux/kernel/git/gong.chen/mce-test.git) registered for path 'testcases/kernel/mce-test'
+...
+make[1]: Leaving directory '/home/foo/ltp-release-20230516/ltp-full-20230516/testcases/open_posix_testsuite'
+===== Creating tarballs =====
+===== Creating checksums =====
+===== Creating metadata documentation =====
+checking for a BSD-compatible install... /usr/bin/install -c
+...
+asciidoctor -d book metadata.txt -b xhtml
+make[1]: Leaving directory '/home/foo/ltp-release-20230516/ltp-full-20230516/docparse'
+make: Leaving directory '/home/foo/ltp-release-20230516/ltp-full-20230516/metadata'
+'docparse/metadata.html' -> '/home/foo/ltp-release-20230516/metadata.20230516.html'
+Generated files are in '/home/foo/ltp-release-20230516', upload them to github
 --------------------------------------------------------------------
 
-4. Upload the tarballs to GitHub
---------------------------------
+4 Upload the generated files to GitHub
+---------------------------------------
 
 Click on 'releases' then switch to 'tags' then click on 'Add release notes' there should be 'Attach binaries ...' link at the bottom of the page.
 
-Don't forget to upload md5 and sha-1 sums for the tarballs as well.
+Don't forget to upload checksums for the tarballs and metadata documentation as well.
 
-5. Send release announcement
+5 Send release announcement
 ----------------------------
 
-Have a look at http://sourceforge.net/p/ltp/mailman/message/34429656/ to get the idea how it should look.
+Have a look at https://lore.kernel.org/ltp/ZGNiQ1sMGvPU_ETp@yuki/ to get the idea how it should look.
 
 The announcement is send to:
 
