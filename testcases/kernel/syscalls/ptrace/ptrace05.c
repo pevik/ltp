@@ -1,122 +1,67 @@
+// SPDX-License-Identifier: GPL-2.0-only
 /*
- ******************************************************************************
- *
- *   ptrace05 - an app which ptraces itself as per arbitrarily specified signals,
- *   over a user specified range.
- *
- *   Copyright (C) 2009, Ngie Cooper
- *
- *   This program is free software; you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License as published by
- *   the Free Software Foundation; either version 2 of the License, or
- *   (at your option) any later version.
- *
- *   This program is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU General Public License for more details.
- *
- *   You should have received a copy of the GNU General Public License along
- *   with this program; if not, write to the Free Software Foundation, Inc.,
- *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- ******************************************************************************
+ * Copyright (C) 2009, Ngie Cooper
+ * Copyright (c) 2023 Wei Gao <wegao@suse.com>
  */
 
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <signal.h>
-#include <errno.h>
-#include <libgen.h>
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
+/*\
+ * [Description]
+ *
+ *  ptrace05 - an app which ptraces itself as per arbitrarily specified signals
+ *
+ */
 
+#include <stdlib.h>
 #include <config.h>
 #include "ptrace.h"
 
-#include "test.h"
 #include "lapi/signal.h"
+#include "tst_test.h"
 
-char *TCID = "ptrace05";
-int TST_TOTAL = 0;
-
-int usage(const char *);
-
-int usage(const char *argv0)
-{
-	fprintf(stderr, "usage: %s [start-signum] [end-signum]\n", argv0);
-	return 1;
-}
-
-int main(int argc, char **argv)
+static void run(void)
 {
 
-	int end_signum = -1;
-	int signum;
-	int start_signum = -1;
+	int end_signum = SIGRTMAX;
+	int signum = 0;
+	int start_signum = 0;
 	int status;
 
 	pid_t child;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
-
-	if (start_signum == -1) {
-		start_signum = 0;
-	}
-	if (end_signum == -1) {
-		end_signum = SIGRTMAX;
-	}
-
 	for (signum = start_signum; signum <= end_signum; signum++) {
 
-		if (signum >= __SIGRTMIN && signum < SIGRTMIN)
-			continue;
-
-		switch (child = fork()) {
+		switch (child = SAFE_FORK()) {
 		case -1:
-			tst_brkm(TBROK | TERRNO, NULL, "fork() failed");
+			tst_brk(TBROK | TERRNO, "fork() failed");
 		case 0:
 
-			if (ptrace(PTRACE_TRACEME, 0, NULL, NULL) != -1) {
-				tst_resm(TINFO, "[child] Sending kill(.., %d)",
-					 signum);
-				if (kill(getpid(), signum) < 0) {
-					tst_resm(TINFO | TERRNO,
-						 "[child] kill(.., %d) failed.",
-						 signum);
-				}
+			TEST(ptrace(PTRACE_TRACEME, 0, NULL, NULL));
+			if (TST_RET != -1) {
+				tst_res(TINFO, "[child] Sending kill(.., %d)",
+						signum);
+				SAFE_KILL(getpid(), signum);
 			} else {
-
-				/*
-				 * This won't increment the TST_COUNT var.
-				 * properly, but it'll show up as a failure
-				 * nonetheless.
-				 */
-				tst_resm(TFAIL | TERRNO,
+				tst_brk(TFAIL | TERRNO,
 					 "Failed to ptrace(PTRACE_TRACEME, ...) "
 					 "properly");
-
 			}
-			/* Shouldn't get here if signum == 0. */
-			exit((signum == 0 ? 0 : 2));
+
+			exit(0);
 			break;
 
 		default:
 
-			waitpid(child, &status, 0);
+			SAFE_WAITPID(child, &status, 0);
 
 			switch (signum) {
 			case 0:
 				if (WIFEXITED(status)
 				    && WEXITSTATUS(status) == 0) {
-					tst_resm(TPASS,
+					tst_res(TPASS,
 						 "kill(.., 0) exited "
 						 "with 0, as expected.");
 				} else {
-					tst_resm(TFAIL,
+					tst_brk(TFAIL | TERRNO,
 						 "kill(.., 0) didn't exit "
 						 "with 0.");
 				}
@@ -125,20 +70,20 @@ int main(int argc, char **argv)
 				if (WIFSIGNALED(status)) {
 					/* SIGKILL must be uncatchable. */
 					if (WTERMSIG(status) == SIGKILL) {
-						tst_resm(TPASS,
+						tst_res(TPASS,
 							 "Killed with SIGKILL, "
 							 "as expected.");
 					} else {
-						tst_resm(TPASS,
+						tst_brk(TFAIL | TERRNO,
 							 "Didn't die with "
 							 "SIGKILL (?!) ");
 					}
 				} else if (WIFEXITED(status)) {
-					tst_resm(TFAIL,
+					tst_brk(TFAIL | TERRNO,
 						 "Exited unexpectedly instead "
 						 "of dying with SIGKILL.");
 				} else if (WIFSTOPPED(status)) {
-					tst_resm(TFAIL,
+					tst_brk(TFAIL | TERRNO,
 						 "Stopped instead of dying "
 						 "with SIGKILL.");
 				}
@@ -146,35 +91,21 @@ int main(int argc, char **argv)
 				/* All other processes should be stopped. */
 			default:
 				if (WIFSTOPPED(status)) {
-					tst_resm(TPASS, "Stopped as expected");
+					tst_res(TPASS, "Stopped as expected");
 				} else {
-					tst_resm(TFAIL, "Didn't stop as "
+					tst_brk(TFAIL | TERRNO, "Didn't stop as "
 						 "expected.");
-					if (kill(child, 0)) {
-						tst_resm(TINFO,
-							 "Is still alive!?");
-					} else if (WIFEXITED(status)) {
-						tst_resm(TINFO,
-							 "Exited normally");
-					} else if (WIFSIGNALED(status)) {
-						tst_resm(TINFO,
-							 "Was signaled with "
-							 "signum=%d",
-							 WTERMSIG(status));
-					}
-
 				}
-
 				break;
-
 			}
-
 		}
-		/* Make sure the child dies a quick and painless death ... */
-		kill(child, 9);
 
+		if (signum != 0 && signum != 9)
+			SAFE_PTRACE(PTRACE_CONT, child, NULL, NULL);
 	}
-
-	tst_exit();
-
 }
+
+static struct tst_test test = {
+	.test_all = run,
+	.forks_child = 1,
+};
