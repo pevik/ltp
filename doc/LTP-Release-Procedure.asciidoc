@@ -18,6 +18,12 @@ architectures.
 Once the stabilization period has ended the time has finally come to proceed
 with the release.
 
+Before release check
+https://github.com/linux-test-project/ltp/blob/master/runtest/staging[`runtest/staging`]
+file, which contains tests of
+https://github.com/linux-test-project/ltp/wiki/Test-Writing-Guidelines#7-testing-pre-release-kernel-features[pre-release kernel features].
+If there was new kernel release, some of the entries may need to be moved to regular runtest files.
+
 2. Prepare the release notes
 ----------------------------
 
@@ -27,6 +33,10 @@ lists (see below).
 
 Have a look at https://lore.kernel.org/ltp/ZGNiQ1sMGvPU_ETp@yuki/ to get the
 idea how it should look.
+
+Please fix typos in names or invalid emails in the 'Credit' section for users
+which have wrong git setup (e.g. 'via ltp <ltp@lists.linux.it>' or
+'@users.noreply.github.com'). This may change also the credit counting.
 
 3. Tag the git and push changes to github
 -----------------------------------------
@@ -145,15 +155,21 @@ checking for a BSD-compatible install... /usr/bin/install -c
 Generated files are in '/home/foo/ltp-release-YYYYMMDD', upload them to github
 --------------------------------------------------------------------
 
-5. Upload the generated files to GitHub
----------------------------------------
+5. Create release in GitHub
+---------------------------
 
 Click on https://github.com/linux-test-project/ltp/releases['Releases'], then
-switch to https://github.com/linux-test-project/ltp/tags['Tags'], then click on
-'Add release notes'.  There should be 'Attach binaries ...' link at the
-bottom of the page.
+switch to https://github.com/linux-test-project/ltp/tags['Tags'].
+You will see the new tag at the top of the tag lists.
+Click on it and then create release with 'Create release from tag' button
+on the top right side. Then:
 
-Don't forget to upload checksums for the tarballs and metadata documentation as well.
+* Fill the release title and the release notes. Shell
+commands output in the 'Credit' section will require to add formatting.
+* *Upload tarballs, checksums and metadata documentation.*
+* Remove the preface (used only in the announcement).
+
+and click on 'Publish release'.
 
 5. Send release announcement
 ----------------------------
@@ -162,10 +178,12 @@ The announcement is sent to:
 
 * ltp at lists.linux.it
 * linux-kernel at vger.kernel.org
-* libc-alpha at sourceware.org
+* libc-alpha at sourceware.org (requires a subscription)
 
 CCed to:
 
 * lwn at lwn.net
 * akpm at linux-foundation.org
 * torvalds at linux-foundation.org
+
+Don't forget to replace `YYYYMMDD` in the link in the 'DOWNLOAD AND LINKS' section :).
