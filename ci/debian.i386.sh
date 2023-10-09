@@ -1,6 +1,5 @@
-#!/bin/sh
+#!/bin/sh -eux
 # Copyright (c) 2018-2020 Petr Vorel <pvorel@suse.cz>
-set -ex
 
 dpkg --add-architecture i386
 apt update

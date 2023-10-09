@@ -1,6 +1,5 @@
-#!/bin/sh
+#!/bin/sh -eux
 # Copyright (c) 2018-2021 Petr Vorel <pvorel@suse.cz>
-set -ex
 
 zyp="zypper --non-interactive install --force-resolution --no-recommends"
 

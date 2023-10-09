@@ -1,6 +1,5 @@
-#!/bin/sh
+#!/bin/sh -eux
 # Copyright (c) 2018-2021 Petr Vorel <pvorel@suse.cz>
-set -ex
 
 yum="yum -y install --skip-broken"
 
