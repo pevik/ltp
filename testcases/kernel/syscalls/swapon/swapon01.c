@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * Copyright (c) Wipro Technologies Ltd, 2002.  All Rights Reserved.
+ * Copyright (c) Linux Test Project, 2003-2023
  */
 
 /*\
@@ -21,18 +22,11 @@
 
 static void verify_swapon(void)
 {
-	TEST(tst_syscall(__NR_swapon, SWAP_FILE, 0));
+	TST_EXP_PASS(tst_syscall(__NR_swapon, SWAP_FILE, 0));
 
-	if (TST_RET == -1) {
-		tst_res(TFAIL | TTERRNO, "Failed to turn on swapfile");
-	} else {
-		tst_res(TPASS, "Succeeded to turn on swapfile");
-		/*we need to turn this swap file off for -i option */
-		if (tst_syscall(__NR_swapoff, SWAP_FILE) != 0) {
-			tst_brk(TBROK | TERRNO, "Failed to turn off swapfile,"
-				" system reboot after execution of LTP "
-				"test suite is recommended.");
-		}
+	if (tst_syscall(__NR_swapoff, SWAP_FILE) != 0) {
+		tst_brk(TBROK | TERRNO,
+				"Failed to turn off swapfile, system reboot recommended");
 	}
 }
 
