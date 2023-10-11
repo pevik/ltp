@@ -9,6 +9,9 @@
  * Checks that swapon() succeds with swapfile.
  */
 
+#define MNTPOINT	"mntpoint"
+#define SWAP_FILE	MNTPOINT"/swapfile01"
+
 #include <unistd.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -18,14 +21,14 @@
 
 static void verify_swapon(void)
 {
-	TEST(tst_syscall(__NR_swapon, "./swapfile01", 0));
+	TEST(tst_syscall(__NR_swapon, SWAP_FILE, 0));
 
 	if (TST_RET == -1) {
 		tst_res(TFAIL | TTERRNO, "Failed to turn on swapfile");
 	} else {
 		tst_res(TPASS, "Succeeded to turn on swapfile");
 		/*we need to turn this swap file off for -i option */
-		if (tst_syscall(__NR_swapoff, "./swapfile01") != 0) {
+		if (tst_syscall(__NR_swapoff, SWAP_FILE) != 0) {
 			tst_brk(TBROK | TERRNO, "Failed to turn off swapfile,"
 				" system reboot after execution of LTP "
 				"test suite is recommended.");
@@ -35,13 +38,15 @@ static void verify_swapon(void)
 
 static void setup(void)
 {
-	is_swap_supported("./tstswap");
-	make_swapfile("swapfile01", 0);
+	is_swap_supported(SWAP_FILE);
+	make_swapfile(SWAP_FILE, 0);
 }
 
 static struct tst_test test = {
-	.needs_root = 1,
-	.needs_tmpdir = 1,
+	.mntpoint = MNTPOINT,
+	.mount_device = 1,
+	.needs_root = 1, /* for swapon() */
+	.all_filesystems = 1,
 	.test_all = verify_swapon,
 	.setup = setup
 };
