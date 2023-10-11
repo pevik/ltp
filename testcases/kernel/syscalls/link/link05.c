@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * Copyright (c) 2000 Silicon Graphics, Inc.  All Rights Reserved.
- *  AUTHOR		: Richard Logan
- *  CO-PILOT		: William Roske
+ * AUTHOR		: Richard Logan
+ * CO-PILOT		: William Roske
  * Copyright (c) 2014 Cyril Hrubis <chrubis@suse.cz>
  */
 
-/*
+/*\
+ * [Description]
+ *
  * Test if link(2) fails with EMLINK.
  */
 
