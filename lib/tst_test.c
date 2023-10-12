@@ -49,6 +49,7 @@ const char *TCID __attribute__((weak));
 #define CVE_DB_URL "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-"
 
 #define DEFAULT_TIMEOUT 30
+#define MODULES_MAX_LEN 10
 
 struct tst_test *tst_test;
 
@@ -82,6 +83,8 @@ static char ipc_path[1064];
 const char *tst_ipc_path = ipc_path;
 
 static char shm_path[1024];
+
+static int modules_loaded[MODULES_MAX_LEN];
 
 int TST_ERR;
 int TST_PASS;
@@ -1135,6 +1138,29 @@ static void do_cgroup_requires(void)
 	tst_cg_init();
 }
 
+/*
+ * Search kernel driver in /proc/modules.
+ *
+ * @param driver The name of the driver.
+ * @return 1 if driver is found, otherwise 0.
+ */
+static int module_loaded(const char *driver)
+{
+	char line[4096];
+	int found = 0;
+	FILE *file = SAFE_FOPEN("/proc/modules", "r");
+
+	while (fgets(line, sizeof(line), file)) {
+		if (strstr(line, driver)) {
+			found = 1;
+			break;
+		}
+	}
+	SAFE_FCLOSE(file);
+
+	return found;
+}
+
 static void do_setup(int argc, char *argv[])
 {
 	if (!tst_test)
@@ -1192,6 +1218,20 @@ static void do_setup(int argc, char *argv[])
 
 		for (i = 0; (name = tst_test->needs_drivers[i]); ++i)
 			safe_check_driver(name);
+	}
+
+	if (tst_test->modprobe) {
+		const char *name;
+		int i;
+
+		for (i = 0; (name = tst_test->modprobe[i]); ++i) {
+			/* only load module if not already loaded */
+			if (!module_loaded(name) && tst_check_builtin_driver(name)) {
+				const char *const cmd_modprobe[] = {"modprobe", name, NULL};
+				SAFE_CMD(cmd_modprobe, NULL, NULL);
+				modules_loaded[i] = 1;
+			}
+		}
 	}
 
 	if (tst_test->mount_device)
@@ -1361,6 +1401,19 @@ static void do_cleanup(void)
 	}
 
 	tst_sys_conf_restore(0);
+
+	if (tst_test->modprobe) {
+		const char *name;
+		int i;
+
+		for (i = 0; (name = tst_test->modprobe[i]); ++i) {
+			if (!modules_loaded[i])
+				continue;
+
+			const char *const cmd_rmmod[] = {"rmmod", name, NULL};
+			SAFE_CMD(cmd_rmmod, NULL, NULL);
+		}
+	}
 
 	if (tst_test->restore_wallclock)
 		tst_wallclock_restore();
