@@ -198,3 +198,9 @@ int tst_check_driver(const char *driver)
 
 	return -1;
 }
+
+void safe_check_driver(const char *driver)
+{
+	if (tst_check_driver(driver))
+		tst_brkm(TCONF, NULL, "%s driver not available", driver);
+}

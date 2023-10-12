@@ -30,4 +30,13 @@ int tst_check_builtin_driver(const char *driver);
  */
 int tst_check_driver(const char *driver);
 
+/*
+ * Checks support for the kernel module (both built-in and loadable)
+ * and exit with TCONF if driver not available.
+ *
+ * @param driver The name of the driver.
+ * On Android it *always* passes (always expect the driver is available).
+ */
+void safe_check_driver(const char *driver);
+
 #endif	/* TST_KERNEL_H__ */
