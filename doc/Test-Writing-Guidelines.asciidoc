@@ -383,6 +383,7 @@ https://github.com/linux-test-project/ltp/wiki/Shell-Test-API[Shell Test API].
 | '.min_mem_avail' | not applicable
 | '.mnt_flags' | 'TST_MNT_PARAMS'
 | '.min_swap_avail' | not applicable
+| '.modprobe_module' | –
 | '.mntpoint', '.mnt_data' | 'TST_MNTPOINT'
 | '.mount_device' | 'TST_MOUNT_DEVICE'
 | '.needs_cgroup_ctrls' | –

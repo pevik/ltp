@@ -305,8 +305,11 @@ struct tst_test {
 	/* NULL terminated array of resource file names */
 	const char *const *resource_files;
 
-	/* NULL terminated array of needed kernel drivers */
+	/* NULL terminated array of needed kernel drivers to be checked */
 	const char * const *needs_drivers;
+
+	/* NULL terminated array of needed kernel drivers to be loaded with modprobe */
+	const char * const *modprobe_module;
 
 	/*
 	 * {NULL, NULL} terminated array of (/proc, /sys) files to save
