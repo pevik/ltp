@@ -164,6 +164,10 @@ static struct tst_test test = {
 		{"/proc/sys/user/max_user_namespaces", "1024", TST_SR_SKIP},
 		{}
 	},
+	.needs_drivers = (const char *const []) {
+		"ipt_state",
+		NULL
+	},
 	.tags = (const struct tst_tag[]) {
 		{"linux-git", "b29c457a6511"},
 		{"CVE", "2021-22555"},
