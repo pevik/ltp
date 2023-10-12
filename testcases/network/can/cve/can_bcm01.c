@@ -41,14 +41,6 @@ static void setup(void)
 {
 	struct sockaddr_can addr = { .can_family = AF_CAN };
 
-	/*
-	 * Older kernels require explicit modprobe of vcan. Newer kernels
-	 * will load the modules automatically and support CAN in network
-	 * namespace which would eliminate the need for running the test
-	 * with root privileges.
-	 */
-	tst_cmd((const char*[]){"modprobe", "vcan", NULL}, NULL, NULL, 0);
-
 	NETDEV_ADD_DEVICE(LTP_DEVICE, "vcan");
 	NETDEV_SET_STATE(LTP_DEVICE, 1);
 	addr.can_ifindex = NETDEV_INDEX_BY_NAME(LTP_DEVICE);
@@ -143,8 +135,17 @@ static struct tst_test test = {
 	.skip_in_compat = 1,
 	.max_runtime = 30,
 	.needs_drivers = (const char *const[]) {
-		"vcan",
 		"can-bcm",
+		NULL
+	},
+	/*
+	 * Older kernels require explicit modprobe of vcan. Newer kernels
+	 * will load the modules automatically and support CAN in network
+	 * namespace which would eliminate the need for running the test
+	 * with root privileges.
+	 */
+	.modprobe_module = (const char *const[]) {
+		"vcan",
 		NULL
 	},
 	.tags = (const struct tst_tag[]) {
