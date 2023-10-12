@@ -91,14 +91,21 @@
 #include "tst_safe_net.h"
 #include "lapi/ip_tables.h"
 
+#define REQUIRED_MODULE "ipt_state"
+
 static void *buffer;
 
 void setup(void)
 {
+	const char *const cmd_modprobe[] = {"modprobe", REQUIRED_MODULE, NULL};
+
 	if (tst_kernel_bits() == 32 || sizeof(long) > 4) {
 		tst_res(TINFO,
 			"The vulnerability was only present in 32-bit compat mode");
 	}
+
+	tst_res(TINFO, "Trying to modprobe " REQUIRED_MODULE);
+	SAFE_CMD(cmd_modprobe, NULL, NULL);
 
 	tst_setup_netns();
 }
