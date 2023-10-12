@@ -4,6 +4,7 @@
  */
 
 #include <time.h>
+#include <linux/types.h>
 
 #define TST_NO_DEFAULT_MAIN
 #include "tst_test.h"
@@ -14,10 +15,16 @@
 
 typedef int (*mysyscall)(clockid_t clk_id, void *ts);
 
+typedef __s64 time64_t;
+struct timespec64 {
+	time64_t	tv_sec;			/* seconds */
+	long		tv_nsec;		/* nanoseconds */
+};
+
 int syscall_supported_by_kernel(long sysnr)
 {
 	int ret;
-	struct timespec foo;
+	struct timespec64 foo;
 
 	ret = syscall(sysnr, 0, &foo);
 	if (ret == -1 && errno == ENOSYS)
