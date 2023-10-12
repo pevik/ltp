@@ -47,7 +47,6 @@ static pthread_mutex_t sigbus_received_mtx = PTHREAD_MUTEX_INITIALIZER;
 
 static long pagesize;
 static char beginning_tag[BUFSIZ];
-static int hwpoison_probe;
 
 static void my_yield(void)
 {
@@ -266,22 +265,6 @@ static int populate_from_klog(char *begin_tag, unsigned long *pfns, int max)
  * Read the given file to search for the key.
  * Return 1 if the key is found.
  */
-static int find_in_file(char *path, char *key)
-{
-	char line[4096];
-	int found = 0;
-	FILE *file = SAFE_FOPEN(path, "r");
-
-	while (fgets(line, sizeof(line), file)) {
-		if (strstr(line, key)) {
-			found = 1;
-			break;
-		}
-	}
-	SAFE_FCLOSE(file);
-	return found;
-}
-
 static void unpoison_this_pfn(unsigned long pfn, int fd)
 {
 	char pfn_str[19];
@@ -294,17 +277,9 @@ static void unpoison_this_pfn(unsigned long pfn, int fd)
 static int open_unpoison_pfn(void)
 {
 	char *added_file_path = "/hwpoison/unpoison-pfn";
-	const char *const cmd_modprobe[] = {"modprobe", HW_MODULE, NULL};
 	char debugfs_fp[4096];
 	struct mntent *mnt;
 	FILE *mntf;
-
-	if (!find_in_file("/proc/modules", HW_MODULE) && tst_check_builtin_driver(HW_MODULE))
-		hwpoison_probe = 1;
-
-	/* probe hwpoison only if it isn't already there */
-	if (hwpoison_probe)
-		SAFE_CMD(cmd_modprobe, NULL, NULL);
 
 	/* debugfs mount point */
 	mntf = setmntent("/etc/mtab", "r");
@@ -349,7 +324,6 @@ static int open_unpoison_pfn(void)
 static void unpoison_pfn(char *begin_tag)
 {
 	unsigned long *pfns;
-	const char *const cmd_rmmod[] = {"rmmod", HW_MODULE, NULL};
 	int found_pfns, fd;
 
 	pfns = SAFE_MALLOC(sizeof(pfns) * maximum_pfns * run_iterations);
@@ -365,9 +339,6 @@ static void unpoison_pfn(char *begin_tag)
 
 		SAFE_CLOSE(fd);
 	}
-	/* remove hwpoison only if we probed it */
-	if (hwpoison_probe)
-		SAFE_CMD(cmd_rmmod, NULL, NULL);
 }
 
 /*
@@ -417,13 +388,8 @@ static void cleanup(void)
 
 static struct tst_test test = {
 	.needs_root = 1,
-	.needs_drivers = (const char *const []) {
+	.modprobe_module = (const char *const []) {
 		HW_MODULE,
-		NULL
-	},
-	.needs_cmds = (const char *[]) {
-		"modprobe",
-		"rmmod",
 		NULL
 	},
 	.max_runtime = 30,
