@@ -2,6 +2,7 @@
 /*
  * Copyright (c) Wipro Technologies Ltd, 2002.  All Rights Reserved.
  * Copyright (c) 2014 Cyril Hrubis <chrubis@suse.cz>
+ * Copyright (c) Linux Test Project, 2003-2023
  * Author: Nirmala Devi Dhanasekar <nirmala.devi@wipro.com>
  *
  * Check for basic errors returned by umount(2) system call.
@@ -41,21 +42,14 @@ static void verify_umount(unsigned int n)
 {
 	struct tcase *tc = &tcases[n];
 
-	TEST(umount(tc->mntpoint));
-
-	if (TST_RET != -1) {
-		tst_res(TFAIL, "umount() succeeds unexpectedly");
-		return;
-	}
+	TST_EXP_FAIL(umount(tc->mntpoint), tc->exp_errno,
+		     "umount() fail with %s", tc->err_desc);
 
 	if (tc->exp_errno != TST_ERR) {
 		tst_res(TFAIL | TTERRNO, "umount() should fail with %s",
 			tst_strerrno(tc->exp_errno));
 		return;
 	}
-
-	tst_res(TPASS | TTERRNO, "umount() fails as expected: %s",
-		tc->err_desc);
 }
 
 static void setup(void)
