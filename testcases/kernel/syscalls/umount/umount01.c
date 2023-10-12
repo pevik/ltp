@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * Copyright (c) Wipro Technologies Ltd, 2002.  All Rights Reserved.
+ * Copyright (c) Linux Test Project, 2003-2023
  * Author: Nirmala Devi Dhanasekar <nirmala.devi@wipro.com>
  *
  * Phase I test for the umount(2) system call.
@@ -23,7 +24,7 @@ static void verify_umount(void)
 		mount_flag = 1;
 	}
 
-	TEST(umount(MNTPOINT));
+	TST_EXP_PASS(umount(MNTPOINT), "umount(%s)", MNTPOINT);
 
 	if (TST_RET != 0 && TST_ERR == EBUSY) {
 		tst_res(TINFO, "umount() Failed with EBUSY "
@@ -31,12 +32,6 @@ static void verify_umount(void)
 			"is probing newly mounted dirs");
 	}
 
-	if (TST_RET != 0) {
-		tst_res(TFAIL | TTERRNO, "umount() Failed");
-		return;
-	}
-
-	tst_res(TPASS, "umount() Passed");
 	mount_flag = 0;
 }
 
