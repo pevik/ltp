@@ -86,14 +86,25 @@ int tst_kvcmp(const char *cur_kver, int r1, int r2, int r3)
 	int a1, a2, a3;
 	int testver, currver;
 
+	tst_resm(TINFO, "r1: %d, r2: %d, r3: %d", r1, r2, r3);
+
 	if (tst_parse_kver(cur_kver, &a1, &a2, &a3)) {
 		tst_resm(TWARN,
 			 "Invalid kernel version %s, expected %%d.%%d.%%d",
 		         cur_kver);
 	}
+	tst_resm(TINFO, "cur_ver: '%s', parsed as: %d.%d.%d",
+		         cur_kver, a1, a2, a3);
 
 	testver = (r1 << 20) + (r2 << 10) + r3;
 	currver = (a1 << 20) + (a2 << 10) + a3;
+	tst_resm(TINFO, "new testver: %d, currver: %d: return: %d",
+			 testver, currver, currver - testver);
+
+	testver = (r1 << 16) + (r2 << 8) + r3;
+	currver = (a1 << 16) + (a2 << 8) + a3;
+	tst_resm(TINFO, "old testver: %d, currver: %d: return: %d",
+			 testver, currver, currver - testver);
 
 	return currver - testver;
 }

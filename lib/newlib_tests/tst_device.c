@@ -108,5 +108,19 @@ static struct tst_test test = {
 	.test_all = do_test,
 	.setup = setup,
 	.cleanup = cleanup,
-	.min_kver = "4.14",
+
+	.min_kver = "5.10.1",
+	/* broken
+	.min_kver = "4.19.289",
+	.min_kver = "4.19.288",
+	.min_kver = "4.19.2",
+	.min_kver = "5.10.46",
+	*/
+
+	/* OK
+	.min_kver = "4.18.2",
+	.min_kver = "4.18.289",
+	.min_kver = "4.18.290",
+	.min_kver = "5.10.0",
+	*/
 };
