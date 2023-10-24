@@ -65,7 +65,7 @@ jobs:
               MAKE_INSTALL: 1
               METADATA: asciidoctor-pdf
 
-          - container: "centos:7"
+          - container: "ubuntu:xenial"
             env:
               CC: gcc
               METADATA: asciidoc-pdf
