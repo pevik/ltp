@@ -67,6 +67,7 @@ AC_CHECK_HEADERS_ONCE([ \
     linux/tls.h \
     linux/tty.h \
     linux/types.h \
+    linux/uinput.h \
     linux/userfaultfd.h \
     netinet/sctp.h \
     pthread.h \
