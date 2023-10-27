@@ -39,13 +39,15 @@ static struct tcase {
 	off_t write_off;
 	ssize_t size;
 	off_t exp_off;
+	int flag;
 } tcases[] = {
-	{0,     1, 0,          CHUNK, 0},
-	{CHUNK, 2, 0,          CHUNK, CHUNK},
-	{0,     1, CHUNK / 2,  CHUNK, 0},
-	{0,     1, -1,         CHUNK, CHUNK},
-	{0,     2, -1,         CHUNK, CHUNK},
-	{CHUNK, 1, -1,         CHUNK, CHUNK * 2},
+	{0,     1, 0,          CHUNK, 0, 0},
+	{CHUNK, 2, 0,          CHUNK, CHUNK, 0},
+	{0,     1, CHUNK / 2,  CHUNK, 0, 0},
+	{0,     1, -1,         CHUNK, CHUNK, 0},
+	{0,     2, -1,         CHUNK, CHUNK, 0},
+	{CHUNK, 1, -1,         CHUNK, CHUNK * 2, 0},
+	{CHUNK, 1, -1,         CHUNK, CHUNK * 3, RWF_APPEND},
 };
 
 static void verify_pwritev2(unsigned int n)
@@ -57,7 +59,7 @@ static void verify_pwritev2(unsigned int n)
 	SAFE_PWRITE(1, fd, initbuf, sizeof(initbuf), 0);
 	SAFE_LSEEK(fd, tc->seek_off, SEEK_SET);
 
-	TEST(pwritev2(fd, wr_iovec, tc->count, tc->write_off, 0));
+	TEST(pwritev2(fd, wr_iovec, tc->count, tc->write_off, tc->flag));
 	if (TST_RET < 0) {
 		tst_res(TFAIL | TTERRNO, "pwritev2() failed");
 		return;
@@ -76,7 +78,9 @@ static void verify_pwritev2(unsigned int n)
 
 	memset(preadbuf, 0, CHUNK);
 
-	if (tc->write_off != -1)
+	if (tc->flag == RWF_APPEND)
+		SAFE_PREAD(1, fd, preadbuf, tc->size, sizeof(initbuf));
+	else if (tc->write_off != -1)
 		SAFE_PREAD(1, fd, preadbuf, tc->size, tc->write_off);
 	else
 		SAFE_PREAD(1, fd, preadbuf, tc->size, tc->seek_off);
