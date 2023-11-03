@@ -105,7 +105,7 @@ void tst_module_unload_(void (cleanup_fn)(void), const char *mod_name)
 {
 	int i, rc;
 
-	const char *const argv[] = { "rmmod", mod_name, NULL };
+	const char *const argv[] = { "modprobe", "-r", mod_name, NULL };
 
 	rc = 1;
 	for (i = 0; i < 50; i++) {
