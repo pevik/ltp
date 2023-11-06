@@ -2036,9 +2036,13 @@ For full documentation see the comments in 'include/tst_fuzzy_sync.h'.
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 Many of the LTP tests need to use hugepage in their testing, this allows the
-test can reserve hugepages from system via '.hugepages = {xx, TST_REQUEST}'.
+test can reserve specify size of hugepages from system via:
+  '.hugepages = {xx, TST_REQUEST, TST_HUGE}'  or,
+  '.hugepages = {xx, TST_NEEDS,   TST_GIGANTIC}'.
 
-We achieved two policies for reserving hugepages:
+xx: This is used to set how many pages we wanted.
+
+Two policies for reserving hugepage:
 
 TST_REQUEST:
   It will try the best to reserve available huge pages and return the number
@@ -2050,6 +2054,17 @@ TST_NEEDS:
   guarantee the 'HugePages_Free' no less than pages which makes that test can
   use these specified numbers correctly. Otherwise, test exits with TCONF if
   the attempt to reserve hugepages fails or reserves less than requested.
+
+Two types of the reserved hugepage (optional field):
+
+TST_HUGE:
+  It means target for reserve the default hugepage size (e.g. 2MB on x86_64).
+  And, if nothing fills in this field LTP also chooses the default hugepage
+  size to reserve. i.e.
+  '.hugepages = {xx, TST_REQUEST}' == '.hugepages = {xx, TST_REQUEST, TST_HUGE}'
+
+TST_GIGANTIC:
+  It means target for reserve the largest hugepage size (e.g. 1GB on x86_64)
 
 With success test stores the reserved hugepage number in 'tst_hugepages'. For
 system without hugetlb supporting, variable 'tst_hugepages' will be set to 0.
@@ -2101,6 +2116,29 @@ static void setup(void)
 struct tst_test test = {
 	.test_all = run,
 	.hugepages = {2, TST_NEEDS},
+	...
+};
+-------------------------------------------------------------------------------
+
+or,
+
+[source,c]
+-------------------------------------------------------------------------------
+#include "tst_test.h"
+
+static void run(void)
+{
+	...
+}
+
+struct tst_test test = {
+	.test_all = run,
+	/*
+	 * Specify gigantic page sizes reserved automatically in the library
+	 * $ echo 2 > /sys/kernel/mm//hugepages/hugepages-1048576kB/nr_hugepages
+	 * Do check if 2 hpages are reserved correctly in there.
+	 */
+	.hugepages = {2, TST_NEEDS, TST_GIGANTIC},
 	...
 };
 -------------------------------------------------------------------------------

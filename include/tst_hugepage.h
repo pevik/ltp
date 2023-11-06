@@ -24,15 +24,26 @@ enum tst_hp_policy {
 	TST_NEEDS,
 };
 
+enum tst_hp_type {
+	TST_HUGE,
+	TST_GIGANTIC,
+};
+
 struct tst_hugepage {
 	const unsigned long number;
 	enum  tst_hp_policy policy;
+	enum  tst_hp_type   hptype;
 };
 
 /*
  * Get the default hugepage size. Returns 0 if hugepages are not supported.
  */
 size_t tst_get_hugepage_size(void);
+
+/*
+ * Get the largest hugepage (gigantic) size. Returns 0 if hugepages are not supported.
+ */
+size_t tst_get_gigantic_size(void);
 
 /*
  * Try the best to request a specified number of huge pages from system,
