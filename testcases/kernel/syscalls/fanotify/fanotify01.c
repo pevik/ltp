@@ -328,6 +328,17 @@ pass:
 
 	}
 
+
+	/*
+	 * Try to setup a bogus mark on test tmp dir, to check if marks on
+	 * different filesystems are supported.
+	 * When tested fs has zero fsid (e.g. fuse) and events are reported
+	 * with fsid+fid, watching different filesystems is not supported.
+	 */
+	ret = mount_mark_fid_unsupported && report_fid ? EXDEV : 0;
+	TST_EXP_FD_OR_FAIL(fanotify_mark(fd_notify, FAN_MARK_ADD, FAN_CLOSE_WRITE,
+					 AT_FDCWD, "."), ret);
+
 	/* Remove mark to clear FAN_MARK_IGNORED_SURV_MODIFY */
 	SAFE_FANOTIFY_MARK(fd_notify, FAN_MARK_REMOVE | mark->flag,
 			  FAN_ACCESS | FAN_MODIFY | FAN_CLOSE | FAN_OPEN,
