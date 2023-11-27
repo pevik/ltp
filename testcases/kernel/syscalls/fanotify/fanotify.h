@@ -161,12 +161,13 @@ static inline int fanotify_events_supported_by_kernel(uint64_t mask,
 
 	fd = SAFE_FANOTIFY_INIT(init_flags, O_RDONLY);
 
-	if (fanotify_mark(fd, FAN_MARK_ADD | mark_flags, mask, AT_FDCWD, ".") < 0) {
+	if (fanotify_mark(fd, FAN_MARK_ADD | mark_flags, mask, AT_FDCWD, "/") < 0) {
 		if (errno == EINVAL) {
 			rval = -1;
 		} else {
 			tst_brk(TBROK | TERRNO,
-				"fanotify_mark (%d, FAN_MARK_ADD, ..., AT_FDCWD, \".\") failed", fd);
+				"fanotify_mark (%d, FAN_MARK_ADD | %x, %llx, AT_FDCWD, \".\") failed",
+				fd, mark_flags, (unsigned long long)mask);
 		}
 	}
 
