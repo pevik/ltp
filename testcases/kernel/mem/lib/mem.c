@@ -454,6 +454,9 @@ void create_same_memory(int size, int num, int unit)
 	       {'a', size*MB}, {'a', size*MB}, {'d', size*MB}, {'d', size*MB},
 	};
 
+  /* Disable smart scan for correct volatile counts. */
+  SAFE_FILE_PRINTF(PATH_KSM "smart_scan", "0");
+
 	ps = sysconf(_SC_PAGE_SIZE);
 	pages = MB / ps;
 
@@ -526,6 +529,7 @@ void create_same_memory(int size, int num, int unit)
 
 	tst_res(TINFO, "stop KSM.");
 	SAFE_FILE_PRINTF(PATH_KSM "run", "0");
+  SAFE_FILE_PRINTF(PATH_KSM "smart_scan", "1");
 	final_group_check(0, 0, 0, 0, 0, 0, size * pages * num);
 
 	while (waitpid(-1, &status, 0) > 0)
