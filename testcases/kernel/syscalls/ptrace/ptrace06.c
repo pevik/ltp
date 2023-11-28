@@ -18,7 +18,7 @@
 #include <unistd.h>
 
 #include <config.h>
-#include "ptrace.h"
+#include "lapi/ptrace.h"
 
 #include "test.h"
 #include "spawn_ptrace_child.h"

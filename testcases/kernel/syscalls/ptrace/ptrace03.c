@@ -16,7 +16,7 @@
 #include <pwd.h>
 #include <config.h>
 #include <stdlib.h>
-#include "ptrace.h"
+#include "lapi/ptrace.h"
 #include "tst_test.h"
 
 static pid_t unused_pid;

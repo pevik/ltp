@@ -15,9 +15,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <sys/ptrace.h>
 #include <sys/syscall.h>
-#include "ptrace.h"
+#include "lapi/ptrace.h"
 
 #include "test.h"
 #include "spawn_ptrace_child.h"
