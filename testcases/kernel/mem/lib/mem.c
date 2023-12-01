@@ -438,6 +438,76 @@ static void resume_ksm_children(int *child, int num)
 	fflush(stdout);
 }
 
+/* This test allocates one page, fills the page with a's, captures the
+ * full_scan and pages_skipped counters. Then it makes sure at least 3
+ * full scans have been performed and measures the above counters again.
+ * The expectation is that at least 50% of the pages are skipped.
+ *
+ * To wait for at least 3 scans it uses the wait_ksmd_full_scan() function. In
+ * reality, it will be a lot more scans as the wait_ksmd_full_scan() function
+ * sleeps for one second.
+ */
+void create_memory_for_smartscan(void)
+{
+	int status;
+	int full_scans_begin;
+	int full_scans_end;
+	int pages_skipped_begin;
+	int pages_skipped_end;
+	int diff_pages;
+	int diff_scans;
+	unsigned long page_size;
+	char *memory;
+
+	/* Apply for the space for memory. */
+	page_size = sysconf(_SC_PAGE_SIZE);
+	memory = SAFE_MALLOC(page_size);
+
+	for (int i = 0; i < 1; i++) {
+		memory = SAFE_MMAP(NULL, page_size, PROT_READ|PROT_WRITE,
+			MAP_ANONYMOUS|MAP_PRIVATE, -1, 0);
+#ifdef HAVE_DECL_MADV_MERGEABLE
+		if (madvise(memory, page_size, MADV_MERGEABLE) == -1)
+			tst_brk(TBROK|TERRNO, "madvise");
+#endif
+	}
+	memset(memory, 'a', page_size);
+
+	tst_res(TINFO, "KSM merging...");
+	if (access(PATH_KSM "max_page_sharing", F_OK) == 0) {
+		SAFE_FILE_PRINTF(PATH_KSM "run", "2");
+	}
+
+	/* Set defalut ksm scan values. */
+	SAFE_FILE_PRINTF(PATH_KSM "run", "1");
+	SAFE_FILE_PRINTF(PATH_KSM "pages_to_scan", "%ld", 100l);
+	SAFE_FILE_PRINTF(PATH_KSM "sleep_millisecs", "0");
+
+	/* Measure pages skipped aka "smart scan". */
+	SAFE_FILE_SCANF(PATH_KSM "full_scans", "%d", &full_scans_begin);
+	SAFE_FILE_SCANF(PATH_KSM "pages_skipped", "%d", &pages_skipped_begin);
+	wait_ksmd_full_scan();
+
+	tst_res(TINFO, "stop KSM.");
+	SAFE_FILE_PRINTF(PATH_KSM "run", "0");
+
+	SAFE_FILE_SCANF(PATH_KSM "full_scans", "%d", &full_scans_end);
+	SAFE_FILE_SCANF(PATH_KSM "pages_skipped", "%d", &pages_skipped_end);
+	diff_pages = pages_skipped_end - pages_skipped_begin;
+	diff_scans = full_scans_end - full_scans_begin;
+
+	if (diff_pages < diff_scans * 50 / 100) {
+		tst_res(TFAIL, "not enough pages have been skipped by smart_scan.");
+	} else {
+		tst_res(TPASS, "smart_scan skipped more than 50%% of the pages.");
+	}
+
+	while (waitpid(-1, &status, 0) > 0)
+		if (WEXITSTATUS(status) != 0)
+			tst_res(TFAIL, "child exit status is %d",
+					WEXITSTATUS(status));
+}
+
 void create_same_memory(int size, int num, int unit)
 {
 	int i, j, status, *child;
