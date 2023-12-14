@@ -1009,7 +1009,7 @@ static struct tst_test test = {
 		{"T:", &type, "Tcp (default), udp, udp_lite, dccp, sctp"},
 		{"z", &zcopy, "Enable SO_ZEROCOPY"},
 		{"P:", &reuse_port, "Enable SO_REUSEPORT"},
-		{"D:", &dev, "Bind to device x"},
+		{"d:", &dev, "Bind to device x"},
 
 		{"H:", &server_addr, "Server name or IP address"},
 		{"l", &client_mode, "Become client, default is server"},
