@@ -250,7 +250,7 @@ static struct tst_test test = {
 	.test_all = verify_ioctl,
 	.test_variants = 2,
 	.options = (struct tst_option[]) {
-		{"D:", &device, "Tty device. For example, /dev/tty[0-9]"},
+		{"d:", &device, "Tty device. For example, /dev/tty[0-9]"},
 		{}
 	}
 };
