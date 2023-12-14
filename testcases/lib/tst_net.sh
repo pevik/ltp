@@ -877,6 +877,7 @@ tst_netload_compare()
 	local res=$(((base_time - new_time) * 100 / base_time))
 	local msg="performance result is ${res}%"
 
+	tst_res_ TINFO "base_time: '$base_time', new_time: '$new_time', res: '$res'" # FIXME: debug
 	if [ "$res" -lt "$threshold_low" ]; then
 		tst_res_ TFAIL "$msg < threshold ${threshold_low}%"
 		return

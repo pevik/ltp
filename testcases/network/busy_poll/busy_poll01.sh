@@ -39,9 +39,11 @@ test()
 	for x in 50 0; do
 		tst_res TINFO "set low latency busy poll to $x"
 		set_busy_poll $x
+		tst_res TINFO "tst_netload -H $(tst_ipaddr rhost) -n 10 -N 10 -d res_$x" # FIXME: debug
 		tst_netload -H $(tst_ipaddr rhost) -n 10 -N 10 -d res_$x
 	done
 
+	tst_res TINFO "tst_netload_compare $(cat res_0) $(cat res_50) 1" # FIXME: debug
 	tst_netload_compare $(cat res_0) $(cat res_50) 1
 }
 
