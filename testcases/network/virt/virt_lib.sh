@@ -103,6 +103,7 @@ virt_add()
 	local vname=$1
 	shift
 	local opt="$*"
+	local ret
 
 	case $virt_type in
 	vlan|vxlan)
@@ -124,7 +125,13 @@ virt_add()
 
 	case $virt_type in
 	vxlan|geneve|sit|wireguard)
+		tst_res TINFO "ip link add $vname type $virt_type $opt"
 		ip link add $vname type $virt_type $opt
+		ret=$?
+		tst_res TINFO "returned $ret"
+		tst_res TINFO "strace ip link add $vname type $virt_type $opt"
+		strace ip link add $vname type $virt_type $opt
+		return $?
 	;;
 	gre|ip6gre)
 		ip -f inet$TST_IPV6 tu add $vname mode $virt_type $opt
@@ -210,6 +217,7 @@ virt_setup()
 	local opt_r="${2:-$1}"
 
 	tst_res TINFO "setup local ${virt_type} with '$opt'"
+	tst_res TINFO "virt_add ltp_v0 $opt" # FIXME: debug
 	virt_add ltp_v0 $opt || \
 		tst_brk TBROK "failed to create 'ltp_v0 $opt'"
 
