@@ -869,16 +869,22 @@ tst_netload_compare()
 	local new_time=$2
 	local threshold_low=$3
 	local threshold_hi=$4
+	local ttype='TFAIL'
+	local msg res
 
 	if [ -z "$base_time" -o -z "$new_time" -o -z "$threshold_low" ]; then
 		tst_brk_ TBROK "tst_netload_compare: invalid argument(s)"
 	fi
 
-	local res=$(((base_time - new_time) * 100 / base_time))
-	local msg="performance result is ${res}%"
+	res=$(((base_time - new_time) * 100 / base_time))
+	msg="performance result is ${res}%"
 
 	if [ "$res" -lt "$threshold_low" ]; then
-		tst_res_ TFAIL "$msg < threshold ${threshold_low}%"
+		if [ -z "$TST_NET_FEATURES_TEST_PERFORMANCE" ]; then
+			ttype='TINFO';
+			tst_res_ TINFO "WARNING: slow performance is not treated as error, change it with TST_NET_FEATURES_TEST_PERFORMANCE=1"
+		fi
+		tst_res_ $ttype "$msg < threshold ${threshold_low}%"
 		return
 	fi
 
