@@ -27,4 +27,11 @@ void is_swap_supported(const char *filename);
  */
 unsigned int get_maxswapfiles(void);
 
+/*
+ * Get the used swapfiles number
+ */
+int get_used_swapfiles(const char *file, const int lineno);
+#define GET_USED_SWAPFILES() \
+	get_used_swapfiles(__FILE__, __LINE__)
+
 #endif /* __LIBSWAP_H__ */

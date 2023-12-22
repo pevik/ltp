@@ -14,6 +14,8 @@
 #include "tst_kconfig.h"
 #include "tst_safe_stdio.h"
 
+#define BUFSIZE 1024
+
 /*
  * Make a swap file
  */
@@ -108,4 +110,28 @@ unsigned int get_maxswapfiles(void)
 	}
 
 	return max_swapfile - swp_migration_num - swp_hwpoison_num - swp_device_num - swp_pte_marker_num;
+}
+
+/*
+ * Get the used swapfiles number
+ */
+int get_used_swapfiles(const char *file, const int lineno)
+{
+	FILE *fp;
+	int used = -1;
+	char buf[BUFSIZE];
+
+	fp = safe_fopen(file, lineno, NULL, "/proc/swaps", "r");
+
+	while (fgets(buf, BUFSIZE, fp) != NULL)
+		used++;
+
+	fclose(fp);
+
+	if (used < 0) {
+		tst_brk(TBROK, "can't read /proc/swaps to get used swapfiles resource total "
+			"at %s:%d", file, lineno);
+	}
+
+	return used;
 }
