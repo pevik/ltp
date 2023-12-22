@@ -11,6 +11,8 @@
 #include "tst_test.h"
 #include "libswap.h"
 #include "lapi/syscalls.h"
+#include "tst_kconfig.h"
+#include "tst_safe_stdio.h"
 
 /*
  * Make a swap file
@@ -64,4 +66,46 @@ void is_swap_supported(const char *filename)
 	TEST(tst_syscall(__NR_swapoff, filename, 0));
 	if (TST_RET == -1)
 		tst_brk(TFAIL | TTERRNO, "swapoff on %s failed", fstype);
+}
+
+/*
+ * Get kernel constant MAX_SWAPFILES value
+ */
+unsigned int get_maxswapfiles(void)
+{
+	unsigned int max_swapfile = 32;
+	unsigned int swp_migration_num = 0, swp_hwpoison_num = 0, swp_device_num = 0, swp_pte_marker_num = 0;
+	struct tst_kconfig_var migration_kconfig = TST_KCONFIG_INIT("CONFIG_MIGRATION");
+	struct tst_kconfig_var memory_kconfig = TST_KCONFIG_INIT("CONFIG_MEMORY_FAILURE");
+	struct tst_kconfig_var device_kconfig = TST_KCONFIG_INIT("CONFIG_DEVICE_PRIVATE");
+	struct tst_kconfig_var marker_kconfig = TST_KCONFIG_INIT("CONFIG_PTE_MARKER");
+
+	tst_kconfig_read(&migration_kconfig, 1);
+	tst_kconfig_read(&memory_kconfig, 1);
+	tst_kconfig_read(&device_kconfig, 1);
+	tst_kconfig_read(&marker_kconfig, 1);
+
+	if (migration_kconfig.choice == 'y') {
+		if (tst_kvercmp(5, 19, 0) < 0)
+			swp_migration_num = 2;
+		else
+			swp_migration_num = 3;
+	}
+
+	if (memory_kconfig.choice == 'y')
+		swp_hwpoison_num = 1;
+
+	if (device_kconfig.choice == 'y') {
+		if (tst_kvercmp(4, 14, 0) >= 0)
+			swp_device_num = 2;
+		if (tst_kvercmp(5, 14, 0) >= 0)
+			swp_device_num = 4;
+	}
+
+	if (marker_kconfig.choice == 'y') {
+		if (tst_kvercmp(5, 19, 0) >= 0)
+			swp_pte_marker_num = 1;
+	}
+
+	return max_swapfile - swp_migration_num - swp_hwpoison_num - swp_device_num - swp_pte_marker_num;
 }
