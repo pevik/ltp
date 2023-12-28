@@ -114,6 +114,10 @@ static inline int mount_setattr(int dirfd, const char *from_pathname, unsigned i
 }
 #endif /* HAVE_MOUNT_SETATTR */
 
+#ifndef MOVE_MOUNT_BENEATH
+#define MOVE_MOUNT_BENEATH 		0x00000200
+#endif /* MOVE_MOUNT_BENEATH */
+
 /*
  * New headers added in kernel after 5.2 release, create them for old userspace.
 */
