@@ -249,7 +249,15 @@ static void read_test(const int worker, const char *const path)
 	}
 
 	worker_heartbeat(worker);
-	count = read(fd, buf, sizeof(buf) - 1);
+	/*
+	 * This could catch any alignment faults while reading sys entries
+	 * seen in commit :1bbc21785b7336619fb6a67f1fff5afdaf229acc
+	 */
+	char check_buf[7];
+
+	count = pread(fd, check_buf, sizeof(check_buf), 1);
+
+	count = pread(fd, buf, sizeof(buf) - 1, 0);
 	elapsed = worker_elapsed(worker);
 
 	if (count > 0 && verbose) {
@@ -713,5 +721,5 @@ static struct tst_test test = {
 	.cleanup = cleanup,
 	.test_all = run,
 	.forks_child = 1,
-	.max_runtime = 100,
+	.max_runtime = 200,
 };
