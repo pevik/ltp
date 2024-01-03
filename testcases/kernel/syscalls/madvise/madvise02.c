@@ -65,17 +65,17 @@ static struct tcase {
 	int exp_errno;
 	int skip;
 } tcases[] = {
-	{MADV_NORMAL,      "MADV_NORMAL",      &nonalign, EINVAL, 0},
-	{1212,             "MADV_NORMAL",      &file1,    EINVAL, 0},
-	{MADV_REMOVE,      "MADV_REMOVE",      &file1,    EINVAL, 0},
-	{MADV_DONTNEED,    "MADV_DONTNEED",    &file1,    EINVAL, 1},
-	{MADV_MERGEABLE,   "MADV_MERGEABLE",   &file1,    EINVAL, 0},
-	{MADV_UNMERGEABLE, "MADV_UNMERGEABLE", &file1,    EINVAL, 0},
-	{MADV_NORMAL,      "MADV_NORMAL",      &file2,    ENOMEM, 0},
-	{MADV_WILLNEED,    "MADV_WILLNEED",    &file2,    ENOMEM, 0},
-	{MADV_WILLNEED,    "MADV_WILLNEED",    &tmp_addr,  EBADF, 0},
-	{MADV_FREE,        "MADV_FREE",        &file1,    EINVAL, 0},
-	{MADV_WIPEONFORK,  "MADV_WIPEONFORK",  &file1,    EINVAL, 0},
+	{MADV_NORMAL,      "MADV_NORMAL",      &nonalign, EINVAL},
+	{1212,             "MADV_NORMAL",      &file1,    EINVAL},
+	{MADV_REMOVE,      "MADV_REMOVE",      &file1,    EINVAL},
+	{MADV_DONTNEED,    "MADV_DONTNEED",    &file1,    EINVAL},
+	{MADV_MERGEABLE,   "MADV_MERGEABLE",   &file1,    EINVAL},
+	{MADV_UNMERGEABLE, "MADV_UNMERGEABLE", &file1,    EINVAL},
+	{MADV_NORMAL,      "MADV_NORMAL",      &file2,    ENOMEM},
+	{MADV_WILLNEED,    "MADV_WILLNEED",    &file2,    ENOMEM},
+	{MADV_WILLNEED,    "MADV_WILLNEED",    &tmp_addr,  EBADF},
+	{MADV_FREE,        "MADV_FREE",        &file1,    EINVAL},
+	{MADV_WIPEONFORK,  "MADV_WIPEONFORK",  &file1,    EINVAL},
 	{MADV_WIPEONFORK,  "MADV_WIPEONFORK shared_anon", &shared_anon, EINVAL, 0},
 	{MADV_WIPEONFORK,  "MADV_WIPEONFORK private file backed", &file3, EINVAL, 0},
 };
@@ -89,11 +89,8 @@ static void tcases_filter(void)
 
 		switch (tc->advice) {
 		case MADV_DONTNEED:
-#if !defined(UCLINUX)
 			if (mlock(file1, st.st_size) < 0)
 				tst_brk(TBROK | TERRNO, "mlock failed");
-			tc->skip = 0;
-#endif /* if !defined(UCLINUX) */
 		break;
 		case MADV_MERGEABLE:
 		case MADV_UNMERGEABLE:
