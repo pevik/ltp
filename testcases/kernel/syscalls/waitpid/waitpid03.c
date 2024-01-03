@@ -68,11 +68,6 @@ static int ikids;
 static int pid[MAXUPRC];
 static int condition_number;
 
-#ifdef UCLINUX
-static void do_child_uclinux(void);
-static int ikids_uclinux;
-#endif
-
 int main(int argc, char **argv)
 {
 	int lc;
@@ -80,9 +75,6 @@ int main(int argc, char **argv)
 	int status, ret;
 
 	tst_parse_opts(argc, argv, NULL, NULL);
-#ifdef UCLINUX
-	maybe_run_child(&do_child, "d", &ikids_uclinux);
-#endif
 
 	setup();
 
@@ -111,14 +103,7 @@ int main(int argc, char **argv)
 					"fork #%d", ikids);
 
 			} else {
-#ifdef UCLINUX
-				if (self_exec(argv[0], "d", ikids) < 0) {
-					tst_resm(TFAIL, "cannot self_exec #%d",
-						 ikids);
-				}
-#else
 				do_child(ikids);
-#endif
 			}
 		}
 
@@ -170,17 +155,6 @@ static void do_child(int ikids)
 	pause();
 	exit(0);
 }
-
-#ifdef UCLINUX
-/*
- * do_child_uclinux()
- *	run do_child with the appropriate ikids variable
- */
-static void do_child_uclinux(void)
-{
-	do_child(ikids_uclinux);
-}
-#endif
 
 static void setup(void)
 {

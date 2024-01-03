@@ -71,9 +71,6 @@ int main(int argc, char **argv)
 	int nexno, status;
 
 	tst_parse_opts(argc, argv, NULL, NULL);
-#ifdef UCLINUX
-	maybe_run_child(&do_child, "");
-#endif
 
 	setup();
 
@@ -88,12 +85,7 @@ int main(int argc, char **argv)
 			tst_brkm(TBROK|TERRNO, NULL, "fork failed");
 
 		if (pid == 0) {
-#ifdef UCLINUX
-			self_exec(argv[0], "");
-			/* No fork() error check is done so don't check here */
-#else
 			do_child();
-#endif
 		} else {
 			kill(pid, sig);
 			errno = 0;

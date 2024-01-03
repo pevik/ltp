@@ -68,11 +68,6 @@ static void cleanup(void);
 char *TCID = "waitpid05";
 int TST_TOTAL = 1;
 
-#ifdef UCLINUX
-static void do_child_uclinux(void);
-static int sig_uclinux;
-#endif
-
 int main(int ac, char **av)
 {
 	int pid, npid, sig, nsig;
@@ -80,10 +75,6 @@ int main(int ac, char **av)
 	int lc;
 
 	tst_parse_opts(ac, av, NULL, NULL);
-
-#ifdef UCLINUX
-	maybe_run_child(&do_child_uclinux, "d", &sig_uclinux);
-#endif
 
 	setup();
 
@@ -112,13 +103,7 @@ int main(int ac, char **av)
 			pid = tst_fork();
 
 			if (pid == 0) {
-#ifdef UCLINUX
-				self_exec(av[0], "d", sig);
-				/* No fork() error check is done so don't */
-				/* do an error check here */
-#else
 				do_child(sig);
-#endif
 			} else {
 				errno = 0;
 				while (((npid = waitpid(pid, &status, 0)) !=
@@ -215,17 +200,6 @@ static void do_child(int sig)
 		exit(exno);
 	}
 }
-
-#ifdef UCLINUX
-/*
- * do_child_uclinux()
- *	run do_child with the appropriate sig variable
- */
-static void do_child_uclinux(void)
-{
-	do_child(sig_uclinux);
-}
-#endif
 
 static void setup(void)
 {
