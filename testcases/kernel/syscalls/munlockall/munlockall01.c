@@ -71,8 +71,6 @@ void cleanup();
 char *TCID = "munlockall01";
 int TST_TOTAL = 1;
 
-#if !defined(UCLINUX)
-
 int main(int ac, char **av)
 {
 	int lc;
@@ -104,16 +102,6 @@ int main(int ac, char **av)
 	tst_exit();
 
 }
-
-#else
-
-int main(void)
-{
-	tst_resm(TINFO, "test is not available on uClinux");
-	tst_exit();
-}
-
-#endif /* if !defined(UCLINUX) */
 
 /* setup() - performs all ONE TIME setup for this test. */
 void setup(void)
