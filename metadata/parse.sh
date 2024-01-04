@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright (c) 2019 Cyril Hrubis <chrubis@suse.cz>
 # Copyright (c) 2020 Petr Vorel <pvorel@suse.cz>
+# Copyright (c) Linux Test Project, 2022-2024
 set -e
 
 top_builddir=$PWD/..
@@ -27,9 +28,10 @@ echo '  "timeout": 30'
 echo ' },'
 echo ' "tests": {'
 
-first=1
+parse()
+{
+	local test="$1"
 
-for test in `find testcases/ -name '*.c'|sort`; do
 	a=$($top_builddir/metadata/metaparse -Iinclude -Itestcases/kernel/syscalls/utils/ "$test")
 	if [ -n "$a" ]; then
 		if [ -z "$first" ]; then
@@ -40,7 +42,19 @@ for test in `find testcases/ -name '*.c'|sort`; do
 $a
 EOF
 	fi
-done
+}
+
+first=1
+
+if [ $# -gt 0 ]; then
+	for test in "$@"; do
+		parse "$test"
+	done
+else
+	for test in $(find testcases/ -name '*.c' | sort); do
+		parse "$test"
+	done
+fi
 
 echo
 echo ' }'
