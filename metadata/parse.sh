@@ -36,8 +36,10 @@ else
 	tests=$(find testcases/ -name '*.c' | sort)
 fi
 
+[ "$VERBOSE" ] && v="-v"
+
 for test in $tests; do
-	a=$($top_builddir/metadata/metaparse -Iinclude -Itestcases/kernel/syscalls/utils/ "$test")
+	a=$($top_builddir/metadata/metaparse $v -Iinclude -Itestcases/kernel/syscalls/utils/ "$test")
 	if [ -n "$a" ]; then
 		if [ -z "$first" ]; then
 			echo ','
