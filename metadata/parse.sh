@@ -15,6 +15,8 @@ if [ -d .git ]; then
 	version=$(git describe 2>/dev/null) || version=$(cat $top_srcdir/VERSION).GIT-UNKNOWN
 fi
 
+[ "$V" ] && VERBOSE=1
+
 echo '{'
 echo ' "testsuite": {'
 echo '  "name": "Linux Test Project",'
@@ -32,7 +34,7 @@ parse()
 {
 	local test="$1"
 
-	a=$($top_builddir/metadata/metaparse -Iinclude -Itestcases/kernel/syscalls/utils/ "$test")
+	a=$($top_builddir/metadata/metaparse $VERBOSE -Iinclude -Itestcases/kernel/syscalls/utils/ "$test")
 	if [ -n "$a" ]; then
 		if [ -z "$first" ]; then
 			echo ','
