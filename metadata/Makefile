@@ -13,7 +13,7 @@ INSTALL_DIR		= metadata
 .PHONY: ltp.json
 
 ltp.json: metaparse
-	$(abs_srcdir)/parse.sh > ltp.json
+	VERBOSE=$(VERBOSE) $(abs_srcdir)/parse.sh > ltp.json
 ifeq ($(WITH_METADATA),yes)
 	mkdir -p $(abs_top_builddir)/docparse
 	$(MAKE) -C $(abs_top_builddir)/docparse/ -f $(abs_top_srcdir)/docparse/Makefile
@@ -25,6 +25,6 @@ install:
 endif
 
 test:
-	$(MAKE) -C $(abs_srcdir)/tests/ test
+	$(MAKE) -C $(abs_srcdir)/tests/ VERBOSE=$(VERBOSE) test
 
 include $(top_srcdir)/include/mk/generic_leaf_target.mk
