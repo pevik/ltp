@@ -7,9 +7,10 @@
 #define DATA_STORAGE_H__
 
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
 enum data_type {
 	DATA_ARRAY,
@@ -275,6 +276,30 @@ static inline void data_node_print_(struct data_node *self, unsigned int padd)
 	}
 }
 
+static inline bool item_is_str_list_member(struct data_node *self)
+{
+	if (self->type != DATA_STRING)
+		return false;
+
+	return (self->string.val[0] == '*' || self->string.val[0] == '-')
+		&& self->string.val[1] == ' ';
+}
+
+static inline bool item_is_str_empty(struct data_node *self)
+{
+	if (self->type != DATA_STRING)
+		return false;
+
+	return !self->string.val[0];
+}
+
+static inline bool missing_space_for_list(struct data_node *cur, struct
+						data_node *prev)
+{
+	return item_is_str_list_member(cur) && !item_is_str_empty(prev) &&
+	    !item_is_str_list_member(prev);
+}
+
 static inline void data_node_print(struct data_node *self)
 {
 	printf("{\n");
@@ -357,6 +382,16 @@ static inline void data_to_json_(struct data_node *self, FILE *f, unsigned int p
 	case DATA_ARRAY:
 		data_fprintf(f, do_padd ? padd : 0, "[\n");
 		for (i = 0; i < self->array.array_used; i++) {
+
+			if (i > 0 &&
+			    missing_space_for_list(self->array.array[i],
+						   self->array.array[i-1])) {
+				fprintf(stderr,
+					"%s:%d: WARNING: missing blank line before first list item, add it\n",
+					__FILE__, __LINE__);
+				data_fprintf(f, padd+1, "\"\",\n");
+			}
+
 			data_to_json_(self->array.array[i], f, padd+1, 1);
 			if (i < self->array.array_used - 1)
 				fprintf(f, ",\n");
