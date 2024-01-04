@@ -862,6 +862,9 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
+	if (verbose)
+		fprintf(stderr, "\n=== %s ===\n", argv[optind]);
+
 	res = parse_file(argv[optind]);
 	if (!res)
 		return 0;
