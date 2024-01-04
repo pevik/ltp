@@ -1,0 +1,58 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Copyright (c) 2024 Petr Vorel <pvorel@suse.cz>
+
+name: "Test generating metadata documentation"
+on: [push, pull_request]
+
+permissions:
+  contents: read # to fetch code (actions/checkout)
+
+jobs:
+  metadata:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout LTP
+        uses: actions/checkout@v2
+        with:
+          path: ltp
+
+      - name: Install packages for generating documentation
+        run: |
+          cd ltp
+          sudo PACKAGES_FOR_DOCPARSE_ONLY=1 ./ci/ubuntu.sh
+
+      - name: Compiler version
+        run: gcc --version
+
+      - name: Autotools
+        run: |
+          cd ltp
+          ./build.sh -r autotools
+
+      - name: Configure
+        run: |
+          cd ltp
+          ./configure --with-metadata-generator=asciidoctor
+          if ! grep "WITH_METADATA_HTML.*yes" include/mk/features.mk; then
+            echo "::error::Configure failed to allow doc generation, ci/ubuntu.sh probably failed to install all dependencies."
+            exit 1
+          fi
+
+      - name: Metadata
+        run: |
+          cd ltp/metadata
+          make -j$(getconf _NPROCESSORS_ONLN)
+          ls -lah ../docparse/*.html
+          if [ ! -s ../docparse/*.html ]; then
+            echo "::error::Generated file is empty."
+            exit 1
+          fi
+          if ! file ../docparse/*.html | grep "HTML document"; then
+            echo "::error::Not HTML document, build probably failed."
+            exit 1
+          fi
+
+      - name: Metadata test
+        run: |
+          cd ltp/metadata
+          make test
