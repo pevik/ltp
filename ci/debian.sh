@@ -1,6 +1,6 @@
 #!/bin/sh -eux
 # SPDX-License-Identifier: GPL-2.0-or-later
-# Copyright (c) 2018-2021 Petr Vorel <pvorel@suse.cz>
+# Copyright (c) 2018-2024 Petr Vorel <pvorel@suse.cz>
 
 # workaround for missing oldstable-updates repository
 # W: Failed to fetch http://deb.debian.org/debian/dists/oldstable-updates/main/binary-amd64/Packages
@@ -12,6 +12,20 @@ apt update
 export DEBIAN_FRONTEND="noninteractive"
 
 apt="apt install -y --no-install-recommends"
+
+# see .github/workflows/metadata.yml
+if [ "${PACKAGES_FOR_DOCPARSE_ONLY:-}" ]; then
+	$apt \
+		asciidoctor \
+		autoconf \
+		automake \
+		gcc \
+		libjson-perl \
+		libwww-perl \
+		ruby-asciidoctor-pdf
+
+	return 0
+fi
 
 $apt \
 	acl-dev \
@@ -35,6 +49,7 @@ $apt \
 	libc6 \
 	libc6-dev \
 	libjson-perl \
+	libwww-perl \
 	libkeyutils-dev \
 	libkeyutils1 \
 	libmnl-dev \
