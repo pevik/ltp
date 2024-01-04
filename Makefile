@@ -216,8 +216,36 @@ test-metadata: metadata-all
 ## Help
 .PHONY: help
 help:
-	@echo "Please read the Configuration section in $(top_srcdir)/INSTALL"
-	@exit 1
+	@echo 'Cleaning:'
+	@echo '  clean              - delete all files created by build'
+	@echo '  distclean          - delete all non-source files'
+	@echo '  lib-clean          - delete all files created by build in lib directory (C API library and tests)'
+	@echo '  libs-clean         - delete all files created by build in libs directory (other libraries)'
+	@echo '  testcases-clean    - delete all files created by build in testcases directory (tests)'
+	@echo
+	@echo 'Build:'
+	@echo '  all                - build everything'
+	@echo '  autotools          - preparation for configure'
+	@echo '  lib-all            - build lib directory (C API library and tests)'
+	@echo '  libs-all           - build libs directory (other libraries)'
+	@echo '  testcases-all      - build testcases and their dependencies'
+	@echo
+	@echo 'Install:'
+	@echo '  install            - install all files created by build'
+	@echo '  install-lib        - install files in lib directory (C API library and tests)'
+	@echo '  install-libs       - install files in libs directory (other libraries)'
+	@echo '  install-testcases  - install testcases'
+	@echo
+	@echo 'Documentation:'
+	@echo '  doc                - create test documentation (HTML and/or PDF, based on configuration)'
+	@echo
+	@echo 'Testing:'
+	@echo '  test               - run all tests'
+	@echo '  test-c             - run C API tests'
+	@echo '  test-metadata      - run documentation tests'
+	@echo '  test-shell         - run shell API tests'
+	@echo
+	@echo 'For more info please read the Configuration section in $(top_srcdir)/INSTALL'
 
 ## Menuconfig
 menuconfig:
