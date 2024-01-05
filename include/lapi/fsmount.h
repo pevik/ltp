@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
- * Copyright (c) Linux Test Project, 2021-2022
+ * Copyright (c) Linux Test Project, 2021-2024
  * Copyright (c) 2020 Linaro Limited. All rights reserved.
  * Author: Viresh Kumar <viresh.kumar@linaro.org>
  */
@@ -11,12 +11,11 @@
 #include "config.h"
 #include <sys/syscall.h>
 #include <sys/types.h>
-#include <sys/mount.h>
 
-#ifndef HAVE_FSOPEN
-# ifdef HAVE_LINUX_MOUNT_H
-#  include <linux/mount.h>
-# endif
+#if !defined(HAVE_FSOPEN) && defined(HAVE_LINUX_MOUNT_H)
+# include <linux/mount.h>
+#else
+# include <sys/mount.h>
 #endif
 
 #include "lapi/fcntl.h"

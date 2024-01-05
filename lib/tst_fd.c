@@ -18,9 +18,12 @@
 #include "tst_safe_macros.h"
 
 #include "lapi/pidfd.h"
+#include "lapi/fsmount.h"
+
+#if defined(HAVE_FSOPEN) || !defined(HAVE_LINUX_MOUNT_H)
 #include "lapi/io_uring.h"
 #include "lapi/bpf.h"
-#include "lapi/fsmount.h"
+#endif
 
 #include "tst_fd.h"
 
@@ -190,6 +193,7 @@ static void open_perf_event(struct tst_fd *fd)
 	}
 }
 
+#if defined(HAVE_FSOPEN) || !defined(HAVE_LINUX_MOUNT_H)
 static void open_io_uring(struct tst_fd *fd)
 {
 	struct io_uring_params uring_params = {};
@@ -216,6 +220,7 @@ static void open_bpf_map(struct tst_fd *fd)
 			"Skipping %s", tst_fd_desc(fd));
 	}
 }
+#endif
 
 static void open_fsopen(struct tst_fd *fd)
 {
@@ -281,8 +286,10 @@ static struct tst_fd_desc fd_desc[] = {
 	[TST_FD_INOTIFY] = {.open_fd = open_inotify, .desc = "inotify"},
 	[TST_FD_USERFAULTFD] = {.open_fd = open_userfaultfd, .desc = "userfaultfd"},
 	[TST_FD_PERF_EVENT] = {.open_fd = open_perf_event, .desc = "perf event"},
+#if defined(HAVE_FSOPEN) || !defined(HAVE_LINUX_MOUNT_H)
 	[TST_FD_IO_URING] = {.open_fd = open_io_uring, .desc = "io uring"},
 	[TST_FD_BPF_MAP] = {.open_fd = open_bpf_map, .desc = "bpf map"},
+#endif
 	[TST_FD_FSOPEN] = {.open_fd = open_fsopen, .desc = "fsopen"},
 	[TST_FD_FSPICK] = {.open_fd = open_fspick, .desc = "fspick"},
 	[TST_FD_OPEN_TREE] = {.open_fd = open_open_tree, .desc = "open_tree"},
