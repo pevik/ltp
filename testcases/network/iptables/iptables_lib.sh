@@ -155,7 +155,7 @@ test2()
 	fi
 
 	tst_res TINFO "Pinging $loc_addr"
-	$ping_cmd -c 2 $loc_addr -W 1 -i 0 > tst_iptables.out 2>&1
+	$ping_cmd -c 2 $loc_addr -W 1 -f > tst_iptables.out 2>&1
 	if [ $? -ne 0 ]; then
 		grep "100% packet loss" tst_iptables.out > tst_iptables.err 2>&1
 		if [ $? -ne 0 ]; then
@@ -176,7 +176,7 @@ test2()
 	NFRUN_REMOVE
 
 	tst_res TINFO "Pinging $loc_addr again"
-	$ping_cmd -c 2 $loc_addr -W 1 -i 0 > tst_iptables.out 2>&1
+	$ping_cmd -c 2 $loc_addr -W 1 -f > tst_iptables.out 2>&1
 	if [ $? -ne 0 ]; then
 		tst_res TFAIL "$toolname blocking loopback. This is expected" \
 			       "behaviour on certain distributions where" \
@@ -202,7 +202,7 @@ test3()
 	fi
 
 	tst_res TINFO "Pinging $loc_addr"
-	$ping_cmd -c 2 $loc_addr -W 1 -i 0 > tst_iptables.out 2>&1
+	$ping_cmd -c 2 $loc_addr -W 1 -f > tst_iptables.out 2>&1
 	if [ $? -ne 0 ]; then
 		grep "100% packet loss" tst_iptables.out > tst_iptables.err 2>&1
 		if [ $? -ne 0 ]; then
@@ -222,7 +222,7 @@ test3()
 	NFRUN_REMOVE
 
 	tst_res TINFO "Pinging $loc_addr again"
-	$ping_cmd -c 2 $loc_addr -W 1 -i 0 > tst_iptables.out 2>&1
+	$ping_cmd -c 2 $loc_addr -W 1 -f > tst_iptables.out 2>&1
 	if [ $? -ne 0 ]; then
 		tst_res TFAIL "$toolname blocking ping requests. This is" \
 			      "expected behaviour on certain distributions" \
@@ -352,7 +352,7 @@ test6()
 	fi
 
 	tst_res TINFO "Pinging $loc_addr"
-	$ping_cmd -c 10 $loc_addr -W 1 -i 0 > tst_iptables.out 2>&1
+	$ping_cmd -c 10 $loc_addr -W 1 -f > tst_iptables.out 2>&1
 	if [ $? -eq 0 ]; then
 		sleep 2
 		logcnt=$(dmesg | grep -c "$logprefix")
