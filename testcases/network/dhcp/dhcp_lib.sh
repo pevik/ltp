@@ -158,6 +158,8 @@ EOF
 	if [ $? -eq 0 ]; then
 		tst_res TPASS "'$ip_addr_check' configured by DHCPv$TST_IPVER"
 	else
+		tst_res TINFO "ip addr show $iface1"
+		ip addr show $iface1
 		if ip addr show $iface1 | grep -q $ip_addr_check_noprefix; then
 			tst_res TFAIL "'$ip_addr_check_noprefix' configured but has wrong prefix, expect '$ip_addr_check'"
 			ip addr show $iface1
