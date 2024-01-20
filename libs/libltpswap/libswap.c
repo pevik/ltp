@@ -4,6 +4,7 @@
  * Author: Stanislav Kholmanskikh <stanislav.kholmanskikh@oracle.com>
  */
 
+#include <linux/fs.h>
 #include <errno.h>
 
 #define TST_NO_DEFAULT_MAIN
@@ -23,17 +24,51 @@ static const char *const swap_supported_fs[] = {
 	NULL
 };
 
+static void set_nocow_attr(const char *filename)
+{
+	int fd;
+	int attrs;
+
+	fd = SAFE_OPEN(filename, O_RDONLY);
+
+	if (ioctl(fd, FS_IOC_GETFLAGS, &attrs) == -1) {
+		tst_res(TFAIL | TERRNO, "Error getting attributes");
+		close(fd);
+		return;
+	}
+
+	attrs |= FS_NOCOW_FL;
+
+	if (ioctl(fd, FS_IOC_SETFLAGS, &attrs) == -1)
+		tst_res(TFAIL | TERRNO, "Error setting FS_NOCOW_FL attribute");
+	else
+		tst_res(TINFO, "FS_NOCOW_FL attribute set on %s\n", filename);
+
+	close(fd);
+}
+
 /*
  * Make a swap file
  */
 int make_swapfile(const char *swapfile, int safe)
 {
+	long fs_type = tst_fs_type(swapfile);
+	const char *fstype = tst_fs_type_name(fs_type);
+
 	if (!tst_fs_has_free(".", sysconf(_SC_PAGESIZE) * 10, TST_BYTES))
 		tst_brk(TBROK, "Insufficient disk space to create swap file");
 
 	/* create file */
 	if (tst_fill_file(swapfile, 0, sysconf(_SC_PAGESIZE), 10) != 0)
 		tst_brk(TBROK, "Failed to create swapfile");
+
+	/* Btrfs file need set 'nocow' attribute */
+	if (strcmp(fstype, "btrfs") == 0) {
+		if (tst_kvercmp(5, 0, 0) > 0)
+			set_nocow_attr(swapfile);
+		else
+			tst_brk(TCONF, "Swapfile on %s not implemented", fstype);
+	}
 
 	/* make the file swapfile */
 	const char *argv[2 + 1];
