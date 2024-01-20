@@ -12,6 +12,17 @@
 #include "libswap.h"
 #include "lapi/syscalls.h"
 
+static const char *const swap_supported_fs[] = {
+	"ext2",
+	"ext3",
+	"ext4",
+	"xfs",
+	"vfat",
+	"exfat",
+	"ntfs",
+	NULL
+};
+
 /*
  * Make a swap file
  */
@@ -40,23 +51,31 @@ int make_swapfile(const char *swapfile, int safe)
  */
 void is_swap_supported(const char *filename)
 {
+	int i, sw_support = 0;
 	int fibmap = tst_fibmap(filename);
 	long fs_type = tst_fs_type(filename);
 	const char *fstype = tst_fs_type_name(fs_type);
 
-	int ret = make_swapfile(filename, 1);
-	if (ret != 0) {
-		if (fibmap == 1)
-			tst_brk(TCONF, "mkswap on %s not supported", fstype);
-		else
-			tst_brk(TFAIL, "mkswap on %s failed", fstype);
+	for (i = 0; swap_supported_fs[i]; i++) {
+		if (!strcmp(fstype, swap_supported_fs[i])) {
+			sw_support = 1;
+			break;
+		}
 	}
+
+       int ret = make_swapfile(filename, 1);
+       if (ret != 0) {
+               if (fibmap == 1 && sw_support == 0)
+                       tst_brk(TCONF, "mkswap on %s not supported", fstype);
+               else
+                       tst_brk(TFAIL, "mkswap on %s failed", fstype);
+       }
 
 	TEST(tst_syscall(__NR_swapon, filename, 0));
 	if (TST_RET == -1) {
 		if (errno == EPERM)
 			tst_brk(TCONF, "Permission denied for swapon()");
-		else if (fibmap == 1 && errno == EINVAL)
+		else if (fibmap == 1 && errno == EINVAL && sw_support == 0)
 			tst_brk(TCONF, "Swapfile on %s not implemented", fstype);
 		else
 			tst_brk(TFAIL | TTERRNO, "swapon() on %s failed", fstype);
