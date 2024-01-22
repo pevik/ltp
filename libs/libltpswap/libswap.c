@@ -87,6 +87,8 @@ int make_swapfile(const char *swapfile, int safe)
 void is_swap_supported(const char *filename)
 {
 	int i, sw_support = 0;
+
+	int ret = make_swapfile(filename, 1);
 	int fibmap = tst_fibmap(filename);
 	long fs_type = tst_fs_type(filename);
 	const char *fstype = tst_fs_type_name(fs_type);
@@ -98,13 +100,12 @@ void is_swap_supported(const char *filename)
 		}
 	}
 
-       int ret = make_swapfile(filename, 1);
-       if (ret != 0) {
-               if (fibmap == 1 && sw_support == 0)
-                       tst_brk(TCONF, "mkswap on %s not supported", fstype);
-               else
-                       tst_brk(TFAIL, "mkswap on %s failed", fstype);
-       }
+	if (ret != 0) {
+		if (fibmap == 1 && sw_support == 0)
+			tst_brk(TCONF, "mkswap on %s not supported", fstype);
+		else
+			tst_brk(TFAIL, "mkswap on %s failed", fstype);
+	}
 
 	TEST(tst_syscall(__NR_swapon, filename, 0));
 	if (TST_RET == -1) {
