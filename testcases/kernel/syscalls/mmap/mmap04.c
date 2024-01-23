@@ -17,28 +17,28 @@
 #include "tst_test.h"
 #include <stdio.h>
 
-#define MMAPSIZE 1024
-static char *addr;
+static char *addr1;
+static char *addr2;
 
 static struct tcase {
 	int prot;
 	int flags;
 	char *exp_perms;
 } tcases[] = {
-	{PROT_NONE, MAP_ANONYMOUS | MAP_PRIVATE, "---p"},
-	{PROT_NONE, MAP_ANONYMOUS | MAP_SHARED, "---s"},
-	{PROT_READ, MAP_ANONYMOUS | MAP_PRIVATE, "r--p"},
-	{PROT_READ, MAP_ANONYMOUS | MAP_SHARED, "r--s"},
-	{PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, "-w-p"},
-	{PROT_WRITE, MAP_ANONYMOUS | MAP_SHARED, "-w-s"},
-	{PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, "rw-p"},
-	{PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_SHARED, "rw-s"},
-	{PROT_READ | PROT_EXEC, MAP_ANONYMOUS | MAP_PRIVATE, "r-xp"},
-	{PROT_READ | PROT_EXEC, MAP_ANONYMOUS | MAP_SHARED, "r-xs"},
-	{PROT_WRITE | PROT_EXEC, MAP_ANONYMOUS | MAP_PRIVATE, "-wxp"},
-	{PROT_WRITE | PROT_EXEC, MAP_ANONYMOUS | MAP_SHARED, "-wxs"},
-	{PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANONYMOUS | MAP_PRIVATE, "rwxp"},
-	{PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANONYMOUS | MAP_SHARED, "rwxs"}
+	{PROT_NONE, MAP_ANONYMOUS | MAP_PRIVATE | MAP_FIXED, "---p"},
+	{PROT_NONE, MAP_ANONYMOUS | MAP_SHARED | MAP_FIXED, "---s"},
+	{PROT_READ, MAP_ANONYMOUS | MAP_PRIVATE | MAP_FIXED, "r--p"},
+	{PROT_READ, MAP_ANONYMOUS | MAP_SHARED | MAP_FIXED, "r--s"},
+	{PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE | MAP_FIXED, "-w-p"},
+	{PROT_WRITE, MAP_ANONYMOUS | MAP_SHARED | MAP_FIXED, "-w-s"},
+	{PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE | MAP_FIXED, "rw-p"},
+	{PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_SHARED | MAP_FIXED, "rw-s"},
+	{PROT_READ | PROT_EXEC, MAP_ANONYMOUS | MAP_PRIVATE | MAP_FIXED, "r-xp"},
+	{PROT_READ | PROT_EXEC, MAP_ANONYMOUS | MAP_SHARED | MAP_FIXED, "r-xs"},
+	{PROT_WRITE | PROT_EXEC, MAP_ANONYMOUS | MAP_PRIVATE | MAP_FIXED, "-wxp"},
+	{PROT_WRITE | PROT_EXEC, MAP_ANONYMOUS | MAP_SHARED | MAP_FIXED, "-wxs"},
+	{PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANONYMOUS | MAP_PRIVATE | MAP_FIXED, "rwxp"},
+	{PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANONYMOUS | MAP_SHARED | MAP_FIXED, "rwxs"}
 };
 
 static void run(unsigned int i)
@@ -47,10 +47,21 @@ static void run(unsigned int i)
 	char addr_str[20];
 	char perms[8];
 	char fmt[1024];
+	unsigned int pagesize;
 
-	addr = SAFE_MMAP(NULL, MMAPSIZE, tc->prot, tc->flags, -1, 0);
+	pagesize = SAFE_SYSCONF(_SC_PAGESIZE);
 
-	sprintf(addr_str, "%" PRIxPTR, (uintptr_t)addr);
+	/* To avoid new mapping getting merged with existing mappings, we first
+	   create a 2-page mapping with the different permissions, and then remap
+	   the 2nd page with the perms being tested. */
+	if ((tc->prot == PROT_NONE) && (tc->flags == (MAP_ANONYMOUS | MAP_PRIVATE | MAP_FIXED)))
+		addr1 = SAFE_MMAP(NULL, pagesize * 2, PROT_READ, MAP_ANONYMOUS | MAP_SHARED, -1, 0);
+	else
+		addr1 = SAFE_MMAP(NULL, pagesize * 2, PROT_NONE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+
+	addr2 = SAFE_MMAP(addr1 + pagesize, pagesize, tc->prot, tc->flags, -1, 0);
+
+	sprintf(addr_str, "%" PRIxPTR, (uintptr_t)addr2);
 	sprintf(fmt, "%s-%%*x %%s", addr_str);
 	SAFE_FILE_LINES_SCANF("/proc/self/maps", fmt, perms);
 
@@ -61,7 +72,7 @@ static void run(unsigned int i)
 						tc->exp_perms, perms);
 	}
 
-	SAFE_MUNMAP(addr, MMAPSIZE);
+	SAFE_MUNMAP(addr1, pagesize * 2);
 }
 
 static struct tst_test test = {
