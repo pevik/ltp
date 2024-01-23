@@ -174,8 +174,10 @@ virt_multiple_add_test()
 	tst_res TINFO "add $NS_TIMES $virt_type, then delete"
 
 	for i in $(seq $start_id $max); do
-		virt_add ltp_v$i id $i $opt || \
-			tst_brk TFAIL "failed to create 'ltp_v0 $opt'"
+		if ! virt_add ltp_v$i id $i $opt; then
+			tst_res TFAIL "failed to create 'ltp_v0 $opt'"
+			return
+		fi
 		ROD_SILENT "ip link set ltp_v$i up"
 	done
 
@@ -196,8 +198,10 @@ virt_add_delete_test()
 	tst_res TINFO "add/del $virt_type $NS_TIMES times"
 
 	for i in $(seq 0 $max); do
-		virt_add ltp_v0 $opt || \
-			tst_brk TFAIL "failed to create 'ltp_v0 $opt'"
+		if ! virt_add ltp_v0 $opt; then
+			tst_res TFAIL "failed to create 'ltp_v0 $opt'"
+			return
+		fi
 		ROD_SILENT "ip link set ltp_v0 up"
 		ROD_SILENT "ip link delete ltp_v0"
 	done
