@@ -44,6 +44,10 @@ static void check_splice(struct tst_fd *fd_in, struct tst_fd *fd_out)
 		/* And this complains about socket not being connected */
 		case TST_FD_INET_SOCK:
 			return;
+		/* 1b057bd800c3 implemented splice() for /dev/zero, /dev/full */
+		case TST_FD_DEV_ZERO:
+			if (tst_kvercmp(6, 7, 0) >= 0)
+				return;
 		default:
 		break;
 		}
