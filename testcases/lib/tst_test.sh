@@ -55,6 +55,8 @@ _tst_do_exit()
 
 	if [ "$TST_NEEDS_TMPDIR" = 1 -a -n "$TST_TMPDIR" ]; then
 		rm -r "$TST_TMPDIR"
+		tst_res TINFO "_tst_do_exit: pwd: '$PWD'"
+		df -hT
 		[ "$TST_TMPDIR_RHOST" = 1 ] && tst_cleanup_rhost
 	fi
 
@@ -668,6 +670,8 @@ tst_run()
 	local _tst_name
 	local _tst_pattern='[='\''"} \t\/:`$\;|].*'
 	local ret
+
+	tst_res TINFO "tst_run: TMPDIR: '$TMPDIR'"
 
 	if [ -n "$TST_TEST_PATH" ]; then
 		for _tst_i in $(grep '^[^#]*\bTST_' "$TST_TEST_PATH" | sed "s/.*TST_//; s/$_tst_pattern//"); do
