@@ -36,8 +36,14 @@ gen_fs_tree()
 
 	[ "$cur_depth" -gt "$MAX_DEPTH" ] && return
 
+	tst_res TINFO "cur_path: '$cur_path'"
+	df -hT $cur_path
+
 	for i in $(seq 1 $MAX_DIRS); do
 		new_path="$cur_path/subdir_$i"
+		tst_res TINFO "new_path: '$new_path'"
+		df -hT $new_path
+
 		mkdir -p "$new_path"
 		ROD_SILENT dd if=/dev/urandom of="$new_path/file" bs=1024 count=100
 		gen_fs_tree "$new_path" $((cur_depth + 1))
@@ -52,6 +58,11 @@ do_test()
 
 	mkdir -p -m 777 $mnt_point
 	mkdir -p $make_file_sys_dir
+
+	tst_res TINFO "pwd: '$PWD'"
+	tst_res TINFO "mnt_point: '$mnt_point'"
+	df -hT $mnt_point
+
 
 	# Generated directories and files
 	mkdir -p $make_file_sys_dir
