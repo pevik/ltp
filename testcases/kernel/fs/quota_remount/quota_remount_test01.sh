@@ -22,6 +22,8 @@ do_setup()
 
 	MNTDIR="mnt.$$"
 	IMAGE="ltp-$$-fs-image"
+	tst_res TINFO "pwd: '$PWD'"
+	df -hT
 	ROD dd if=/dev/zero of=$IMAGE bs=4096 count=8000 2>/dev/null
 	ROD mkfs.ext3 -q -F -b 4096 $IMAGE
 	mkdir $MNTDIR
@@ -32,6 +34,8 @@ do_clean()
 	[ "$mounted" ] || return
 	tst_umount "$PWD/$MNTDIR"
 	mounted=
+	tst_res TINFO "pwd: '$PWD'"
+	df -hT
 }
 
 get_blocks()
