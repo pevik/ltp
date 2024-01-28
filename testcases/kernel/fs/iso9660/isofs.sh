@@ -13,18 +13,16 @@ TST_NEEDS_CMDS="mount umount"
 TST_NEEDS_TMPDIR=1
 TST_SETUP=setup
 TST_TESTFUNC=do_test
+TST_CNT=3
 
 MAX_DEPTH=3
 MAX_DIRS=4
 
 setup()
 {
-	if tst_cmd_available mkisofs; then
-		MKISOFS_CMD="mkisofs"
-	elif tst_cmd_available genisoimage; then
-		MKISOFS_CMD="genisoimage"
-	else
-		tst_brk TCONF "please install mkisofs or genisoimage"
+	if !(tst_cmd_available mkisofs \
+		|| tst_cmd_available genisoimage || tst_cmd_available xorrisofs);then
+			tst_brk TCONF "please install mkisofs / genisoimage / xorriso"
 	fi
 }
 
@@ -46,6 +44,29 @@ gen_fs_tree()
 
 do_test()
 {
+        case $1 in
+        1) MKISOFS_CMD="mkisofs"
+	   HFSOPT="-hfs -D"
+	   GREPOPT="mkisofs";;
+        2) MKISOFS_CMD="genisoimage"
+	   HFSOPT="-hfsplus -D -hfs -D"
+	   GREPOPT="genisoimage";;
+        3) MKISOFS_CMD="xorrisofs"
+	   HFSOPT="-hfsplus -D"
+	   GREPOPT="xorriso";;
+        esac
+
+
+        if ! tst_cmd_available $MKISOFS_CMD; then
+                tst_res TCONF "Missing '$MKISOFS_CMD'"
+                return
+        fi
+
+        if ! $MKISOFS_CMD 2>&1 | head -n 2 |grep -q "$GREPOPT"; then
+                tst_res TCONF "'$MKISOFS_CMD' is a symlink to another tool"
+                return
+        fi
+
 	local mnt_point="$PWD/mnt"
 	local make_file_sys_dir="$PWD/files"
 	local mkisofs_opt mount_opt
@@ -62,14 +83,16 @@ do_test()
 	for mkisofs_opt in \
 		" " \
 		"-J" \
-		"-hfs -D" \
+		${HFSOPT} \
 		" -R " \
 		"-R -J" \
 		"-f -l -D -J -allow-leading-dots -R" \
-		"-allow-lowercase -allow-multidot -iso-level 3 -f -l -D -J -allow-leading-dots -R"
+		"-allow-lowercase -allow-multidot -iso-level 3 -f -l -D -J \
+			-allow-leading-dots -R"
 	do
 		rm -f isofs.iso
-		EXPECT_PASS $MKISOFS_CMD -o isofs.iso -quiet $mkisofs_opt $make_file_sys_dir 2\> /dev/null \
+		EXPECT_PASS $MKISOFS_CMD -o isofs.iso \
+			-quiet $mkisofs_opt $make_file_sys_dir 2\> /dev/null \
 			|| continue
 
 		for mount_opt in \
