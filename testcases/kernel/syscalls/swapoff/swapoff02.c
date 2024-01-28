@@ -18,6 +18,8 @@
 #include "lapi/syscalls.h"
 #include "libswap.h"
 
+#define MNTPOINT	"mntpoint"
+
 static int setup01(void);
 static void cleanup01(void);
 
@@ -84,14 +86,13 @@ static void setup(void)
 
 	is_swap_supported("./tstswap");
 
-	if (!tst_fs_has_free(".", 1, TST_KB))
-		tst_brk(TBROK, "Insufficient disk space to create swap file");
-
-	if (tst_fill_file("./swapfile01", 0x00, 1024, 1))
-		tst_brk(TBROK, "Failed to create swapfile");
+	if (make_swapfile("swapfile01", 10, 1))
+		tst_brk(TBROK, "Failed to create file for swap");
 }
 
 static struct tst_test test = {
+	.mntpoint = MNTPOINT,
+	.all_filesystems = 1,
 	.needs_root = 1,
 	.needs_tmpdir = 1,
 	.test = verify_swapoff,

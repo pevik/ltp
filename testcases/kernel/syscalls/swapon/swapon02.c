@@ -20,6 +20,8 @@
 #include "lapi/syscalls.h"
 #include "libswap.h"
 
+#define MNTPOINT	"mntpoint"
+
 static uid_t nobody_uid;
 static int do_swapoff;
 
@@ -78,6 +80,8 @@ static void verify_swapon(unsigned int i)
 }
 
 static struct tst_test test = {
+	.mntpoint = MNTPOINT,
+	.all_filesystems = 1,
 	.needs_root = 1,
 	.needs_tmpdir = 1,
 	.test = verify_swapon,

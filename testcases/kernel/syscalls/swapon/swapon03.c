@@ -22,6 +22,8 @@
 #include "swaponoff.h"
 #include "libswap.h"
 
+#define MNTPOINT	"mntpoint"
+
 static int setup_swap(void);
 static int clean_swap(void);
 static int check_and_swapoff(const char *filename);
@@ -265,6 +267,8 @@ static void cleanup(void)
 }
 
 static struct tst_test test = {
+	.mntpoint = MNTPOINT,
+	.all_filesystems = 1,
 	.needs_root = 1,
 	.needs_tmpdir = 1,
 	.forks_child = 1,
