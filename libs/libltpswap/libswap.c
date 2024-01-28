@@ -168,7 +168,7 @@ int make_swapfile(const char *swapfile, int blocks, int safe)
  * Check swapon/swapoff support status of filesystems or files
  * we are testing on.
  */
-void is_swap_supported(const char *filename)
+int is_swap_supported(const char *filename)
 {
 	int i, sw_support = 0;
 	int ret = make_swapfile(filename, 10, 1);
@@ -188,23 +188,31 @@ void is_swap_supported(const char *filename)
 	}
 
 	if (ret != 0) {
-		if (fi_contiguous == 0 && sw_support == 0)
+		if (fi_contiguous == 0 && sw_support == 0) {
 			tst_brk(TCONF, "mkswap on %s not supported", fstype);
-		else
-			tst_brk(TFAIL, "mkswap on %s failed", fstype);
+		} else {
+			tst_res(TFAIL, "mkswap on %s failed", fstype);
+			return 0;
+		}
 	}
 
 	TEST(tst_syscall(__NR_swapon, filename, 0));
 	if (TST_RET == -1) {
-		if (errno == EPERM)
+		if (errno == EPERM) {
 			tst_brk(TCONF, "Permission denied for swapon()");
-		else if (errno == EINVAL && fi_contiguous == 0 && sw_support == 0)
+		} else if (errno == EINVAL && fi_contiguous == 0 && sw_support == 0) {
 			tst_brk(TCONF, "Swapfile on %s not implemented", fstype);
-		else
-			tst_brk(TFAIL | TTERRNO, "swapon() on %s failed", fstype);
+		} else {
+			tst_res(TFAIL | TTERRNO, "swapon() on %s failed", fstype);
+			return 0;
+		}
 	}
 
 	TEST(tst_syscall(__NR_swapoff, filename, 0));
-	if (TST_RET == -1)
-		tst_brk(TFAIL | TTERRNO, "swapoff on %s failed", fstype);
+	if (TST_RET == -1) {
+		tst_res(TFAIL | TTERRNO, "swapoff on %s failed", fstype);
+		return 0;
+	}
+
+	return (TST_RET == 0);
 }
