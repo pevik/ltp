@@ -90,6 +90,8 @@ static inline void io_read(const char *filename, int filesize, volatile int *run
 			if (!*run_child || !tst_remaining_runtime())
 				goto exit;
 		}
+
+		usleep(100);
 	}
 
 exit:
@@ -121,6 +123,8 @@ static inline void io_read_eof(const char *filename, volatile int *run_child)
 				break;
 			}
 		}
+
+		usleep(100);
 	}
 
 	SAFE_CLOSE(fd);
