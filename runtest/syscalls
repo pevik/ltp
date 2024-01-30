@@ -50,6 +50,8 @@ bpf_prog07 bpf_prog07
 brk01 brk01
 brk02 brk02
 
+cap_bounds run_capbounds.sh
+
 capget01 capget01
 capget02 capget02
 
