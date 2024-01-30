@@ -165,9 +165,8 @@ libc and other low level libraries.
 -------------------------------------------------------------------------------
 static int fd0, fd1, mount_flag;
 
-#define MNTPOINT "mntpoint"
-#define FILE1 "mntpoint/file1"
-#define FILE2 "mntpoint/file2"
+#define FILE1 MNTPOINT"/file1"
+#define FILE2 MNTPOINT"/file2"
 
 static void setup(void)
 {
