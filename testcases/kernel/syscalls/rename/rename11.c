@@ -41,7 +41,6 @@
 
 char *TCID = "rename11";
 
-#define MNTPOINT	"mntpoint"
 #define TEST_EROFS	"mntpoint/test_erofs"
 #define TEST_NEW_EROFS	"mntpoint/new_test_erofs"
 

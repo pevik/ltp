@@ -24,7 +24,6 @@
 #include "tst_test.h"
 #include "preadv.h"
 
-#define MNTPOINT	"mntpoint"
 #define FNAME	MNTPOINT"/file"
 
 static int fd;

@@ -35,7 +35,6 @@
 #include "tst_test.h"
 
 #define RECLEN	100
-#define MNTPOINT	"mntpoint"
 #define TESTFILE	MNTPOINT"/testfile"
 
 static int len = 8 * 1024;

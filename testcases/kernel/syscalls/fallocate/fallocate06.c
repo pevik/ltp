@@ -41,7 +41,6 @@
 #include "tst_test.h"
 #include "lapi/fallocate.h"
 
-#define MNTPOINT "mntpoint"
 #define TEMPFILE MNTPOINT "/test_file"
 #define WRITE_BLOCKS 8
 #define FALLOCATE_BLOCKS 2

@@ -49,7 +49,8 @@ enum {
 	TST_GB = 1073741824,
 };
 
-#define OVL_BASE_MNTPOINT        "mntpoint"
+#define MNTPOINT	"mntpoint"
+#define OVL_BASE_MNTPOINT	MNTPOINT
 #define OVL_LOWER	OVL_BASE_MNTPOINT"/lower"
 #define OVL_UPPER	OVL_BASE_MNTPOINT"/upper"
 #define OVL_WORK	OVL_BASE_MNTPOINT"/work"

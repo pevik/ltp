@@ -45,7 +45,6 @@
 
 #define OPTION_INVALID 999
 #define USRPATH MNTPOINT "/aquota.user"
-#define MNTPOINT "mntpoint"
 #define TESTDIR1 MNTPOINT "/testdir1"
 #define TESTDIR2 MNTPOINT "/testdir2"
 

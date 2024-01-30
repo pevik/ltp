@@ -29,7 +29,6 @@
 # define ST_NOSYMFOLLOW 0x2000
 #endif
 
-#define MNTPOINT "mntpoint"
 
 static char test_file[PATH_MAX];
 static char link_file[PATH_MAX];

@@ -37,7 +37,6 @@ int TST_TOTAL = 1;
 
 #define DIR_MODE	(S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)
 #define FILE_MODE	(S_IRWXU | S_IRWXG | S_IRWXO | S_ISUID | S_ISGID)
-#define MNTPOINT	"mntpoint"
 
 static int fd;
 static int mount_flag;

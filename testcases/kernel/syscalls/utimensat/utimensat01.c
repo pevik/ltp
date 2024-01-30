@@ -21,7 +21,6 @@
 #include "time64_variants.h"
 #include "tst_timer.h"
 
-#define MNTPOINT	"mntpoint"
 #define TEST_FILE	MNTPOINT"/test_file"
 #define TEST_DIR	MNTPOINT"/test_dir"
 

@@ -43,7 +43,6 @@
 #define XATTR_VALUE		"file and link"
 #define XATTR_VALUE_SIZE	13
 
-#define MNTPOINT "mntpoint"
 #define FILENAME MNTPOINT"/lremovexattr01testfile"
 #define SYMLINK  MNTPOINT"/lremovexattr01symlink"
 

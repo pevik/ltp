@@ -32,7 +32,6 @@
 #include "lapi/fcntl.h"
 #include "lapi/mount.h"
 
-#define MNTPOINT	"mntpoint"
 #define TEST_FILE	MNTPOINT"/test_file"
 #define LARGE_FILE	"large_file"
 

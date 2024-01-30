@@ -29,7 +29,6 @@
 
 #define CHUNK_SIZE 256
 #define BUF_SIZE (2 * CHUNK_SIZE)
-#define MNTPOINT "mntpoint"
 #define TEMPFILE MNTPOINT "/test_file"
 #define MAPFILE MNTPOINT "/map_file"
 

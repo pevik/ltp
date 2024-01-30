@@ -17,7 +17,6 @@
 #include <sys/xattr.h>
 #include "tst_safe_macros.h"
 
-#define MNTPOINT "mntpoint"
 #define FNAME MNTPOINT"/getxattr03testfile"
 #define XATTR_TEST_KEY "user.testkey"
 #define XATTR_TEST_VALUE "test value"

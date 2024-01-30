@@ -34,7 +34,6 @@
 
 #ifdef HAVE_SYS_XATTR_H
 
-#define MNTPOINT	"mntpoint"
 #define TEST_FILE	MNTPOINT "/file"
 #define TRUSTED_BIG	"trusted.big"
 #define TRUSTED_SMALL	"trusted.small"

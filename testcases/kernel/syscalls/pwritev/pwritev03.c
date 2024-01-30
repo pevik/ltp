@@ -25,7 +25,6 @@
 #include "pwritev.h"
 #include "tst_safe_prw.h"
 
-#define MNTPOINT	"mntpoint"
 #define FNAME	MNTPOINT"/file"
 
 static char *initbuf, *preadbuf;

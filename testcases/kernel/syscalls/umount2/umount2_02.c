@@ -23,7 +23,6 @@
 #include "lapi/mount.h"
 #include "tst_test.h"
 
-#define MNTPOINT        "mntpoint"
 #define SYMLINK	"symlink"
 
 #define FLAG_DESC(x, y) .flag = x, .exp_errno = 0, \

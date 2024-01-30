@@ -51,7 +51,6 @@
 #define XATTR_TEST_KEY "user.testkey"
 #define XATTR_TEST_VALUE "this is a test value"
 #define XATTR_TEST_VALUE_SIZE 20
-#define MNTPOINT "mntpoint"
 #define FNAME MNTPOINT"/setxattr01testfile"
 
 static char long_key[XATTR_NAME_LEN];

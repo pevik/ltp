@@ -16,7 +16,6 @@
 #include <pwd.h>
 #include <sys/mount.h>
 
-#define MNTPOINT "mntpoint"
 
 static void cleanup(void)
 {

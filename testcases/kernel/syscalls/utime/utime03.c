@@ -26,7 +26,6 @@
 #include "tst_uid.h"
 #include "tst_clocks.h"
 
-#define MNTPOINT	"mntpoint"
 #define TEMP_FILE	MNTPOINT"/tmp_file"
 #define FILE_MODE	0766
 

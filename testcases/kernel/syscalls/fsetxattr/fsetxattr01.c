@@ -52,7 +52,6 @@
 #define XATTR_TEST_KEY "user.testkey"
 #define XATTR_TEST_VALUE "this is a test value"
 #define XATTR_TEST_VALUE_SIZE 20
-#define MNTPOINT "mntpoint"
 #define FNAME MNTPOINT"/fsetxattr01testfile"
 
 static int fd = -1;

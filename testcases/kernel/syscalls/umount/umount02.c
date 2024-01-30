@@ -23,7 +23,6 @@
 #include <sys/mount.h>
 #include "tst_test.h"
 
-#define MNTPOINT	"mntpoint"
 
 static char long_path[PATH_MAX + 2];
 static int mount_flag;

@@ -34,7 +34,6 @@
 #include "tst_test.h"
 #include "tst_test_macros.h"
 
-#define MNTPOINT "mntpoint"
 #define FNAME MNTPOINT"/getxattr02"
 #define XATTR_TEST_KEY "user.testkey"
 

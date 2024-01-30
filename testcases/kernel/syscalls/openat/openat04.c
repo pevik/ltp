@@ -36,7 +36,6 @@
 
 #define MODE_RWX        0777
 #define MODE_SGID       (S_ISGID|0777)
-#define MNTPOINT	"mntpoint"
 #define WORKDIR		MNTPOINT "/testdir"
 #define OPEN_FILE	"open.tmp"
 

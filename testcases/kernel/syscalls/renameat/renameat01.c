@@ -51,7 +51,6 @@
 #include "safe_macros.h"
 #include "lapi/fcntl.h"
 
-#define MNTPOINT "mntpoint"
 #define TESTDIR "testdir"
 #define NEW_TESTDIR "new_testdir"
 #define TESTDIR2 "/loopdir"

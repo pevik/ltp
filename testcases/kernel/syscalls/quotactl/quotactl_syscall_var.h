@@ -10,7 +10,6 @@
 #include "lapi/quotactl.h"
 
 #define QUOTACTL_SYSCALL_VARIANTS 2
-#define MNTPOINT "mntpoint"
 
 static int fd = -1;
 

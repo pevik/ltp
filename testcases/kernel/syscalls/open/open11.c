@@ -54,7 +54,6 @@
 
 #include "tst_test.h"
 
-#define MNTPOINT "mntpoint"
 #define T_REG "t_reg"			/* regular file with content */
 #define T_REG_EMPTY "t_reg_empty"	/* empty regular file */
 #define T_LINK_REG "t_link_reg"		/* hard link to T_REG */

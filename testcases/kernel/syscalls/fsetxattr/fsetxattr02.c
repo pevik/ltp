@@ -54,7 +54,6 @@
 #define XATTR_TEST_VALUE "this is a test value"
 #define XATTR_TEST_VALUE_SIZE 20
 
-#define MNTPOINT "mntpoint"
 #define OFFSET    11
 #define FILENAME "fsetxattr02testfile"
 #define DIRNAME  "fsetxattr02testdir"

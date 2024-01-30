@@ -31,7 +31,6 @@
 #include "tst_test.h"
 #include "lapi/mount.h"
 
-#define MNTPOINT	"mntpoint"
 #define TESTBIN	"mount03_suid_child"
 #define BIN_PATH	MNTPOINT "/" TESTBIN
 #define TEST_STR "abcdefghijklmnopqrstuvwxyz"

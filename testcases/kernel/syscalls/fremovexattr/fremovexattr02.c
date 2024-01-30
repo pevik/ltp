@@ -34,7 +34,6 @@
 
 #define XATTR_TEST_KEY "user.testkey"
 
-#define MNTPOINT "mntpoint"
 #define FNAME MNTPOINT"/fremovexattr02testfile"
 
 static int fd = -1;

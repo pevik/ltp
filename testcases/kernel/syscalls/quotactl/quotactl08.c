@@ -41,7 +41,6 @@
 #include "tst_test.h"
 #include "quotactl_syscall_var.h"
 
-#define MNTPOINT	"mntpoint"
 
 static int32_t fmt_id = QFMT_VFS_V1;
 static int test_id, mount_flag;

@@ -18,7 +18,6 @@
 
 #include "tst_test.h"
 
-#define MNTPOINT "mntpoint"
 
 #define FILE_NAME "testfile"
 #define DIR_NAME "subdir"

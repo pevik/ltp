@@ -20,8 +20,6 @@
 #include "old_tmpdir.h"
 #include "mem.h"
 
-#define MNTPOINT "mntpoint"
-
 #define PALIGN(p, a) ((void *)LTP_ALIGN((unsigned long)(p), (a)))
 
 #define SHM_RD	0400

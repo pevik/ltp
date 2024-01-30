@@ -17,7 +17,6 @@
 #include "tst_test.h"
 
 #define PROC_STATUS        "/proc/self/status"
-#define MNTPOINT           "mntpoint"
 #define TESTBIN            "prctl06_execve"
 #define TEST_REL_BIN_DIR   MNTPOINT"/"
 #define BIN_PATH           MNTPOINT"/"TESTBIN

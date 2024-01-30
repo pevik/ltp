@@ -32,7 +32,6 @@
 #define XATTR_TEST_VALUE "this is a test value"
 #define XATTR_TEST_VALUE_SIZE 20
 
-#define MNTPOINT "mntpoint"
 #define FNAME MNTPOINT"/fremovexattr01testfile"
 
 static int fd = -1;

@@ -9,7 +9,6 @@
 
 int fd = -1, invalid_fd = -1;
 
-#define MNTPOINT	"mntpoint"
 
 static struct tcase {
 	char *name;

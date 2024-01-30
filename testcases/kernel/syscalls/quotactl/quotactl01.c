@@ -39,7 +39,6 @@
 
 #define USRPATH MNTPOINT "/aquota.user"
 #define GRPPATH MNTPOINT "/aquota.group"
-#define MNTPOINT	"mntpoint"
 
 static int32_t fmt_id;
 static int test_id;

@@ -17,7 +17,6 @@
 #include "tst_safe_pthread.h"
 #include "tst_test.h"
 
-#define MNTPOINT "mntpoint"
 #define THREADS_DIR MNTPOINT "/subdir"
 
 static volatile int run;

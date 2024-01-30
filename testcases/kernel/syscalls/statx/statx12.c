@@ -23,7 +23,6 @@
 #include "tst_test.h"
 #include "lapi/stat.h"
 
-#define MNTPOINT "mntpoint"
 #define TESTFILE MNTPOINT"/testfile"
 
 static int dir_fd = -1, file_fd = -1;

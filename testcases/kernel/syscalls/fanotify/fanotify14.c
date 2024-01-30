@@ -31,7 +31,6 @@
 #ifdef HAVE_SYS_FANOTIFY_H
 #include "fanotify.h"
 
-#define MNTPOINT "mntpoint"
 #define FILE1 MNTPOINT"/file1"
 
 /*

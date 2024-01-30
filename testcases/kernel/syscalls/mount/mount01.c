@@ -34,7 +34,6 @@ char *TCID = "mount01";
 int TST_TOTAL = 1;
 
 #define DIR_MODE (S_IRWXU | S_IRUSR | S_IXUSR | S_IRGRP | S_IXGRP)
-#define MNTPOINT "mntpoint"
 
 static const char *device;
 static const char *fs_type;

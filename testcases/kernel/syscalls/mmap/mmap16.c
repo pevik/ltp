@@ -34,7 +34,6 @@
 #include <sys/wait.h>
 #include "tst_test.h"
 
-#define MNTPOINT "mntpoint"
 #define FILE_PARENT "mntpoint/testfilep"
 #define FILE_CHILD "mntpoint/testfilec"
 #define FS_BLOCKSIZE 1024

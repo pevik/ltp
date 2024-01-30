@@ -28,7 +28,6 @@
 #include "tst_test.h"
 #include "tst_numa.h"
 
-#define MNTPOINT "mntpoint"
 #define FILES 10
 
 #ifdef HAVE_NUMA_V2

@@ -16,7 +16,6 @@
 #include "tst_test.h"
 #include "tst_safe_pthread.h"
 
-#define MNTPOINT	"mntpoint"
 #define MODE_RWX	07770
 #define DIR_NAME	MNTPOINT "/X.%d"
 #define DIR_NAME_GROUP	MNTPOINT "/X.%d.%d"
