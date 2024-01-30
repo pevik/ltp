@@ -13,7 +13,6 @@
 
 #include "hugetlb.h"
 
-#define MNTPOINT "hugetlbfs/"
 #define FLAGS_DESC(x) .flags = x, .flags_str = #x
 
 static int fd = -1;

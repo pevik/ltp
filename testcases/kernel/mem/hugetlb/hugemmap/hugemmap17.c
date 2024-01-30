@@ -31,7 +31,6 @@
 
 #include "hugetlb.h"
 
-#define MNTPOINT "hugetlbfs/"
 #define MAP_LENGTH	(4UL * hpage_size)
 #if defined(__s390__) && __WORDSIZE == 32
 #define TRUNCATE_POINT 0x20000000UL

@@ -23,7 +23,6 @@
 #include "hugetlb.h"
 #include "tst_safe_stdio.h"
 
-#define MNTPOINT "hugetlbfs/"
 static long hpage_size;
 static int huge_fd = -1;
 

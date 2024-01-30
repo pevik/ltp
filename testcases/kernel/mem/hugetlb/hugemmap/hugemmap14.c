@@ -25,7 +25,6 @@
 #include "hugetlb.h"
 
 #define FOURGB (1ULL << 32)
-#define MNTPOINT "hugetlbfs/"
 static int  fd = -1;
 static unsigned long long hpage_size;
 static int page_size;

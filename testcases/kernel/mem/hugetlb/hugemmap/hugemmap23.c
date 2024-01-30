@@ -16,7 +16,6 @@
 #include <setjmp.h>
 #include "hugetlb.h"
 
-#define MNTPOINT "hugetlbfs/"
 #define RANDOM_CONSTANT 0x1234ABCD
 #define FLAGS_DESC(x) x, #x
 

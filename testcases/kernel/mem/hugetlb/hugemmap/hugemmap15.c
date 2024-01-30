@@ -39,7 +39,6 @@
 
 /* Seems to be enough to trigger reliably */
 #define NUM_REPETITIONS	64
-#define MNTPOINT "hugetlbfs/"
 static long hpage_size;
 static int  fd = -1;
 

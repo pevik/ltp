@@ -30,7 +30,6 @@
 
 #include "hugetlb.h"
 
-#define MNTPOINT "hugetlbfs/"
 #define WITH_OVERCOMMIT 0
 #define WITHOUT_OVERCOMMIT 1
 

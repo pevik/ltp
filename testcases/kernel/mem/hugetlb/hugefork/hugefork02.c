@@ -19,7 +19,6 @@ static int shmid = -1;
 
 #define NR_HUGEPAGES 5
 #define NUMPROCS MIN(50L, tst_ncpus_available())
-#define MNTPOINT "hugetlbfs/"
 
 static long hpage_size;
 

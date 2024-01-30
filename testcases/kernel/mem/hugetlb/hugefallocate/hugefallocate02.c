@@ -22,7 +22,6 @@
 #include "lapi/fallocate.h"
 
 #define MAX_PAGES_TO_USE 5
-#define MNTPOINT "hugetlbfs/"
 
 static int  fd = -1;
 static long hpage_size;

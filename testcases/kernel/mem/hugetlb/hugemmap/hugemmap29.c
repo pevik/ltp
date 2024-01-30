@@ -19,7 +19,6 @@
 #define C1 0x1234ABCD
 #define C2 0xFEDC9876
 
-#define MNTPOINT "hugetlbfs/"
 static unsigned long hpage_size;
 static int fd = -1;
 

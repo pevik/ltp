@@ -19,7 +19,6 @@
 #include "hugetlb.h"
 
 #define RANDOM_CONSTANT 0x1234ABCD
-#define MNTPOINT "hugetlbfs/"
 
 static int  fd = -1;
 static unsigned long slice_boundary;

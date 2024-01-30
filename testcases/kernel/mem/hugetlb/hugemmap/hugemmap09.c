@@ -22,7 +22,6 @@
 
 #include "hugetlb.h"
 
-#define MNTPOINT "hugetlbfs/"
 static long hpage_size;
 static int huge_fd = -1;
 

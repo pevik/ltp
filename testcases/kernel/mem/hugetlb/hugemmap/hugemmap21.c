@@ -17,7 +17,6 @@
 
 #define THREADS 5
 #define NR_HUGEPAGES 6
-#define MNTPOINT "hugetlbfs/"
 
 static int fd = -1;
 static long hpage_size;

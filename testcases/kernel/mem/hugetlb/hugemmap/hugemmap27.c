@@ -16,7 +16,6 @@
 #include <setjmp.h>
 #include "hugetlb.h"
 
-#define MNTPOINT "hugetlbfs/"
 static long hpage_size;
 static int fd1 = -1, fd2 = -1;
 static sigjmp_buf sig_escape;

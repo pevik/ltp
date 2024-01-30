@@ -18,7 +18,6 @@
 #define _GNU_SOURCE
 #include "hugetlb.h"
 
-#define MNTPOINT "hugetlbfs/"
 static long hpage_size;
 static int fd = -1;
 

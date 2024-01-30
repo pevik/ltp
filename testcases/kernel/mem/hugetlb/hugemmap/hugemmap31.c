@@ -15,7 +15,6 @@
 #include "hugetlb.h"
 
 #define RANDOM_CONSTANT 0x1234ABCD
-#define MNTPOINT "hugetlbfs/"
 
 static long hpage_size;
 static int fd = -1;
