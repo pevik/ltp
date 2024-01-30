@@ -15,13 +15,12 @@
 #include <stdio.h>
 #include "tst_test.h"
 
-#define MNT_POINT "mntpoint"
 #define DIR1 "dir1"
 #define DIR2 DIR1"/dir2"
 
 static void setup(void)
 {
-	SAFE_CHDIR(MNT_POINT);
+	SAFE_CHDIR(MNTPOINT);
 	SAFE_MKDIR(DIR1, 00770);
 	SAFE_MKDIR(DIR2, 00770);
 }
@@ -37,6 +36,6 @@ static struct tst_test test = {
 	.test_all = run,
 	.needs_root = 1,
 	.mount_device = 1,
-	.mntpoint = MNT_POINT,
+	.mntpoint = MNTPOINT,
 	.all_filesystems = 1
 };

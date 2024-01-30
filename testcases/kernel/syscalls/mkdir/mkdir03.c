@@ -24,7 +24,6 @@
 #define TST_ENOTDIR_DIR	"tst_enotdir/tst"
 #define MODE		0777
 
-#define MNT_POINT	"mntpoint"
 #define DIR_MODE	(S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP| \
 			 S_IXGRP|S_IROTH|S_IXOTH)
 #define TST_EROFS      "mntpoint/tst_erofs"
@@ -89,7 +88,7 @@ static struct tst_test test = {
 	.tcnt = ARRAY_SIZE(TC),
 	.needs_root = 1,
 	.needs_rofs = 1,
-	.mntpoint = MNT_POINT,
+	.mntpoint = MNTPOINT,
 	.setup = setup,
 	.test = verify_mkdir,
 };

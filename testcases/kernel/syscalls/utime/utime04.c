@@ -19,8 +19,7 @@
 #include <utime.h>
 #include "tst_test.h"
 
-#define MNT_POINT	"mntpoint"
-#define TEMP_FILE	MNT_POINT"/tmp_file"
+#define TEMP_FILE	MNTPOINT"/tmp_file"
 
 #define FILE_MODE	0444
 #define NEW_MODF_TIME	10000
@@ -55,7 +54,7 @@ static struct tst_test test = {
 	.setup = setup,
 	.needs_root = 1,
 	.mount_device = 1,
-	.mntpoint = MNT_POINT,
+	.mntpoint = MNTPOINT,
 	.all_filesystems = 1,
 	.skip_filesystems = (const char *const[]) {
 		"vfat",

@@ -15,7 +15,6 @@
 #include <stdio.h>
 #include "tst_test.h"
 
-#define MNT_POINT "mntpoint"
 #define TEMP_FILE "tmpfile"
 
 /* Path longer than PATH_MAX: fails the syscall right away (getname() fails) */
@@ -28,7 +27,7 @@ static char long_name[PATH_MAX] = {[0 ... PATH_MAX - 2] = 'a', [PATH_MAX - 1] = 
 
 static void setup(void)
 {
-	SAFE_CHDIR(MNT_POINT);
+	SAFE_CHDIR(MNTPOINT);
 	SAFE_TOUCH(TEMP_FILE, 0700, NULL);
 }
 
@@ -45,6 +44,6 @@ static struct tst_test test = {
 	.test_all = run,
 	.needs_root = 1,
 	.mount_device = 1,
-	.mntpoint = MNT_POINT,
+	.mntpoint = MNTPOINT,
 	.all_filesystems = 1
 };

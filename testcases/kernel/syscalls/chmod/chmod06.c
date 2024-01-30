@@ -35,7 +35,6 @@
 #define TEST_FILE2	"testdir_1/tfile_2"
 #define TEST_FILE3	"t_file/tfile_3"
 #define TEST_FILE4	"test_file4"
-#define MNT_POINT	"mntpoint"
 
 #define DIR_MODE	(S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP| \
 			 S_IXGRP|S_IROTH|S_IXOTH)
@@ -61,7 +60,7 @@ static struct tcase {
 	{long_path, FILE_MODE, ENAMETOOLONG, NULL, NULL},
 	{"", FILE_MODE, ENOENT, NULL, NULL},
 	{TEST_FILE3, FILE_MODE, ENOTDIR, NULL, NULL},
-	{MNT_POINT, FILE_MODE, EROFS, NULL, NULL},
+	{MNTPOINT, FILE_MODE, EROFS, NULL, NULL},
 	{TEST_FILE4, FILE_MODE, ELOOP, NULL, NULL},
 };
 
@@ -144,5 +143,5 @@ static struct tst_test test = {
 	.tcnt = ARRAY_SIZE(tc),
 	.needs_root = 1,
 	.needs_rofs = 1,
-	.mntpoint = MNT_POINT,
+	.mntpoint = MNTPOINT,
 };

@@ -16,11 +16,10 @@
 #include <stdio.h>
 #include "tst_test.h"
 
-#define MNT_POINT "mntpoint"
-#define OLD_FILE_NAME MNT_POINT"/oldfile"
-#define NEW_FILE_NAME MNT_POINT"/newfile"
-#define OLD_DIR_NAME MNT_POINT"/olddir"
-#define NEW_DIR_NAME MNT_POINT"/newdir"
+#define OLD_FILE_NAME MNTPOINT"/oldfile"
+#define NEW_FILE_NAME MNTPOINT"/newfile"
+#define OLD_DIR_NAME MNTPOINT"/olddir"
+#define NEW_DIR_NAME MNTPOINT"/newdir"
 
 static struct stat old_file_st, old_dir_st, new_file_st, new_dir_st;
 
@@ -68,6 +67,6 @@ static struct tst_test test = {
 	.test_all = run,
 	.needs_root = 1,
 	.mount_device = 1,
-	.mntpoint = MNT_POINT,
+	.mntpoint = MNTPOINT,
 	.all_filesystems = 1
 };

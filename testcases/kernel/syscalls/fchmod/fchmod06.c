@@ -16,7 +16,6 @@
 #include <pwd.h>
 #include "tst_test.h"
 
-#define MNT_POINT "mntpoint"
 
 static int fd1;
 static int fd2;
@@ -58,7 +57,7 @@ static void setup(void)
 {
 	struct passwd *ltpuser = SAFE_GETPWNAM("nobody");
 
-	fd3 = SAFE_OPEN(MNT_POINT"/file", O_RDONLY);
+	fd3 = SAFE_OPEN(MNTPOINT"/file", O_RDONLY);
 	fd1 = SAFE_OPEN("tfile_1", O_RDWR | O_CREAT, 0666);
 	fd2 = SAFE_OPEN("tfile_2", O_RDWR | O_CREAT, 0666);
 	SAFE_CLOSE(fd2);
@@ -82,5 +81,5 @@ static struct tst_test test = {
 	.tcnt = ARRAY_SIZE(tcases),
 	.needs_root = 1,
 	.needs_rofs = 1,
-	.mntpoint = MNT_POINT,
+	.mntpoint = MNTPOINT,
 };

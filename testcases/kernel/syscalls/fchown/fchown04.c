@@ -25,7 +25,6 @@
 #include "compat_tst_16.h"
 #include "tst_safe_macros.h"
 
-#define MNT_POINT	"mntpoint"
 #define TEST_FILE	"tfile_1"
 #define MODE		0666
 #define DIR_MODE	(S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH)
@@ -48,7 +47,7 @@ static void setup(void)
 	struct passwd *ltpuser;
 
 	fd1 = SAFE_OPEN(TEST_FILE, O_RDWR | O_CREAT, MODE);
-	fd3 = SAFE_OPEN(MNT_POINT, O_RDONLY);
+	fd3 = SAFE_OPEN(MNTPOINT, O_RDONLY);
 
 	ltpuser = SAFE_GETPWNAM("nobody");
 	SAFE_SETEUID(ltpuser->pw_uid);
@@ -78,7 +77,7 @@ static void cleanup(void)
 static struct tst_test test = {
 	.needs_root = 1,
 	.needs_rofs = 1,
-	.mntpoint = MNT_POINT,
+	.mntpoint = MNTPOINT,
 	.tcnt = ARRAY_SIZE(tc),
 	.test = run,
 	.setup = setup,

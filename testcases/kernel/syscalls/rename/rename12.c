@@ -17,7 +17,6 @@
 #include <pwd.h>
 #include "tst_test.h"
 
-#define MNT_POINT "mntpoint"
 #define TEMP_DIR "tempdir"
 #define TEMP_FILE1 TEMP_DIR"/tmpfile1"
 #define TEMP_FILE2 TEMP_DIR"/tmpfile2"
@@ -32,7 +31,7 @@ static void setup(void)
 	pw = SAFE_GETPWNAM("nobody");
 	nobody_uid = pw->pw_uid;
 
-	SAFE_CHDIR(MNT_POINT);
+	SAFE_CHDIR(MNTPOINT);
 	SAFE_MKDIR(TEMP_DIR, 0777);
 	SAFE_STAT(TEMP_DIR, &buf1);
 	SAFE_CHMOD(TEMP_DIR, buf1.st_mode | S_ISVTX);
@@ -56,7 +55,7 @@ static struct tst_test test = {
 	.setup = setup,
 	.test_all = run,
 	.needs_root = 1,
-	.mntpoint = MNT_POINT,
+	.mntpoint = MNTPOINT,
 	.mount_device = 1,
 	.all_filesystems = 1,
 	.skip_filesystems = (const char *const[]){

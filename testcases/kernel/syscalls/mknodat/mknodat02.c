@@ -44,7 +44,6 @@ static void cleanup(void);
 
 #define DIR_MODE	(S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP| \
 			 S_IXGRP|S_IROTH|S_IXOTH)
-#define MNT_POINT	"mntpoint"
 
 #define FIFOMODE	(S_IFIFO | S_IRUSR | S_IRGRP | S_IROTH)
 #define FREGMODE	(S_IFREG | S_IRUSR | S_IRGRP | S_IROTH)
@@ -124,10 +123,10 @@ static void setup(void)
 	/*
 	 * mount a read-only file system for EROFS test
 	 */
-	SAFE_MKDIR(cleanup, MNT_POINT, DIR_MODE);
-	SAFE_MOUNT(cleanup, device, MNT_POINT, fs_type, MS_RDONLY, NULL);
+	SAFE_MKDIR(cleanup, MNTPOINT, DIR_MODE);
+	SAFE_MOUNT(cleanup, device, MNTPOINT, fs_type, MS_RDONLY, NULL);
 	mount_flag = 1;
-	dir_fd = SAFE_OPEN(cleanup, MNT_POINT, O_DIRECTORY);
+	dir_fd = SAFE_OPEN(cleanup, MNTPOINT, O_DIRECTORY);
 
 	/*
 	 * NOTE: the ELOOP test is written based on that the consecutive
@@ -168,7 +167,7 @@ static void cleanup(void)
 {
 	if (dir_fd > 0 && close(dir_fd) < 0)
 		tst_resm(TWARN | TERRNO, "close(%d) failed", dir_fd);
-	if (mount_flag && tst_umount(MNT_POINT) < 0)
+	if (mount_flag && tst_umount(MNTPOINT) < 0)
 		tst_resm(TWARN | TERRNO, "umount device:%s failed", device);
 
 	if (device)

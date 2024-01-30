@@ -33,7 +33,6 @@
 #include "lapi/stat.h"
 #include "lapi/fcntl.h"
 
-#define MNTPOINT "mnt_point"
 #define TESTFILE MNTPOINT"/testfile"
 
 static void verify_statx(void)

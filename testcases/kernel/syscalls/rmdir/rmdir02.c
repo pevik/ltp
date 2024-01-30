@@ -26,7 +26,6 @@
 #define TESTDIR2	"nosuchdir/testdir2"
 #define TESTDIR3	"testfile2/testdir3"
 #define TESTDIR4	"/loopdir"
-#define MNT_POINT	"mntpoint"
 #define TESTDIR5	"mntpoint/dir"
 #define TESTFILE    "testdir/testfile"
 #define TESTFILE2   "testfile2"
@@ -45,7 +44,7 @@ static struct testcase {
 	{NULL, EFAULT},
 	{looppathname, ELOOP},
 	{TESTDIR5, EROFS},
-	{MNT_POINT, EBUSY},
+	{MNTPOINT, EBUSY},
 	{".", EINVAL}
 };
 
@@ -104,5 +103,5 @@ static struct tst_test test = {
 	.test = verify_rmdir,
 	.needs_root = 1,
 	.needs_rofs = 1,
-	.mntpoint = MNT_POINT,
+	.mntpoint = MNTPOINT,
 };

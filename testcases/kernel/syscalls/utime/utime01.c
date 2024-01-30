@@ -18,8 +18,7 @@
 #include "tst_test.h"
 #include "tst_clocks.h"
 
-#define MNT_POINT	"mntpoint"
-#define TEMP_FILE	MNT_POINT"/tmp_file"
+#define TEMP_FILE	MNTPOINT"/tmp_file"
 #define FILE_MODE	0444
 
 static void setup(void)
@@ -64,7 +63,7 @@ static struct tst_test test = {
 	.test_all = run,
 	.setup = setup,
 	.needs_root = 1,
-	.mntpoint = MNT_POINT,
+	.mntpoint = MNTPOINT,
 	.mount_device = 1,
 	.all_filesystems = 1,
 	.skip_filesystems = (const char *const[]) {

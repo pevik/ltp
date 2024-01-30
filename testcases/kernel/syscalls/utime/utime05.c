@@ -22,8 +22,7 @@
 
 #include "tst_test.h"
 
-#define MNT_POINT	"mntpoint"
-#define TEMP_FILE	MNT_POINT"/tmp_file"
+#define TEMP_FILE	MNTPOINT"/tmp_file"
 
 #define FILE_MODE	0444
 #define MODE_RWX	0777
@@ -41,7 +40,7 @@ static void setup(void)
 {
 	struct passwd *pw;
 
-	SAFE_CHMOD(MNT_POINT, MODE_RWX);
+	SAFE_CHMOD(MNTPOINT, MODE_RWX);
 
 	pw = SAFE_GETPWNAM(TEST_USERNAME);
 	tst_res(TINFO, "Switching effective user ID to user: %s", pw->pw_name);
@@ -69,7 +68,7 @@ static struct tst_test test = {
 	.setup = setup,
 	.needs_root = 1,
 	.mount_device = 1,
-	.mntpoint = MNT_POINT,
+	.mntpoint = MNTPOINT,
 	.all_filesystems = 1,
 	.skip_filesystems = (const char *const[]) {
 		"vfat",

@@ -14,7 +14,6 @@
 #include <stdio.h>
 #include "tst_test.h"
 
-#define MNT_POINT "mntpoint"
 
 static const char *old_file_name = "oldfile";
 static const char *old_dir_name = "olddir";
@@ -32,7 +31,7 @@ static inline void swap(const char **a, const char **b)
 
 static void setup(void)
 {
-	SAFE_CHDIR(MNT_POINT);
+	SAFE_CHDIR(MNTPOINT);
 
 	SAFE_TOUCH(old_file_name, 0700, NULL);
 	SAFE_MKDIR(old_dir_name, 00770);
@@ -78,6 +77,6 @@ static struct tst_test test = {
 	.test_all = run,
 	.needs_root = 1,
 	.mount_device = 1,
-	.mntpoint = MNT_POINT,
+	.mntpoint = MNTPOINT,
 	.all_filesystems = 1
 };

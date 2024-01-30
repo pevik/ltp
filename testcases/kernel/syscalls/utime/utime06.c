@@ -24,7 +24,6 @@
 #include "tst_test.h"
 
 #define TEMP_FILE	"tmp_file"
-#define MNT_POINT	"mntpoint"
 #define FILE_MODE	0644
 #define TEST_USERNAME "nobody"
 
@@ -39,7 +38,7 @@ static struct tcase {
 	{TEMP_FILE, EACCES, NULL, "No write access"},
 	{"", ENOENT, NULL, "File not exist"},
 	{TEMP_FILE, EPERM, &times, "Not file owner"},
-	{MNT_POINT, EROFS, NULL, "Read-only filesystem"}
+	{MNTPOINT, EROFS, NULL, "Read-only filesystem"}
 };
 
 
@@ -68,6 +67,6 @@ static struct tst_test test = {
 	.tcnt = ARRAY_SIZE(tcases),
 	.needs_root = 1,
 	.needs_tmpdir = 1,
-	.mntpoint = MNT_POINT,
+	.mntpoint = MNTPOINT,
 	.needs_rofs = 1
 };

@@ -39,8 +39,7 @@
 #include <inttypes.h>
 
 #define TESTFILE "test_file"
-#define MNTPOINT "mntpoint/"
-#define DEVICEFILE MNTPOINT"blk_dev"
+#define DEVICEFILE MNTPOINT"/blk_dev"
 #define MODE 0644
 
 #define SIZE 256

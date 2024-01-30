@@ -108,8 +108,7 @@
 #define FILESIZE	(12*1024*1024)
 #define READSIZE	(1024*1024)
 
-#define MNT_POINT	"mntpoint"
-#define FILE_BASEPATH   MNT_POINT "/_dma_thread_test_%.04d.tmp"
+#define FILE_BASEPATH   MNTPOINT "/_dma_thread_test_%.04d.tmp"
 #define DIR_MODE	(S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP| \
 			 S_IXGRP|S_IROTH|S_IXOTH)
 #define FILECOUNT	100
@@ -385,7 +384,7 @@ static void setup(void)
 		SAFE_CLOSE(NULL, fd);
 	}
 
-	SAFE_MKDIR(cleanup, MNT_POINT, DIR_MODE);
+	SAFE_MKDIR(cleanup, MNTPOINT, DIR_MODE);
 
 	/*
 	 * verify whether the current directory has enough free space,
@@ -401,7 +400,7 @@ static void setup(void)
 			tst_mkfs(NULL, device, "ext3", NULL, NULL);
 		}
 
-		SAFE_MOUNT(NULL, device, MNT_POINT, "ext3", 0, NULL);
+		SAFE_MOUNT(NULL, device, MNTPOINT, "ext3", 0, NULL);
 		mount_flag = 1;
 	}
 
@@ -427,7 +426,7 @@ static void cleanup(void)
 {
 	free(buffer);
 
-	if (mount_flag && tst_umount(MNT_POINT) < 0)
+	if (mount_flag && tst_umount(MNTPOINT) < 0)
 		tst_resm(TWARN | TERRNO, "umount device:%s failed", device);
 
 	free(worker);

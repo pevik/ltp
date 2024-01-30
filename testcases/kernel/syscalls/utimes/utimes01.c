@@ -28,7 +28,6 @@
 #include "tst_test.h"
 #include "lapi/syscalls.h"
 
-#define MNT_POINT "mntpoint"
 #define TESTFILE1 "testfile1"
 #define TESTFILE2 "testfile2"
 #define TESTFILE3 "mntpoint/file"
@@ -98,5 +97,5 @@ static struct tst_test test = {
 	.tcnt = ARRAY_SIZE(tcases),
 	.needs_root = 1,
 	.needs_rofs = 1,
-	.mntpoint = MNT_POINT,
+	.mntpoint = MNTPOINT,
 };

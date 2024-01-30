@@ -58,8 +58,7 @@
 #include "lapi/stat.h"
 #include "lapi/fcntl.h"
 
-#define MOUNT_POINT "mntpoint"
-#define TESTDIR MOUNT_POINT "/testdir"
+#define TESTDIR MNTPOINT "/testdir"
 
 #define ATTR(x) {.attr = x, .name = #x}
 
@@ -129,7 +128,7 @@ static struct tst_test test = {
 	.needs_root = 1,
 	.all_filesystems = 1,
 	.mount_device = 1,
-	.mntpoint = MOUNT_POINT,
+	.mntpoint = MNTPOINT,
 	.min_kver = "4.11",
 	.skip_filesystems = (const char *const[]) {
 		"fuse",

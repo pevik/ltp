@@ -26,7 +26,6 @@
 
 #define DIR_MODE	(S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP| \
 			 S_IXGRP|S_IROTH|S_IXOTH)
-#define MNT_POINT	"mntpoint"
 #define TEST_FILE	"testfile"
 #define TEST_FILE1	"testfile1"
 #define TEST_FILE2	"mntpoint/file"
@@ -86,5 +85,5 @@ static struct tst_test test = {
 	.tcnt = ARRAY_SIZE(tcases),
 	.needs_root = 1,
 	.needs_rofs = 1,
-	.mntpoint = MNT_POINT,
+	.mntpoint = MNTPOINT,
 };

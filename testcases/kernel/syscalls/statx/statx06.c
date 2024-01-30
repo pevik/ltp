@@ -30,8 +30,7 @@
 #include "lapi/mount.h"
 #include "lapi/fcntl.h"
 
-#define MOUNT_POINT "mount_ext"
-#define TEST_FILE MOUNT_POINT"/test_file.txt"
+#define TEST_FILE MNTPOINT"/test_file.txt"
 #define SIZE 2
 
 static int fd;
@@ -153,7 +152,7 @@ static struct tst_test test = {
 	.test = test_statx,
 	.min_kver = "4.11",
 	.needs_root = 1,
-	.mntpoint = MOUNT_POINT,
+	.mntpoint = MNTPOINT,
 	.mount_device = 1,
 	.dev_fs_type = "ext4",
 	.dev_fs_opts = (const char *const []){"-I", "256", NULL},

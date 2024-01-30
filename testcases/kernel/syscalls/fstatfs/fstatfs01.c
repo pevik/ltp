@@ -15,8 +15,7 @@
 #include <stdio.h>
 #include "tst_test.h"
 
-#define MNT_POINT "mntpoint"
-#define TEMP_FILE MNT_POINT"/test_file"
+#define TEMP_FILE MNTPOINT"/test_file"
 
 static int file_fd;
 static int pipe_fd;
@@ -61,7 +60,7 @@ static struct tst_test test = {
 	.tcnt = ARRAY_SIZE(tcases),
 	.test = run,
 	.mount_device = 1,
-	.mntpoint = MNT_POINT,
+	.mntpoint = MNTPOINT,
 	.all_filesystems = 1,
 	.needs_root = 1
 };

@@ -15,9 +15,8 @@
 #include <stdio.h>
 #include "tst_test.h"
 
-#define MNT_POINT "mntpoint"
-#define TEMP_FILE1 MNT_POINT"/tmpfile1"
-#define TEMP_FILE2 MNT_POINT"/tmpfile2"
+#define TEMP_FILE1 MNTPOINT"/tmpfile1"
+#define TEMP_FILE2 MNTPOINT"/tmpfile2"
 
 static struct stat buf1, buf2;
 
@@ -43,7 +42,7 @@ static struct tst_test test = {
 	.setup = setup,
 	.test_all = run,
 	.needs_root = 1,
-	.mntpoint = MNT_POINT,
+	.mntpoint = MNTPOINT,
 	.mount_device = 1,
 	.all_filesystems = 1,
 	.skip_filesystems = (const char *const[]){

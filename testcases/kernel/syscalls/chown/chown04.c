@@ -41,13 +41,11 @@
 #define FILE_MODE	(S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)
 #define DIR_MODE	(S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH)
 
-#define MNT_POINT	"mntpoint"
 #define DIR_TEMP	"testdir_1"
 #define TEST_FILE1	"tfile_1"
 #define TEST_FILE2	"testdir_1/tfile_2"
 #define TEST_FILE3	"t_file/tfile_3"
 #define TEST_FILE4	"test_eloop1"
-#define TEST_FILE5	"mntpoint"
 
 static char long_path[PATH_MAX + 2] = {[0 ... PATH_MAX + 1] = 'a'};
 
@@ -63,7 +61,7 @@ static struct test_case_t {
 	{"", ENOENT, "when file does not exist"},
 	{TEST_FILE3, ENOTDIR, "when the path prefix is not a directory"},
 	{TEST_FILE4, ELOOP, "with too many symbolic links"},
-	{TEST_FILE5, EROFS, "when the named file resides on a read-only filesystem"}
+	{MNTPOINT, EROFS, "when the named file resides on a read-only filesystem"}
 };
 
 static void run(unsigned int i)
@@ -100,7 +98,7 @@ static void setup(void)
 static struct tst_test test = {
 	.needs_root = 1,
 	.needs_rofs = 1,
-	.mntpoint = MNT_POINT,
+	.mntpoint = MNTPOINT,
 	.tcnt = ARRAY_SIZE(tc),
 	.test = run,
 	.setup = setup,

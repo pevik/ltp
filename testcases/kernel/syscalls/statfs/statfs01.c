@@ -14,8 +14,7 @@
 
 #include "tst_test.h"
 
-#define MNT_POINT "mntpoint"
-#define TEMP_FILE MNT_POINT"/testfile"
+#define TEMP_FILE MNTPOINT"/testfile"
 #define TEXT "dummy text"
 
 static void setup(void)
@@ -38,6 +37,6 @@ static struct tst_test test = {
 	.test_all = run,
 	.needs_root = 1,
 	.mount_device = 1,
-	.mntpoint = MNT_POINT,
+	.mntpoint = MNTPOINT,
 	.all_filesystems = 1
 };

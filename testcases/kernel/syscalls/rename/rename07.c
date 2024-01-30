@@ -16,13 +16,12 @@
 #include <stdio.h>
 #include "tst_test.h"
 
-#define MNT_POINT "mntpoint"
 #define TEMP_DIR "tmpdir"
 #define TEMP_FILE "tmpfile"
 
 static void setup(void)
 {
-	SAFE_CHDIR(MNT_POINT);
+	SAFE_CHDIR(MNTPOINT);
 	SAFE_MKDIR(TEMP_DIR, 00770);
 	SAFE_TOUCH(TEMP_FILE, 0700, NULL);
 }
@@ -38,6 +37,6 @@ static struct tst_test test = {
 	.test_all = run,
 	.needs_root = 1,
 	.mount_device = 1,
-	.mntpoint = MNT_POINT,
+	.mntpoint = MNTPOINT,
 	.all_filesystems = 1
 };

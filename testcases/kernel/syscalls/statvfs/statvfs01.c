@@ -16,8 +16,7 @@
 #include <sys/statvfs.h>
 #include "tst_test.h"
 
-#define MNT_POINT "mntpoint"
-#define TEST_PATH MNT_POINT"/testfile"
+#define TEST_PATH MNTPOINT"/testfile"
 #define NLS_MAX_CHARSET_SIZE 6
 
 static void run(void)
@@ -58,6 +57,6 @@ static struct tst_test test = {
 	.setup = setup,
 	.needs_root = 1,
 	.mount_device = 1,
-	.mntpoint = MNT_POINT,
+	.mntpoint = MNTPOINT,
 	.all_filesystems = 1
 };

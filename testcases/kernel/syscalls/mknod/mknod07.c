@@ -52,7 +52,6 @@
 #define DIR_TEMP_MODE		(S_IRUSR | S_IXUSR)
 #define DIR_MODE		(S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP| \
 				 S_IXGRP|S_IROTH|S_IXOTH)
-#define MNT_POINT		"mntpoint"
 
 #define FIFO_MODE	(S_IFIFO | S_IRUSR | S_IRGRP | S_IROTH)
 #define SOCKET_MODE	(S_IFSOCK | S_IRWXU | S_IRWXG | S_IRWXO)
@@ -130,8 +129,8 @@ static void setup(void)
 	TEST_PAUSE;
 
 	/* mount a read-only file system for EROFS test */
-	SAFE_MKDIR(cleanup, MNT_POINT, DIR_MODE);
-	SAFE_MOUNT(cleanup, device, MNT_POINT, fs_type, MS_RDONLY, NULL);
+	SAFE_MKDIR(cleanup, MNTPOINT, DIR_MODE);
+	SAFE_MOUNT(cleanup, device, MNTPOINT, fs_type, MS_RDONLY, NULL);
 	mount_flag = 1;
 
 	ltpuser = SAFE_GETPWNAM(cleanup, "nobody");
@@ -174,7 +173,7 @@ static void cleanup(void)
 	if (seteuid(0) == -1)
 		tst_resm(TWARN | TERRNO, "seteuid(0) failed");
 
-	if (mount_flag && tst_umount(MNT_POINT) < 0)
+	if (mount_flag && tst_umount(MNTPOINT) < 0)
 		tst_resm(TWARN | TERRNO, "umount device:%s failed", device);
 
 	if (device)

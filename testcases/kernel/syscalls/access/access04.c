@@ -39,7 +39,6 @@
 #define DNAME	"accessfile2"
 #define SNAME1	"symlink1"
 #define SNAME2	"symlink2"
-#define MNT_POINT	"mntpoint"
 #define LONGPATHSIZE (PATH_MAX + 2)
 
 static uid_t uid;
@@ -108,7 +107,7 @@ static struct tst_test test = {
 	.needs_root = 1,
 	.forks_child = 1,
 	.needs_rofs = 1,
-	.mntpoint = MNT_POINT,
+	.mntpoint = MNTPOINT,
 	.setup = setup,
 	.test = verify_access,
 	.bufs = (struct tst_buffers []) {
@@ -117,7 +116,7 @@ static struct tst_test test = {
 		{&sname1, .str = SNAME1},
 		{&empty_fname, .str = ""},
 		{&longpathname, .size = LONGPATHSIZE},
-		{&mnt_point, .str = MNT_POINT},
+		{&mnt_point, .str = MNTPOINT},
 		{}
 	}
 };

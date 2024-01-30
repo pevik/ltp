@@ -28,7 +28,6 @@
 #include "lapi/fcntl.h"
 #include <inttypes.h>
 
-#define MNTPOINT "mnt_point"
 #define TESTFILE_FLAGGED MNTPOINT"/test_file1"
 #define TESTFILE_UNFLAGGED MNTPOINT"/test_file2"
 

@@ -28,9 +28,8 @@
 #include "lapi/stat.h"
 #include "lapi/fcntl.h"
 
-#define MOUNT_POINT "mntpoint"
-#define TESTDIR_FLAGGED MOUNT_POINT"/test_dir1"
-#define TESTDIR_UNFLAGGED MOUNT_POINT"/test_dir2"
+#define TESTDIR_FLAGGED MNTPOINT"/test_dir1"
+#define TESTDIR_UNFLAGGED MNTPOINT"/test_dir2"
 
 static int fd, clear_flags;
 static int supp_compr = 1, supp_append = 1, supp_immutable = 1, supp_nodump = 1;
@@ -176,6 +175,6 @@ static struct tst_test test = {
 	.needs_root = 1,
 	.all_filesystems = 1,
 	.mount_device = 1,
-	.mntpoint = MOUNT_POINT,
+	.mntpoint = MNTPOINT,
 	.min_kver = "4.11",
 };
