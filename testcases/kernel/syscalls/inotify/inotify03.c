@@ -34,17 +34,13 @@
 #define EVENT_BUF_LEN		(EVENT_MAX * (EVENT_SIZE + 16))
 
 #define BUF_SIZE 1024
+#define DIR_MODE	(S_IRWXU | S_IRUSR | S_IXUSR | S_IRGRP | S_IXGRP)
+
 static char fname[BUF_SIZE];
 static int fd, fd_notify;
 static int wd;
-
 static unsigned int event_set[EVENT_MAX];
-
 static char event_buf[EVENT_BUF_LEN];
-
-#define DIR_MODE	(S_IRWXU | S_IRUSR | S_IXUSR | S_IRGRP | S_IXGRP)
-
-static char *mntpoint = "mntpoint";
 static int mount_flag;
 
 void verify_inotify(void)
@@ -54,7 +50,7 @@ void verify_inotify(void)
 
 	int test_cnt = 0;
 
-	SAFE_MOUNT(tst_device->dev, mntpoint, tst_device->fs_type, 0, NULL);
+	SAFE_MOUNT(tst_device->dev, MNTPOINT, tst_device->fs_type, 0, NULL);
 	mount_flag = 1;
 
 	wd = SAFE_MYINOTIFY_ADD_WATCH(fd_notify, fname, IN_ALL_EVENTS);
@@ -68,7 +64,7 @@ void verify_inotify(void)
 	test_cnt++;
 
 	tst_res(TINFO, "umount %s", tst_device->dev);
-	TEST(tst_umount(mntpoint));
+	TEST(tst_umount(MNTPOINT));
 	if (TST_RET != 0) {
 		tst_brk(TBROK, "umount(2) Failed "
 			"while unmounting errno = %d : %s",
@@ -129,12 +125,12 @@ static void setup(void)
 {
 	int ret;
 
-	SAFE_MKDIR(mntpoint, DIR_MODE);
+	SAFE_MKDIR(MNTPOINT, DIR_MODE);
 
-	SAFE_MOUNT(tst_device->dev, mntpoint, tst_device->fs_type, 0, NULL);
+	SAFE_MOUNT(tst_device->dev, MNTPOINT, tst_device->fs_type, 0, NULL);
 	mount_flag = 1;
 
-	sprintf(fname, "%s/tfile_%d", mntpoint, getpid());
+	sprintf(fname, "%s/tfile_%d", MNTPOINT, getpid());
 	fd = SAFE_OPEN(fname, O_RDWR | O_CREAT, 0700);
 
 	ret = write(fd, fname, 1);
@@ -148,7 +144,7 @@ static void setup(void)
 
 	fd_notify = SAFE_MYINOTIFY_INIT();
 
-	tst_umount(mntpoint);
+	tst_umount(MNTPOINT);
 	mount_flag = 0;
 }
 
@@ -158,10 +154,9 @@ static void cleanup(void)
 		SAFE_CLOSE(fd_notify);
 
 	if (mount_flag) {
-		TEST(tst_umount(mntpoint));
+		TEST(tst_umount(MNTPOINT));
 		if (TST_RET != 0)
-			tst_res(TWARN | TTERRNO, "umount(%s) failed",
-				mntpoint);
+			tst_res(TWARN | TTERRNO, "umount(%s) failed", MNTPOINT);
 	}
 }
 

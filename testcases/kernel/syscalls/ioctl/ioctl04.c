@@ -41,11 +41,11 @@ static void verify_ioctl(void)
 	else
 		tst_res(TPASS, "BLKROGET returned %i", ro);
 
-	TEST(mount(tst_device->dev, "mntpoint", tst_device->fs_type, 0, NULL));
+	TEST(mount(tst_device->dev, MNTPOINT, tst_device->fs_type, 0, NULL));
 
 	if (TST_RET != -1) {
 		tst_res(TFAIL, "Mounting RO device RW succeeded");
-		tst_umount("mntpoint");
+		tst_umount(MNTPOINT);
 		goto next;
 	}
 
@@ -58,11 +58,11 @@ static void verify_ioctl(void)
 		"Mounting RO device RW failed unexpectedly expected EACCES");
 
 next:
-	TEST(mount(tst_device->dev, "mntpoint", tst_device->fs_type, MS_RDONLY, NULL));
+	TEST(mount(tst_device->dev, MNTPOINT, tst_device->fs_type, MS_RDONLY, NULL));
 
 	if (TST_RET == 0) {
 		tst_res(TPASS, "Mounting RO device RO works");
-		tst_umount("mntpoint");
+		tst_umount(MNTPOINT);
 	} else {
 		tst_res(TFAIL | TTERRNO, "Mounting RO device RO failed");
 	}
@@ -73,7 +73,7 @@ next:
 
 static void setup(void)
 {
-	SAFE_MKDIR("mntpoint", 0777);
+	SAFE_MKDIR(MNTPOINT, 0777);
 	fd = SAFE_OPEN(tst_device->dev, O_RDONLY);
 }
 

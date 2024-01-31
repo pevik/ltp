@@ -52,7 +52,7 @@
 #define	NOT_DIR		"file1/testdir"
 #define	TEST6_FILE	"dir6/file6"
 #define	TEST7_FILE	"file7"
-#define	TEST8_FILE	"mntpoint/tmp"
+#define	TEST8_FILE	MNTPOINT"/tmp"
 
 #define	MODE1		0444
 #define	MODE2		0666
@@ -153,6 +153,6 @@ static struct tst_test test = {
 	.test = verify_creat,
 	.needs_root = 1,
 	.needs_rofs = 1,
-	.mntpoint = "mntpoint",
+	.mntpoint = MNTPOINT,
 	.setup = setup,
 };
