@@ -45,7 +45,7 @@ static void run(void)
 
 	tst_res(TPASS, "pidfd_open(%d, O_NONBLOCK) sets O_NONBLOCK flag", pid);
 
-	TST_EXP_FAIL(waitid(P_PIDFD, pidfd, &info, WEXITED), EAGAIN,
+	TST_EXP_FAIL2(waitid(P_PIDFD, pidfd, &info, WEXITED), EAGAIN,
 			"waitid(P_PIDFD,...,WEXITED)");
 
 	TST_CHECKPOINT_WAKE(0);

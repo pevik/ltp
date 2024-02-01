@@ -31,7 +31,7 @@ static void run(void)
 
 	pid_group = getpgid(0);
 
-	TST_EXP_FAIL(waitid(P_PGID, pid_group+1, infop, WEXITED), ECHILD);
+	TST_EXP_FAIL2(waitid(P_PGID, pid_group+1, infop, WEXITED), ECHILD);
 
 	memset(infop, 0, sizeof(*infop));
 	TST_EXP_PASS(waitid(P_PGID, pid_group, infop, WEXITED));

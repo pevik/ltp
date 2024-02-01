@@ -28,7 +28,7 @@ static void run(void)
 	if (!pid_child)
 		exit(0);
 
-	TST_EXP_FAIL(waitid(P_PID, pid_child+1, infop, WEXITED), ECHILD);
+	TST_EXP_FAIL2(waitid(P_PID, pid_child+1, infop, WEXITED), ECHILD);
 
 	memset(infop, 0, sizeof(*infop));
 	TST_EXP_PASS(waitid(P_PID, pid_child, infop, WEXITED));

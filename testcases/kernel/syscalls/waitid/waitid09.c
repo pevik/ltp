@@ -24,7 +24,7 @@ static void run(void)
 	if (!SAFE_FORK())
 		exit(0);
 
-	TST_EXP_FAIL(waitid(P_PID, 1, infop, WEXITED), ECHILD);
+	TST_EXP_FAIL2(waitid(P_PID, 1, infop, WEXITED), ECHILD);
 }
 
 static struct tst_test test = {

@@ -18,7 +18,7 @@ static siginfo_t *infop;
 
 static void run(void)
 {
-	TST_EXP_FAIL(waitid(P_ALL, 0, infop, WNOHANG), EINVAL);
+	TST_EXP_FAIL2(waitid(P_ALL, 0, infop, WNOHANG), EINVAL);
 }
 
 static struct tst_test test = {
