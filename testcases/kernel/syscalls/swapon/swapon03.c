@@ -24,8 +24,6 @@
 
 #define MNTPOINT	"mntpoint"
 #define TEST_FILE	MNTPOINT"/testswap"
-#define EXPECTED_ERRNO EPERM
-
 static int setup_swap(void);
 static int clean_swap(void);
 static int check_and_swapoff(const char *filename);
@@ -48,54 +46,8 @@ static void verify_swapon(void)
 		tst_brk(TBROK, "Setup failed, quitting the test");
 	}
 
-	TEST(tst_syscall(__NR_swapon, swap_testfiles[0].filename, 0));
-
-	if ((TST_RET == -1) && (TST_ERR == EXPECTED_ERRNO)) {
-		tst_res(TPASS, "swapon(2) got expected failure (%d),",
-			EXPECTED_ERRNO);
-	} else if (TST_RET < 0) {
-		tst_res(TFAIL | TTERRNO,
-			"swapon(2) failed to produce expected error "
-			"(%d). System reboot recommended.",
-			EXPECTED_ERRNO);
-	} else {
-		/*
-		 * Probably the system supports MAX_SWAPFILES > 30, let's try with
-		 * MAX_SWAPFILES == 32. Call swapon sys call once again for 32
-		 * now we can't receive an error.
-		 */
-		TEST(tst_syscall(__NR_swapon, swap_testfiles[1].filename, 0));
-
-		/* Check return code (now we're expecting success) */
-		if (TST_RET < 0) {
-			tst_res(TFAIL | TTERRNO,
-				"swapon(2) got an unexpected failure");
-		} else {
-			/*
-			 * Call swapon sys call once again for 33 now we have to receive an error.
-			 */
-			TEST(tst_syscall(__NR_swapon, swap_testfiles[2].filename, 0));
-
-			/* Check return code (should be an error) */
-			if ((TST_RET == -1) && (TST_ERR == EXPECTED_ERRNO)) {
-				tst_res(TPASS,
-					"swapon(2) got expected failure;"
-					" Got errno = %d, probably your"
-					" MAX_SWAPFILES is 32",
-					EXPECTED_ERRNO);
-			} else {
-				tst_res(TFAIL,
-					"swapon(2) failed to produce"
-					" expected error: %d, got %s."
-					" System reboot after execution of LTP"
-					" test suite is recommended.",
-					EXPECTED_ERRNO, strerror(TST_ERR));
-			}
-		}
-	}
-
-	if (clean_swap() < 0)
-		tst_brk(TBROK, "Cleanup failed, quitting the test");
+	TST_EXP_FAIL(tst_syscall(__NR_swapon, swap_testfiles[0].filename, 0),
+		     EPERM);
 }
 
 /*
