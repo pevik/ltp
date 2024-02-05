@@ -247,6 +247,9 @@ static void setup(void)
 	if (access("/proc/swaps", F_OK))
 		tst_brk(TCONF, "swap not supported by kernel");
 
+	if (tst_fs_type(".") == TST_TMPFS_MAGIC)
+		tst_brk(TCONF, "swap not supported on tmpfs");
+
 	is_swap_supported(TEST_FILE);
 }
 
