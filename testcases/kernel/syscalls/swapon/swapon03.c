@@ -24,9 +24,6 @@
 
 #define MNTPOINT	"mntpoint"
 #define TEST_FILE	MNTPOINT"/testswap"
-static int setup_swap(void);
-static int clean_swap(void);
-static int check_and_swapoff(const char *filename);
 
 static int swapfiles;
 static int testfiles = 3;
@@ -39,15 +36,38 @@ static struct swap_testfile_t {
 	{"thirdswapfile"}
 };
 
-static void verify_swapon(void)
+/*
+ * Check if the file is at /proc/swaps and remove it giving swapoff
+ */
+static int check_and_swapoff(const char *filename)
 {
-	if (setup_swap() < 0) {
-		clean_swap();
-		tst_brk(TBROK, "Setup failed, quitting the test");
+	char cmd_buffer[256];
+	int rc = -1;
+
+	if (snprintf(cmd_buffer, sizeof(cmd_buffer),
+		     "grep -q '%s.*file' /proc/swaps", filename) < 0) {
+		tst_res(TWARN, "sprintf() failed to create the command string");
+	} else {
+
+		rc = 0;
+
+		if (system(cmd_buffer) == 0) {
+
+			/* now we need to swapoff the file */
+			if (tst_syscall(__NR_swapoff, filename) != 0) {
+
+				tst_res(TWARN, "Failed to turn off swap "
+					 "file. system reboot after "
+					 "execution of LTP test suite "
+					 "is recommended");
+				rc = -1;
+
+			}
+
+		}
 	}
 
-	TST_EXP_FAIL(tst_syscall(__NR_swapon, swap_testfiles[0].filename, 0),
-		     EPERM);
+	return rc;
 }
 
 /*
@@ -160,38 +180,15 @@ static int clean_swap(void)
 	return 0;
 }
 
-/*
- * Check if the file is at /proc/swaps and remove it giving swapoff
- */
-static int check_and_swapoff(const char *filename)
+static void verify_swapon(void)
 {
-	char cmd_buffer[256];
-	int rc = -1;
-
-	if (snprintf(cmd_buffer, sizeof(cmd_buffer),
-		     "grep -q '%s.*file' /proc/swaps", filename) < 0) {
-		tst_res(TWARN, "sprintf() failed to create the command string");
-	} else {
-
-		rc = 0;
-
-		if (system(cmd_buffer) == 0) {
-
-			/* now we need to swapoff the file */
-			if (tst_syscall(__NR_swapoff, filename) != 0) {
-
-				tst_res(TWARN, "Failed to turn off swap "
-					 "file. system reboot after "
-					 "execution of LTP test suite "
-					 "is recommended");
-				rc = -1;
-
-			}
-
-		}
+	if (setup_swap() < 0) {
+		clean_swap();
+		tst_brk(TBROK, "Setup failed, quitting the test");
 	}
 
-	return rc;
+	TST_EXP_FAIL(tst_syscall(__NR_swapon, swap_testfiles[0].filename, 0),
+		     EPERM);
 }
 
 static void setup(void)
