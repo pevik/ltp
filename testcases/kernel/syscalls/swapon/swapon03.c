@@ -24,14 +24,15 @@
 
 #define MNTPOINT	"mntpoint"
 #define TEST_FILE	MNTPOINT"/testswap"
+#define EXPECTED_ERRNO EPERM
 
 static int setup_swap(void);
 static int clean_swap(void);
 static int check_and_swapoff(const char *filename);
 
 static int swapfiles;
+static int testfiles = 3;
 
-int testfiles = 3;
 static struct swap_testfile_t {
 	char *filename;
 } swap_testfiles[] = {
@@ -39,8 +40,6 @@ static struct swap_testfile_t {
 	{"secondswapfile"},
 	{"thirdswapfile"}
 };
-
-int expected_errno = EPERM;
 
 static void verify_swapon(void)
 {
@@ -51,14 +50,14 @@ static void verify_swapon(void)
 
 	TEST(tst_syscall(__NR_swapon, swap_testfiles[0].filename, 0));
 
-	if ((TST_RET == -1) && (TST_ERR == expected_errno)) {
+	if ((TST_RET == -1) && (TST_ERR == EXPECTED_ERRNO)) {
 		tst_res(TPASS, "swapon(2) got expected failure (%d),",
-			expected_errno);
+			EXPECTED_ERRNO);
 	} else if (TST_RET < 0) {
 		tst_res(TFAIL | TTERRNO,
 			"swapon(2) failed to produce expected error "
 			"(%d). System reboot recommended.",
-			expected_errno);
+			EXPECTED_ERRNO);
 	} else {
 		/*
 		 * Probably the system supports MAX_SWAPFILES > 30, let's try with
@@ -78,19 +77,19 @@ static void verify_swapon(void)
 			TEST(tst_syscall(__NR_swapon, swap_testfiles[2].filename, 0));
 
 			/* Check return code (should be an error) */
-			if ((TST_RET == -1) && (TST_ERR == expected_errno)) {
+			if ((TST_RET == -1) && (TST_ERR == EXPECTED_ERRNO)) {
 				tst_res(TPASS,
 					"swapon(2) got expected failure;"
 					" Got errno = %d, probably your"
 					" MAX_SWAPFILES is 32",
-					expected_errno);
+					EXPECTED_ERRNO);
 			} else {
 				tst_res(TFAIL,
 					"swapon(2) failed to produce"
 					" expected error: %d, got %s."
 					" System reboot after execution of LTP"
 					" test suite is recommended.",
-					expected_errno, strerror(TST_ERR));
+					EXPECTED_ERRNO, strerror(TST_ERR));
 			}
 		}
 	}
@@ -114,30 +113,24 @@ static int setup_swap(void)
 	/* Find out how many swapfiles (1 line per entry) already exist */
 	swapfiles = 0;
 
-	if (seteuid(0) < 0)
-		tst_brk(TFAIL | TERRNO, "Failed to call seteuid");
+	SAFE_SETEUID(0);
 
-	/* This includes the first (header) line */
-	if ((fd = open("/proc/swaps", O_RDONLY)) == -1) {
-		tst_brk(TFAIL | TERRNO,
-			"Failed to find out existing number of swap files");
-	}
+	fd = SAFE_OPEN("/proc/swaps", O_RDONLY);
 	do {
 		char *p = buf;
-		res = read(fd, buf, BUFSIZ);
-		if (res < 0) {
-			tst_brk(TFAIL | TERRNO,
-				 "Failed to find out existing number of swap files");
-		}
+
+		res = SAFE_READ(0, fd, buf, BUFSIZ);
 		buf[res] = '\0';
 		while ((p = strchr(p, '\n'))) {
 			p++;
 			swapfiles++;
 		}
-	} while (BUFSIZ <= res);
-	close(fd);
+	} while (res >= BUFSIZ);
+	SAFE_CLOSE(fd);
+
+	/* don't count the /proc/swaps header */
 	if (swapfiles)
-		swapfiles--;	/* don't count the /proc/swaps header */
+		swapfiles--;
 
 	if (swapfiles < 0)
 		tst_brk(TFAIL, "Failed to find existing number of swapfiles");
@@ -146,36 +139,30 @@ static int setup_swap(void)
 	swapfiles = MAX_SWAPFILES - swapfiles;
 	if (swapfiles > MAX_SWAPFILES)
 		swapfiles = MAX_SWAPFILES;
+
 	pid = SAFE_FORK();
 	if (pid == 0) {
 		/*create and turn on remaining swapfiles */
 		for (j = 0; j < swapfiles; j++) {
-
-			/* prepare filename for the iteration */
-			if (sprintf(filename, "swapfile%02d", j + 2) < 0) {
-				printf("sprintf() failed to create "
-				       "filename");
-				exit(1);
-			}
-
-			/* Create the swapfile */
+			sprintf(filename, "swapfile%02d", j + 2);
 			make_swapfile(filename, 10, 0);
 
 			/* turn on the swap file */
 			res = tst_syscall(__NR_swapon, filename, 0);
 			if (res != 0) {
 				if (errno == EPERM) {
-					printf("Successfully created %d swapfiles\n", j);
+					tst_res(TINFO, "Successfully created %d swapfiles", j);
 					break;
-				} else {
-					printf("Failed to create swapfile: %s\n", filename);
-					exit(1);
 				}
+
+				tst_res(TWARN | TERRNO, "Failed to create swapfile: %s", filename);
+				exit(1);
 			}
 		}
 		exit(0);
-	} else
+	} else {
 		waitpid(pid, &status, 0);
+	}
 
 	if (WEXITSTATUS(status))
 		tst_brk(TFAIL, "Failed to setup swaps");
