@@ -93,6 +93,7 @@
  */
 extern char *TCID;	/* defined/initialized in main() */
 static char *TESTDIR;	/* the directory created */
+static char *env_tmpdir;
 
 static char test_start_work_dir[PATH_MAX];
 
@@ -122,18 +123,45 @@ char *tst_get_tmpdir(void)
 	return ret;
 }
 
-const char *tst_get_tmpdir_root(void)
+char *tst_clean_tmpdir(void)
 {
-	const char *env_tmpdir = getenv("TMPDIR");
+	char prev_c = 0;
+	size_t k = 0;
 
 	if (!env_tmpdir)
-		env_tmpdir = TEMPDIR;
+		env_tmpdir = strdup(TEMPDIR);
+	else
+		env_tmpdir = strdup(env_tmpdir);
 
 	if (env_tmpdir[0] != '/') {
 		tst_brkm(TBROK, NULL, "You must specify an absolute "
 				"pathname for environment variable TMPDIR");
 		return NULL;
 	}
+
+	for (int i = 0; env_tmpdir[i] != '\0'; i++) {
+		if (i)
+			prev_c = env_tmpdir[i-1];
+
+		if (env_tmpdir[i] != '/' || prev_c != '/')
+			env_tmpdir[k++] = env_tmpdir[i];
+	}
+
+	env_tmpdir[k] = '\0';
+
+	if (env_tmpdir[k-1] == '/')
+		env_tmpdir[k-1] = '\0';
+
+	return env_tmpdir;
+}
+
+const char *tst_get_tmpdir_root(void)
+{
+	env_tmpdir = getenv("TMPDIR");
+
+	if (!env_tmpdir)
+		env_tmpdir = tst_clean_tmpdir();
+
 	return env_tmpdir;
 }
 
@@ -342,6 +370,12 @@ void tst_rmdir(void)
 		tst_resm(TWARN, "%s: rmobj(%s) failed: %s",
 			 __func__, TESTDIR, errmsg);
 	}
+
+	if (env_tmpdir) {
+		tst_resm(TINFO, "pev: free env_tmpdir"); // FIXME: debug
+		free(env_tmpdir);
+	} else
+		tst_resm(TINFO, "pev: ELSE free env_tmpdir"); // FIXME: debug
 }
 
 void tst_purge_dir(const char *path)
