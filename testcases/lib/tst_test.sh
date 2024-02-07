@@ -735,6 +735,8 @@ tst_run()
 
 	if [ "$TST_NEEDS_TMPDIR" = 1 ]; then
 		if [ -z "$TMPDIR" ]; then
+			# default value if TMPDIR not set.
+			# If changed, update also C API in tst_defaults.h.
 			_tst_tmpdir="/tmp"
 			export TMPDIR="$_tst_tmpdir"
 		else
