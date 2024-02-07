@@ -124,7 +124,8 @@ char *tst_get_tmpdir(void)
 
 const char *tst_get_tmpdir_root(void)
 {
-	const char *env_tmpdir = getenv("TMPDIR");
+	char *p, *env_tmpdir = getenv("TMPDIR");
+	int fixed = 0;
 
 	if (!env_tmpdir)
 		env_tmpdir = TEMPDIR;
@@ -134,6 +135,23 @@ const char *tst_get_tmpdir_root(void)
 				"pathname for environment variable TMPDIR");
 		return NULL;
 	}
+
+	while ((p = strstr(env_tmpdir, "//")) != NULL) {
+		memmove(p, p + 1, strlen(env_tmpdir) - (p - env_tmpdir));
+		fixed = 1;
+	}
+
+	if (env_tmpdir[strlen(env_tmpdir)-1] == '/') {
+		env_tmpdir[strlen(env_tmpdir)-1] = '\0';
+		fixed = 1;
+	}
+
+	if (fixed) {
+		tst_resm(TINFO, "WARNING: Remove double or trailing slashes from TMPDIR,"
+			 " please fix your setup to: TMPDIR='%s'",
+			 env_tmpdir);
+	}
+
 	return env_tmpdir;
 }
 
