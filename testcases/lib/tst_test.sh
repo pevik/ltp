@@ -666,6 +666,7 @@ tst_run()
 	local _tst_data
 	local _tst_max
 	local _tst_name
+	local _tst_tmpdir
 	local _tst_pattern='[='\''"} \t\/:`$\;|].*'
 	local ret
 
@@ -734,12 +735,18 @@ tst_run()
 
 	if [ "$TST_NEEDS_TMPDIR" = 1 ]; then
 		if [ -z "$TMPDIR" ]; then
-			export TMPDIR="/tmp"
+			_tst_tmpdir="/tmp"
+			export TMPDIR="$_tst_tmpdir"
+		else
+			# remove possible double slashes or trailing slash from TMPDIR
+			_tst_tmpdir=$(echo "$TMPDIR" | sed 's~/\+~/~g; s~/$~~')
+			if [ "$_tst_tmpdir" != "$TMPDIR" ]; then
+				tst_res TINFO "WARNING: Remove double or trailing slashes from TMPDIR," \
+					"please fix your setup to: TMPDIR='$_tst_tmpdir'"
+			fi
 		fi
 
-		TST_TMPDIR=$(mktemp -d "$TMPDIR/LTP_$TST_ID.XXXXXXXXXX")
-		# remove possible trailing slash or double slashes from TMPDIR
-		TST_TMPDIR=$(echo "$TST_TMPDIR" | sed 's~/\+~/~g')
+		TST_TMPDIR=$(mktemp -d "$_tst_tmpdir/LTP_$TST_ID.XXXXXXXXXX")
 
 		chmod 777 "$TST_TMPDIR"
 
