@@ -124,16 +124,32 @@ char *tst_get_tmpdir(void)
 
 const char *tst_get_tmpdir_root(void)
 {
-	const char *env_tmpdir = getenv("TMPDIR");
+	char *env_tmpdir = getenv("TMPDIR");
+	char prev_c = 0;
+	size_t k = 0;
 
 	if (!env_tmpdir)
-		env_tmpdir = TEMPDIR;
+		env_tmpdir = strdup(TEMPDIR);
 
 	if (env_tmpdir[0] != '/') {
 		tst_brkm(TBROK, NULL, "You must specify an absolute "
 				"pathname for environment variable TMPDIR");
 		return NULL;
 	}
+
+	for (int i = 0; env_tmpdir[i] != '\0'; i++) {
+		if (i)
+			prev_c = env_tmpdir[i-1];
+
+        if (env_tmpdir[i] != '/' || prev_c != '/')
+            env_tmpdir[k++] = env_tmpdir[i];
+	}
+
+	env_tmpdir[k] = '\0';
+
+	if (env_tmpdir[k-1] == '/')
+		env_tmpdir[k-1] = '\0';
+
 	return env_tmpdir;
 }
 
