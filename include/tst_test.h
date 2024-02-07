@@ -616,6 +616,11 @@ char *tst_get_tmpdir(void);
 const char *tst_get_tmpdir_root(void);
 
 /*
+ * Cleanup of the path to the test temporary directory root (TMPDIR).
+ */
+void tst_normalize_tmpdir(char **env_tmpdir);
+
+/*
  * Validates exit status of child processes
  */
 int tst_validate_children_(const char *file, const int lineno,
