@@ -17,6 +17,7 @@
 #include "libswap.h"
 #include "lapi/syscalls.h"
 #include "tst_kconfig.h"
+#include "tst_kvercmp.h"
 #include "tst_safe_stdio.h"
 
 static const char *const swap_supported_fs[] = {
@@ -231,6 +232,11 @@ int tst_max_swapfiles(void)
 	struct tst_kconfig_var memory_kconfig = TST_KCONFIG_INIT("CONFIG_MEMORY_FAILURE");
 	struct tst_kconfig_var device_kconfig = TST_KCONFIG_INIT("CONFIG_DEVICE_PRIVATE");
 	struct tst_kconfig_var marker_kconfig = TST_KCONFIG_INIT("CONFIG_PTE_MARKER");
+	struct tst_kern_exv kvers[] = {
+		/* RHEL9 kernel has patch 6c287605f and 679d10331 since 5.14.0-179 */
+		{ "RHEL9", "5.14.0-179" },
+		{ NULL, NULL},
+	};
 
 	tst_kconfig_read(&migration_kconfig, 1);
 	tst_kconfig_read(&memory_kconfig, 1);
@@ -238,7 +244,7 @@ int tst_max_swapfiles(void)
 	tst_kconfig_read(&marker_kconfig, 1);
 
 	if (migration_kconfig.choice == 'y') {
-		if (tst_kvercmp(5, 19, 0) < 0)
+		if (tst_kvercmp2(5, 19, 0, kvers) < 0)
 			swp_migration_num = 2;
 		else
 			swp_migration_num = 3;
@@ -255,7 +261,7 @@ int tst_max_swapfiles(void)
 	}
 
 	if (marker_kconfig.choice == 'y') {
-		if (tst_kvercmp(5, 19, 0) >= 0)
+		if (tst_kvercmp2(5, 19, 0, kvers) >= 0)
 			swp_pte_marker_num = 1;
 	}
 
