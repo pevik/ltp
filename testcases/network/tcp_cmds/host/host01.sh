@@ -25,6 +25,9 @@ do_test()
 			return
 		fi
 		EXPECT_PASS host $addr \>/dev/null
+		tst_res TINFO "debug host $addr"
+		host $addr
+		echo $?
 	else
 		tst_res TFAIL "host $lhost on local machine failed"
 	fi
