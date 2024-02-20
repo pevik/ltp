@@ -27,4 +27,9 @@ bool is_swap_supported(const char *filename);
  */
 int tst_max_swapfiles(void);
 
+/*
+ * Get the used swapfiles number
+ */
+int tst_count_swaps(void);
+
 #endif /* __LIBSWAP_H__ */
