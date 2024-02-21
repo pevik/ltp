@@ -151,6 +151,7 @@ static struct tst_test test = {
 	.needs_tmpdir = 1,
 	.forks_child = 1,
 	.test_all = verify_swapon,
+	.max_runtime = 60,
 	.setup = setup,
 	.cleanup = cleanup
 };
