@@ -565,3 +565,44 @@ char tst_kconfig_get(const char *confname)
 
 	return var.choice;
 }
+
+void tst_kcmdline_parse(struct tst_kcmdline_param params[], size_t params_len) {
+	FILE *proc_cmdline;
+	char cmdline[4096];
+	char *token, *key, *value;
+
+	proc_cmdline = fopen("/proc/cmdline", "r");
+	if (proc_cmdline == NULL)
+		tst_brk(TBROK | TERRNO, "Failed to open /proc/cmdline for reading");
+
+	if (fgets(cmdline, sizeof(cmdline), proc_cmdline) == NULL) {
+		fclose(proc_cmdline);
+
+		if (feof(proc_cmdline))
+			tst_brk(TBROK, "End-of-File reached on /proc/cmdline without reading any data");
+		else
+			tst_brk(TBROK | TERRNO, "Failed to read from /proc/cmdline");
+	}
+	fclose(proc_cmdline);
+
+	token = strtok(cmdline, " ");
+	while (token != NULL) {
+		key = token;
+		value = strchr(token, '=');
+
+		if (value != NULL) {
+			/* Split the token into key and value at '=' */
+			*value++ = '\0';
+
+			for (size_t i = 0; i < params_len; i++) {
+				if (strcmp(params[i].key, key) == 0) {
+					strncpy(params[i].value, value, sizeof(params[i].value) - 1);
+					params[i].value[sizeof(params[i].value) - 1] = '\0';
+					break;
+				}
+			}
+		}
+
+		token = strtok(NULL, " ");
+	}
+}
