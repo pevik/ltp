@@ -33,7 +33,7 @@ static struct tst_cap cap_req = TST_CAP(TST_CAP_REQ, CAP_SYS_MODULE);
 static struct tst_cap cap_drop = TST_CAP(TST_CAP_DROP, CAP_SYS_MODULE);
 
 struct tcase {
-	const char *name;
+	const char *desc;
 	int *fd;
 	const char *param;
 	int open_flags;
@@ -61,17 +61,17 @@ static void dir_setup(struct tcase *tc)
 }
 
 static struct tcase tcases[] = {
-	{"invalid-fd", &fd_invalid, "", O_RDONLY | O_CLOEXEC, 0, 0, 0, 0, bad_fd_setup},
-	{"zero-fd", &fd_zero, "", O_RDONLY | O_CLOEXEC, 0, 0, EINVAL, 0, NULL},
-	{"null-param", &fd, NULL, O_RDONLY | O_CLOEXEC, 0, 0, EFAULT, 1, NULL},
-	{"invalid-param", &fd, "status=invalid", O_RDONLY | O_CLOEXEC, 0, 0, EINVAL, 1, NULL},
-	{"invalid-flags", &fd, "", O_RDONLY | O_CLOEXEC, -1, 0, EINVAL, 0, NULL},
-	{"no-perm", &fd, "", O_RDONLY | O_CLOEXEC, 0, 1, EPERM, 0, NULL},
-	{"module-exists", &fd, "", O_RDONLY | O_CLOEXEC, 0, 0, EEXIST, 1, NULL},
-	{"module-unsigned", &fd, "", O_RDONLY | O_CLOEXEC, 0, 0, EKEYREJECTED, 1, NULL},
-	{"file-not-readable", &fd, "", O_WRONLY | O_CLOEXEC, 0, 0, EBADF, 0, NULL},
-	{"file-readwrite", &fd, "", O_RDWR | O_CLOEXEC, 0, 0, ETXTBSY, 0, NULL},
-	{"directory", &fd_dir, "", O_RDONLY | O_CLOEXEC, 0, 0, 0, 0, dir_setup},
+	{.desc = "invalid-fd", .fd = &fd_invalid, .fix_errno = bad_fd_setup},
+	{.desc = "zero-fd", .fd = &fd_zero, .exp_errno = EINVAL},
+	{.desc = "null-param", .exp_errno = EFAULT, .skip_in_lockdown = 1},
+	{.desc = "invalid-param", .param = "status=invalid", .exp_errno = EINVAL, .skip_in_lockdown = 1},
+	{.desc = "invalid-flags", .flags = -1, .exp_errno = EINVAL},
+	{.desc = "no-perm", .cap = 1, .exp_errno = EPERM},
+	{.desc = "module-exists", .exp_errno = EEXIST, .skip_in_lockdown = 1},
+	{.desc = "module-unsigned", .exp_errno = EKEYREJECTED, .skip_in_lockdown = 1},
+	{.desc = "file-not-readable", .open_flags = O_WRONLY | O_CLOEXEC, .exp_errno = EBADF},
+	{.desc = "file-readwrite", .open_flags = O_RDWR | O_CLOEXEC, .exp_errno = ETXTBSY},
+	{.desc = "directory", .fd = &fd_dir, .fix_errno = dir_setup},
 };
 
 static void setup(void)
@@ -105,18 +105,24 @@ static void run(unsigned int n)
 {
 	struct tcase *tc = &tcases[n];
 
+	if (!tc->fd)
+		tc->fd = &fd;
+
+	if (!tc->open_flags)
+		tc->open_flags = O_RDONLY | O_CLOEXEC;
+
 	if (tc->skip_in_lockdown && (kernel_lockdown || secure_boot)) {
-		tst_res(TCONF, "Cannot load unsigned modules, skipping %s", tc->name);
+		tst_res(TCONF, "Cannot load unsigned modules, skipping %s", tc->desc);
 		return;
 	}
 
 	if ((sig_enforce == 1) && (tc->exp_errno != EKEYREJECTED)) {
-		tst_res(TCONF, "module signature is enforced, skipping %s", tc->name);
+		tst_res(TCONF, "module signature is enforced, skipping %s", tc->desc);
 		return;
 	}
 
 	if ((sig_enforce != 1) && (tc->exp_errno == EKEYREJECTED)) {
-		tst_res(TCONF, "module signature is not enforced, skipping %s", tc->name);
+		tst_res(TCONF, "module signature is not enforced, skipping %s", tc->desc);
 		return;
 	}
 
@@ -130,7 +136,7 @@ static void run(unsigned int n)
 		tst_module_load(MODULE_NAME, NULL);
 
 	TST_EXP_FAIL(finit_module(*tc->fd, tc->param, tc->flags), tc->exp_errno,
-		     "TestName: %s", tc->name);
+		     "TestName: %s", tc->desc);
 
 	if (tc->exp_errno == EEXIST)
 		tst_module_unload(MODULE_NAME);
