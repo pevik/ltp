@@ -14,6 +14,7 @@
 #include "tst_private.h"
 #include "tst_kconfig.h"
 #include "tst_bool_expr.h"
+#include "tst_safe_stdio.h"
 
 static int kconfig_skip_check(void)
 {
@@ -564,4 +565,48 @@ char tst_kconfig_get(const char *confname)
 		free(var.val);
 
 	return var.choice;
+}
+
+void tst_kcmdline_parse(struct tst_kcmdline_var params[], size_t params_len) {
+	char buf[128];
+	size_t buf_pos = 0, i;
+	int var_id = -1, c;
+
+	FILE *f = SAFE_FOPEN("/proc/cmdline", "r");
+
+	while ((c = fgetc(f)) != EOF) {
+		switch (c) {
+		case '=':
+			buf[buf_pos] = '\0';
+			for (i = 0; i < params_len; i++) {
+				if (strcmp(buf, params[i].key) == 0)
+					var_id = (int)i;
+			}
+
+			buf_pos = 0;
+		break;
+		case ' ':
+		case '\n':
+			buf[buf_pos] = '\0';
+			if (var_id >= 0 && var_id < (int)params_len)
+				strcpy(params[var_id].value, buf);
+
+			var_id = -1;
+			buf_pos = 0;
+		break;
+		default:
+			if (buf_pos + 1  >= sizeof(buf)) {
+				tst_res(TWARN, "Buffer overflowed while parsing /proc/cmdline");
+				while ((c = fgetc(f)) != EOF && c != ' ' && c != '\n');
+
+				var_id = -1;
+				buf_pos = 0;
+			}
+
+			buf[buf_pos++] = (char)c;
+		break;
+		}
+	}
+
+	SAFE_FCLOSE(f);
 }

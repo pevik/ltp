@@ -64,4 +64,27 @@ void tst_kconfig_read(struct tst_kconfig_var vars[], size_t vars_len);
  */
 int tst_kconfig_check(const char *const kconfigs[]);
 
+/**
+ * Macro to initialize a tst_kcmdline_var structure with a specified parameter
+ * name and an empty value. This is useful for setting up an array of parameter
+ * structures before parsing the actual command-line arguments.
+ */
+#define TST_KCMDLINE_INIT(paraname) { \
+	.key = paraname, \
+	.value = "" \
+}
+
+/* Structure for storing command-line parameter key and its corresponding value */
+struct tst_kcmdline_var {
+	const char *key;
+	char value[128];
+};
+
+/**
+ * Parses command-line parameters from /proc/cmdline and stores them in params array
+ * params: The array of tst_kcmdline_var structures to be filled with parsed key-value pairs
+ * params_len: The length of the params array, indicating how many parameters to parse
+ */
+void tst_kcmdline_parse(struct tst_kcmdline_var params[], size_t params_len);
+
 #endif	/* TST_KCONFIG_H__ */
