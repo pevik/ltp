@@ -27,12 +27,14 @@
 #define _GNU_SOURCE
 #include "tst_test.h"
 #include <errno.h>
+#include <stdlib.h>
 
 #ifdef HAVE_SYS_FANOTIFY_H
 #include "fanotify.h"
 
 #define MNTPOINT "mntpoint"
 #define FILE1 MNTPOINT"/file1"
+#define SELINUX_STATUS_PATH "/sys/fs/selinux/enforce"
 
 /*
  * List of inode events that are only available when notification group is
@@ -47,6 +49,7 @@ static int pipes[2] = {-1, -1};
 static int fanotify_fd;
 static int ignore_mark_unsupported;
 static int filesystem_mark_unsupported;
+static int se_enforcing;
 static unsigned int supported_init_flags;
 
 struct test_case_flags_t {
@@ -240,6 +243,19 @@ static struct test_case_t {
 	},
 };
 
+static int is_selinux_enforcing(void)
+{
+	char res;
+	int fd;
+
+	fd = open(SELINUX_STATUS_PATH, O_RDONLY);
+	if (fd <= 0)
+		return 0;
+	SAFE_READ(1, fd, &res, 1);
+	SAFE_CLOSE(fd);
+	return atoi(&res);
+}
+
 static void do_test(unsigned int number)
 {
 	struct test_case_t *tc = &test_cases[number];
@@ -283,9 +299,18 @@ static void do_test(unsigned int number)
 
 	tst_res(TINFO, "Testing %s with %s",
 		tc->mark.desc, tc->mask.desc);
-	TST_EXP_FD_OR_FAIL(fanotify_mark(fanotify_fd, FAN_MARK_ADD | tc->mark.flags,
-					 tc->mask.flags, dirfd, path),
-					 tc->expected_errno);
+
+	if (tc->pfd && se_enforcing) {
+		const int exp_errs[] = {tc->expected_errno, EACCES};
+
+		TST_EXP_FAIL_ARR(fanotify_mark(fanotify_fd, FAN_MARK_ADD | tc->mark.flags,
+				 tc->mask.flags, dirfd, path),
+				 exp_errs);
+	} else {
+		TST_EXP_FAIL(fanotify_mark(fanotify_fd, FAN_MARK_ADD | tc->mark.flags,
+						 tc->mask.flags, dirfd, path),
+						 tc->expected_errno);
+	}
 
 	/*
 	 * ENOTDIR are errors for events/flags not allowed on a non-dir inode.
@@ -334,6 +359,8 @@ static void do_setup(void)
 	SAFE_FILE_PRINTF(FILE1, "0");
 	/* Create anonymous pipes to place marks on */
 	SAFE_PIPE2(pipes, O_CLOEXEC);
+
+	se_enforcing = is_selinux_enforcing();
 }
 
 static void do_cleanup(void)
