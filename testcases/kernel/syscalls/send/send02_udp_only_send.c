@@ -60,14 +60,7 @@ static struct test_case {
 	int needs_connect, needs_accept;
 	const char *name;
 } testcase_list[] = {
-	/* new */
-	{AF_INET, SOCK_STREAM, 0, do_sendto, 1, 1, "TCP sendto"},
-	{AF_INET, SOCK_STREAM, 0, do_sendmsg, 1, 1, "TCP sendmsg"},
-
-	{AF_INET, SOCK_STREAM, 0, do_send, 1, 1, "TCP send"},
 	{AF_INET, SOCK_DGRAM, 0, do_send, 1, 0, "UDP send"},
-	{AF_INET, SOCK_DGRAM, 0, do_sendto, 0, 0, "UDP sendto"},
-	{AF_INET, SOCK_DGRAM, 0, do_sendmsg, 0, 0, "UDP sendmsg"}
 };
 
 static void setup(void)
