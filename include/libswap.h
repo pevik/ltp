@@ -11,10 +11,22 @@
 #ifndef __LIBSWAP_H__
 #define __LIBSWAP_H__
 
+enum swapfile_method {
+    SWAPFILE_BY_SIZE,
+    SWAPFILE_BY_BLKS
+};
+
 /*
- * Make a swap file
+ * Create a swapfile of a specified size or number of blocks.
  */
-int make_swapfile(const char *swapfile, int blocks, int safe);
+int make_swapfile(const char *swapfile, unsigned int num,
+			int safe, enum swapfile_method method);
+
+#define MAKE_SWAPFILE_SIZE(swapfile, size, safe) \
+    make_swapfile(swapfile, size, safe, SWAPFILE_BY_SIZE)
+
+#define MAKE_SWAPFILE_BLKS(swapfile, blocks, safe) \
+    make_swapfile(swapfile, blocks, safe, SWAPFILE_BY_BLKS)
 
 /*
  * Check swapon/swapoff support status of filesystems or files

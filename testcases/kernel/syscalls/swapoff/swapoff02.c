@@ -88,7 +88,7 @@ static void setup(void)
 
 	is_swap_supported(TEST_FILE);
 
-	if (make_swapfile(SWAP_FILE, 10, 1))
+	if (MAKE_SWAPFILE_BLKS(SWAP_FILE, 10, 1))
 		tst_brk(TBROK, "Failed to create file for swap");
 }
 

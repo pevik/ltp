@@ -133,17 +133,25 @@ out:
 	return contiguous;
 }
 
-int make_swapfile(const char *swapfile, int blocks, int safe)
+int make_swapfile(const char *swapfile, unsigned int num, int safe, enum swapfile_method method)
 {
 	struct statvfs fs_info;
 	unsigned long blk_size, bs;
 	size_t pg_size = sysconf(_SC_PAGESIZE);
 	char mnt_path[100];
+	unsigned int blocks = 0;
 
 	if (statvfs(".", &fs_info) == -1)
 		return -1;
 
 	blk_size = fs_info.f_bsize;
+
+	if (method == SWAPFILE_BY_SIZE)
+		blocks = num * 1024 * 1024 / blk_size;
+	else if (method == SWAPFILE_BY_BLKS)
+		blocks = num;
+	else
+		tst_brk(TBROK, "Invalid method, please see include/libswap.h");
 
 	/* To guarantee at least one page can be swapped out */
 	if (blk_size * blocks < pg_size)
@@ -175,13 +183,13 @@ int make_swapfile(const char *swapfile, int blocks, int safe)
 	argv[2] = NULL;
 
 	return tst_cmd(argv, "/dev/null", "/dev/null", safe ?
-				   TST_CMD_PASS_RETVAL | TST_CMD_TCONF_ON_MISSING : 0);
+			TST_CMD_PASS_RETVAL | TST_CMD_TCONF_ON_MISSING : 0);
 }
 
 bool is_swap_supported(const char *filename)
 {
 	int i, sw_support = 0;
-	int ret = make_swapfile(filename, 10, 1);
+	int ret = MAKE_SWAPFILE_BLKS(filename, 10, 1);
 	int fi_contiguous = file_is_contiguous(filename);
 	long fs_type = tst_fs_type(filename);
 	const char *fstype = tst_fs_type_name(fs_type);
