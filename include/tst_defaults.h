@@ -8,8 +8,9 @@
 
 /*
  * This is the default temporary directory used by tst_tmpdir().
+ * used when TMPDIR env variable is not set.
  *
- * This is used when TMPDIR env variable is not set.
+ * If changed, update also shell API in testcases/lib/tst_test.sh.
  */
 #define TEMPDIR	"/tmp"
 
