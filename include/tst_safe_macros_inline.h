@@ -6,12 +6,44 @@
 #ifndef TST_SAFE_MACROS_INLINE_H__
 #define TST_SAFE_MACROS_INLINE_H__
 
+#include "lapi/fallocate.h"
+#include <fcntl.h>
+
 /*
  * Following functions are inline because the behaviour may depend on
  * -D_FILE_OFFSET_BITS=64 compile flag.
  *
  * Do not add other functions here.
  */
+
+#define SAFE_FALLOCATE(fd, mode, offset, len) \
+	safe_access(__FILE__, __LINE__, (path), (mode), (offset), (len), #mode)
+
+static inline int safe_fallocate(const char *file, const int lineno,
+	int fd, int mode, off_t offset, off_t len, const char *smode)
+{
+	int rval;
+
+	rval = fallocate(fd, mode, offset, len);
+
+	if (rval == -1) {
+		if (tst_fs_type(".") == TST_NFS_MAGIC && (errno == EOPNOTSUPP ||
+							  errno == ENOSYS)) {
+			tst_brk_(file, lineno, TCONF | TERRNO,
+					 "fallocate(%d, %s, %ld, %ld) unsupported",
+					 fd, smode, (long)offset, (long)len);
+		}
+		tst_brk_(file, lineno, TBROK | TERRNO,
+				 "fallocate(%d, %s, %ld, %ld) failed",
+				 fd, smode, (long)offset, (long)len);
+	} else if (rval < 0) {
+		tst_brk_(file, lineno, TBROK | TERRNO,
+			"Invalid fallocate(%d, %s, %ld, %ld) return value %d",
+				 fd, smode, (long)offset, (long)len, rval);
+	}
+
+	return rval;
+}
 
 static inline int safe_ftruncate(const char *file, const int lineno,
 	int fd, off_t length)
