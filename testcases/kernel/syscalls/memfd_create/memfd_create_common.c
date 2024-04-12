@@ -17,7 +17,6 @@
 #define TST_NO_DEFAULT_MAIN
 #include "tst_test.h"
 #include "lapi/fallocate.h"
-#include "lapi/fcntl.h"
 #include "lapi/memfd.h"
 
 #include "lapi/syscalls.h"

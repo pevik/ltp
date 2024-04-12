@@ -9,8 +9,10 @@
 
 #include <sys/types.h>
 #include <endian.h>
+
 #include "config.h"
 #include "lapi/abisize.h"
+#include "lapi/fcntl.h"
 #include "lapi/seek.h"
 #include "lapi/syscalls.h"
 

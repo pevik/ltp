@@ -33,7 +33,6 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <fcntl.h>
 #include <inttypes.h>
 #include <sys/utsname.h>
 #include <limits.h>
