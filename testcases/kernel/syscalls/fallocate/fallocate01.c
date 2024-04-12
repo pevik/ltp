@@ -101,7 +101,6 @@
 #include "test.h"
 #include "safe_macros.h"
 #include "lapi/fallocate.h"
-#include "lapi/fcntl.h"
 
 #define BLOCKS_WRITTEN 12
 

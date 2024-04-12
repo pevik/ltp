@@ -7,7 +7,6 @@
 
 #define _GNU_SOURCE
 #include <stdlib.h>
-#include <fcntl.h>
 #include "lapi/fallocate.h"
 #include "tst_fs.h"
 
