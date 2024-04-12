@@ -80,11 +80,7 @@ static void test01(void)
 {
 	tst_res(TINFO, "allocate '%zu' bytes", buf_size);
 
-	if (fallocate(fd, 0, 0, buf_size) == -1) {
-		if (errno == ENOSYS || errno == EOPNOTSUPP)
-			tst_brk(TCONF, "fallocate() not supported");
-		tst_brk(TFAIL | TERRNO, "fallocate() failed");
-	}
+	SAFE_FALLOCATE(fd, 0, 0, buf_size);
 
 	char buf[buf_size];
 
