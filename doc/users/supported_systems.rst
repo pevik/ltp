@@ -3,6 +3,12 @@
 Supported systems
 =================
 
+Build testing is done with `GitHub Actions <https://github.com/linux-test-project/ltp/actions>`_.
+
+.. note::
+
+      There is no CI testing of the actual tests run.
+
 Kernel version
 --------------
 
@@ -37,6 +43,9 @@ Oldest tested distributions
       - 2.31
       - 10.2.1
       - 11.0.1
+
+For a full list of tested distros, please tested distros, please check
+`.github/workflows/ci.yml <https://github.com/linux-test-project/ltp/blob/master/.github/workflows/ci.yml>`_.
 
 Older distributions are not officially supported, which means that it
 may or may not work. It all depends on your luck. It should be possible
