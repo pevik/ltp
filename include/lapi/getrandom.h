@@ -8,8 +8,14 @@
 
 #include "config.h"
 
-#if HAVE_LINUX_RANDOM_H
-#include <linux/random.h>
+#ifdef HAVE_SYS_RANDOM_H
+# include <sys/random.h>
+# if !defined(SYS_getrandom) && defined(__NR_getrandom)
+   /* usable kernel-headers, but old glibc-headers */
+#  define SYS_getrandom __NR_getrandom
+# endif
+#elif HAVE_LINUX_RANDOM_H
+# include <linux/random.h>
 #endif
 
 /*
@@ -25,6 +31,15 @@
 
 #ifndef GRND_RANDOM
 # define GRND_RANDOM	0x0002
+#endif
+
+#if !defined(HAVE_SYS_RANDOM_H) && defined(SYS_getrandom)
+/* libc without function, but we have syscall */
+static int getrandom(void *buf, size_t buflen, unsigned int flags)
+{
+	return (syscall(SYS_getrandom, buf, buflen, flags));
+}
+# define HAVE_GETRANDOM
 #endif
 
 #endif /* LAPI_GETRANDOM_H__ */
