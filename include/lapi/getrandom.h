@@ -8,8 +8,10 @@
 
 #include "config.h"
 
-#if HAVE_LINUX_RANDOM_H
-#include <linux/random.h>
+#ifdef HAVE_SYS_RANDOM_H
+# include <sys/random.h>
+#elif HAVE_LINUX_RANDOM_H
+# include <linux/random.h>
 #endif
 
 /*
@@ -25,6 +27,14 @@
 
 #ifndef GRND_RANDOM
 # define GRND_RANDOM	0x0002
+#endif
+
+#ifndef HAVE_SYS_RANDOM_H
+# include "lapi/syscalls.h"
+static inline int getrandom(void *buf, size_t buflen, unsigned int flags)
+{
+	return (tst_syscall(SYS_getrandom, buf, buflen, flags));
+}
 #endif
 
 #endif /* LAPI_GETRANDOM_H__ */
