@@ -14,8 +14,8 @@
  */
 
 #include <sys/ioctl.h>
-#include "tst_test.h"
 #include "lapi/fs.h"
+#include "tst_test.h"
 
 #define TEST_EPERM_IMMUTABLE "test_eperm_immutable"
 #define TEST_EPERM_APPEND_ONLY "test_eperm_append_only"

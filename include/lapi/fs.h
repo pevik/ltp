@@ -9,15 +9,23 @@
 #ifndef LAPI_FS_H__
 #define LAPI_FS_H__
 
+/*
+ * loff_t in <fcntl.h> loaded via lapi/fcntl.h,
+ * getpagesize() in <unistd.h>.
+ */
+#define _GNU_SOURCE
+
 #include "config.h"
+#include <unistd.h>
+
 #ifndef HAVE_MOUNT_SETATTR
 # ifdef HAVE_LINUX_FS_H
 #  include <linux/fs.h>
 # endif
 #endif
 
-#include <sys/user.h>
 #include <limits.h>
+#include "lapi/fcntl.h"
 #include "lapi/abisize.h"
 
 #ifndef FS_IOC_GETFLAGS
