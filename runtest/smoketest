@@ -9,6 +9,7 @@ wait02 wait02
 write01 write01
 symlink01 symlink01
 stat04 stat04
+rename15 rename15
 splice02 splice02 -s 20
 df01_sh df01.sh
 shell_test01 echo "SUCCESS" | shell_pipe01.sh
