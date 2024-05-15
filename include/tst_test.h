@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
  * Copyright (c) 2015-2016 Cyril Hrubis <chrubis@suse.cz>
- * Copyright (c) Linux Test Project, 2016-2019
+ * Copyright (c) Linux Test Project, 2016-2024
  */
 
 #ifndef TST_TEST_H__
@@ -328,6 +328,9 @@ struct tst_ulimit_val {
  * @skip_in_compat: Skip the test if we are executing 32bit binary on a 64bit
  *                  kernel, i.e. we are testing the kernel compat layer.
  *
+ * @skip_in_32bit: Skip the test if compiled for 32bit target (regardless if
+ *                 the test process is running on 32bit or 64bit kernel).
+ *
  * @needs_hugetlbfs: If set hugetlbfs is mounted at tst_test.mntpoint.
  *
  * @skip_filesystems: A NULL terminated array of unsupported file systems. The
@@ -494,6 +497,7 @@ struct tst_ulimit_val {
 	unsigned int skip_in_lockdown:1;
 	unsigned int skip_in_secureboot:1;
 	unsigned int skip_in_compat:1;
+	unsigned int skip_in_32bit:1;
 
 	unsigned int needs_hugetlbfs:1;
 

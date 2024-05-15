@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * Copyright (c) 2015-2016 Cyril Hrubis <chrubis@suse.cz>
- * Copyright (c) Linux Test Project, 2016-2021
+ * Copyright (c) Linux Test Project, 2016-2024
  */
 
 #include <limits.h>
@@ -1208,6 +1208,9 @@ static void do_setup(int argc, char *argv[])
 
 	if (tst_test->skip_in_compat && tst_is_compat_mode())
 		tst_brk(TCONF, "Not supported in 32-bit compat mode");
+
+	if (tst_test->skip_in_32bit && tst_is_32bit())
+		tst_brk(TCONF, "Not supported in 32-bit");
 
 	if (tst_test->needs_cmds) {
 		const char *cmd;
