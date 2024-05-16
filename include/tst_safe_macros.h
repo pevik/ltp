@@ -11,7 +11,7 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/resource.h>
-#include <sys/stat.h>
+#include <linux/stat.h>
 #include <sys/vfs.h>
 #include <sys/sysinfo.h>
 #include <fcntl.h>
@@ -502,5 +502,11 @@ int safe_sscanf(const char *file, const int lineno, const char *restrict buffer,
 	const char *restrict format, ...);
 #define SAFE_SSCANF(buffer, format, ...) \
 	safe_sscanf(__FILE__, __LINE__, (buffer), (format),	##__VA_ARGS__)
+
+int safe_statx(const char *file, const int lineno,
+	int dirfd, const char *pathname, int flags, unsigned int mask,
+	struct statx *buf);
+#define SAFE_STATX(dirfd, pathname, flags, mask, buf) \
+	safe_statx(__FILE__, __LINE__, (dirfd), (pathname), (flags), (mask), (buf))
 
 #endif /* TST_SAFE_MACROS_H__ */
