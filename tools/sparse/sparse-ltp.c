@@ -283,9 +283,11 @@ static void collect_info_from_args(const int argc, char *const *const argv)
 {
 	int i;
 
-	for (i = 0; i < argc; i++) {
-		if (!strcmp("-DLTPLIB", argv[i]))
+	for (i = argc - 1; i >= 0; i--) {
+		if (!strcmp("-DLTPLIB", argv[i])) {
 			tu_kind = LTP_LIB;
+			return;
+		}
 	}
 }
 
