@@ -148,9 +148,11 @@ static void check_symbol_visibility(const struct symbol *const sym)
 	if (sym->ident == &main_ident)
 		return;
 
-	warning(sym->pos,
-		"Symbol '%s' has no prototype or library ('tst_') prefix. Should it be static?",
-		name);
+	if (!has_lib_prefix) {
+		warning(sym->pos,
+			"Symbol '%s' has no prototype or library ('tst_') prefix. Should it be static?",
+			name);
+	}
 }
 
 /* See base_type() in dissect.c */
