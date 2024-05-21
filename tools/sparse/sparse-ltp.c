@@ -279,13 +279,51 @@ static void process_symbols(struct symbol_list *list)
 	} END_FOR_EACH_PTR(sym);
 }
 
+static bool is_old_api_lib_source(const char *const file)
+{
+	if (!strcmp("safe_file_ops.c", file) ||
+		!strcmp("safe_macros.c", file) ||
+		!strcmp("safe_net.c", file) ||
+		!strcmp("safe_stdio.c", file) ||
+		!strcmp("tst_checkpoint.c", file) ||
+		!strcmp("tst_cmd.c", file) ||
+		!strcmp("tst_cpu.c", file) ||
+		!strcmp("tst_device.c", file) ||
+		!strcmp("tst_dir_is_empty.c", file) ||
+		!strcmp("tst_fs_has_free.c", file) ||
+		!strcmp("tst_fs_link_count.c", file) ||
+		!strcmp("tst_fs_type.c", file) ||
+		!strcmp("tst_get_bad_addr.c", file) ||
+		!strcmp("tst_kernel.c", file) ||
+		!strcmp("tst_kvercmp.c", file) ||
+		!strcmp("tst_mkfs.c", file) ||
+		!strcmp("tst_module.c", file) ||
+		!strcmp("tst_parse_opts.c", file) ||
+		!strcmp("tst_path_has_mnt_flags.c", file) ||
+		!strcmp("tst_pid.c", file) ||
+		!strcmp("tst_res.c", file) ||
+		!strcmp("tst_resource.c", file) ||
+		!strcmp("tst_sig.c", file) ||
+		!strcmp("tst_tmpdir.c", file) ||
+		!strcmp("tst_virt.c", file)) {
+		return true;
+	}
+
+	return false;
+}
+
 static void collect_info_from_args(const int argc, char *const *const argv)
 {
 	int i;
 
-	for (i = 0; i < argc; i++) {
-		if (!strcmp("-DLTPLIB", argv[i]))
+	for (i = argc - 1; i >= 0; i--) {
+		if (is_old_api_lib_source(argv[i]))
+			return;
+
+		if (!strcmp("-DLTPLIB", argv[i])) {
 			tu_kind = LTP_LIB;
+			return;
+		}
 	}
 }
 
