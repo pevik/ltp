@@ -88,6 +88,9 @@ int TST_ERR;
 int TST_PASS;
 long TST_RET;
 
+static struct tst_device tdev;
+struct tst_device *tst_device;
+
 static void do_cleanup(void);
 static void do_exit(int ret) __attribute__ ((noreturn));
 
@@ -883,7 +886,9 @@ static void do_exit(int ret)
 
 		if (results->broken) {
 			ret |= TBROK;
-			print_failure_hints();
+
+			if (!(tst_test->needs_device && !tdev.dev))
+				print_failure_hints();
 		}
 
 		fprintf(stderr, "\nSummary:\n");
@@ -964,9 +969,6 @@ static const char *get_tid(char *argv[])
 
 	return argv[0];
 }
-
-static struct tst_device tdev;
-struct tst_device *tst_device;
 
 static void assert_test_fn(void)
 {
