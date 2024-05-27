@@ -225,6 +225,9 @@ static void print_result(const char *file, const int lineno, int ttype,
 	case TINFO:
 		res = "TINFO";
 	break;
+	case TINFO_WARN:
+		res = "TINFO WARNING";
+	break;
 	case TDEBUG:
 		res = "TDEBUG";
 	break;

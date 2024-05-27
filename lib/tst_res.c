@@ -174,13 +174,16 @@ static void tst_res__(const char *file, const int lineno, int ttype,
 	int len = 0;
 	int ttype_result = TTYPE_RESULT(ttype);
 
-	if (ttype_result == TDEBUG) {
-		printf("%s: %i: TDEBUG is not supported\n", __func__, __LINE__);
+	if (ttype_result == TDEBUG || ttype_result == TINFO_WARN) {
+		printf("%s: %i: %s is not supported\n", __func__, __LINE__,
+		       strttype(ttype));
 		abort();
 	}
 
-	if (file && (ttype_result != TPASS && ttype_result != TINFO))
+	if (file && (ttype_result != TPASS && ttype_result != TINFO
+		     && ttype_result != TINFO_WARN)) {
 		len = sprintf(tmesg, "%s:%d: ", file, lineno);
+	}
 	EXPAND_VAR_ARGS(tmesg + len, arg_fmt, USERMESG - len);
 
 	/*
@@ -198,7 +201,8 @@ static void tst_res__(const char *file, const int lineno, int ttype,
 	 * Set the test case number and print the results, depending on the
 	 * display type.
 	 */
-	if (ttype_result == TWARN || ttype_result == TINFO) {
+	if (ttype_result == TWARN || ttype_result == TINFO ||
+	    ttype_result == TINFO_WARN) {
 		tst_print(TCID, 0, ttype, tmesg);
 	} else {
 		if (tst_count < 0)

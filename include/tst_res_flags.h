@@ -22,6 +22,9 @@
  * @TINFO: Prints an additional information, it does not change the test result
  *         counters but unlike TDEBUG the message is always displayed.
  *
+ * @TINFO_WARN: Reports a single warning, but it does not change the test result
+ *              counters like TINFO.
+ *
  * @TCONF: Reports unsupported configuration. When tests produce this result at
  *         least a subset of test was skipped, because it couldn't run. The
  *         usual reasons are, missing kernel modules or CONFIG options.
@@ -55,12 +58,13 @@ enum tst_res_flags {
 	TDEBUG = 8,
 	TINFO = 16,
 	TCONF = 32,
+	TINFO_WARN = 64,
 	TERRNO = 0x100,
 	TTERRNO = 0x200,
 	TRERRNO	= 0x400,
 };
 
 #define TTYPE_RESULT(ttype)	((ttype) & TTYPE_MASK)
-#define TTYPE_MASK 0x3f
+#define TTYPE_MASK 0x7f
 
 #endif /* TST_RES_FLAGS_H */

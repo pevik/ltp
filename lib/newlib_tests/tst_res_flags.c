@@ -20,6 +20,7 @@ static struct tcase {
 	{FLAG(TBROK)},
 	{FLAG(TCONF)},
 	{FLAG(TWARN)},
+	{FLAG(TINFO_WARN)},
 	{FLAG(TINFO)},
 	{FLAG(TDEBUG), " (printed only with -D or LTP_ENABLE_DEBUG=1)"},
 };

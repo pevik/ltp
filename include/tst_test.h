@@ -69,7 +69,7 @@ void tst_res_(const char *file, const int lineno, int ttype,
 	({									\
 		TST_RES_SUPPORTS_TCONF_TDEBUG_TFAIL_TINFO_TPASS_TWARN(\
 			!((TTYPE_RESULT(ttype) ?: TCONF) & \
-			(TCONF | TDEBUG | TFAIL | TINFO | TPASS | TWARN)));				\
+			(TCONF | TDEBUG | TFAIL | TINFO | TPASS | TWARN | TINFO_WARN)));	\
 		tst_res_(__FILE__, __LINE__, (ttype), (arg_fmt), ##__VA_ARGS__);\
 	})
 

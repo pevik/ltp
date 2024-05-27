@@ -26,6 +26,7 @@ char* tst_ttype2color(int ttype)
 		return ANSI_COLOR_YELLOW;
 	break;
 	case TWARN:
+	case TINFO_WARN:
 		return ANSI_COLOR_MAGENTA;
 	break;
 	case TINFO:
