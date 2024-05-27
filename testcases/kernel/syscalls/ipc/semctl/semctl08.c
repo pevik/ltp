@@ -40,7 +40,7 @@ static void run(void)
 		tst_res(TPASS, "time_high fields cleared by the kernel");
 
 	if (semctl(semid, 0, IPC_RMID, arg) == -1)
-		tst_res(TINFO, "WARNING: semaphore deletion failed.");
+		tst_res(TINFO_WARN, "semaphore deletion failed");
 }
 
 static struct tst_test test = {

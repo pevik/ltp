@@ -106,8 +106,8 @@ void rm_shm(int shm_id)
 	 * check for # of attaches ?
 	 */
 	if (shmctl(shm_id, IPC_RMID, NULL) == -1) {
-		tst_res(TINFO, "WARNING: shared memory deletion failed.");
-		tst_res(TINFO, "This could lead to IPC resource problems.");
+		tst_res(TINFO_WARN, "shared memory deletion failed");
+		tst_res(TINFO, "This could lead to IPC resource problems");
 		tst_res(TINFO, "id = %d", shm_id);
 	}
 }
