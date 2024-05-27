@@ -289,8 +289,10 @@ const char *tst_acquire_loop_device(unsigned int size, const char *filename)
 {
 	unsigned int acq_dev_size = size ? size : DEV_SIZE_MB;
 
+	tst_resm(TINFO, "Acquiring loop device %u MB", acq_dev_size);
 	if (tst_prealloc_file(filename, 1024 * 1024, acq_dev_size)) {
-		tst_resm(TWARN | TERRNO, "Failed to create %s", filename);
+		tst_resm(TWARN | TERRNO, "Failed to create %s%s", filename,
+			 errno == ENOSPC ? " (not enough space in $TMPDIR?)" : "");
 		return NULL;
 	}
 
