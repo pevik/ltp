@@ -219,10 +219,12 @@ static struct tst_test test = {
 	},
 	.tcnt = ARRAY_SIZE(tcases),
 	.test = verify_quotactl,
-	.dev_fs_type = "ext4",
+	.fs = {
+		.type = "ext4",
+		.mnt_data = "usrquota",
+	},
 	.mntpoint = MNTPOINT,
 	.mount_device = 1,
-	.mnt_data = "usrquota",
 	.needs_cmds = (const char *const []) {
 		"quotacheck",
 		NULL

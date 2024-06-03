@@ -126,7 +126,9 @@ static struct tst_test test = {
 	.needs_root = 1,
 	.mount_device = 1,
 	.mntpoint = MNTPOINT,
-	.dev_fs_type = "btrfs",
+	.fs = {
+		.type = "btrfs"
+	},
 	.needs_drivers = (const char *const[]) {
 		"btrfs",
 		NULL,

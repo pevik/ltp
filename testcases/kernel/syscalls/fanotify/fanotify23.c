@@ -256,7 +256,9 @@ static struct tst_test test = {
 	.mount_device = 1,
 	.mntpoint = MOUNT_PATH,
 	/* Shrinkers on other fs do not work reliably enough to guarantee mark eviction on drop_caches */
-	.dev_fs_type = "ext2",
+	.fs = {
+		.type = "ext2"
+	},
 };
 
 #else
