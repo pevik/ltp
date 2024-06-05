@@ -49,12 +49,27 @@ again:
 static void setup(void)
 {
 	cpu_set_t mask;
+	int cpu = 0;
+	long ncpus = tst_ncpus_conf();
 
 	CPU_ZERO(&mask);
 
-	CPU_SET(0, &mask);
+	/* Restrict test to a single cpu */
+	TST_EXP_POSITIVE(sched_getaffinity(0, sizeof(mask), &mask));
+
+	if (CPU_COUNT(&mask) == 0)
+		tst_brk(TCONF, "No cpus available");
+
+	while (CPU_ISSET(cpu, &mask) == 0 && cpu < ncpus)
+		cpu++;
+
+	CPU_ZERO(&mask);
+
+	CPU_SET(cpu, &mask);
 
 	TST_EXP_POSITIVE(sched_setaffinity(0, sizeof(mask), &mask));
+
+	tst_res(TINFO, "Set affinity to CPU %d", cpu);
 
 	if (tst_parse_long(str_loop, &loop, 1, LONG_MAX))
 		tst_brk(TBROK, "Invalid number of loop number '%s'", str_loop);
