@@ -21,11 +21,42 @@
 #include <sched.h>
 
 #include "tst_test.h"
+#include "tst_safe_clocks.h"
+#include "tst_timer.h"
 
 static char *str_loop;
-static long loop = 2000000;
+static long loop = 1000000;
 static char *str_timeout;
-static int timeout = 240;
+static int timeout;
+
+#define CALLIBRATE_LOOPS 100000000
+
+static int callibrate(void)
+{
+	volatile int counter;
+	struct timespec start, stop;
+	long long diff;
+
+	counter = CALLIBRATE_LOOPS;
+	do
+		counter--;
+	while (counter > 0);
+
+	SAFE_CLOCK_GETTIME(CLOCK_MONOTONIC_RAW, &start);
+
+	counter = CALLIBRATE_LOOPS;
+	do
+		counter--;
+	while (counter > 0);
+
+	SAFE_CLOCK_GETTIME(CLOCK_MONOTONIC_RAW, &stop);
+
+	diff = tst_timespec_diff_us(stop, start);
+
+	tst_res(TINFO, "CPU did %i loops in %llius", CALLIBRATE_LOOPS, diff);
+
+	return diff;
+}
 
 static int wait_for_pid(pid_t pid)
 {
@@ -59,8 +90,11 @@ static void setup(void)
 	if (tst_parse_long(str_loop, &loop, 1, LONG_MAX))
 		tst_brk(TBROK, "Invalid number of loop number '%s'", str_loop);
 
-	if (tst_parse_int(str_timeout, &timeout, 1, INT_MAX))
+	if (tst_parse_int(str_timeout, &timeout, 1, INT_MAX)) {
 		tst_brk(TBROK, "Invalid number of timeout '%s'", str_timeout);
+	} else {
+		timeout = callibrate() / 1000;
+	}
 
 	tst_set_max_runtime(timeout);
 }
