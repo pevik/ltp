@@ -9,29 +9,24 @@ CC="${CC:-gcc}"
 
 DEFAULT_PREFIX="$HOME/ltp-install"
 DEFAULT_BUILD="native"
-DEFAULT_TREE="in"
 
-CONFIGURE_OPTS_IN_TREE="--with-open-posix-testsuite --with-realtime-testsuite $CONFIGURE_OPT_EXTRA"
-# TODO: open posix testsuite is currently broken in out-tree-build. Enable it once it's fixed.
-CONFIGURE_OPTS_OUT_TREE="--with-realtime-testsuite $CONFIGURE_OPT_EXTRA"
+CONFIGURE_OPTS="--with-open-posix-testsuite --with-realtime-testsuite $CONFIGURE_OPT_EXTRA"
 
 SRC_DIR="$(cd $(dirname $0); pwd)"
 BUILD_DIR="$SRC_DIR/../ltp-build"
 
 MAKE_OPTS="-j$(getconf _NPROCESSORS_ONLN)"
-MAKE_OPTS_OUT_TREE="$MAKE_OPTS -C $BUILD_DIR -f $SRC_DIR/Makefile top_srcdir=$SRC_DIR top_builddir=$BUILD_DIR"
 
 run_configure()
 {
-	local configure="$1"
-	shift
+	local opts="$CONFIGURE_OPTS --prefix=$prefix $@"
 
 	export CC CFLAGS LDFLAGS PKG_CONFIG_LIBDIR
 	echo "CC='$CC' CFLAGS='$CFLAGS' LDFLAGS='$LDFLAGS' PKG_CONFIG_LIBDIR='$PKG_CONFIG_LIBDIR'"
 
-	echo "=== configure $configure $@ ==="
-	if ! $configure $@; then
-		echo "== ERROR: configure failed, config.log =="
+	echo "=== ./configure $opts ==="
+	if ! ./configure $opts; then
+		echo "== ERROR: ./configure failed, config.log =="
 		cat config.log
 		exit 1
 	fi
@@ -40,26 +35,13 @@ run_configure()
 	cat include/config.h
 }
 
-configure_in_tree()
-{
-	run_configure ./configure $CONFIGURE_OPTS_IN_TREE --prefix=$prefix $@
-}
-
-configure_out_tree()
-{
-	mkdir -p $BUILD_DIR
-	cd $BUILD_DIR
-	run_configure $SRC_DIR/configure $CONFIGURE_OPTS_OUT_TREE $@
-}
-
 configure_32()
 {
-	local tree="$1"
-	local prefix="$2"
+	local prefix="$1"
 	local arch="$(uname -m)"
 	local dir
 
-	echo "===== 32-bit ${tree}-tree build into $prefix ====="
+	echo "===== 32-bit build into $prefix ====="
 
 	if [ -z "$PKG_CONFIG_LIBDIR" ]; then
 		if [ "$arch" != "x86_64" ]; then
@@ -80,23 +62,20 @@ configure_32()
 	fi
 
 	CFLAGS="-m32 $CFLAGS" LDFLAGS="-m32 $LDFLAGS"
-
-	eval configure_${tree}_tree
+	run_configure
 }
 
 configure_native()
 {
-	local tree="$1"
-	local prefix="$2"
+	local prefix="$1"
 
-	echo "===== native ${tree}-tree build into $prefix ====="
-	eval configure_${tree}_tree
+	echo "===== native build into $prefix ====="
+	run_configure
 }
 
 configure_cross()
 {
-	local tree="$1"
-	local prefix="$2"
+	local prefix="$1"
 	local host=$(basename "${CC%-gcc}")
 
 	if [ "$host" = "gcc" ]; then
@@ -104,68 +83,43 @@ configure_cross()
 		exit 1
 	fi
 
-	echo "===== cross-compile ${host} ${1}-tree build into $prefix ====="
-	eval configure_${tree}_tree "--host=$host"
+	echo "===== cross-compile ${host} build into $prefix ====="
+	run_configure "--host=$host"
 }
 
-build_in_tree()
+build()
 {
+	echo "=== build ==="
 	make $MAKE_OPTS
 }
 
-build_out_tree()
+test()
 {
-	cd $BUILD_DIR
-	make $MAKE_OPTS_OUT_TREE
-}
-
-test_in_tree()
-{
+	echo "=== test ==="
 	make $1
 }
 
-test_out_tree()
+install()
 {
-	cd $BUILD_DIR
-	make $MAKE_OPTS_OUT_TREE $1
-}
-
-install_in_tree()
-{
+	echo "=== install ==="
 	make $MAKE_OPTS install
-}
-
-install_out_tree()
-{
-	cd $BUILD_DIR
-	make $MAKE_OPTS_OUT_TREE DESTDIR="$prefix" install
 }
 
 usage()
 {
 	cat << EOF
 Usage:
-$0 [ -c CC ] [ -i ] [ -o TREE ] [ -p DIR ] [-r RUN ] [ -t TYPE ]
+$0 [ -c CC ] [ -i ] [ -p DIR ] [-r RUN ] [ -t TYPE ]
 $0 -h
 
 Options:
 -h       Print this help
 -c CC    Define compiler (\$CC variable), needed only for configure step
 -i       Run 'make install', needed only for install step
--o TREE  Specify build tree, default: $DEFAULT_TREE
--p DIR   Change installation directory. For in-tree build is this value passed
-         to --prefix option of configure script. For out-of-tree build is this
-         value passed to DESTDIR variable (i.e. sysroot) of make install
-         target, which means that LTP will be actually installed into
-         DIR/PREFIX (i.e. DIR/opt/ltp).
-         Default for in-tree build: '$DEFAULT_PREFIX'
-         Default for out-of-tree build: '$DEFAULT_PREFIX/opt/ltp'
+-p DIR   Change installation directory (--prefix)
+         Default: '$DEFAULT_PREFIX'
 -r RUN   Run only certain step (usable for CI), default: all
 -t TYPE  Specify build type, default: $DEFAULT_BUILD, only for configure step
-
-TREE:
-in       in-tree build
-out      out-of-tree build
 
 TYPES:
 32       32-bit build (PKG_CONFIG_LIBDIR auto-detection for x86_64)
@@ -181,9 +135,7 @@ test-c      run only 'make test-c' (not supported for cross-compile build)
 test-shell  run only 'make test-shell' (not supported for cross-compile build)
 install     run only 'make install'
 
-Default configure options:
-in-tree:    $CONFIGURE_OPTS_IN_TREE
-out-of-tree $CONFIGURE_OPTS_OUT_TREE
+Default configure options: $CONFIGURE_OPTS
 
 configure options can extend the default with \$CONFIGURE_OPT_EXTRA environment variable
 EOF
@@ -191,19 +143,14 @@ EOF
 
 prefix="$DEFAULT_PREFIX"
 build="$DEFAULT_BUILD"
-tree="$DEFAULT_TREE"
 install=
 run=
 
-while getopts "c:hio:p:r:t:" opt; do
+while getopts "c:hip:r:t:" opt; do
 	case "$opt" in
 	c) CC="$OPTARG";;
 	h) usage; exit 0;;
 	i) install=1;;
-	o) case "$OPTARG" in
-		in|out) tree="$OPTARG";;
-		*) echo "Wrong build tree '$OPTARG'" >&2; usage; exit 1;;
-		esac;;
 	p) prefix="$OPTARG";;
 	r) case "$OPTARG" in
 		autotools|configure|build|test|test-c|test-shell|install) run="$OPTARG";;
@@ -224,25 +171,24 @@ if [ -z "$run" -o "$run" = "autotools" ]; then
 fi
 
 if [ -z "$run" -o "$run" = "configure" ]; then
-	eval configure_$build $tree $prefix
+	eval configure_$build $prefix
 fi
 
 if [ -z "$run" -o "$run" = "build" ]; then
-	echo "=== build ==="
-	eval build_${tree}_tree
+	build
 fi
 
 if [ -z "$run" -o "$run" = "test" -o "$run" = "test-c" -o "$run" = "test-shell" ]; then
 	if [ "$build" = "cross" ]; then
 		echo "cross-compile build, skipping running tests" >&2
 	else
-		eval test_${tree}_tree $run
+		test $run
 	fi
 fi
 
 if [ -z "$run" -o "$run" = "install" ]; then
 	if [ "$install" = 1 ]; then
-		eval install_${tree}_tree
+		install
 	else
 		echo "make install skipped, use -i to run it"
 	fi
