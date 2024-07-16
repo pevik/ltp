@@ -173,6 +173,52 @@ void tst_reinit(void)
 	SAFE_CLOSE(fd);
 }
 
+extern char **environ;
+
+static unsigned int params_array_len(char *const array[])
+{
+	unsigned int ret = 0;
+
+	if (!array)
+		return 0;
+
+	while (*(array++))
+		ret++;
+
+	return ret;
+}
+
+int tst_run_shell(char *script_name, char *const params[])
+{
+	int pid;
+	unsigned int i, params_len = params_array_len(params);
+	char *argv[params_len + 2] = {};
+
+	if (!tst_test->runs_shell)
+		tst_brk(TBROK, "runs_shell flag must be set!");
+
+	argv[0] = script_name;
+
+	if (params) {
+		for (i = 0; i < params_len; i++)
+			argv[i+1] = params[i];
+	}
+
+	pid = SAFE_FORK();
+	if (pid)
+		return pid;
+
+	char *script_name_env = NULL;
+	SAFE_ASPRINTF(&script_name_env, "LTP_SCRIPT_NAME=%s", script_name);
+	putenv(script_name_env);
+
+	execvpe(script_name, argv, environ);
+
+	tst_brk(TBROK | TERRNO, "execv(%s, ...) failed!", script_name);
+
+	return -1;
+}
+
 static void update_results(int ttype)
 {
 	if (!results)
@@ -1222,6 +1268,11 @@ static void do_setup(int argc, char *argv[])
 	if (tdebug_env && (!strcmp(tdebug_env, "1") || !strcmp(tdebug_env, "y"))) {
 		tst_res(TINFO, "Enabling debug info");
 		tdebug = 1;
+	}
+
+	if (tst_test->runs_shell) {
+		tst_test->child_needs_reinit = 1;
+		tst_test->forks_child = 1;
 	}
 
 	if (tst_test->needs_kconfigs && tst_kconfig_check(tst_test->needs_kconfigs))
