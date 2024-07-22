@@ -51,12 +51,22 @@ static void verify_ioctl_loop(unsigned int n)
 {
 	struct tcase *tc = &tcases[n];
 	struct loop_info64 loopinfo, loopinfoget;
+	int rc;
 
 	memset(&loopinfo, 0, sizeof(loopinfo));
 	memset(&loopinfoget, 0, sizeof(loopinfoget));
 
 	if (tc->ioctl_flag == LOOP_CONFIGURE) {
-		SAFE_IOCTL(dev_fd, LOOP_CONFIGURE, &loopconfig);
+		rc = ioctl(dev_fd, LOOP_CONFIGURE, &loopconfig);
+		if (rc < 0) {
+			if (errno == EBUSY) {
+				tst_res(TCONF, "EBUSY, kernel 6.11?");
+			} else {
+				tst_brk(TBROK | TERRNO, "ioctl(%i, LOOP_CONFIGURE, ...) failed: %d",
+					dev_fd, rc);
+			}
+		}
+
 	} else {
 		loopinfo.lo_sizelimit = tc->set_sizelimit;
 		TST_RETRY_FUNC(ioctl(dev_fd, LOOP_SET_STATUS64, &loopinfo), TST_RETVAL_EQ0);
