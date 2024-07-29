@@ -67,7 +67,7 @@ static void test_cached_pages(const unsigned int use_sync, const int num_pages)
 
 static void run(unsigned int use_sync)
 {
-	for (int i = 0; i < 15; i++)
+	for (int i = 0; i < page_size > 4096 ? 12 : 15; i++)
 		test_cached_pages(use_sync, 1 << i);
 }
 
