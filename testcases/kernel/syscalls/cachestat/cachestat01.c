@@ -26,7 +26,7 @@
 #define MNTPOINT "mntpoint"
 #define FILENAME MNTPOINT "/myfile.bin"
 
-static int page_size;
+static int page_size, num_shift;
 static char *page_data;
 static struct cachestat *cs;
 static struct cachestat_range *cs_range;
@@ -67,13 +67,32 @@ static void test_cached_pages(const unsigned int use_sync, const int num_pages)
 
 static void run(unsigned int use_sync)
 {
-	for (int i = 0; i < 15; i++)
+	const char *const cmd[] = {"df", "-hT", ".", MNTPOINT, NULL};
+	const char *const cmd2[] = {"df", "-kT", ".", MNTPOINT, NULL};
+
+	for (int i = 0; i < num_shift; i++) {
+		tst_res(TINFO, "BEFORE run df -hT");
+		tst_cmd(cmd, NULL, NULL, TST_CMD_PASS_RETVAL | TST_CMD_TCONF_ON_MISSING);
+		tst_res(TINFO, "BEFORE run df -kT");
+		tst_cmd(cmd2, NULL, NULL, TST_CMD_PASS_RETVAL | TST_CMD_TCONF_ON_MISSING);
+
 		test_cached_pages(use_sync, 1 << i);
+
+		tst_res(TINFO, "AFTER run df -hT");
+		tst_cmd(cmd, NULL, NULL, TST_CMD_PASS_RETVAL | TST_CMD_TCONF_ON_MISSING);
+		tst_res(TINFO, "AFTER run df -kT");
+		tst_cmd(cmd2, NULL, NULL, TST_CMD_PASS_RETVAL | TST_CMD_TCONF_ON_MISSING);
+	}
 }
 
 static void setup(void)
 {
 	page_size = (int)sysconf(_SC_PAGESIZE);
+
+	num_shift = MIN(tst_device->size*1024*2.7/page_size, 15);
+	tst_res(TINFO, "tst_device->size: %ld (on 2.7)", tst_device->size);
+	tst_res(TINFO, "page_size: %d", page_size);
+	tst_res(TINFO, "num_shift: %d", num_shift);
 
 	page_data = SAFE_MALLOC(page_size);
 	memset(page_data, 'a', page_size);
