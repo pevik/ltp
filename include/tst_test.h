@@ -578,6 +578,8 @@ struct tst_fs {
 	const enum tst_cg_ver needs_cgroup_ver;
 
 	const char *const *needs_cgroup_ctrls;
+
+	int needs_cgroup_nsdelegate:1;
 };
 
 /**
