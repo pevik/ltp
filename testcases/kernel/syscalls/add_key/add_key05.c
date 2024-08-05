@@ -33,9 +33,9 @@ static unsigned int useri;
 static void add_user(char n)
 {
 	char username[] = "ltp_add_key05_n";
-	const char *const cmd_useradd[] = {"useradd", username, NULL};
-	const char *const cmd_userdel[] = {"userdel", "-r", username, NULL};
-	const char *const cmd_groupdel[] = {"groupdel", username, NULL};
+	const char *const cmd_useradd[] = {"adduser", username, NULL};
+	const char *const cmd_userdel[] = {"deluser", "-r", username, NULL};
+	const char *const cmd_groupdel[] = {"delgroup", username, NULL};
 	struct passwd *pw;
 
 	username[sizeof(username) - 2] = '0' + n;
@@ -231,9 +231,9 @@ static struct tst_test test = {
 		{}
 	},
 	.needs_cmds = (const char *const []) {
-		"useradd",
-		"userdel",
-		"groupdel",
+		"adduser",
+		"deluser",
+		"delgroup",
 		NULL
 	},
 	.tags = (const struct tst_tag[]) {
