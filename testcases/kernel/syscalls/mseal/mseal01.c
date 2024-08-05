@@ -25,6 +25,7 @@
 
 #include "tst_test.h"
 #include "lapi/syscalls.h"
+#include "lapi/pkey.h"
 
 #define MEMPAGES 8
 #define MEMSEAL 2
@@ -46,25 +47,21 @@ static void test_mprotect(void)
 
 static void test_pkey_mprotect(void)
 {
-	int ret;
 	int pkey;
 
-	pkey = tst_syscall(__NR_pkey_alloc, 0, 0);
-	if (pkey == -1) {
-		if (errno == EINVAL)
-			tst_brk(TCONF, "pku is not supported on this CPU");
+	check_pkey_support();
 
-		tst_brk(TBROK | TERRNO, "pkey_alloc() error");
-	}
+	pkey = ltp_pkey_alloc(0, 0);
+	if (pkey == -1)
+		tst_brk(TBROK | TERRNO, "pkey_alloc failed");
 
-	TST_EXP_FAIL(tst_syscall(__NR_pkey_mprotect,
+	TST_EXP_FAIL(ltp_pkey_mprotect(
 		mem_addr, mem_size,
 		PROT_NONE,
 		pkey),
 		EPERM);
 
-	ret = tst_syscall(__NR_pkey_free, pkey);
-	if (ret == -1)
+	if (ltp_pkey_free(pkey) == -1)
 		tst_brk(TBROK | TERRNO, "pkey_free() error");
 }
 
@@ -150,7 +147,6 @@ static struct tst_test test = {
 	.test = run,
 	.tcnt = ARRAY_SIZE(tcases),
 	.setup = setup,
-	.min_kver = "6.10",
 	.forks_child = 1,
 };
 
