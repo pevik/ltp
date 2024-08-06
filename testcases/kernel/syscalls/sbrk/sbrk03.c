@@ -66,7 +66,7 @@ static struct tst_test test = {
 	},
 	.needs_abi_bits = 32,
 	.tags = (const struct tst_tag[]) {
-		{"linux-git", "473a06572fcd"},
+		TST_TAG_LINUX_GIT("473a06572fcd"),
 		{}
 	}
 };

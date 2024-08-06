@@ -287,7 +287,7 @@ static struct tst_test test = {
 	.mount_device = 1,
 	.mntpoint = MOUNT_PATH,
 	.tags = (const struct tst_tag[]) {
-		{"linux-git", "a8b98c808eab"},
+		TST_TAG_LINUX_GIT("a8b98c808eab"),
 		{}
 	}
 };

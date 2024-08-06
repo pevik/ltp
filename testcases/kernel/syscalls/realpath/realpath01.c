@@ -33,7 +33,7 @@ static struct tst_test test = {
 	.needs_root = 1,
 	.needs_tmpdir = 1,
 	.tags = (const struct tst_tag[]) {
-		{"CVE", "2018-1000001"},
+		TST_TAG_CVE("2018-1000001"),
 		{}
 	}
 };

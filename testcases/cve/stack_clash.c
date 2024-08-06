@@ -335,8 +335,8 @@ static struct tst_test test = {
 	.setup = setup,
 	.test_all = stack_clash_test,
 	.tags = (const struct tst_tag[]) {
-		{"CVE", "2017-1000364"},
-		{"linux-git", "58c5d0d6d522"},
+		TST_TAG_CVE("2017-1000364"),
+		TST_TAG_LINUX_GIT("58c5d0d6d522"),
 		{}
 	}
 };

@@ -91,8 +91,8 @@ static struct tst_test test = {
 	.tcnt = ARRAY_SIZE(tcases),
 	.test_variants = ARRAY_SIZE(variants),
 	.tags = (const struct tst_tag[]) {
-		{"CVE", "2018-6927"},
-		{"linux-git", "fbe0e839d1e2"},
+		TST_TAG_CVE("2018-6927"),
+		TST_TAG_LINUX_GIT("fbe0e839d1e2"),
 		{}
 	}
 };

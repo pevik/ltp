@@ -90,8 +90,8 @@ static struct tst_test test = {
 	.taint_check = TST_TAINT_W | TST_TAINT_D,
 	.skip_filesystems = (const char *const []){"fuse", NULL},
 	.tags = (const struct tst_tag[]) {
-		{"linux-git", "722d94847de29"},
-		{"CVE", "2022-0185"},
+		TST_TAG_LINUX_GIT("722d94847de29"),
+		TST_TAG_CVE("2022-0185"),
 		{}
 	}
 };

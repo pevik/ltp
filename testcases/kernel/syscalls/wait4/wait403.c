@@ -36,7 +36,7 @@ static struct tst_test test = {
 	.test_all = run,
 	.taint_check = TST_TAINT_W | TST_TAINT_D,
 	.tags = (const struct tst_tag[]) {
-		{"linux-git", "dd83c161fbcc"},
+		TST_TAG_LINUX_GIT("dd83c161fbcc"),
 		{}
 	}
 };

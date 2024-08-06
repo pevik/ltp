@@ -97,7 +97,7 @@ static struct tst_test test = {
 		NULL
 	},
 	.tags = (const struct tst_tag[]) {
-		{"CVE", "2011-2183"},
+		TST_TAG_CVE("2011-2183"),
 		{}
 	}
 };

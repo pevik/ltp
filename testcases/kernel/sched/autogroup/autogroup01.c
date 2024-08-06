@@ -81,7 +81,7 @@ static struct tst_test test = {
 	.cleanup = cleanup,
 	.test_all = do_test,
 	.tags = (const struct tst_tag[]) {
-		{"linux-git", "18f649ef3441"},
+		TST_TAG_LINUX_GIT("18f649ef3441"),
 		{}
 	}
 };

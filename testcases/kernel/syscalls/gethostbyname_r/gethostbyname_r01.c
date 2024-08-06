@@ -57,8 +57,8 @@ static void check_vulnerable(void)
 static struct tst_test test = {
 	.test_all = check_vulnerable,
 	.tags = (const struct tst_tag[]) {
-		{"glibc-git", "d5dd6189d506"},
-		{"CVE", "CVE-2015-0235"},
+		TST_TAG_GLIBC_GIT("d5dd6189d506"),
+		TST_TAG_CVE("CVE-2015-0235"),
 		{}
 	}
 };

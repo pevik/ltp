@@ -36,7 +36,7 @@ static void run(void)
 static struct tst_test test = {
 	.test_all = run,
 	.tags = (const struct tst_tag[]) {
-		{"CVE", "2017-6951"},
+		TST_TAG_CVE("2017-6951"),
 		{}
 	}
 };

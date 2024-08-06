@@ -134,7 +134,7 @@ static struct tst_test test = {
 	.needs_tmpdir = 1,
 	.tcnt = ARRAY_SIZE(tcases),
 	.tags = (struct tst_tag[]) {
-		{"linux-git", "7e7757876f25"},
+		TST_TAG_LINUX_GIT("7e7757876f25"),
 		{}
 	},
 };

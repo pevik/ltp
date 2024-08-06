@@ -228,7 +228,7 @@ static void cleanup(void)
 
 static struct tst_test test = {
 	.tags = (struct tst_tag[]) {
-		{"linux-git", "cbf52afdc0eb"},
+		TST_TAG_LINUX_GIT("cbf52afdc0eb"),
 		{}
 	},
 	.needs_root = 1,

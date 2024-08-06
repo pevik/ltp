@@ -44,8 +44,8 @@ static struct tst_test test = {
 	.child_needs_reinit = 1,
 	.test_all = verify_execve,
 	.tags = (const struct tst_tag[]) {
-		{"linux-git", "dcd46d897adb"},
-		{"CVE", "2021-4034"},
+		TST_TAG_LINUX_GIT("dcd46d897adb"),
+		TST_TAG_CVE("2021-4034"),
 		{}
 	}
 };

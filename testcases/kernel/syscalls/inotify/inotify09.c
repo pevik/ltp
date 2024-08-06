@@ -99,7 +99,7 @@ static struct tst_test test = {
 	.test_all = verify_inotify,
 	.max_runtime = 150,
 	.tags = (const struct tst_tag[]) {
-		{"linux-git", "d90a10e2444b"},
+		TST_TAG_LINUX_GIT("d90a10e2444b"),
 		{}
 	}
 };

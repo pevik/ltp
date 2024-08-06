@@ -145,7 +145,7 @@ static struct tst_test test = {
 	.needs_root = 1,
 	.forks_child = 1,
 	.tags = (const struct tst_tag[]) {
-		{"linux-git", "21d4120ec6f5"},
+		TST_TAG_LINUX_GIT("21d4120ec6f5"),
 		{}
 	}
 };

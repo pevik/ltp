@@ -158,7 +158,7 @@ static struct tst_test test = {
 	.needs_root = 1,
 	.needs_tmpdir = 1,
 	.tags = (const struct tst_tag[]) {
-		{"linux-git", "79e5dc59e297"},
+		TST_TAG_LINUX_GIT("79e5dc59e297"),
 		{}
 	},
 	.needs_drivers = (const char *const []) {

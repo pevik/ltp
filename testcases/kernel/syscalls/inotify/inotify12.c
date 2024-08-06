@@ -159,7 +159,7 @@ static struct tst_test test = {
 	.test = verify_inotify,
 	.tcnt = ARRAY_SIZE(tcases),
 	.tags = (const struct tst_tag[]) {
-		{"linux-git", "a32e697cda27"},
+		TST_TAG_LINUX_GIT("a32e697cda27"),
 		{}
 	},
 };

@@ -48,7 +48,7 @@ static void verify_madvise(void)
 static struct tst_test test = {
 	.test_all = verify_madvise,
 	.tags = (const struct tst_tag[]) {
-		{"linux-git", "ee53664bda16"},
+		TST_TAG_LINUX_GIT("ee53664bda16"),
 		{}
 	}
 };

@@ -110,7 +110,7 @@ static struct tst_test test = {
 	.format_device = 1,
 	.all_filesystems = 1,
 	.tags = (const struct tst_tag[]) {
-		{"linux-git", "5d1f903f75a8"},
+		TST_TAG_LINUX_GIT("5d1f903f75a8"),
 		{}
 	}
 };

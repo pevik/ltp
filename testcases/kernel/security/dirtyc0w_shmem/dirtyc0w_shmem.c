@@ -113,8 +113,8 @@ static struct tst_test test = {
 	.cleanup = cleanup,
 	.test_all = dirtyc0w_shmem_test,
 	.tags = (const struct tst_tag[]) {
-		{"linux-git", "5535be309971"},
-		{"CVE", "2022-2590"},
+		TST_TAG_LINUX_GIT("5535be309971"),
+		TST_TAG_CVE("2022-2590"),
 		{}
 	}
 };

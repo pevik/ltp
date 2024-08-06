@@ -488,8 +488,8 @@ static struct tst_test test = {
 	.needs_checkpoints = 1,
 	.needs_root = 1,
 	.tags = (const struct tst_tag[]){
-		{"linux-git", "b9258a2cece4ec1f020715fe3554bc2e360f6264"},
-		{"CVE", "CVE-2020-11494"},
+		TST_TAG_LINUX_GIT("b9258a2cece4ec1f020715fe3554bc2e360f6264"),
+		TST_TAG_CVE("CVE-2020-11494"),
 		{}
 	}
 };

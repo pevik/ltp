@@ -145,7 +145,7 @@ static struct tst_test test = {
 	.cleanup = cleanup,
 	.test_all = migrate_test,
 	.tags = (const struct tst_tag[]) {
-		{"linux-git", "4b0ece6fa016"},
+		TST_TAG_LINUX_GIT("4b0ece6fa016"),
 		{}
 	}
 };

@@ -46,7 +46,7 @@ static struct tst_test test = {
 	.tcnt = ARRAY_SIZE(tcases),
 	.test = verify_clone,
 	.tags = (const struct tst_tag[]) {
-		{"musl-git", "fa4a8abd06a4"},
+		TST_TAG_MUSL_GIT("fa4a8abd06a4"),
 		{}
 	},
 };

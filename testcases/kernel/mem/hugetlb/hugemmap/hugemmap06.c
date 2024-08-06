@@ -122,10 +122,10 @@ static struct tst_test test = {
 	.setup = setup,
 	.hugepages = {(ARSZ + 1) * LOOP, TST_NEEDS},
 	.tags = (const struct tst_tag[]) {
-		{"linux-git", "f522c3ac00a4"},
-		{"linux-git", "9119a41e9091"},
-		{"linux-git", "7b24d8616be3"},
-		{"linux-git", "1406ec9ba6c6"},
+		TST_TAG_LINUX_GIT("f522c3ac00a4"),
+		TST_TAG_LINUX_GIT("9119a41e9091"),
+		TST_TAG_LINUX_GIT("7b24d8616be3"),
+		TST_TAG_LINUX_GIT("1406ec9ba6c6"),
 		{}
 	}
 };

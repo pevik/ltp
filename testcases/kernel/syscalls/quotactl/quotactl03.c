@@ -93,7 +93,7 @@ static struct tst_test test = {
 	.mntpoint = MNTPOINT,
 	.test_variants = QUOTACTL_SYSCALL_VARIANTS,
 	.tags = (const struct tst_tag[]) {
-		{"linux-git", "657bdfb7f5e6"},
+		TST_TAG_LINUX_GIT("657bdfb7f5e6"),
 		{}
 	}
 };

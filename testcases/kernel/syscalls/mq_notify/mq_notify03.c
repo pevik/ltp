@@ -91,8 +91,8 @@ static void do_test(void)
 static struct tst_test test = {
 	.test_all = do_test,
 	.tags = (const struct tst_tag[]) {
-		{"glibc-git", "b805aebd42"},
-		{"CVE", "2021-38604"},
+		TST_TAG_GLIBC_GIT("b805aebd42"),
+		TST_TAG_CVE("2021-38604"),
 		{}
 	},
 	.needs_root = 1,

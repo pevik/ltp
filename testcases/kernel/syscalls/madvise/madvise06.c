@@ -251,9 +251,9 @@ static struct tst_test test = {
 	},
 	.needs_cgroup_ctrls = (const char *const []){ "memory", NULL },
 	.tags = (const struct tst_tag[]) {
-		{"linux-git", "55231e5c898c"},
-		{"linux-git", "8de15e920dc8"},
-		{"linux-git", "66383800df9c"},
+		TST_TAG_LINUX_GIT("55231e5c898c"),
+		TST_TAG_LINUX_GIT("8de15e920dc8"),
+		TST_TAG_LINUX_GIT("66383800df9c"),
 		{}
 	}
 };

@@ -165,8 +165,8 @@ static struct tst_test test = {
 		{},
 	},
 	.tags = (const struct tst_tag[]) {
-		{"linux-git", "95a762e2c8c9"},
-		{"CVE", "2017-16995"},
+		TST_TAG_LINUX_GIT("95a762e2c8c9"),
+		TST_TAG_CVE("2017-16995"),
 		{}
 	}
 };

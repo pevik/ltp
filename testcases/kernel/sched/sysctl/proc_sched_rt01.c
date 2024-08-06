@@ -102,8 +102,8 @@ static struct tst_test test = {
 	.cleanup = cleanup,
 	.test_all = verify_sched_proc,
 	.tags = (struct tst_tag []) {
-		{"linux-git", "c1fc6484e1fb"},
-		{"linux-git", "079be8fc6309"},
+		TST_TAG_LINUX_GIT("c1fc6484e1fb"),
+		TST_TAG_LINUX_GIT("079be8fc6309"),
 		{}
 	},
 	.needs_kconfigs = (const char *[]) {

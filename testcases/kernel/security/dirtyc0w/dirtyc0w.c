@@ -102,9 +102,9 @@ static struct tst_test test = {
 	.setup = setup,
 	.test_all = dirtyc0w_test,
 	.tags = (const struct tst_tag[]) {
-		{"linux-git", "4ceb5db9757a"},
-		{"linux-git", "19be0eaffa3a"},
-		{"CVE", "2016-5195"},
+		TST_TAG_LINUX_GIT("4ceb5db9757a"),
+		TST_TAG_LINUX_GIT("19be0eaffa3a"),
+		TST_TAG_CVE("2016-5195"),
 		{}
 	}
 };

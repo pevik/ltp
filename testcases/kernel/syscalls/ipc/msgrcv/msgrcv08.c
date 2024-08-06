@@ -78,7 +78,7 @@ static struct tst_test test = {
 	.cleanup = cleanup,
 	.test_all = verify_msgrcv,
 	.tags = (const struct tst_tag[]) {
-		{"linux-git", "e7ca2552369c"},
+		TST_TAG_LINUX_GIT("e7ca2552369c"),
 		{}
 	}
 };

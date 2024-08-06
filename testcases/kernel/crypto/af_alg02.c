@@ -80,8 +80,8 @@ static struct tst_test test = {
 	.max_runtime = 20,
 	.needs_checkpoints = 1,
 	.tags = (const struct tst_tag[]) {
-		{"linux-git", "ecaaab564978"},
-		{"CVE", "2017-17805"},
+		TST_TAG_LINUX_GIT("ecaaab564978"),
+		TST_TAG_CVE("2017-17805"),
 		{}
 	}
 };

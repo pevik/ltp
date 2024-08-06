@@ -438,7 +438,7 @@ static struct tst_test test = {
 	.cleanup = cleanup,
 	.test_all = stress_alloc_offl,
 	.tags = (const struct tst_tag[]) {
-		{"linux-git", "d4ae9916ea29"},
+		TST_TAG_LINUX_GIT("d4ae9916ea29"),
 		{}
 	}
 };

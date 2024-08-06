@@ -47,9 +47,9 @@ static void run(void)
 static struct tst_test test = {
 	.test_all = run,
 	.tags = (const struct tst_tag[]) {
-		{"linux-git", "8088d3dd4d7c"},
-		{"linux-git", "160544075f2a"},
-		{"linux-git", "0868def3e410"},
+		TST_TAG_LINUX_GIT("8088d3dd4d7c"),
+		TST_TAG_LINUX_GIT("160544075f2a"),
+		TST_TAG_LINUX_GIT("0868def3e410"),
 		{}
 	}
 };

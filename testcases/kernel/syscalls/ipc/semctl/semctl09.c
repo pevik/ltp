@@ -223,7 +223,7 @@ static struct tst_test test = {
 	.test_variants = 2,
 	.needs_root = 1,
 	.tags = (const struct tst_tag[]) {
-		{"glibc-git", "574500a108be"},
+		TST_TAG_GLIBC_GIT("574500a108be"),
 		{}
 	}
 };

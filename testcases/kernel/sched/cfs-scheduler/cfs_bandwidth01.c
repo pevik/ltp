@@ -182,12 +182,12 @@ static struct tst_test test = {
 	},
 	.needs_cgroup_ctrls = (const char *const []){"cpu", NULL},
 	.tags = (const struct tst_tag[]) {
-		{"linux-git", "39f23ce07b93"},
-		{"linux-git", "b34cb07dde7c"},
-		{"linux-git", "fe61468b2cbc"},
-		{"linux-git", "5ab297bab984"},
-		{"linux-git", "6d4d22468dae"},
-		{"linux-git", "fdaba61ef8a2"},
+		TST_TAG_LINUX_GIT("39f23ce07b93"),
+		TST_TAG_LINUX_GIT("b34cb07dde7c"),
+		TST_TAG_LINUX_GIT("fe61468b2cbc"),
+		TST_TAG_LINUX_GIT("5ab297bab984"),
+		TST_TAG_LINUX_GIT("6d4d22468dae"),
+		TST_TAG_LINUX_GIT("fdaba61ef8a2"),
 		{ }
 	}
 };

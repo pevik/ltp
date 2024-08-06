@@ -205,7 +205,7 @@ static struct tst_test test = {
 	.taint_check = TST_TAINT_W | TST_TAINT_D,
 	.setup = setup,
 	.tags = (const struct tst_tag[]) {
-		{"linux-git", "fec8a6a69103"},
+		TST_TAG_LINUX_GIT("fec8a6a69103"),
 		{},
 	},
 };

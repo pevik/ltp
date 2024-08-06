@@ -131,9 +131,9 @@ static struct tst_test test = {
 	.cleanup = cleanup,
 	.taint_check = TST_TAINT_W | TST_TAINT_D,
 	.tags = (const struct tst_tag[]) {
-		{"linux-git", "9d538fa60bad"},
-		{"linux-git", "82c9ae440857"},
-		{"CVE", "2018-9568"},
+		TST_TAG_LINUX_GIT("9d538fa60bad"),
+		TST_TAG_LINUX_GIT("82c9ae440857"),
+		TST_TAG_CVE("2018-9568"),
 		{}
 	}
 };

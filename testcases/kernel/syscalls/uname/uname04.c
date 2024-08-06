@@ -80,7 +80,7 @@ static struct tst_test test = {
 	.test = run,
 	.tcnt = 2,
 	.tags = (const struct tst_tag[]) {
-		{"CVE", "2012-0957"},
+		TST_TAG_CVE("2012-0957"),
 		{}
 	}
 };
