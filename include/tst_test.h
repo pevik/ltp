@@ -673,4 +673,69 @@ int main(int argc, char *argv[])
 #define TST_TEST_TCONF(message)                                 \
         static struct tst_test test = { .tconf_msg = message  } \
 
+/**
+ * TST_TAG_CVE() - Define tag git commit in musl libc.
+ *
+ * @cve: CVE number (e.g. "2020-29373").
+ *
+ * This macro is used in test tst_test.tags.
+ */
+#define TST_TAG_CVE(cve) \
+		{"CVE", cve}
+
+/**
+ * TST_TAG_GLIBC_GIT() - Define tag git commit in musl libc.
+ *
+ * @hash: git commit, e.g. "574500a108be".
+ *
+ * This macro is used in test tst_test.tags.
+ */
+#define TST_TAG_GLIBC_GIT(hash) \
+		{"glibc-git", hash}
+
+/**
+ * TST_TAG_KNOWN_FAIL() - Define tag test known failure.
+ *
+ * @reason: Reason to fail.
+ *
+ * This macro is used in test tst_test.tags.
+ */
+#define TST_TAG_KNOWN_FAIL(reason) \
+		{"known-fail", reason}
+
+/**
+ * TST_TAG_LINUX_GIT() - Define tag git commit in the Linux kernel mainline.
+ *
+ * @hash: git commit, e.g. "ff002b30181d".
+ *
+ * This macro is used in test tst_test.tags.
+ */
+#define TST_TAG_LINUX_GIT(hash) \
+		{"linux-git", hash}
+
+/**
+ * TST_TAG_LINUX_STABLE_GIT() - Define tag git commit in the kernel
+ * stable/LTS.
+ *
+ * @hash: git commit, e.g. "c4a23c852e80".
+ *
+ * This macro is used in test tst_test.tags.
+ *
+ * NOTE: We don't track all backports to stable kernel but just those which are
+ * stable branch specific (unique), i.e. no commit in mainline. Example of
+ * commits: c4a23c852e80, cac68d12c531.
+ */
+#define TST_TAG_LINUX_STABLE_GIT(hash) \
+		{"linux-stable-git", hash}
+
+/**
+ * TST_TAG_MUSL_GIT() - Define tag git commit in musl libc.
+ *
+ * @hash: git commit, e.g. "fa4a8abd06a4".
+ *
+ * This macro is used in test tst_test.tags.
+ */
+#define TST_TAG_MUSL_GIT(hash) \
+		{"musl-git", hash}
+
 #endif	/* TST_TEST_H__ */
