@@ -51,11 +51,44 @@ static struct tcase {
 	{0, PKEY_DISABLE_WRITE, "PKEY_DISABLE_WRITE"},
 };
 
+#define PKEY_ALLOC(...) \
+	SYSCALL_VARIANT(TST_EXP_POSITIVE, pkey_alloc, __VA_ARGS__)
+
+#define PKEY_MPROTECT(...) \
+	SYSCALL_VARIANT(TST_EXP_PASS_SILENT, pkey_mprotect, __VA_ARGS__)
+
+#define GETUID() \
+	SYSCALL_VARIANT(TST_EXP_POSITIVE, getuid)
+
+#define SYSCALL_VARIANT(TST, SCALL, ...)                                 \
+	({                                                                     \
+		if (tst_variant)                                    \
+			TST(SCALL(__VA_ARGS__));	\
+		else							\
+			TST(tst_syscall(__NR_ ## SCALL, ##__VA_ARGS__));	\
+		TST_RET;                                                       \
+	})
+
+static void variant_check(void)
+{
+	if (tst_variant) {
+		tst_res(TINFO, "Testing variant: libc pkey_{alloc,mprotect()");
+#ifndef HAVE_PKEY_MPROTECT
+		tst_brk(TCONF, "libc pkey_{alloc,mprotect() wrappers not available");
+#endif
+	} else {
+		tst_res(TINFO, "Testing variant: syscall __NR_pkey_{alloc,mprotect}");
+	}
+
+	check_pkey_support();
+}
+
 static void setup(void)
 {
 	int i, fd;
 
-	check_pkey_support();
+	GETUID();
+	variant_check();
 
 	if (tst_hugepages == test.hugepages.number)
 		size = SAFE_READ_MEMINFO("Hugepagesize:") * 1024;
@@ -146,14 +179,10 @@ static void pkey_test(struct tcase *tc, struct mmap_param *mpa)
 		fd = SAFE_OPEN(TEST_FILE, O_RDWR | O_CREAT, 0664);
 
 	buffer = SAFE_MMAP(NULL, size, mpa->prot, mpa->flags, fd, 0);
-
-	pkey = pkey_alloc(tc->flags, tc->access_rights);
-	if (pkey == -1)
-		tst_brk(TBROK | TERRNO, "pkey_alloc failed");
+	pkey = PKEY_ALLOC(tc->flags, tc->access_rights);
 
 	tst_res(TINFO, "Set %s on (%s) buffer", tc->name, flag_to_str(mpa->flags));
-	if (pkey_mprotect(buffer, size, mpa->prot, pkey) == -1)
-		tst_brk(TBROK | TERRNO, "pkey_mprotect failed");
+	PKEY_MPROTECT(buffer, size, mpa->prot, pkey);
 
 	pid = SAFE_FORK();
 	if (pid == 0) {
@@ -181,8 +210,7 @@ static void pkey_test(struct tcase *tc, struct mmap_param *mpa)
                 tst_res(TFAIL, "Child: %s", tst_strstatus(status));
 
 	tst_res(TINFO, "Remove %s from the buffer", tc->name);
-	if (pkey_mprotect(buffer, size, mpa->prot, 0x0) == -1)
-		tst_brk(TBROK | TERRNO, "pkey_mprotect failed");
+	PKEY_MPROTECT(buffer, size, mpa->prot, 0x0);
 
 	switch (mpa->prot) {
 	case PROT_READ:
@@ -230,4 +258,5 @@ static struct tst_test test = {
 	.test = verify_pkey,
 	.setup = setup,
 	.hugepages = {1, TST_REQUEST},
+	.test_variants = 2,
 };
