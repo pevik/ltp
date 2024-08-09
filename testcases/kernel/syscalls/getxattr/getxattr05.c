@@ -40,11 +40,9 @@
 
 #define TEST_FILE	"testfile"
 #define SELF_USERNS	"/proc/self/ns/user"
-#define MAX_USERNS	"/proc/sys/user/max_user_namespaces"
 #define UID_MAP	"/proc/self/uid_map"
 
 static acl_t acl;
-static int orig_max_userns = -1;
 static int user_ns_supported = 1;
 
 static struct tcase {
@@ -149,23 +147,13 @@ static void setup(void)
 		tst_brk(TBROK | TERRNO, "acl_set_file(%s) failed", TEST_FILE);
 	}
 
-	/* The default value of max_user_namespaces is set to 0 on some distros,
-	 * We need to change the default value to call unshare().
-	 */
-	if (access(SELF_USERNS, F_OK) != 0) {
+	if (access(SELF_USERNS, F_OK) != 0)
 		user_ns_supported = 0;
-	} else if (!access(MAX_USERNS, F_OK)) {
-		SAFE_FILE_SCANF(MAX_USERNS, "%d", &orig_max_userns);
-		SAFE_FILE_PRINTF(MAX_USERNS, "%d", 10);
-	}
 
 }
 
 static void cleanup(void)
 {
-	if (orig_max_userns != -1)
-		SAFE_FILE_PRINTF(MAX_USERNS, "%d", orig_max_userns);
-
 	if (acl)
 		acl_free(acl);
 }
@@ -181,7 +169,11 @@ static struct tst_test test = {
 	.tags = (const struct tst_tag[]) {
 		{"linux-git", "82c9a927bc5d"},
 		{}
-},
+	},
+	.save_restore = (const struct tst_path_val[]) {
+		{"/proc/sys/user/max_user_namespaces", "1024", TST_SR_SKIP},
+		{}
+	},
 };
 
 #else /* HAVE_SYS_XATTR_H && HAVE_LIBACL*/
