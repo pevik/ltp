@@ -31,7 +31,6 @@
 #define MOUNT_PATH	"fs_mnt"
 #define TEST_FILE	MOUNT_PATH "/testfile"
 #define SELF_USERNS	"/proc/self/ns/user"
-#define MAX_USERNS	"/proc/sys/user/max_user_namespaces"
 #define UID_MAP		"/proc/self/uid_map"
 
 #define GLOBAL_MAX_GROUPS "/proc/sys/fs/fanotify/max_user_groups"
@@ -47,7 +46,6 @@
 #define DEFAULT_MAX_GROUPS 129
 #define DEFAULT_MAX_MARKS  8192
 
-static int orig_max_userns = -1;
 static int user_ns_supported = 1;
 static int max_groups = DEFAULT_MAX_GROUPS;
 static int max_marks = DEFAULT_MAX_MARKS;
@@ -216,16 +214,8 @@ static void setup(void)
 	/* Check for kernel fanotify support */
 	REQUIRE_FANOTIFY_INIT_FLAGS_SUPPORTED_ON_FS(FAN_REPORT_FID, TEST_FILE);
 
-	/*
-	 * The default value of max_user_namespaces is set to 0 on some distros,
-	 * We need to change the default value to call unshare().
-	 */
-	if (access(SELF_USERNS, F_OK) != 0) {
+	if (access(SELF_USERNS, F_OK) != 0)
 		user_ns_supported = 0;
-	} else if (!access(MAX_USERNS, F_OK)) {
-		SAFE_FILE_SCANF(MAX_USERNS, "%d", &orig_max_userns);
-		SAFE_FILE_PRINTF(MAX_USERNS, "%d", 10);
-	}
 
 	/*
 	 * In older kernels those limits were fixed in kernel and fanotify is
@@ -244,21 +234,18 @@ static void setup(void)
 	setup_rlimit(max_groups * 2);
 }
 
-static void cleanup(void)
-{
-	if (orig_max_userns != -1)
-		SAFE_FILE_PRINTF(MAX_USERNS, "%d", orig_max_userns);
-}
-
 static struct tst_test test = {
 	.test = test_fanotify,
 	.tcnt = ARRAY_SIZE(tcases),
 	.setup = setup,
-	.cleanup = cleanup,
 	.needs_root = 1,
 	.forks_child = 1,
 	.mount_device = 1,
 	.mntpoint = MOUNT_PATH,
+	.save_restore = (const struct tst_path_val[]) {
+		{"/proc/sys/user/max_user_namespaces", "1024", TST_SR_SKIP},
+		{}
+	},
 };
 #else
 	TST_TEST_TCONF("system doesn't have required fanotify support");
