@@ -25,6 +25,7 @@ pkg_minimal="
 	git
 	iproute2
 	libc6-dev
+	libtirpc-dev
 	linux-libc-dev
 	lsb-release
 	pkg-config
@@ -45,7 +46,6 @@ pkg_nonessential="
 	libselinux1-dev
 	libsepol-dev
 	libssl-dev
-	libtirpc-dev
 "
 
 # Missing on Ubuntu 18.04 LTS (Bionic Beaver)
