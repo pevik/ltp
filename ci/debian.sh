@@ -15,7 +15,6 @@ install="apt install -y --no-install-recommends"
 remove="apt remove -y"
 
 pkg_minimal="
-	acl-dev
 	autoconf
 	automake
 	build-essential
@@ -26,26 +25,27 @@ pkg_minimal="
 	git
 	iproute2
 	libc6-dev
-	libjson-perl
-	libmnl-dev
-	libtirpc-dev
 	linux-libc-dev
 	lsb-release
 	pkg-config
 "
 
 pkg_nonessential="
+	acl-dev
 	asciidoc-base
 	asciidoc-dblatex
 	asciidoctor
 	libacl1-dev
 	libaio-dev
 	libcap-dev
+	libjson-perl
 	libkeyutils-dev
 	libnuma-dev
+	libmnl-dev
 	libselinux1-dev
 	libsepol-dev
 	libssl-dev
+	libtirpc-dev
 "
 
 # Missing on Ubuntu 18.04 LTS (Bionic Beaver)
