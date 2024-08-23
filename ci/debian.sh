@@ -17,6 +17,7 @@ remove="apt remove -y"
 pkg_minimal="
 	autoconf
 	automake
+	binutils
 	build-essential
 	debhelper
 	devscripts
