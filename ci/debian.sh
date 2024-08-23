@@ -24,6 +24,7 @@ pkg_minimal="
 	gcc
 	git
 	iproute2
+	libc6
 	libc6-dev
 	linux-libc-dev
 	lsb-release
