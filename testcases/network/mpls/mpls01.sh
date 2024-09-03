@@ -21,7 +21,11 @@ cleanup()
 
 setup()
 {
-	ROD modprobe mpls_router
+	if grep -q 'sl-micro' /etc/os-release; then
+		ROD modprobe --allow-unsupported mpls_router
+	else
+		ROD modprobe mpls_router
+	fi
 }
 
 test1()
