@@ -33,6 +33,16 @@ mpls_virt_cleanup()
 	mpls_cleanup
 }
 
+mpls_setup_driver()
+{
+	local args
+
+	grep -q 'sl-micro' /etc/os-release && args='--allow-unsupported'
+	if [ "$TST_NEEDS_DRIVERS" ]; then
+		tst_net_run -s "modprobe $args -a $TST_NEEDS_DRIVERS"
+	fi
+}
+
 mpls_setup()
 {
 	local label="$1"
