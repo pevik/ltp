@@ -379,7 +379,12 @@ static void test_fanotify(unsigned int n)
 		return;
 	}
 
-	if (tc->ignore && tst_kvercmp(5, 10, 0) < 0) {
+	static struct tst_kern_exv kvers[] = {
+		{"SLES", "5.19"},
+		{NULL, NULL}
+	};
+
+	if (tc->ignore && tst_kvercmp2(5, 10, 0, kvers) < 0) {
 		tst_res(TCONF, "ignored mask on parent dir has undefined "
 				"behavior on kernel < 5.10");
 		return;
