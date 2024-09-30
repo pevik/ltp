@@ -19,6 +19,13 @@
 
 top_srcdir		?= ../../../..
 
+LTPLIBS = numa
+
 include $(top_srcdir)/include/mk/testcases.mk
 include $(top_srcdir)/testcases/kernel/mem/include/libmem.mk
+
+LDLIBS  += $(NUMA_LIBS)
+LDLIBS  += $(top_srcdir)/testcases/kernel/controllers/cpuset/cpuset_lib/libcpu_set.a
+LTPLDLIBS = -lltpnuma
+
 include $(top_srcdir)/include/mk/generic_leaf_target.mk
