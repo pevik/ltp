@@ -303,20 +303,23 @@ void do_timer_test(long long usec, unsigned int nsamples)
 		trunc_mean += samples[i];
 
 	tst_res(TINFO,
-		"min %llius, max %llius, median %llius, trunc mean %.2fus (discarded %u)",
+		"min %llius, max %llius, median %llius, trunc mean %.2fus (%lli) (discarded %u)",
 		samples[nsamples-1], samples[0], median,
-		1.00 * trunc_mean / keep_samples, discard);
+		1.00 * trunc_mean / keep_samples, trunc_mean, discard);
 
-	if (virt_env) {
-		tst_res(TINFO,
-			"Virtualisation detected, skipping oversleep checks");
-	} else if (trunc_mean > (nsamples - discard) * usec + threshold) {
-		tst_res(TFAIL, "%s slept for too long", scall);
+	if (trunc_mean > (nsamples - discard) * usec + threshold) {
+		tst_res(TFAIL, "%s slept for too long: %lli > %lli (%d, %d, %lli, %lli)",
+				scall, trunc_mean, (nsamples - discard) * usec + threshold,
+				nsamples, discard, usec, threshold);
 
 		if (!print_frequency_plot)
 			frequency_plot();
 
 		failed = 1;
+	} else {
+		tst_res(TINFO, "OK for %s: %lli <= %lli (%d, %d, %lli, %lli)",
+				scall, trunc_mean, (nsamples - discard) * usec + threshold,
+				nsamples, discard, usec, threshold);
 	}
 
 	if (print_frequency_plot)
