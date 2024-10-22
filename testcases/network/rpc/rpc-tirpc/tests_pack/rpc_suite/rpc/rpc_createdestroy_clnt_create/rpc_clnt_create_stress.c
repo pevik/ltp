@@ -59,6 +59,12 @@ int main(int argn, char *argc[])
 
 		if (clnt != NULL)
 			nbOk++;
+		else {
+			clnt_pcreateerror("err");
+			printf("%d\n", rpc_createerr.cf_stat);
+
+			return 1;
+		}
 	}
 
 	if (run_mode == 1) {
