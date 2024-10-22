@@ -60,8 +60,8 @@ void *my_thread_process(void *arg)
 	total_timeout.tv_sec = 1;
 	total_timeout.tv_usec = 1;
 	/**/
-	    //First of all, create client using top level API
-	    clnt = clnt_create(hostname, progNum, VERSNUM, nettype);
+	//First of all, create client using top level API
+	clnt = clnt_create(hostname, progNum, VERSNUM, nettype);
 
 	if (clnt == NULL) {
 		clnt_pcreateerror("ERR");

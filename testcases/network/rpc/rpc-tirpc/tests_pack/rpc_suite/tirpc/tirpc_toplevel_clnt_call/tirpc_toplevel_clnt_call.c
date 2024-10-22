@@ -63,8 +63,8 @@ int main(int argn, char *argc[])
 	total_timeout.tv_sec = 1;
 	total_timeout.tv_usec = 1;
 	/**/
-	    //First of all, create client using top level API
-	    clnt = clnt_create(argc[1], progNum, VERSNUM, nettype);
+	//First of all, create client using top level API
+	clnt = clnt_create(argc[1], progNum, VERSNUM, nettype);
 
 	if (clnt == NULL) {
 		printf("5\n");
