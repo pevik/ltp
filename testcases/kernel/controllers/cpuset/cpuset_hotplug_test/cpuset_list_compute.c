@@ -8,8 +8,8 @@
 #include <pwd.h>
 #include <err.h>
 
-#include "../cpuset_lib/common.h"
-#include "../cpuset_lib/bitmask.h"
+#include "cpuset_common.h"
+#include "cpuset_bitmask.h"
 
 #define MAX_STRING_SIZE	400
 #define MAX_NBITS	1024

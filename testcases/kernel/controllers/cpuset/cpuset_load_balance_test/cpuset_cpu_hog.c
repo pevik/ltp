@@ -39,9 +39,9 @@ int TST_TOTAL = 1;
 
 #if HAVE_LINUX_MEMPOLICY_H
 
-#include "../cpuset_lib/common.h"
-#include "../cpuset_lib/bitmask.h"
-#include "../cpuset_lib/cpuset.h"
+#include "cpuset_common.h"
+#include "cpuset_bitmask.h"
+#include "cpuset.h"
 
 #define MAX_NPROCS	1000
 #define USAGE	("Usage: %s [-p nprocs] [-h]\n"		\

@@ -48,8 +48,8 @@ int TST_TOTAL = 1;
 #ifdef HAVE_NUMA_V2
 #include <numaif.h>
 
-#include "../cpuset_lib/cpuset.h"
-#include "../cpuset_lib/bitmask.h"
+#include "cpuset.h"
+#include "cpuset_bitmask.h"
 
 static unsigned long mask;
 static int test = -1;

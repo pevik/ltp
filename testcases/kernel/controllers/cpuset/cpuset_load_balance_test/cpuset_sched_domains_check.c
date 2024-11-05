@@ -31,10 +31,10 @@
 
 #include "test.h"
 
-#include "../cpuset_lib/bitmask.h"
-#include "../cpuset_lib/cpuset.h"
-#include "../cpuset_lib/common.h"
-#include "../cpuset_lib/cpuinfo.h"
+#include "cpuset_bitmask.h"
+#include "cpuset.h"
+#include "cpuset_common.h"
+#include "cpuset_cpuinfo.h"
 
 char *TCID = "cpuset_check_domains";
 int TST_TOTAL = 1;

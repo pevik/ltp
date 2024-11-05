@@ -32,7 +32,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#include "../cpuset_lib/common.h"
+#include "cpuset_common.h"
 
 #define BUFFER_SIZE 100
 

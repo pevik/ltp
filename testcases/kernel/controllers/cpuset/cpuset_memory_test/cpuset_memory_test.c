@@ -42,7 +42,7 @@ int TST_TOTAL = 1;
 
 #if HAVE_LINUX_MEMPOLICY_H
 
-#include "../cpuset_lib/cpuset.h"
+#include "cpuset.h"
 
 static int fd;
 

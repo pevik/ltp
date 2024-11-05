@@ -7,10 +7,10 @@
 #include <err.h>
 #include <errno.h>
 
-#include "bitmask.h"
+#include "cpuset_bitmask.h"
 #include "cpuset.h"
-#include "common.h"
-#include "cpuinfo.h"
+#include "cpuset_common.h"
+#include "cpuset_cpuinfo.h"
 
 #if HAVE_LINUX_MEMPOLICY_H
 

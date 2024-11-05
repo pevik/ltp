@@ -20,28 +20,28 @@
 # Ngie Cooper, July 2009
 #
 
-LIBCPUSET_DIR		:= ../cpuset_lib
-
-LIBCPUSET		:= $(LIBCPUSET_DIR)/libcpu_set.a
-
 LIBCONTROLLERS_DIR	:= ../../libcontrollers
 
 LIBCONTROLLERS		:= $(LIBCONTROLLERS_DIR)/libcontrollers.a
 
-$(LIBCPUSET_DIR) $(LIBCONTROLLERS_DIR): %:
+LIBCPUSET_DIR       := ../../../../../libs/cpuset_lib
+
+LIBCPUSET           := $(LIBCPUSET_DIR)/libcpu_set.a
+
+$(LIBCONTROLLERS_DIR):
 	mkdir -p "$@"
 
 $(LIBCONTROLLERS): $(LIBCONTROLLERS_DIR)
 	$(MAKE) -C $^ -f "$(abs_srcdir)/$^/Makefile" all
 
-$(LIBCPUSET): $(LIBCPUSET_DIR) | $(LIBCONTROLLERS)
-	$(MAKE) -C $^ -f "$(abs_srcdir)/$^/Makefile" all
+$(LIBCPUSET):
+	$(MAKE) -C $(LIBCPUSET_DIR) -f "$(abs_srcdir)/$(LIBCPUSET_DIR)/Makefile" all
 
-MAKE_DEPS		:= $(LIBCONTROLLERS) $(LIBCPUSET)
+MAKE_DEPS       := $(LIBCONTROLLERS) $(LIBCPUSET)
 
-LDFLAGS			+= -L$(abs_builddir)/$(LIBCPUSET_DIR) -L$(abs_builddir)/$(LIBCONTROLLERS_DIR)
+LDFLAGS			+= -L$(abs_builddir)/$(LIBCONTROLLERS_DIR)
 
-LDLIBS			:= -lcpu_set -lcontrollers -lltp $(LDLIBS)
+LDLIBS			:= -lcontrollers -lltp $(LDLIBS)
 
 INSTALL_TARGETS		?= *.sh
 

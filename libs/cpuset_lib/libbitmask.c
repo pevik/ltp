@@ -27,7 +27,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "bitmask.h"
+#include "cpuset_bitmask.h"
 #include "tst_minmax.h"
 
 struct bitmask {

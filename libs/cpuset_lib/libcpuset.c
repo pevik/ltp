@@ -43,9 +43,9 @@
 #include <utime.h>
 #include <sys/utsname.h>	/* for cpuset_would_crash_kernel() */
 
-#include "bitmask.h"
+#include "cpuset_bitmask.h"
 #include "cpuset.h"
-#include "common.h"
+#include "cpuset_common.h"
 #include "test.h"
 #include "lapi/syscalls.h"
 #include "config.h"

@@ -25,21 +25,5 @@ top_srcdir		?= ../../../..
 include $(top_srcdir)/include/mk/env_pre.mk
 
 INSTALL_TARGETS		:= *.sh
-LIBDIR			:= cpuset_lib
-FILTER_OUT_DIRS		:= $(LIBDIR)
-LIB			:= $(LIBDIR)/libcpu_set.a
-
-$(LIBDIR):
-	mkdir -p "$@"
-
-$(LIB): $(LIBDIR)
-	$(MAKE) -C $^ -f "$(abs_srcdir)/$^/Makefile" all
-
-MAKE_DEPS		:= $(LIB)
-
-trunk-clean:: | lib-clean
-
-lib-clean:: $(LIBDIR)
-	$(MAKE) -C $^ -f "$(abs_srcdir)/$^/Makefile" clean
 
 include $(top_srcdir)/include/mk/generic_trunk_target.mk
