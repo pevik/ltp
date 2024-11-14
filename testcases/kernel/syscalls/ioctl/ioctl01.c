@@ -45,10 +45,8 @@ static struct tcase {
 } tcases[] = {
 	{"File descriptor is invalid (termio)", &bfd, TCGETA, &termio, EBADF},
 	{"File descriptor is invalid (termios)", &bfd, TCGETS, &termios, EBADF},
-	/*
 	{"Termio address is invalid", &fd, TCGETA, (struct termio *)-1, EFAULT},
 	{"Termios address is invalid", &fd, TCGETS, (struct termios *)-1, EFAULT},
-	*/
 	/* This errno value was changed from EINVAL to ENOTTY
 	 * by kernel commit 07d106d0 and bbb63c51
 	 */
@@ -61,8 +59,42 @@ static struct tcase {
 
 static void verify_ioctl(unsigned int i)
 {
-	TST_EXP_FAIL(ioctl(*(tcases[i].fd), tcases[i].request, tcases[i].s_tio),
-		     tcases[i].error, "%s", tcases[i].desc);
+	struct tcase *tc = &tcases[i];
+
+	TST_EXP_FAIL(ioctl(*(tc->fd), tc->request, tc->s_tio), tc->error, "%s",
+		     tc->desc);
+}
+
+static void test_bad_addr(unsigned int i)
+{
+	pid_t pid;
+	int status;
+
+	pid = SAFE_FORK();
+	if (!pid) {
+		verify_ioctl(i);
+		_exit(0);
+	}
+
+	SAFE_WAITPID(pid, &status, 0);
+
+	if (WIFEXITED(status) && !WEXITSTATUS(status))
+		return;
+
+	if (WIFSIGNALED(status) && WTERMSIG(status) == SIGSEGV) {
+		tst_res(TPASS, "Child killed by expected signal");
+		return;
+	}
+
+	tst_res(TFAIL, "Child %s", tst_strstatus(status));
+}
+
+static void do_test(unsigned int i)
+{
+	if (tcases[i].error == EFAULT)
+		test_bad_addr(i);
+	else
+		verify_ioctl(i);
 }
 
 static void setup(void)
@@ -88,6 +120,7 @@ static struct tst_test test = {
 	.needs_tmpdir = 1,
 	.setup = setup,
 	.cleanup = cleanup,
-	.test = verify_ioctl,
-	.tcnt = ARRAY_SIZE(tcases)
+	.test = do_test,
+	.tcnt = ARRAY_SIZE(tcases),
+	.forks_child = 1,
 };
