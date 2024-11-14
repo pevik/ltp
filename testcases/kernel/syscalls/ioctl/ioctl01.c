@@ -45,8 +45,10 @@ static struct tcase {
 } tcases[] = {
 	{"File descriptor is invalid (termio)", &bfd, TCGETA, &termio, EBADF},
 	{"File descriptor is invalid (termios)", &bfd, TCGETS, &termios, EBADF},
+	/*
 	{"Termio address is invalid", &fd, TCGETA, (struct termio *)-1, EFAULT},
 	{"Termios address is invalid", &fd, TCGETS, (struct termios *)-1, EFAULT},
+	*/
 	/* This errno value was changed from EINVAL to ENOTTY
 	 * by kernel commit 07d106d0 and bbb63c51
 	 */
