@@ -23,6 +23,10 @@ tst_print_result
 test19
 test20
 test22
+test23
+test24
+test25
+test26
 tst_expiration_timer
 test_assert
 test_timer
