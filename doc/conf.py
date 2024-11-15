@@ -28,9 +28,11 @@ extensions = [
 ]
 
 exclude_patterns = ["html*", '_static*']
+github = 'https://github.com/linux-test-project/ltp'
+master = f'{github}/blob/master'
 extlinks = {
-    'repo': ('https://github.com/linux-test-project/ltp/%s', '%s'),
-    'master': ('https://github.com/linux-test-project/ltp/blob/master/%s', '%s'),
+    'repo': (f'{github}/%s', '%s'),
+    'master': (f'{master}/%s', '%s'),
     'git_man': ('https://git-scm.com/docs/git-%s', 'git %s'),
     # TODO: allow 2nd parameter to show page description instead of plain URL
     'kernel_doc': ('https://docs.kernel.org/%s.html', 'https://docs.kernel.org/%s.html'),
@@ -56,39 +58,53 @@ def generate_syscalls_stats(_):
     generate a file that is included in the statistics documentation section.
     """
     output = '_static/syscalls.rst'
+    syscalls_dir = 'testcases/kernel/syscalls'
 
+    # format syscall_name : folder (for URL, optional)
     # sometimes checking testcases/kernel/syscalls file names are not enough,
     # because in some cases (i.e. io_ring) syscalls are tested, but they are
     # part of a more complex scenario. In the following list, we define syscalls
     # which we know they are 100% tested already.
-    white_list = [
-        'epoll_pwait2',
-        'fadvise64',
-        'fanotify_init',
-        'fanotify_mark',
-        'getdents64',
-        'inotify_add_watch',
-        'inotify_rm_watch',
-        'io_uring_enter',
-        'io_uring_register',
-        'io_uring_setup',
-        'landlock_add_rule',
-        'landlock_create_ruleset',
-        'landlock_restrict_self',
-        'lsetxattr',
-        'newfstatat',
-        'pkey_alloc',
-        'pkey_free',
-        'pkey_mprotect',
-        'prlimit64',
-        'pread64',
-        'pselect6',
-        'pwrite64',
-        'quotactl_fd',
-        'rt_sigpending',
-        'semtimedop',
-        'sethostname',
-    ]
+    # Or syscalls are here to get their folder.
+    white_list = {
+        'epoll_pwait2': 'epoll_pwait',
+        'fadvise64': 'fadvise',
+        'fanotify_init': 'fanotify',
+        'fanotify_mark': 'fanotify',
+        'futex_wait': 'futex',
+        'futex_waitv': 'futex',
+        'futex_wake': 'futex',
+        'getdents64': 'getdents',
+        'inotify_add_watch': 'inotify',
+        'inotify_rm_watch': 'inotify',
+        'inotify_init1': 'inotify',
+        'io_uring_enter': 'io_uring',
+        'io_uring_register': 'io_uring',
+        'io_uring_setup': 'io_uring',
+        'ioprio_get': 'ioprio',
+        'ioprio_set': 'ioprio',
+        'landlock_add_rule': 'landlock',
+        'landlock_create_ruleset': 'landlock',
+        'landlock_restrict_self': 'landlock',
+        'lsetxattr': 'lgetxattr', # llistxattr, lremovexattr
+        'newfstatat': 'fstatat',
+        'pkey_alloc': 'pkeys',
+        'pkey_free': 'pkeys',
+        'pkey_mprotect': 'pkeys',
+        'pread64': 'preadv',
+        'prlimit64': 'getrlimit',
+        'process_vm_readv': 'cma',
+        'process_vm_writev': 'cma',
+        'pselect6': 'select',
+        'pwrite64': 'pwrite',
+        'quotactl_fd': 'quotactl',
+        'rt_sigpending': 'sigpending',
+        'semtimedop': 'ipc/semop',
+        'sethostname': 'setdomainname',
+        'timerfd_gettime': 'timerfd',
+        'timerfd_settime': 'timerfd',
+        'timerfd_create': 'timerfd',
+    }
 
     # populate with not implemented, reserved, unmaintained syscalls defined
     # inside the syscalls file
@@ -148,28 +164,38 @@ def generate_syscalls_stats(_):
                 ker_syscalls.append(match.group('syscall'))
 
     # collect all LTP tested syscalls
-    ltp_syscalls = []
-    for root, _, files in os.walk('../testcases/kernel/syscalls'):
+    ltp_syscalls = {}
+    for root, _, files in os.walk('../' + syscalls_dir):
         for myfile in files:
             if myfile.endswith('.c'):
-                ltp_syscalls.append(myfile)
+                ltp_syscalls[myfile] = root[3:]
 
     # compare kernel syscalls with LTP tested syscalls
     syscalls = {}
+    url = {}
     for kersc in ker_syscalls:
         if kersc in black_list:
             continue
 
         if kersc not in syscalls:
-            if kersc in white_list:
+            if kersc in white_list.keys():
                 syscalls[kersc] = True
+                if white_list[kersc]:
+                    url[kersc] = syscalls_dir + '/' + white_list[kersc]
+
                 continue
 
             syscalls[kersc] = False
 
-        for ltpsc in ltp_syscalls:
+        for ltpsc in ltp_syscalls.keys():
             if ltpsc.startswith(kersc):
                 syscalls[kersc] = True
+                if kersc in url:
+                    continue
+                # Be conservative and use only directories which match exactly the syscall.
+                # Otherwise mkdir will be linked to mkdirat, openat to openat2, etc.
+                if os.path.basename(ltp_syscalls[ltpsc]) == kersc:
+                    url[kersc] = ltp_syscalls[ltpsc]
 
     # generate the statistics file
     tested_syscalls = [key for key, val in syscalls.items() if val]
@@ -196,18 +222,21 @@ def generate_syscalls_stats(_):
     ]
 
     for sysname, tested in syscalls.items():
+        name = f'{sysname}'
         if tested:
+            if sysname in url.keys():
+                name = f'`{sysname} <{github}/tree/master/{url[sysname]}>`_'
             if (index_tested % 3) == 0:
-                table_tested.append(f'    * - {sysname}\n')
+                table_tested.append(f'    * - {name}\n')
             else:
-                table_tested.append(f'      - {sysname}\n')
+                table_tested.append(f'      - {name}\n')
 
             index_tested += 1
         else:
             if (index_untest % 3) == 0:
-                table_untest.append(f'    * - {sysname}\n')
+                table_untest.append(f'    * - {name}\n')
             else:
-                table_untest.append(f'      - {sysname}\n')
+                table_untest.append(f'      - {name}\n')
 
             index_untest += 1
 
