@@ -1,7 +1,7 @@
 #!/bin/sh
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright (c) 2009 IBM Corporation
-# Copyright (c) 2018-2021 Petr Vorel <pvorel@suse.cz>
+# Copyright (c) 2018-2024 Petr Vorel <pvorel@suse.cz>
 # Author: Mimi Zohar <zohar@linux.ibm.com>
 #
 # Verify that measurements are added to the measurement list based on policy.
@@ -12,10 +12,23 @@ TST_CNT=3
 
 setup()
 {
-	require_ima_policy_cmdline "tcb"
+	local policy="tcb"
 
 	TEST_FILE="$PWD/test.txt"
 	[ -f "$IMA_POLICY" ] || tst_res TINFO "not using default policy"
+
+	if [ "$LTP_IMA_LOAD_POLICY" != 1 ]; then
+		require_ima_policy_cmdline $policy
+		return
+	elif check_ima_policy_cmdline $policy; then
+		return
+	fi
+
+	if ! check_ima_policy_cmdline $policy &&
+		! require_ima_policy_content '^measure func=FILE_CHECK mask=^MAY_READ uid=0' &&
+		! require_ima_policy_content 'measure func=POLICY_CHECK'; then
+		tst_brk TCONF "IMA measurement tests require builtin IMA $policy policy (e.g. ima_policy=$policy kernel parameter or it's equivalent)"
+	fi
 }
 
 check_iversion_support()
