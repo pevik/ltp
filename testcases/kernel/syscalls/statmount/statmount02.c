@@ -80,5 +80,6 @@ static struct tst_test test = {
 		{&sx_mount, .size = sizeof(struct ltp_statx)},
 		{&sf_mount, .size = sizeof(struct statfs)},
 		{}
-	}
+	},
+	.max_runtime = 28,
 };

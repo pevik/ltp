@@ -145,4 +145,5 @@ static struct tst_test test = {
 		{"linux-git", "e408e695f5f1"},
 		{}
 	},
+	.max_runtime = 26,
 };

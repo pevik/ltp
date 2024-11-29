@@ -89,5 +89,6 @@ static struct tst_test test = {
 	.format_device = 1,
 	.mntpoint = MNTPOINT,
 	.all_filesystems = 1,
+	.max_runtime = 23,
 	.skip_filesystems = (const char *const []){"fuse", NULL},
 };

@@ -66,4 +66,5 @@ static struct tst_test test = {
 		"ntfs",
 		NULL
 	},
+	.max_runtime = 26,
 };

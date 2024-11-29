@@ -64,5 +64,6 @@ static struct tst_test test = {
 	.bufs = (struct tst_buffers []) {
 		{&st_mount, .size = SM_SIZE},
 		{}
-	}
+	},
+	.max_runtime = 28,
 };

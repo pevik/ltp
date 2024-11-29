@@ -152,6 +152,7 @@ static struct tst_test test = {
 		"vfat",
 		NULL
 	},
+	.max_runtime = 21,
 	.tags = (const struct tst_tag[]) {
 		{"linux-git", "0fa3ecd87848"},
 		{"CVE", "2018-13405"},

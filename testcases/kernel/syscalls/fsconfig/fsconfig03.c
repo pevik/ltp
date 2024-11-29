@@ -89,6 +89,7 @@ static struct tst_test test = {
 	.all_filesystems = 1,
 	.taint_check = TST_TAINT_W | TST_TAINT_D,
 	.skip_filesystems = (const char *const []){"fuse", NULL},
+	.max_runtime = 22,
 	.tags = (const struct tst_tag[]) {
 		{"linux-git", "722d94847de29"},
 		{"CVE", "2022-0185"},
