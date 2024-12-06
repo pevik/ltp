@@ -33,6 +33,7 @@ shell/test_timeout.sh
 shell/timeout0[1-2].sh
 shell/tst_all_filesystems.sh
 shell/tst_all_filesystems_skip.sh
+shell/tst_device_size.sh
 shell/tst_errexit.sh
 shell/tst_format_device.sh
 shell/tst_check_driver.sh
