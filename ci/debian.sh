@@ -24,6 +24,7 @@ pkg_minimal="
 	devscripts
 	clang
 	gcc
+	kmod
 	git
 	iproute2
 	libc6-dev

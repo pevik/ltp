@@ -123,6 +123,15 @@ jobs:
     - name: Git checkout
       uses: actions/checkout@v1
 
+    - name: ls /
+      run: ls /
+
+    - name: ls /boot
+      run: ls /boot
+
+    - name: Debug loop (kconfig)
+      run: if [ -d /boot ]; then ls -la /boot; fi; if ls /boot/config*; then for i in /boot/config*; do echo "=== $i ==="; grep CONFIG_BLK_DEV_LOOP $i || true; echo; done; fi; ls -R /boot
+
     - name: Install additional packages
       run: |
         INSTALL=${{ matrix.container }}
@@ -130,6 +139,9 @@ jobs:
         INSTALL="${INSTALL%%/*}"
         ACTION="$VARIANT" ./ci/$INSTALL.sh
         if [ "$VARIANT" ]; then ./ci/$INSTALL.$VARIANT.sh; fi
+
+    - name: Debug loop (lsmod)
+      run: lsmod
 
     - name: Compiler version
       run: $CC --version

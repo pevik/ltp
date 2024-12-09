@@ -12,6 +12,7 @@ $zyp \
 	findutils \
 	gcc \
 	git \
+	kmod \
 	gzip \
 	iproute2 \
 	make \
