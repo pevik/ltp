@@ -26,15 +26,20 @@ trap "unset _tst_setup_timer_pid; tst_brk TBROK 'test terminated'" TERM
 
 _tst_do_cleanup()
 {
-	if [ -n "$TST_DO_CLEANUP" -a -n "$TST_CLEANUP" -a -z "$LTP_NO_CLEANUP" ]; then
-		if command -v $TST_CLEANUP >/dev/null 2>/dev/null; then
-			TST_DO_CLEANUP=
-			$TST_CLEANUP
-		else
-			tst_res TWARN "TST_CLEANUP=$TST_CLEANUP declared, but function not defined (or cmd not found)"
-		fi
+	# run cleanup only once, when not requested by user to skip
+	if [ -n "$TST_DO_CLEANUP" ] || [ -z "$LTP_NO_CLEANUP" ]; then
+		return 0
 	fi
-	TST_DO_CLEANUP=
+
+	TST_DO_CLEANUP=1
+
+	if command -v $TST_CLEANUP >/dev/null 2>/dev/null; then
+		$TST_CLEANUP
+	elif [ -z "$TST_TEST_STARTED" ]; then
+		tst_res TWARN "Attempt to run cleanup function before test has started => '. tst_test.sh' should be at the end of the file"
+	else
+		tst_res TWARN "TST_CLEANUP=$TST_CLEANUP declared, but function not defined (or command not found)"
+	fi
 }
 
 _tst_do_exit()
@@ -128,9 +133,8 @@ tst_brk()
 	shift
 
 	# TBROK => TWARN on cleanup or exit
-	if [ "$res" = TBROK ] && [ "$TST_DO_EXIT" = 1 -o -z "$TST_DO_CLEANUP" -a -n "$TST_CLEANUP" ]; then
+	if [ "$res" = TBROK ] && [ "$TST_DO_EXIT" = 1 -o "$TST_DO_CLEANUP" = 1 ]; then
 		tst_res TWARN "$@"
-		TST_DO_CLEANUP=
 		return
 	fi
 
@@ -798,7 +802,7 @@ _tst_run_iterations()
 
 	if [ -n "$TST_SETUP" ]; then
 		if command -v $TST_SETUP >/dev/null 2>/dev/null; then
-			TST_DO_CLEANUP=1
+			TST_TEST_STARTED=1
 			$TST_SETUP
 		else
 			tst_brk TBROK "TST_SETUP=$TST_SETUP declared, but function not defined (or cmd not found)"
@@ -834,7 +838,7 @@ _tst_run_tests()
 	local _tst_data="$1"
 	local _tst_i
 
-	TST_DO_CLEANUP=1
+	TST_TEST_STARTED=1
 	for _tst_i in $(seq ${TST_CNT:-1}); do
 		if command -v ${TST_TESTFUNC}1 > /dev/null 2>&1; then
 			_tst_run_test "$TST_TESTFUNC$_tst_i" $_tst_i "$_tst_data"
