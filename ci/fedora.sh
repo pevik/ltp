@@ -12,6 +12,7 @@ $yum \
 	clang \
 	gcc \
 	git \
+	kmod \
 	findutils \
 	iproute \
 	numactl-devel \
