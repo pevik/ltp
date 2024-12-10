@@ -153,6 +153,6 @@ static struct tst_test test = {
 	.mount_device = 1,
 	.all_filesystems = 1,
 	.skip_filesystems = (const char *const[]){ "ntfs", "tmpfs", NULL },
-	.needs_cgroup_ver = TST_CG_V2,
+	//.needs_cgroup_ver = TST_CG_V2,
 	.needs_cgroup_ctrls = (const char *const[]){ "io", NULL },
 };

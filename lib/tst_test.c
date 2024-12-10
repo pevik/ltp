@@ -1457,10 +1457,11 @@ static void do_setup(int argc, char *argv[])
 	if (tst_test->taint_check)
 		tst_taint_init(tst_test->taint_check);
 
+	if (tst_test->needs_cgroup_ver)
+		tst_brk(TBROK, "tst_test->needs_cgroup_ctrls must be set");
+
 	if (tst_test->needs_cgroup_ctrls)
 		do_cgroup_requires();
-	else if (tst_test->needs_cgroup_ver)
-		tst_brk(TBROK, "tst_test->needs_cgroup_ctrls must be set");
 }
 
 static void do_test_setup(void)
