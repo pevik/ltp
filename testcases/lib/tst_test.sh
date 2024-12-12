@@ -81,7 +81,7 @@ _tst_do_exit()
 	fi
 
 	if [ $TST_BROK -gt 0 -o $TST_FAIL -gt 0 -o $TST_WARN -gt 0 ]; then
-		_tst_check_security_modules
+		[ -z "$TST_SKIP_LSM_WARNINGS" ] && _tst_check_security_modules
 	fi
 
 	cat >&2 << EOF
