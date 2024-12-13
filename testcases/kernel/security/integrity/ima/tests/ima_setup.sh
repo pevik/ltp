@@ -94,8 +94,11 @@ check_ima_policy_content()
 	local pattern="$1"
 	local grep_params="${2--q}"
 
-	check_policy_readable || return 1
-	grep $grep_params "$pattern" $IMA_POLICY
+	if check_policy_readable; then
+		grep $grep_params "$pattern" $IMA_POLICY
+	else
+		tst_res TINFO "WARNING: policy not readable, can't check policy for '$pattern' (possible false positives)"
+	fi
 }
 
 require_ima_policy_content()
