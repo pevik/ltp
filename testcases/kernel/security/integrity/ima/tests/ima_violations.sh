@@ -1,7 +1,7 @@
 #!/bin/sh
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright (c) 2009 IBM Corporation
-# Copyright (c) 2018-2020 Petr Vorel <pvorel@suse.cz>
+# Copyright (c) 2018-2024 Petr Vorel <pvorel@suse.cz>
 # Author: Mimi Zohar <zohar@linux.ibm.com>
 #
 # Test whether ToMToU and open_writer violations invalidatethe PCR and are logged.
@@ -9,6 +9,7 @@
 TST_SETUP="setup"
 TST_CLEANUP="cleanup"
 TST_CNT=3
+REQUIRED_POLICY='^func=FILE_CHECK'
 
 setup()
 {
@@ -16,6 +17,8 @@ setup()
 	IMA_VIOLATIONS="$SECURITYFS/ima/violations"
 	LOG="/var/log/messages"
 	PRINTK_RATE_LIMIT=
+
+	require_ima_policy_content_if_readable "$REQUIRED_POLICY"
 
 	if status_daemon auditd; then
 		LOG="/var/log/audit/audit.log"
