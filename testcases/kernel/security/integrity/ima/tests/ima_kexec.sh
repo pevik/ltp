@@ -47,10 +47,7 @@ setup()
 		tst_brk TCONF "kernel image not found, specify path in \$IMA_KEXEC_IMAGE"
 	fi
 
-	if check_policy_readable; then
-		require_ima_policy_content "$REQUIRED_POLICY"
-		policy_readable=1
-	fi
+	require_ima_policy_content_if_readable "$REQUIRED_POLICY"
 }
 
 kexec_failure_hint()
@@ -97,8 +94,7 @@ kexec_test()
 
 	ROD kexec -su
 	if ! measure "$cmdline"; then
-		if [ "$policy_readable" != 1 ]; then
-			tst_res TWARN "policy not readable, it might not contain required policy '$REQUIRED_POLICY'"
+		if ! check_policy_readable; then
 			res=TBROK
 		fi
 		tst_brk $res "unable to find a correct measurement"

@@ -101,6 +101,16 @@ check_ima_policy_content()
 	fi
 }
 
+require_ima_policy_content_if_readable()
+{
+	local pattern="$1"
+	local grep_params="${2--q}"
+
+	if ! check_ima_policy_content "$pattern" "$grep_params"; then
+		tst_brk TCONF "IMA policy does not specify '$pattern'"
+	fi
+}
+
 require_ima_policy_content()
 {
 	local pattern="$1"
