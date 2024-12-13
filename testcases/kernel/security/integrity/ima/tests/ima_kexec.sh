@@ -95,7 +95,7 @@ kexec_test()
 	ROD kexec -su
 	if ! measure "$cmdline"; then
 		if ! check_policy_readable; then
-			res=TBROK
+			res=TCONF
 		fi
 		tst_brk $res "unable to find a correct measurement"
 	fi
