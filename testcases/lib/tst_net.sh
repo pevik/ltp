@@ -713,9 +713,17 @@ tst_wait_ipv6_dad()
 
 tst_netload_brk()
 {
+	local res="$1"
+	local msg="$2"
+
 	tst_rhost_run -c "cat $TST_TMPDIR/netstress.log"
 	cat tst_netload.log
-	tst_brk_ $1 $2
+
+	if [ "$res" = TFAIL ]; then
+		tst_res_ "$res" "$msg"
+	else
+		tst_brk_ "$res" "$msg"
+	fi
 }
 
 # Run network load test, see 'netstress -h' for option description
@@ -825,28 +833,31 @@ tst_netload()
 		fi
 
 		if [ "$ret" -ne 0 ]; then
-			[ $((ret & 32)) -ne 0 ] && \
-				tst_netload_brk TCONF "not supported configuration"
+			[ $((ret & 32)) -ne 0 ] && tst_netload_brk TCONF "not supported configuration"
 
-			[ $((ret & 3)) -ne 0 -a $was_failure -gt 0 ] && \
+			if [ $((ret & 3)) -ne 0 -a $was_failure -gt 0 ]; then
 				tst_netload_brk TFAIL "expected '$expect_res' but ret: '$ret'"
+				return
+			fi
 
 			tst_res_ TWARN "netstress failed, ret: $ret"
 			was_failure=1
 			continue
 		fi
 
-		[ ! -f $rfile ] && \
+		if [ ! -f $rfile ]; then
 			tst_netload_brk TFAIL "can't read $rfile"
+			return
+		fi
 
 		results="$results $(cat $rfile)"
 		passed=$((passed + 1))
 	done
 
 	if [ "$ret" -ne 0 ]; then
-		[ $((ret & 4)) -ne 0 ] && \
-			tst_res_ TWARN "netstress has warnings"
+		[ $((ret & 4)) -ne 0 ] && tst_res_ TWARN "netstress has warnings"
 		tst_netload_brk TFAIL "expected '$expect_res' but ret: '$ret'"
+		return
 	fi
 
 	local median=$(tst_get_median $results)
