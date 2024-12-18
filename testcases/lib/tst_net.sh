@@ -716,7 +716,9 @@ tst_netload_brk()
 	local res="$1"
 	local msg="$2"
 
+	tst_res TINFO "=== rhost log ==="
 	tst_rhost_run -c "cat $TST_TMPDIR/netstress.log"
+	tst_res TINFO "=== lhost log ==="
 	cat tst_netload.log
 
 	if [ "$res" = TFAIL ]; then
@@ -841,6 +843,10 @@ tst_netload()
 			fi
 
 			tst_res_ TWARN "netstress failed, ret: $ret"
+			tst_res TINFO "=== rhost log ==="
+			tst_rhost_run -c "cat $TST_TMPDIR/netstress.log"
+			tst_res TINFO "=== lhost log ==="
+			cat tst_netload.log
 			was_failure=1
 			continue
 		fi
