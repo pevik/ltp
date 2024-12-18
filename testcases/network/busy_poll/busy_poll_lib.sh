@@ -25,4 +25,4 @@ busy_poll_check_config()
 	fi
 }
 
-. tst_net.sh
+. tst_netload.sh

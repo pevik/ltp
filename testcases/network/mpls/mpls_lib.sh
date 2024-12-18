@@ -107,4 +107,4 @@ mpls_virt_test()
 	fi
 }
 
-. tst_net.sh
+. tst_netload.sh

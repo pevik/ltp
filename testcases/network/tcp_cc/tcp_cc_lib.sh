@@ -104,4 +104,4 @@ tcp_cc_test01()
 	tst_netload_compare $res0 $res1 $threshold
 }
 
-. tst_net.sh
+. tst_netload.sh

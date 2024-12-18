@@ -25,5 +25,5 @@ test()
 	tst_netload_compare $res0 $res1 -200 200
 }
 
-. tst_net.sh
+. tst_netload.sh
 tst_run

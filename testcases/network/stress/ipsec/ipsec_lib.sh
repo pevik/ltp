@@ -318,4 +318,4 @@ tst_ipsec_setup_vti()
 	tst_rhost_run -s -c "ip addr add $ip_rmt_tun/$mask dev $tst_vti"
 }
 
-. tst_net.sh
+. tst_netload.sh

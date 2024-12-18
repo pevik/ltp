@@ -367,7 +367,7 @@ virt_gre_setup()
 	"local $(tst_ipaddr rhost) remote $(tst_ipaddr) dev $(tst_iface rhost)"
 }
 
-. tst_net.sh
+. tst_netload.sh
 
 ip_virt_local="$(TST_IPV6= tst_ipaddr_un)"
 ip6_virt_local="$(TST_IPV6=6 tst_ipaddr_un)"

@@ -30,5 +30,5 @@ test2()
 }
 
 
-. tst_net.sh
+. tst_netload.sh
 tst_run
