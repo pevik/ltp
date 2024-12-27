@@ -31,12 +31,14 @@
 #include <linux/module.h>
 #include <linux/init.h>
 #include <linux/pm.h>
-#include <linux/genhd.h>
+#include <linux/blkdev.h>
+#ifndef DISK_NAME_LEN
+# include <linux/genhd.h>
+#endif
 #include <linux/version.h>
 #include <linux/string.h>
 #include <linux/autoconf.h>
 #include <linux/nls.h>
-#include <linux/blkdev.h>
 
 #ifdef CONFIG_KMOD
 #include <linux/kmod.h>

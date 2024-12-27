@@ -43,8 +43,10 @@
 #include <linux/errno.h>
 #include <linux/types.h>
 #include <linux/vmalloc.h>
-#include <linux/genhd.h>
 #include <linux/blkdev.h>
+#ifndef DISK_NAME_LEN
+# include <linux/genhd.h>
+#endif
 #include <linux/buffer_head.h>
 
 #include "tbio.h"

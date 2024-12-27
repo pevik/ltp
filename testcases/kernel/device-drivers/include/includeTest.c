@@ -33,7 +33,10 @@
 #include <linux/module.h>
 #include <linux/init.h>
 #include <linux/pm.h>
-#include <linux/genhd.h>
+#include <linux/blkdev.h>
+#ifndef DISK_NAME_LEN
+# include <linux/genhd.h>
+#endif
 #include <linux/in.h>
 #include <asm/types.h>
 #include <linux/lockd/bind.h>
