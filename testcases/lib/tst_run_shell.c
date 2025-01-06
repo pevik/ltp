@@ -26,7 +26,7 @@ static void run_shell_tcnt(unsigned int n)
 	tst_run_script(shell_filename, params);
 }
 
-struct tst_test test = {
+static struct tst_test test = {
 	.runs_script = 1,
 };
 
