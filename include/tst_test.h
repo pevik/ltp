@@ -234,7 +234,7 @@ struct tst_tag {
 
 extern unsigned int tst_variant;
 
-#define TST_UNLIMITED_RUNTIME (-1)
+#define TST_UNLIMITED_TIMEOUT (-1)
 
 /**
  * struct tst_ulimit_val - An ulimit resource and value.
@@ -435,13 +435,20 @@ struct tst_fs {
  *            The directory is created by the library, the test must not create
  *            it itself.
  *
- * @max_runtime: Maximal test runtime in seconds. Any test that runs for more
- *               than a second or two should set this and also use
- *               tst_remaining_runtime() to exit when runtime was used up.
- *               Tests may finish sooner, for example if requested number of
- *               iterations was reached before the runtime runs out. If test
- *               runtime cannot be know in advance it should be set to
- *               TST_UNLIMITED_RUNTIME.
+ * @timeout: Maximum allowable time in seconds for test setup and cleanup
+ *           operations. This does not include the runtime of the test itself.
+ *           The timeout ensures that setup or cleanup phases do not hang
+ *           indefinitely and are bounded by a specific duration. If setup
+ *           or cleanup time cannot be predetermined, it should be set to a
+ *           sufficiently large value or TST_UNLIMITED_TIMEOUT for no limit.
+ *
+ * @runtime: Maximal test runtime in seconds. Any test that runs for more
+ *           than a second or two should set this and also use
+ *           tst_remaining_runtime() to exit when runtime was used up.
+ *           Tests may finish sooner, for example if requested number of
+ *           iterations was reached before the runtime runs out. If test
+ *           runtime cannot be know in advance it should be set to
+ *           TST_UNLIMITED_RUNTIME.
  *
  * @setup: Setup callback is called once at the start of the test in order to
  *         prepare the test environment.
@@ -565,7 +572,8 @@ struct tst_fs {
 
 	const char *mntpoint;
 
-	int max_runtime;
+	int timeout;
+	int runtime;
 
 	void (*setup)(void);
 	void (*cleanup)(void);
@@ -676,7 +684,7 @@ unsigned int tst_remaining_runtime(void);
 /*
  * Sets maximal test runtime in seconds.
  */
-void tst_set_max_runtime(int max_runtime);
+void tst_set_runtime(int runtime);
 
 /*
  * Create and open a random file inside the given dir path.

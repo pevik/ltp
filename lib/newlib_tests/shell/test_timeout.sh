@@ -10,7 +10,7 @@ PATH="$(dirname $0):$(dirname $0)/../../../testcases/lib/:$PATH"
 # file
 # timeout_mul
 # use_cat
-# max_runtime
+# runtime
 # expected_exit_code
 # expected passes
 # expected failed
@@ -114,8 +114,8 @@ for d in $CLEANED_DATA; do
 	file=$(echo $d | cut -d'|' -f1 | xargs)
 	timeout=$(echo $d | cut -d'|' -f2 | xargs)
 	use_cat=$(echo $d | cut -d'|' -f3 | xargs)
-	max_runtime=$(echo $d | cut -d'|' -f4 | xargs)
-	max_runtime=${max_runtime:--1}
+	runtime=$(echo $d | cut -d'|' -f4 | xargs)
+	runtime=${runtime:--1}
 	exp_exit=$(echo $d | cut -d'|' -f5 | xargs)
 	exp_exit=${exp_exit:--1}
 	exp_passed=$(echo $d | cut -d'|' -f6 | xargs)
@@ -137,8 +137,8 @@ for d in $CLEANED_DATA; do
 	echo "=== $test_nr/$test_max $description ==="
 	run_test "$file" "$timeout" "$use_cat"
 
-	if [ $max_runtime -ne -1 ] && [ $test_duration -gt $max_runtime ]; then
-		echo "FAILED (runtime: $test_duration, expected less than $max_runtime)"
+	if [ $runtime -ne -1 ] && [ $test_duration -gt $runtime ]; then
+		echo "FAILED (runtime: $test_duration, expected less than $runtime)"
 		cur_fails=$((cur_fails + 1))
 	fi
 

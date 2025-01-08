@@ -203,7 +203,7 @@ static struct tst_test test = {
 	.needs_root = 1,
 	.setup = setup,
 	.cleanup = cleanup,
-	.max_runtime = 60,
+	.runtime = 60,
 	.needs_kconfigs = (const char *const[]){
 		"CONFIG_KALLSYMS=y",
 		NULL

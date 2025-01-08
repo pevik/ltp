@@ -43,7 +43,7 @@ static void setup(void)
 	 *
 	 * Here reset the maximum runtime according to the NUMA nodes.
 	 */
-	tst_set_max_runtime(test.max_runtime * (1 << nodes->cnt/16));
+	tst_set_runtime(test.runtime * (1 << nodes->cnt/16));
 }
 
 static void cleanup(void)
@@ -119,7 +119,7 @@ static struct tst_test test = {
 	.tcnt = 2,
 	.forks_child = 1,
 	.needs_checkpoints = 1,
-	.max_runtime = 600,
+	.runtime = 600,
 };
 
 #else

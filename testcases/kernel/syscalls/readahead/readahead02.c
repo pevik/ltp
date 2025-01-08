@@ -321,7 +321,7 @@ static void test_readahead(unsigned int n)
 
 	/*
 	 * The time consuming of readahead quite depending on the platform IO
-	 * speed, sometime test timeout when the default max_runtime is used up.
+	 * speed, sometime test timeout when the default runtime is used up.
 	 *
 	 *  readahead02.c:221: TINFO: Test #2: POSIX_FADV_WILLNEED on file
 	 *  readahead02.c:285: TINFO: read_testfile(0) took: 26317623 usec
@@ -330,7 +330,7 @@ static void test_readahead(unsigned int n)
 	 * Here raise the maximum runtime dynamically.
 	 */
 	if ((tc+1)->readahead)
-		tst_set_max_runtime(test.max_runtime + (usec + usec_ra) / 1000000);
+		tst_set_runtime(test.runtime + (usec + usec_ra) / 1000000);
 }
 
 
@@ -381,7 +381,7 @@ static void setup(void)
 {
 	if (opt_fsizestr) {
 		testfile_size = SAFE_STRTOL(opt_fsizestr, 1, INT_MAX);
-		tst_set_max_runtime(1 + testfile_size / (DEFAULT_FILESIZE/32));
+		tst_set_runtime(1 + testfile_size / (DEFAULT_FILESIZE/32));
 	}
 
 	if (access(PROC_IO_FNAME, F_OK))
@@ -422,7 +422,7 @@ static struct tst_test test = {
 	},
 	.test = test_readahead,
 	.tcnt = ARRAY_SIZE(tcases),
-	.max_runtime = 30,
+	.runtime = 30,
 	.tags = (const struct tst_tag[]) {
 		{"linux-git", "b833a3660394"},
 		{"linux-git", "5b910bd615ba"},
