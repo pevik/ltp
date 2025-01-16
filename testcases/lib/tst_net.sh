@@ -265,6 +265,8 @@ tst_rhost_run()
 		[ "$safe" ] && \
 			tst_brk_ TBROK "'$cmd' failed on '$RHOST': '$output'"
 	fi
+	# strip out tst_ns_exec TINFO messages
+	output=$(echo "$output" | grep -v 'TINFO:')
 
 	[ -z "$out" -a -n "$output" ] && echo "$output"
 
