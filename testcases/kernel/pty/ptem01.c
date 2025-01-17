@@ -14,7 +14,9 @@
 
 #define _GNU_SOURCE
 
-#include <termio.h>
+/* struct termio */
+#include "lapi/ioctl.h"
+
 #include <termios.h>
 #include "common.h"
 
