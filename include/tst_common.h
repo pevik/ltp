@@ -42,6 +42,7 @@
 ({	unsigned int tst_delay_, tst_max_delay_;			\
 	typeof(FUNC) tst_ret_;						\
 	tst_delay_ = 1;							\
+	fprintf(stderr, "%s:%d %s(): call tst_multiply_timeout() 4\n", __FILE__, __LINE__, __func__); \
 	tst_max_delay_ = tst_multiply_timeout(MAX_DELAY * 1000000);	\
 	for (;;) {							\
 		errno = 0;						\

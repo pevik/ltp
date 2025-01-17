@@ -198,6 +198,7 @@ static void setup(void)
 	tst_res(TINFO, "Testing variant: %s", tv->desc);
 	futex_supported_by_kernel(tv->fntype);
 
+	fprintf(stderr, "%s:%d %s(): call tst_multiply_timeout() 5\n", __FILE__, __LINE__, __func__); // FIXME:
 	max_sleep_ms = tst_multiply_timeout(5000);
 
 	sd = SAFE_MMAP(NULL, sizeof(*sd), PROT_READ | PROT_WRITE,

@@ -593,6 +593,7 @@ static void print_help(void)
 	if (tst_test->timeout == TST_UNLIMITED_TIMEOUT) {
 		fprintf(stderr, "Test timeout is not limited\n");
 	} else {
+		fprintf(stderr, "%s:%d %s(): call tst_multiply_timeout() 3\n", __FILE__, __LINE__, __func__); // FIXME:
 		timeout = tst_multiply_timeout(DEFAULT_TIMEOUT + tst_test->timeout);
 
 		fprintf(stderr, "Test timeout (not including runtime) %ih %im %is\n",
@@ -1717,6 +1718,7 @@ static void set_overall_timeout(void)
 		return;
 	}
 
+	fprintf(stderr, "%s:%d %s(): call tst_multiply_timeout() 1\n", __FILE__, __LINE__, __func__); // FIXME:
 	results->overall_time = tst_multiply_timeout(timeout) + results->runtime;
 
 	tst_res(TINFO, "Overall timeout per run is %uh %02um %02us",
@@ -1728,6 +1730,7 @@ void tst_set_timeout(int timeout)
 {
 	int timeout_adj = DEFAULT_TIMEOUT + timeout;
 
+	fprintf(stderr, "%s:%d %s(): call tst_multiply_timeout() 2\n", __FILE__, __LINE__, __func__); // FIXME:
 	results->overall_time = tst_multiply_timeout(timeout_adj) + results->runtime;
 
 	tst_res(TINFO, "Overall timeout per run is %uh %02um %02us",
