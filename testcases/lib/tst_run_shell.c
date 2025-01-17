@@ -5,6 +5,7 @@
 #include <sys/mount.h>
 
 #define TST_NO_DEFAULT_MAIN
+#define TST_NO_SLOW_KCONFIG_CHECK
 #include "tst_test.h"
 #include "tst_safe_stdio.h"
 #include "ujson.h"

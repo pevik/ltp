@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #define TST_NO_DEFAULT_MAIN
+#define TST_NO_SLOW_KCONFIG_CHECK
 #include "tst_test.h"
 #include "old/old_device.h"
 

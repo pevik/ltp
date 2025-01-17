@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #define TST_NO_DEFAULT_MAIN
+#define TST_NO_SLOW_KCONFIG_CHECK
 #include <stdio.h>
 #include "tst_test.h"
 

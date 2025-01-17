@@ -14,6 +14,7 @@
  */
 
 #define TST_NO_DEFAULT_MAIN
+#define TST_NO_SLOW_KCONFIG_CHECK
 
 #include <stdio.h>
 #include <sys/wait.h>
