@@ -47,6 +47,7 @@
 #include "tst_arch.h"
 #include "tst_fd.h"
 #include "tst_tmpdir.h"
+#include "tst_kconfig.h"
 
 void tst_res_(const char *file, const int lineno, int ttype,
               const char *fmt, ...)
@@ -726,6 +727,16 @@ int main(int argc, char *argv[])
 }
 
 #endif /* TST_NO_DEFAULT_MAIN */
+
+static inline int tst_multiply_on_slow_config(unsigned int timeout)
+{
+#ifndef TST_NO_DEFAULT_MAIN
+	/* multiply only for a real tests */
+	if (tst_has_slow_kconfig())
+		timeout *= 4;
+#endif /* TST_NO_DEFAULT_MAIN */
+	return timeout;
+}
 
 /**
  * TST_TEST_TCONF() - Exit tests with a TCONF message.
