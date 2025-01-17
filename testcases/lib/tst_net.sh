@@ -257,7 +257,7 @@ tst_rhost_run()
 		tst_res_ TINFO "$use: $rcmd \"$sh_cmd\" $out 2>&1"
 	fi
 
-	output=$($rcmd "$sh_cmd" $out 2>&1 || echo 'RTERR')
+	output=$($rcmd "$sh_cmd" $out || echo 'RTERR')
 
 	echo "$output" | grep -q 'RTERR$' && ret=1
 	if [ $ret -eq 1 ]; then
