@@ -1702,8 +1702,10 @@ unsigned int tst_multiply_timeout(unsigned int timeout)
 	if (timeout < 1)
 		tst_brk(TBROK, "timeout must to be >= 1! (%d)", timeout);
 
+	/*
 	if (tst_has_slow_kconfig())
 		timeout *= 4;
+	*/
 
 	return timeout * timeout_mul;
 }
