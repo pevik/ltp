@@ -28,7 +28,8 @@ void tst_mkfs_(const char *file, const int lineno, void (cleanup_fn)(void),
 {
 	int i, pos = 1, ret;
 	char mkfs[64];
-	const char *argv[OPTS_MAX] = {mkfs};
+	char *strace = "strace";
+	const char *argv[OPTS_MAX] = {strace};
 	char fs_opts_str[1024] = "";
 	char extra_opts_str[1024] = "";
 
@@ -50,6 +51,7 @@ void tst_mkfs_(const char *file, const int lineno, void (cleanup_fn)(void),
 		return;
 	}
 
+	argv[pos++] = mkfs;
 	snprintf(mkfs, sizeof(mkfs), "mkfs.%s", fs_type);
 
 	if (fs_opts) {
@@ -67,7 +69,6 @@ void tst_mkfs_(const char *file, const int lineno, void (cleanup_fn)(void),
 			strcat(fs_opts_str, fs_opts[i]);
 		}
 	}
-
 	argv[pos++] = dev;
 
 	if (extra_opts) {
