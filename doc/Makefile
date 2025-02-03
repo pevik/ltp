@@ -1,3 +1,6 @@
+# Copyright (c) Linux Test Project, 2024-2025
+# SPDX-License-Identifier: GPL-2.0-or-later
+
 PYTHON := python3
 
 .venv:
