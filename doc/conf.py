@@ -5,6 +5,7 @@
 
 import os
 import re
+import json
 import socket
 import urllib.request
 import sphinx
@@ -17,6 +18,7 @@ copyright = '2024, Linux Test Project'
 author = 'Linux Test Project'
 release = '1.0'
 ltp_repo = 'https://github.com/linux-test-project/ltp'
+ltp_repo_base_url = f"{ltp_repo}/tree/master"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -25,7 +27,7 @@ extensions = [
     'linuxdoc.rstKernelDoc',
     'sphinxcontrib.spelling',
     'sphinx.ext.autosectionlabel',
-    'sphinx.ext.extlinks'
+    'sphinx.ext.extlinks',
 ]
 
 exclude_patterns = ["html*", '_static*']
@@ -138,7 +140,6 @@ def generate_syscalls_stats(_):
     if error:
         return
 
-    syscalls_base_url = f"{ltp_repo}/tree/master"
     text = [
         'Syscalls\n',
         '--------\n\n',
@@ -176,7 +177,7 @@ def generate_syscalls_stats(_):
             path = dirpath.replace('../', '')
             name = match.group('name')
 
-            ltp_syscalls[name] = f'{syscalls_base_url}/{path}'
+            ltp_syscalls[name] = f'{ltp_repo_base_url}/{path}'
 
     # compare kernel syscalls with LTP tested syscalls
     syscalls = {}
@@ -186,7 +187,7 @@ def generate_syscalls_stats(_):
 
         if kersc not in syscalls:
             if kersc in white_list:
-                syscalls[kersc] = f'{syscalls_base_url}/{white_list[kersc]}'
+                syscalls[kersc] = f'{ltp_repo_base_url}/{white_list[kersc]}'
                 continue
 
             syscalls[kersc] = None
@@ -256,6 +257,97 @@ def generate_syscalls_stats(_):
         stats.writelines(text)
 
 
+def generate_test_catalog(_):
+    """
+    Generate the test catalog from ltp.json metadata file.
+    """
+    output = '_static/tests.rst'
+    metadata_file = '../metadata/ltp.json'
+    cve_url = "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-"
+    commit_url = "https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/commit/?id="
+    timeout_def = 0
+    text = []
+
+    metadata = None
+    with open(metadata_file, 'r', encoding='utf-8') as data:
+        metadata = json.load(data)
+
+    timeout_def = metadata['defaults']['timeout']
+
+    for test_name, conf in metadata['tests'].items():
+        text.extend([
+            f'{test_name}\n',
+            len(test_name) * '-' + '\n'
+        ])
+
+        # source url location
+        test_fname = conf.get('fname', None)
+        if test_fname:
+            text.append(f"\n`source <{ltp_repo_base_url}/{test_fname}>`_\n\n")
+
+        # test description
+        desc = conf.get('doc', None)
+        if desc:
+            desc_text = []
+            for line in desc:
+                if line.startswith("[Descr"):
+                    desc_text.append("**Description**")
+                elif line.startswith("[Algo"):
+                    desc_text.append("**Algorithm**")
+                else:
+                    desc_text.append(line)
+
+            text.extend([
+                '\n'.join(desc_text),
+                '\n'
+            ])
+
+        timeout = conf.get('timeout', None)
+        if timeout:
+            text.append(f'\nTest timeout to {timeout} seconds.')
+        else:
+            text.append(f'\nTest timeout defaults to {timeout_def} seconds.')
+
+        text.append('\n\n')
+
+        # tags information
+        tags = conf.get('tags', None)
+        if tags:
+            text.extend([
+                '\n.. list-table::\n',
+                '   :widths: 50 50\n'
+                '   :header-rows: 1\n\n',
+                '   * - Tag\n',
+                '     - Info\n',
+            ])
+
+            for tag in tags:
+                tag_key = tag[0]
+                tag_val = tag[1]
+
+                if tag_key == 'CVE':
+                    tag_val = f'`{tag_val} <{cve_url}{tag_val}>`_'
+                elif tag_key == 'linux-git':
+                    tag_val = f'`{tag_val} <{commit_url}{tag_val}>`_'
+
+                text.extend([
+                    f'   * - {tag_key}\n',
+                    f'     - {tag_val}\n',
+                ])
+
+            text.append('\n')
+
+        # small separator between tests
+        text.extend([
+            '\n',
+            '.. raw:: html\n\n',
+            '    <hr>\n\n',
+        ])
+
+    with open(output, 'w+', encoding='utf-8') as new_tests:
+        new_tests.writelines(text)
+
+
 def setup(app):
     """
     Setup the current documentation, using self generated data and graphics
@@ -263,3 +355,4 @@ def setup(app):
     """
     app.add_css_file('custom.css')
     app.connect('builder-inited', generate_syscalls_stats)
+    app.connect('builder-inited', generate_test_catalog)
