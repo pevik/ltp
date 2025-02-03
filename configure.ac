@@ -253,15 +253,10 @@ AC_CHECK_TYPES([struct statmount],,,[#include <linux/mount.h>])
 # Bash
 AC_ARG_WITH([bash],
   [AS_HELP_STRING([--with-bash],
-    [have the Bourne Again Shell interpreter])],
+    [unused, kept for compatibility reason])],
   [with_bash=$withval],
   [with_bash=no]
 )
-if test "x$with_bash" = xyes; then
-    AC_SUBST([WITH_BASH],["yes"])
-else
-    AC_SUBST([WITH_BASH],["no"])
-fi
 
 # metadata
 AC_ARG_ENABLE([metadata],
@@ -327,15 +322,10 @@ fi
 # Python
 AC_ARG_WITH([python],
   [AS_HELP_STRING([--with-python],
-    [have a python interpreter])],
+    [unused, kept for compatibility reason])],
   [with_python=$withval],
   [with_python=no]
 )
-if test "x$with_python" = xyes; then
-    AC_SUBST([WITH_PYTHON],["yes"])
-else
-    AC_SUBST([WITH_PYTHON],["no"])
-fi
 
 # TI RPC
 AC_ARG_WITH([tirpc],
