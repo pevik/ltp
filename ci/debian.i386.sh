@@ -14,6 +14,7 @@ apt install -y --no-install-recommends \
 	libc6-dev-i386 \
 	libc6:i386 \
 	libkeyutils-dev:i386 \
+	libmount-dev:i386 \
 	libnuma-dev:i386 \
 	libssl-dev:i386 \
 	libtirpc-dev:i386 \

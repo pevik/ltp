@@ -26,7 +26,8 @@ apk add \
 	numactl-dev \
 	openssl-dev \
 	perl-json \
-	pkgconfig
+	pkgconfig \
+	util-linux-dev
 
 cat /etc/os-release
 

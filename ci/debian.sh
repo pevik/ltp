@@ -27,6 +27,7 @@ pkg_minimal="
 	git
 	iproute2
 	libc6-dev
+	libmount-dev
 	libtirpc-dev
 	linux-libc-dev
 	lsb-release

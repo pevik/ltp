@@ -15,6 +15,7 @@ $yum \
 	findutils \
 	iproute \
 	numactl-devel \
+	libmount-devel \
 	libtirpc \
 	libtirpc-devel \
 	perl-JSON \

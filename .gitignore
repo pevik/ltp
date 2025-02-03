@@ -9,6 +9,7 @@ core
 .gdb_history
 .gdbinit
 lib*.a
+!libltp.a
 .cache.mk
 *.dwo
 *.mod
