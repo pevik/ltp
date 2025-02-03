@@ -34,8 +34,10 @@ The testsuite expects glibc ("C" library) (version 2.4 onwards) and
 the underlying kernel (version 2.6.18 onwards) to support
 Robust and Priority Inheritance (PI) Mutexes.
 
+Tests are written in python3 and bash.
+
 Most of the tests need the user to have a privileges that allow
-him/her to create SCHED_FIFO threads of priorities upto 99
+him/her to create SCHED_FIFO threads of priorities upto 99.
 
 RUNNING TESTS THROUGH LTP
 =========================
