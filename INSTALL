@@ -6,15 +6,15 @@ package in any Linux distribution (no specific version is required).
 
 Debian / Ubuntu
 
-	# apt install gcc git make pkgconf autoconf automake bison flex m4 linux-headers-$(uname -r) libc6-dev
+	# apt install gcc git make pkgconf autoconf automake bison flex m4 linux-headers-$(uname -r) libc6-dev libmount-dev
 
 openSUSE / SLES
 
-	# zypper install gcc git make pkg-config autoconf automake bison flex m4 linux-glibc-devel glibc-devel
+	# zypper install gcc git make pkg-config autoconf automake bison flex m4 linux-glibc-devel glibc-devel libmount-devel
 
 Fedora / CentOS / RHEL
 
-	# yum install gcc git make pkgconf autoconf automake bison flex m4 kernel-headers glibc-headers
+	# yum install gcc git make pkgconf autoconf automake bison flex m4 kernel-headers glibc-headers libmount-devel
 
 These are minimal build requirements for git compilation. Some tests require
 extra development files of some libraries, see ci/*.sh. There is also

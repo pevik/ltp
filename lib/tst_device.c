@@ -19,6 +19,7 @@
 #include <linux/limits.h>
 #include <sys/vfs.h>
 #include <linux/magic.h>
+#include <libmount/libmount.h>
 #include "lapi/syscalls.h"
 #include "test.h"
 #include "safe_macros.h"
@@ -571,6 +572,65 @@ static void btrfs_get_uevent_path(char *tmp_path, char *uevent_path)
 		tst_resm(TINFO, "Warning: used first of multiple backing device.");
 
 	SAFE_CLOSEDIR(NULL, dir);
+}
+
+static void overlay_get_dev(struct libmnt_fs *fs, const char *dir_opt,
+			    dev_t *dev)
+{
+	int ret;
+	char *value, *dir_name;
+	size_t val_size;
+	struct stat st;
+
+	ret = mnt_fs_get_option(fs, dir_opt, &value, &val_size);
+	if (ret)
+		tst_brkm(TBROK, NULL,
+			 "overlayfs: no %s in mount options", dir_opt);
+
+	dir_name = calloc(val_size + 1, 1);
+	if (!dir_name)
+		tst_brkm(TBROK | TERRNO, NULL, "calloc failed");
+
+	memcpy(dir_name, value, val_size);
+	if (stat(dir_name, &st) < 0)
+		tst_brkm(TBROK | TERRNO, NULL, "stat failed");
+
+	*dev = st.st_dev;
+	free(dir_name);
+}
+
+/*
+ * NOTE: this will not work for stacked overlay mounts.
+ */
+static void overlay_get_uevent_path(char *tmp_path, char *uevent_path)
+{
+	struct libmnt_table *mtab;
+	struct libmnt_fs *fs;
+	struct stat st;
+	dev_t upper_dev;
+
+	tst_resm(TINFO, "Use OVERLAYFS specific strategy");
+
+	mtab = mnt_new_table();
+	if (!mtab)
+		tst_brkm(TBROK | TERRNO, NULL, "mnt_new_table failed");
+
+	if (mnt_table_parse_file(mtab, "/proc/self/mountinfo") != 0)
+		tst_brkm(TBROK, NULL, "mnt_table_parse_file failed");
+
+	if (stat(tmp_path, &st) < 0)
+		tst_brkm(TBROK | TERRNO, NULL, "stat failed");
+
+	fs = mnt_table_find_devno(mtab, st.st_dev, MNT_ITER_FORWARD);
+	if (!fs)
+		tst_brkm(TBROK, NULL, "mnt_table_find_devno failed");
+
+	overlay_get_dev(fs, "upperdir", &upper_dev);
+	mnt_unref_table(mtab);
+
+	tst_resm(TINFO, "Warning: used first of multiple backing devices.");
+	sprintf(uevent_path, "/sys/dev/block/%d:%d/uevent",
+		major(upper_dev), minor(upper_dev));
 }
 
 __attribute__((nonnull))
