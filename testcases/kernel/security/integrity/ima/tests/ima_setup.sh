@@ -195,9 +195,11 @@ verify_ima_policy()
 			done < $file
 			IMA_POLICY_CHECKED=1
 		else
-			tst_res TINFO "policy is not readable, failure will be treated as TCONF"
+			tst_res TINFO "WARNING: policy is not readable, failure will be treated as TCONF"
 			IMA_FAIL="TCONF"
 			IMA_BROK="TCONF"
+			# NOTE: policy can be loaded even not readable
+			IMA_POLICY_NOT_READABLE=1
 			return 1
 		fi
 	fi
@@ -208,13 +210,13 @@ load_ima_policy()
 {
 	local file="$TST_DATAROOT/$REQUIRED_POLICY_CONTENT"
 
-	if [ "$LTP_IMA_LOAD_POLICY" != 1 -a "$IMA_POLICY_CHECKED" != 1 ]; then
-		tst_res TCONF "missing required policy, example policy can be loaded with LTP_IMA_LOAD_POLICY=1"
-		return 0
+	if [ "$LTP_IMA_LOAD_POLICY" != 1 -a "$IMA_POLICY_CHECKED" != 1 -a "$IMA_POLICY_NOT_READABLE" != 1 ]; then
+		tst_brk TCONF "missing required policy, example policy can be loaded with LTP_IMA_LOAD_POLICY=1"
 	fi
 
 	if [ "$IMA_POLICY_CHECKED" = 1 ]; then
 		tst_res TINFO "valid policy already loaded, ignore LTP_IMA_LOAD_POLICY=1"
+		return
 	fi
 
 	tst_res TINFO "trying to load '$file' policy:"
