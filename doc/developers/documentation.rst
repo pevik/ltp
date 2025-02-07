@@ -18,9 +18,9 @@ Before building, make sure you have python3 ``virtualenv`` module installed.
     # run configure to be able to compile doc dependencies in metadata/
     make autotools
     ./configure
-    cd doc
 
     # prepare virtual environment
+    cd doc
     python3 -m virtualenv .venv
     . .venv/bin/activate
 
@@ -38,6 +38,14 @@ Once the procedure has been completed, documentation will be visible at
     The current :master:`.readthedocs.yml` workflow is using ``Python 3.6`` because
     older Python versions were causing issues. No other version has been tested,
     but it should work anyway.
+
+.. tip::
+
+    For debugging :master:`.readthedocs.yml` (can't be debugged locally) it's
+    the least intrusive to set in `ReadTheDoc settings
+    <https://app.readthedocs.org/dashboard/linux-test-project/edit/>`_
+    different *default branch*. This allows to use ``git push -f`` without
+    polluting master branch.
 
 Validating spelling
 ~~~~~~~~~~~~~~~~~~~
