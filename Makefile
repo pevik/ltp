@@ -170,7 +170,13 @@ INSTALL_TARGETS		+= $(addprefix $(DESTDIR)/$(bindir)/,$(BINDIR_INSTALL_SCRIPTS))
 $(INSTALL_TARGETS): $(INSTALL_DIR) $(DESTDIR)/$(bindir)
 
 .PHONY: doc
-doc: metadata-all
+doc:
+	$(MAKE) -C $(abs_builddir)/doc setup
+	$(MAKE) -C $(abs_builddir)/doc
+
+.PHONY: doc-clean
+doc-clean:
+	$(MAKE) -C $(abs_builddir)/doc clean
 
 .PHONY: check
 check: $(CHECK_TARGETS)
