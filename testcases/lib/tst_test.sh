@@ -28,7 +28,6 @@ _tst_do_cleanup()
 {
 	if [ -n "$TST_DO_CLEANUP" -a -n "$TST_CLEANUP" -a -z "$LTP_NO_CLEANUP" ]; then
 		if command -v $TST_CLEANUP >/dev/null 2>/dev/null; then
-			TST_DO_CLEANUP=
 			$TST_CLEANUP
 		else
 			tst_res TWARN "TST_CLEANUP=$TST_CLEANUP declared, but function not defined (or cmd not found)"
@@ -127,10 +126,8 @@ tst_brk()
 	local res=$1
 	shift
 
-	# TBROK => TWARN on cleanup or exit
-	if [ "$res" = TBROK ] && [ "$TST_DO_EXIT" = 1 -o -z "$TST_DO_CLEANUP" -a -n "$TST_CLEANUP" ]; then
+	if [ "$TST_DO_EXIT" = 1 ]; then
 		tst_res TWARN "$@"
-		TST_DO_CLEANUP=
 		return
 	fi
 
@@ -820,7 +817,9 @@ _tst_run_iterations()
 		_tst_i=$((_tst_i-1))
 	done
 
+	TST_DO_EXIT=1
 	_tst_do_cleanup
+	unset TST_DO_EXIT
 
 	if [ "$TST_MOUNT_FLAG" = 1 ]; then
 		cd "$LTPROOT"
