@@ -361,6 +361,7 @@ def _generate_setup_table(keys):
         'fname',
         'doc',
         # following keys don't need to be shown
+        'api',
         'child_needs_reinit',
         'needs_checkpoints',
         'forks_child',

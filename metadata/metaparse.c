@@ -1036,9 +1036,12 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	data_node_hash_add(res, "api", data_node_string("c"));
+
 	data_node_hash_add(res, "fname", data_node_string(argv[optind]));
 	printf("  \"%s\": ", strip_name(argv[optind]));
 	data_to_json(res, stdout, 2);
+
 	data_node_free(res);
 
 	return 0;
