@@ -7,12 +7,12 @@ include $(top_srcdir)/include/mk/env_pre.mk
 include $(top_srcdir)/include/mk/functions.mk
 
 MAKE_TARGETS		:= ltp.json
-HOST_MAKE_TARGETS	:= metaparse
+HOST_MAKE_TARGETS	:= metaparse metaparse-sh
 INSTALL_DIR		= metadata
 
 .PHONY: ltp.json
 
-ltp.json: metaparse
+ltp.json: metaparse metaparse-sh
 	$(abs_srcdir)/parse.sh > ltp.json
 ifeq ($(WITH_METADATA),yes)
 	mkdir -p $(abs_top_builddir)/docparse
