@@ -26,6 +26,7 @@ static void json_finish(const char *path)
 	if (!started)
 		return;
 
+	printf("   \"api\": \"shell\",\n");
 	printf("   \"fname\": \"%s\"\n", path);
 	printf("  }");
 }
