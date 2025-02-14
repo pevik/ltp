@@ -90,6 +90,7 @@ run_tests()
 
 run_tests 0 $TESTS_PASS
 run_tests 32 $TESTS_TCONF
+run_tests 2 $TESTS_TBROK
 
 echo
 echo "*** Testing LTP test -h option ***"
