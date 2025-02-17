@@ -13,8 +13,9 @@
 
 TST_NEEDS_CMDS="awk cut grep tail"
 TST_CNT=2
-TST_SETUP="setup"
 TST_MIN_KVER="5.12"
+
+IMA_SETUP_EARLY="setup"
 
 REQUIRED_POLICY_CONTENT='selinux.policy'
 

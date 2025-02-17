@@ -265,6 +265,8 @@ ima_setup()
 		cd "$TST_MNTPOINT"
 	fi
 
+	[ -n "$IMA_SETUP_EARLY" ] && $IMA_SETUP_EARLY
+
 	if ! verify_ima_policy; then
 		load_ima_policy
 	fi
