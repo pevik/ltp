@@ -71,20 +71,28 @@ validate()
 	local num_violations="$1"
 	local count="$2"
 	local search="$3"
+	local expected_violations=$4
 	local max_attempt=3
 	local count2 i num_violations_new
+
+	[ -z $expected_violations ] && expected_violations=1
 
 	for i in $(seq 1 $max_attempt); do
 		read num_violations_new < $IMA_VIOLATIONS
 		count2="$(get_count $search)"
-		if [ $(($num_violations_new - $num_violations)) -gt 0 ]; then
+		tst_res TINFO "$num_violations_new - $num_violations (= $(($num_violations_new - $num_violations)))-ge $expected_violations" # FIXME: debug
+		#if [ $(($num_violations_new - $num_violations)) -eq $expected_violations ]; then
+		if [ $(($num_violations_new - $num_violations)) -ge $expected_violations ]; then
 			if [ $count2 -gt $count ]; then
-				tst_res TPASS "$search violation added"
+				tst_res TPASS "$expected_violations $search violation(s) added"
 				return
 			else
 				tst_res TINFO "$search not found in $LOG ($i/$max_attempt attempt)..."
 				tst_sleep 1s
 			fi
+		elif [ $(($num_violations_new - $num_violations)) -gt 0 ]; then
+			tst_res $IMA_FAIL "$search too many violations added"
+			return
 		else
 			tst_res $IMA_FAIL "$search violation not added"
 			return
