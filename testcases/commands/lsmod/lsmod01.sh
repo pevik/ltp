@@ -14,6 +14,9 @@ TST_NEEDS_CMDS="lsmod"
 
 module_inserted=
 
+# zcrypt has higher refcnt
+whitelist_modules='zcrypt'
+
 setup()
 {
 	if [ -z "$(cat /proc/modules)"  ]; then
@@ -55,8 +58,8 @@ lsmod_matches_proc_modules()
 	if [ "$lsmod_output" != "$modules_output" ]; then
 		tst_res TINFO "lsmod output different from /proc/modules"
 
-		echo "$lsmod_output" > temp1
-		echo "$modules_output" > temp2
+		echo "$lsmod_output" | grep -v "^$whitelist_modules" > temp1
+		echo "$modules_output" | grep -v "^$whitelist_modules" > temp2
 		if tst_cmd_available diff; then
 			diff temp1 temp2
 		else
