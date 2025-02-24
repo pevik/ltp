@@ -679,6 +679,7 @@ static void print_help(void)
 	fprintf(stderr, "LTP_REPRODUCIBLE_OUTPUT  Values 1 or y discard the actual content of the messages printed by the test\n");
 	fprintf(stderr, "LTP_QUIET                Values 1 or y will suppress printing TCONF, TWARN, TINFO, and TDEBUG messages\n");
 	fprintf(stderr, "LTP_SINGLE_FS_TYPE       Specifies filesystem instead all supported (for .all_filesystems)\n");
+	fprintf(stderr, "LTP_SINGLE_VARIANT       Testing only - specifies tst_variant to be run\n");
 	fprintf(stderr, "LTP_FORCE_SINGLE_FS_TYPE Testing only. The same as LTP_SINGLE_FS_TYPE but ignores test skiplist.\n");
 	fprintf(stderr, "LTP_TIMEOUT_MUL          Timeout multiplier (must be a number >=1)\n");
 	fprintf(stderr, "LTP_RUNTIME_MUL          Runtime multiplier (must be a number >0)\n");
@@ -2012,9 +2013,32 @@ static void run_tcases_per_fs(void)
 
 unsigned int tst_variant;
 
+static void setup_variants(unsigned int *first_variant, unsigned int *last_variant)
+{
+	const char *only_variant;
+	*first_variant = 0;
+	*last_variant = 1;
+
+	if (!tst_test->test_variants)
+		return;
+
+	*last_variant = tst_test->test_variants;
+
+	only_variant = getenv("LTP_SINGLE_VARIANT");
+	if (!only_variant || only_variant[0] == '\0')
+		return;
+
+	*first_variant = MIN(SAFE_STRTOL((char *)only_variant, 0, INT_MAX),
+					  *last_variant - 1);
+
+	tst_res(TINFO, "WARNING: testing only variant %d of %d",
+			*first_variant, *last_variant - 1);
+	*last_variant = *first_variant + 1;
+}
+
 void tst_run_tcases(int argc, char *argv[], struct tst_test *self)
 {
-	unsigned int test_variants = 1;
+	unsigned int first_variant, last_variant;
 	struct utsname uval;
 
 	tst_test = self;
@@ -2038,10 +2062,10 @@ void tst_run_tcases(int argc, char *argv[], struct tst_test *self)
 
 	set_overall_timeout();
 
-	if (tst_test->test_variants)
-		test_variants = tst_test->test_variants;
+	setup_variants(&first_variant, &last_variant);
 
-	for (tst_variant = 0; tst_variant < test_variants; tst_variant++) {
+	for (tst_variant = first_variant; tst_variant < last_variant; tst_variant++) {
+		tst_res(TINFO, "===== Testing tst_variant: %d =====", tst_variant);
 		if (tst_test->all_filesystems || count_fs_descs() > 1)
 			run_tcases_per_fs();
 		else
