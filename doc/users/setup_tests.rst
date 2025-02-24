@@ -58,6 +58,9 @@ users.
      - Testing only - specifies filesystem instead all supported
        (for tests with ``.all_filesystems``).
 
+   * - LTP_SINGLE_VARIANT
+     - Testing only - specifies tst_variant to be run.
+
    * - LTP_TIMEOUT_MUL
      - Multiplies timeout, must be number >= 0.1 (> 1 is useful for slow
        machines to avoid unexpected timeout). It's mainly for shell API, which

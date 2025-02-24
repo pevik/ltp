@@ -581,6 +581,7 @@ static void print_help(void)
 	fprintf(stderr, "LTP_DEV              Path to the block device to be used (for .needs_device)\n");
 	fprintf(stderr, "LTP_DEV_FS_TYPE      Filesystem used for testing (default: %s)\n", DEFAULT_FS_TYPE);
 	fprintf(stderr, "LTP_SINGLE_FS_TYPE   Testing only - specifies filesystem instead all supported (for .all_filesystems)\n");
+	fprintf(stderr, "LTP_SINGLE_VARIANT   Testing only - specifies tst_variant to be run\n");
 	fprintf(stderr, "LTP_TIMEOUT_MUL      Timeout multiplier (must be a number >=1)\n");
 	fprintf(stderr, "LTP_RUNTIME_MUL      Runtime multiplier (must be a number >=1)\n");
 	fprintf(stderr, "LTP_VIRT_OVERRIDE    Overrides virtual machine detection (values: \"\"|kvm|microsoft|xen|zvm)\n");
@@ -1882,10 +1883,33 @@ static int run_tcases_per_fs(void)
 
 unsigned int tst_variant;
 
+static void setup_variants(unsigned int *first_variant, unsigned int *last_variant)
+{
+	const char *only_variant;
+	*first_variant = 0;
+	*last_variant = 1;
+
+	if (!tst_test->test_variants)
+		return;
+
+	*last_variant = tst_test->test_variants;
+
+	only_variant = getenv("LTP_SINGLE_VARIANT");
+	if (!only_variant || only_variant[0] == '\0')
+		return;
+
+	*first_variant = MIN(SAFE_STRTOL((char *)only_variant, 0, INT_MAX),
+					  *last_variant - 1);
+
+	tst_res(TINFO, "WARNING: testing only variant %d of %d",
+			*first_variant, *last_variant - 1);
+	*last_variant = *first_variant + 1;
+}
+
 void tst_run_tcases(int argc, char *argv[], struct tst_test *self)
 {
 	int ret = 0;
-	unsigned int test_variants = 1;
+	unsigned int first_variant, last_variant;
 	struct utsname uval;
 
 	lib_pid = getpid();
@@ -1899,7 +1923,6 @@ void tst_run_tcases(int argc, char *argv[], struct tst_test *self)
 
 	tst_res(TINFO, "LTP version: "LTP_VERSION);
 
-
 	uname(&uval);
 	tst_res(TINFO, "Tested kernel: %s %s %s", uval.release, uval.version, uval.machine);
 
@@ -1908,10 +1931,10 @@ void tst_run_tcases(int argc, char *argv[], struct tst_test *self)
 
 	set_overall_timeout();
 
-	if (tst_test->test_variants)
-		test_variants = tst_test->test_variants;
+	setup_variants(&first_variant, &last_variant);
 
-	for (tst_variant = 0; tst_variant < test_variants; tst_variant++) {
+	for (tst_variant = first_variant; tst_variant < last_variant; tst_variant++) {
+		tst_res(TINFO, "===== Testing tst_variant: %d =====", tst_variant);
 		if (tst_test->all_filesystems || count_fs_descs() > 1)
 			ret |= run_tcases_per_fs();
 		else
