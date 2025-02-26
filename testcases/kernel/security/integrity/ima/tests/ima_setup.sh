@@ -236,9 +236,9 @@ load_ima_policy()
 		tst_brk TCONF "loading unsigned policy failed"
 	fi
 
-	IMA_POLICY_LOADED=1
+	TST_REBOOT=1
 
-	tst_res TINFO "example policy successfully loaded"
+	tst_res TINFO "WARNING: example policy successfully loaded due LTP_IMA_LOAD_POLICY=1, reboot recommended"
 	IMA_FAIL="TFAIL"
 	IMA_BROK="TBROK"
 }
@@ -281,10 +281,6 @@ ima_cleanup()
 	for dir in $UMOUNT; do
 		umount $dir
 	done
-
-	if [ "$IMA_POLICY_LOADED" = 1 ]; then
-		tst_res TINFO "WARNING: policy loaded via LTP_IMA_LOAD_POLICY=1, reboot recommended"
-	fi
 }
 
 set_digest_index()
