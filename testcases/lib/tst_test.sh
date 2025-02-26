@@ -16,6 +16,7 @@ export TST_COUNT=1
 export TST_ITERATIONS=1
 export TST_TMPDIR_RHOST=0
 export TST_LIB_LOADED=1
+export TST_REBOOT=
 
 . tst_ansi_color.sh
 . tst_security.sh
@@ -82,6 +83,10 @@ _tst_do_exit()
 
 	if [ $TST_BROK -gt 0 -o $TST_FAIL -gt 0 -o $TST_WARN -gt 0 ]; then
 		[ -z "$TST_SKIP_LSM_WARNINGS" ] && _tst_check_security_modules
+	fi
+
+	if [ "$TST_REBOOT" = 1 ]; then
+		tst_res TINFO "WARNING: reboot recommended due test changes"
 	fi
 
 	cat >&2 << EOF
@@ -687,7 +692,7 @@ tst_run()
 			CHECKPOINT_WAKE2|CHECKPOINT_WAKE_AND_WAIT);;
 			DEV_EXTRA_OPTS|DEV_FS_OPTS|FORMAT_DEVICE|MOUNT_DEVICE);;
 			SKIP_FILESYSTEMS|SKIP_IN_LOCKDOWN|SKIP_IN_SECUREBOOT);;
-			DEVICE_SIZE);;
+			DEVICE_SIZE|REBOOT);;
 			*) tst_res TWARN "Reserved variable TST_$_tst_i used!";;
 			esac
 		done
