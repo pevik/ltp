@@ -198,6 +198,12 @@ static void setup(void)
 {
 	int i;
 	struct perf_event_attr tsk_event, hw_event;
+	struct sched_param sparam = {.sched_priority = 1};
+
+	if (sched_setscheduler(0, SCHED_FIFO, &sparam)) {
+		tst_brk(TBROK | TERRNO,
+			"sched_setscheduler(0, SCHED_FIFO, ...) failed");
+	}
 
 	for (i = 0; i < MAX_CTRS; i++) {
 		hwfd[i] = -1;
@@ -271,12 +277,7 @@ static void verify(void)
 	unsigned long long vtsum = 0, vhsum = 0;
 	int i;
 	double ratio;
-	struct sched_param sparam = {.sched_priority = 1};
-
-	if (sched_setscheduler(0, SCHED_FIFO, &sparam)) {
-		tst_brk(TBROK | TERRNO,
-			"sched_setscheduler(0, SCHED_FIFO, ...) failed");
-	}
+	struct sched_param sparam = {.sched_priority = 0};
 
 	all_counters_set(PR_TASK_PERF_EVENTS_ENABLE);
 	do_work(8);
