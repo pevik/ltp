@@ -9,30 +9,35 @@
 #include "tst_safe_stdio.h"
 #include "ujson.h"
 
+static char *shell_loader;
+
+/* shell test filename */
 static char *shell_filename;
 
 static void run_shell(void)
 {
-	tst_run_script(shell_filename, NULL);
+	char *const params[] = {shell_filename, NULL};
+	tst_run_script(shell_loader, params);
 }
 
 static void run_shell_tcnt(unsigned int n)
 {
 	char buf[128];
-	char *const params[] = {buf, NULL};
+	char *const params[] = {shell_filename, buf, NULL};
 
 	snprintf(buf, sizeof(buf), "%u", n);
 
-	tst_run_script(shell_filename, params);
+	tst_run_script(shell_loader, params);
 }
 
 static struct tst_test test = {
 	.runs_script = 1,
+	.pos_args = 1,
 };
 
 static void print_help(void)
 {
-	printf("Usage: tst_shell_loader ltp_shell_test.sh ...\n");
+	printf("Usage: tst_run_shell tst_exec.sh ltp_shell_test.sh ...\n");
 }
 
 static char *metadata;
@@ -589,7 +594,8 @@ int main(int argc, char *argv[])
 	if (argc < 2)
 		goto help;
 
-	shell_filename = argv[1];
+	shell_loader = argv[1];
+	shell_filename = argv[2];
 
 	prepare_test_struct();
 

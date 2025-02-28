@@ -10,8 +10,6 @@
 
 TST_CLEANUP=do_cleanup
 
-. tst_loader.sh
-
 do_cleanup()
 {
 	tst_res TINFO "Cleanup executed"
@@ -22,4 +20,4 @@ tst_test()
 	tst_res TPASS "Test is executed"
 }
 
-tst_test
+. tst_loader.sh
