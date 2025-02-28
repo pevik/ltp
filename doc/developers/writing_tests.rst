@@ -521,7 +521,7 @@ LTP C And Shell Test API Comparison
     * - not applicable
       - TST_NEEDS_MODULE
 
-    * - not applicable
+    * - .pos_args (internal use for tst_run_shell.c)
       - TST_POS_ARGS
 
     * - not applicable

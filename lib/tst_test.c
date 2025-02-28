@@ -711,6 +711,9 @@ static void parse_opts(int argc, char *argv[])
 
 	check_option_collision();
 
+	if (tst_test->pos_args < 0)
+		tst_brk(TBROK, ".pos_args must be >= 0");
+
 	optstr[0] = 0;
 
 	for (i = 0; i < ARRAY_SIZE(options); i++)
@@ -751,8 +754,10 @@ static void parse_opts(int argc, char *argv[])
 		}
 	}
 
-	if (optind < argc)
-		tst_brk(TBROK, "Unexpected argument(s) '%s'...", argv[optind]);
+	if (optind + tst_test->pos_args < argc) {
+		tst_brk(TBROK, "Unexpected argument(s) '%s' (%d + %d < %d)",
+			argv[optind], optind, tst_test->pos_args, argc);
+	}
 }
 
 int tst_parse_int(const char *str, int *val, int min, int max)
