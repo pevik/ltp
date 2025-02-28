@@ -292,7 +292,10 @@ struct tst_fs {
  *
  * @tcnt: A number of tests. If set the test() callback is called tcnt times
  *        and each time passed an increasing counter value.
+ *
  * @options: An NULL optstr terminated array of struct tst_option.
+ *
+ * @pos_args: An number of positional parameters passed to tst_run_shell.c.
  *
  * @min_kver: A minimal kernel version the test can run on. e.g. "3.10".
  *
@@ -528,6 +531,7 @@ struct tst_fs {
 	unsigned int tcnt;
 
 	struct tst_option *options;
+	int pos_args;
 
 	const char *min_kver;
 
@@ -554,7 +558,6 @@ struct tst_fs {
 	unsigned int skip_in_lockdown:1;
 	unsigned int skip_in_secureboot:1;
 	unsigned int skip_in_compat:1;
-
 
 	int needs_abi_bits;
 
