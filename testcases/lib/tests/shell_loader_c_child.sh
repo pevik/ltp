@@ -13,8 +13,6 @@
 # }
 # ---
 
-. tst_loader.sh
-
 tst_test()
 {
 	if [ -n "LTP_IPC_PATH" ]; then
@@ -25,4 +23,4 @@ tst_test()
 	shell_c_child
 }
 
-tst_test
+. tst_loader.sh

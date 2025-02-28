@@ -10,8 +10,6 @@
 
 TST_CLEANUP=cleanup
 
-. tst_loader.sh
-
 cleanup()
 {
 	tst_res TINFO "Cleanup runs"
@@ -22,4 +20,4 @@ tst_test()
 	tst_brk TBROK "Test exits"
 }
 
-tst_test
+. tst_loader.sh

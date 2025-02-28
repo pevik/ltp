@@ -19,8 +19,6 @@
 # }
 # ---
 
-. tst_loader.sh
-
 tst_test()
 {
 	tst_res TINFO "In shell"
@@ -37,4 +35,4 @@ tst_test()
 	fi
 }
 
-tst_test
+. tst_loader.sh

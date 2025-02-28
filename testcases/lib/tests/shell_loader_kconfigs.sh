@@ -9,11 +9,9 @@
 # }
 # ---
 
-. tst_loader.sh
-
 tst_test()
 {
 	tst_res TPASS "Shell loader works fine!"
 }
 
-tst_test
+. tst_loader.sh
