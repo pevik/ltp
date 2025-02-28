@@ -12,7 +12,7 @@
 # }
 # ---
 
-. tst_loader.sh
+. tst_env.sh
 
 tst_test()
 {
@@ -32,4 +32,4 @@ tst_test()
 	fi
 }
 
-tst_test
+. tst_loader.sh

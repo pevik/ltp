@@ -9,11 +9,11 @@
 # }
 # ---
 
-. tst_loader.sh
+. tst_env.sh
 
 tst_test()
 {
 	tst_res TPASS "We are running on supported architecture"
 }
 
-tst_test
+. tst_loader.sh

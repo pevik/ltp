@@ -13,7 +13,7 @@
 # }
 # ---
 
-. tst_loader.sh
+. tst_env.sh
 
 tst_test()
 {
@@ -25,4 +25,4 @@ tst_test()
 	shell_c_child
 }
 
-tst_test
+. tst_loader.sh

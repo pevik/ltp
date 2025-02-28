@@ -10,7 +10,7 @@
 
 TST_CLEANUP=cleanup
 
-. tst_loader.sh
+. tst_env.sh
 
 cleanup()
 {
@@ -22,4 +22,4 @@ tst_test()
 	tst_brk TBROK "Test exits"
 }
 
-tst_test
+. tst_loader.sh

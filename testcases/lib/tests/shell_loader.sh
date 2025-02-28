@@ -14,7 +14,7 @@
 # }
 # ---
 
-. tst_loader.sh
+. tst_env.sh
 
 tst_test()
 {
@@ -27,4 +27,4 @@ tst_test()
 	esac
 }
 
-tst_test
+. tst_loader.sh

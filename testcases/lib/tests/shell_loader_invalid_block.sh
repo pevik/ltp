@@ -20,11 +20,11 @@
 # This is an invalid block that breaks the test.
 # ---
 
-. tst_loader.sh
+. tst_env.sh
 
 tst_test()
 {
 	tst_res TPASS "This should pass!"
 }
 
-tst_test
+. tst_loader.sh

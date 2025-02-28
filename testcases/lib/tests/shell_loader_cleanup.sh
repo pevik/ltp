@@ -10,7 +10,7 @@
 
 TST_CLEANUP=do_cleanup
 
-. tst_loader.sh
+. tst_env.sh
 
 do_cleanup()
 {
@@ -22,4 +22,4 @@ tst_test()
 	tst_res TPASS "Test is executed"
 }
 
-tst_test
+. tst_loader.sh
