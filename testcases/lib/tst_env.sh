@@ -7,6 +7,7 @@
 #
 
 tst_script_name=$(basename $0)
+echo "!! tst_env.sh: pid: $$, 1: '$1', tst_script_name: '$tst_script_name'" # FIXME: debug
 
 # bash does not expand aliases in non-iteractive mode, enable it
 if [ -n "$BASH_VERSION" ]; then

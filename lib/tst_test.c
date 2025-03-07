@@ -96,6 +96,8 @@ static void do_exit(int ret) __attribute__ ((noreturn));
 
 static void setup_ipc(void)
 {
+	tst_res(TINFO, "%s() pid: %d", __func__, getpid());
+
 	size_t size = getpagesize();
 
 	if (access("/dev/shm", F_OK) == 0) {
@@ -112,6 +114,8 @@ static void setup_ipc(void)
 			 tmpdir, tid, getpid());
 		free(tmpdir);
 	}
+
+	tst_res(TINFO, "%s() mmap() size: %zi into shm_path: '%s'", __func__, size, shm_path);
 
 	ipc_fd = open(shm_path, O_CREAT | O_EXCL | O_RDWR, 0600);
 	if (ipc_fd < 0)
@@ -380,6 +384,8 @@ static void do_test_cleanup(void)
 void tst_vbrk_(const char *file, const int lineno, int ttype, const char *fmt,
 	       va_list va)
 {
+	tst_res(TINFO, "%s() pid: %d", __func__, getpid());
+
 	print_result(file, lineno, ttype, fmt, va);
 	update_results(TTYPE_RESULT(ttype));
 
@@ -914,6 +920,8 @@ static void print_failure_hints(void)
 
 static void do_exit(int ret)
 {
+	tst_res(TINFO, "%s() pid: %d", __func__, getpid());
+
 	if (results) {
 		if (results->passed && ret == TCONF)
 			ret = 0;
@@ -946,6 +954,7 @@ static void do_exit(int ret)
 
 	do_cleanup();
 
+	tst_res(TINFO, "%s() pid: %d exit(%d)", __func__, getpid(), ret);
 	exit(ret);
 }
 
@@ -1257,6 +1266,8 @@ static const char *default_fs_type(void)
 
 static void do_setup(int argc, char *argv[])
 {
+	tst_res(TINFO, "%s() getpid: %d", __func__, getpid());
+
 	char *tdebug_env = getenv("LTP_ENABLE_DEBUG");
 
 	if (!tst_test)
@@ -1710,6 +1721,8 @@ unsigned int tst_multiply_timeout(unsigned int timeout)
 
 static void set_overall_timeout(void)
 {
+	tst_res(TINFO, "%s() pid: %d", __func__, getpid());
+
 	unsigned int timeout = DEFAULT_TIMEOUT + tst_test->timeout;
 
 	if (tst_test->timeout == TST_UNLIMITED_TIMEOUT) {
@@ -1748,6 +1761,8 @@ void tst_set_runtime(int runtime)
 
 static int fork_testrun(void)
 {
+	tst_res(TINFO, "%s() pid: %d", __func__, getpid());
+
 	int status;
 
 	SAFE_SIGNAL(SIGINT, sigint_handler);
@@ -1828,6 +1843,8 @@ ret:
 
 static int run_tcase_on_fs(struct tst_fs *fs, const char *fs_type)
 {
+	tst_res(TINFO, "%s() pid: %d", __func__, getpid());
+
 	int ret;
 
 	tst_res(TINFO, "=== Testing on %s ===", fs_type);
@@ -1853,6 +1870,8 @@ static int run_tcase_on_fs(struct tst_fs *fs, const char *fs_type)
 
 static int run_tcases_per_fs(void)
 {
+	tst_res(TINFO, "%s() pid: %d", __func__, getpid());
+
 	int ret = 0;
 	unsigned int i;
 	const char *const *filesystems = tst_get_supported_fs_types(tst_test->skip_filesystems);
@@ -1884,6 +1903,8 @@ unsigned int tst_variant;
 
 void tst_run_tcases(int argc, char *argv[], struct tst_test *self)
 {
+	tst_res(TINFO, "%s() pid: %d", __func__, getpid());
+
 	int ret = 0;
 	unsigned int test_variants = 1;
 	struct utsname uval;
@@ -1898,7 +1919,6 @@ void tst_run_tcases(int argc, char *argv[], struct tst_test *self)
 	SAFE_SIGNAL(SIGUSR1, heartbeat_handler);
 
 	tst_res(TINFO, "LTP version: "LTP_VERSION);
-
 
 	uname(&uval);
 	tst_res(TINFO, "Tested kernel: %s %s %s", uval.release, uval.version, uval.machine);

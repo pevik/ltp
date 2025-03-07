@@ -39,7 +39,11 @@
 # }
 # ---
 
+echo "!!!! vma05.sh ($0): pid: $$, 1: '$1'" # FIXME: debug
+
 . tst_loader.sh
+
+echo "!!!! vma05.sh: pid: $$, after . tst_loader.sh" # FIXME: debug
 
 ulimit -c unlimited
 unset DEBUGINFOD_URLS
@@ -62,8 +66,11 @@ rm -rf core*
 TRACE=$(gdb -silent -ex="thread apply all backtrace" -ex="quit"\
 	vma05_vdso ./core* 2> /dev/null)
 
+tst_brk TBROK "QUIT for debugging" # FIXME: debug
+
 if echo "$TRACE" | grep -qF "??"; then
 	tst_res TFAIL "[vdso] bug not patched"
 else
 	tst_res TPASS "[vdso] backtrace complete"
 fi
+echo "!!!! vma05.sh:: pid: $$, implicit exit at the end: $?" # FIXME: debug

@@ -13,6 +13,7 @@ static char *shell_filename;
 
 static void run_shell(void)
 {
+	tst_res(TINFO, "%s buf: %s", __func__, shell_filename);
 	tst_run_script(shell_filename, NULL);
 }
 
@@ -21,6 +22,7 @@ static void run_shell_tcnt(unsigned int n)
 	char buf[128];
 	char *const params[] = {buf, NULL};
 
+	tst_res(TINFO, "%s n: %d, buf: %s", __func__, n, buf);
 	snprintf(buf, sizeof(buf), "%u", n);
 
 	tst_run_script(shell_filename, params);
@@ -385,6 +387,8 @@ static struct tst_path_val *parse_save_restore(ujson_reader *reader, ujson_val *
 
 static void parse_metadata(void)
 {
+	tst_res(TINFO, "%s()", __func__);
+
 	ujson_reader reader = UJSON_READER_INIT(metadata, metadata_used, UJSON_READER_STRICT);
 	char str_buf[128];
 	ujson_val val = UJSON_VAL_INIT(str_buf, sizeof(str_buf));
@@ -517,6 +521,8 @@ enum parser_state {
 
 static void extract_metadata(void)
 {
+	tst_res(TINFO, "%s()", __func__);
+
 	FILE *f;
 	char line[4096];
 	char path[4096];
@@ -576,6 +582,7 @@ static void extract_metadata(void)
 
 static void prepare_test_struct(void)
 {
+	tst_res(TINFO, "%s()", __func__);
 	extract_metadata();
 
 	if (metadata)
@@ -586,6 +593,7 @@ static void prepare_test_struct(void)
 
 int main(int argc, char *argv[])
 {
+	tst_res(TINFO, "%s() pid: %d", __func__, getpid());
 	if (argc < 2)
 		goto help;
 
@@ -598,6 +606,7 @@ int main(int argc, char *argv[])
 	else
 		test.test_all = run_shell;
 
+	tst_res(TINFO, "calls tst_run_tcases()");
 	tst_run_tcases(argc - 1, argv + 1, &test);
 help:
 	print_help();
