@@ -24,7 +24,7 @@
 
 static void run(void)
 {
-	int nr_open;
+	int rlim_max;
 	int nr_limit;
 	struct rlimit rlimit;
 	struct tst_clone_args args = {
@@ -32,13 +32,11 @@ static void run(void)
 		.exit_signal = SIGCHLD,
 	};
 
-	SAFE_FILE_SCANF(FS_NR_OPEN, "%d", &nr_open);
-	tst_res(TDEBUG, "Maximum number of file descriptors: %d", nr_open);
-
-	nr_limit = nr_open + NR_OPEN_LIMIT;
-	SAFE_FILE_PRINTF(FS_NR_OPEN, "%d", nr_limit);
-
 	SAFE_GETRLIMIT(RLIMIT_NOFILE, &rlimit);
+	rlim_max = rlimit.rlim_max;
+
+	nr_limit = rlim_max + NR_OPEN_LIMIT;
+	SAFE_FILE_PRINTF(FS_NR_OPEN, "%d", nr_limit);
 
 	rlimit.rlim_cur = nr_limit;
 	rlimit.rlim_max = nr_limit;
@@ -47,10 +45,10 @@ static void run(void)
 	tst_res(TDEBUG, "Set new maximum number of file descriptors to : %d",
 		nr_limit);
 
-	SAFE_DUP2(2, nr_open + NR_OPEN_DUP);
+	SAFE_DUP2(2, rlim_max + NR_OPEN_DUP);
 
 	if (!SAFE_CLONE(&args)) {
-		SAFE_FILE_PRINTF(FS_NR_OPEN, "%d", nr_open);
+		SAFE_FILE_PRINTF(FS_NR_OPEN, "%d", rlim_max);
 		TST_EXP_FAIL(unshare(CLONE_FILES), EMFILE);
 		exit(0);
 	}
