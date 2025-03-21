@@ -113,7 +113,7 @@ static struct tst_test test = {
 		{.type = "bcachefs"},
 		{
 			.type = "xfs",
-			.min_kver = "4.16",
+			.min_kver = "5.10",
 			.mkfs_ver = "mkfs.xfs >= 1.5.0",
 			.mkfs_opts = (const char *const []) {"-m", "reflink=1", NULL},
 		},
