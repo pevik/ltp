@@ -28,6 +28,8 @@ Before building, make sure you have python3 ``virtualenv`` module installed.
     # build documentation
     make
 
+Instead of the above it's possible call ``make doc`` in the top level directory.
+
 Once the procedure has been completed, documentation will be visible at
 ``doc/html/index.html``.
 
