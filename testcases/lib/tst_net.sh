@@ -713,8 +713,8 @@ tst_wait_ipv6_dad()
 
 tst_netload_brk()
 {
-	tst_rhost_run -c "cat $TST_TMPDIR/netstress.log"
-	cat tst_netload.log
+	#tst_rhost_run -c "cat $TST_TMPDIR/netstress.log"
+	#cat tst_netload.log
 	tst_brk_ $1 $2
 }
 
@@ -802,16 +802,23 @@ tst_netload()
 	local passed=0
 
 	for i in $(seq 1 $run_cnt); do
-		tst_rhost_run -c "netstress $s_opts" > tst_netload.log 2>&1
+		#tst_rhost_run -c "netstress $s_opts" > tst_netload.log 2>&1
+		#tst_rhost_run -c "strace -f -tt netstress $s_opts"
+		# FIXME: tst_rhost_run() gets broken when passing args to strace
+		tst_res TINFO "tst_rhost_run -c strace netstress $s_opts"
+		tst_rhost_run -c "strace netstress $s_opts"
+
 		if [ $? -ne 0 ]; then
-			cat tst_netload.log
+			#cat tst_netload.log
 			local ttype="TFAIL"
-			grep -e 'CONF:' tst_netload.log && ttype="TCONF"
+			#grep -e 'CONF:' tst_netload.log && ttype="TCONF"
 			tst_brk_ $ttype "server failed"
 		fi
 
 		local port=$(tst_rhost_run -s -c "cat $TST_TMPDIR/netstress_port")
-		netstress -l ${c_opts} -g $port > tst_netload.log 2>&1
+		#netstress -l ${c_opts} -g $port > tst_netload.log 2>&1
+		tst_res TINFO "strace -f -tt netstress -l ${c_opts} -g $port"
+		strace -f -tt netstress -l ${c_opts} -g $port
 		ret=$?
 		tst_rhost_run -c "pkill -9 netstress\$"
 
