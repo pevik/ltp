@@ -43,16 +43,22 @@ static struct tcase {
 static void run(unsigned int n)
 {
 	struct tcase *tc = &tcases[n];
+	int errno_exp = tc->errno_exp;
+	long fs_type = tst_fs_type(MNTPOINT);
+
+	/* ext[234] and tmpfs does not support immutable destination */
+	if (errno_exp == EPERM &&
+		(fs_type == TST_EXT234_MAGIC || fs_type == TST_TMPFS_MAGIC)) {
+		errno_exp = EOPNOTSUPP;
+	}
 
 	TST_EXP_FAIL(ioctl(*tc->dst_fd, FICLONE, *tc->src_fd),
-		tc->errno_exp,
-		"%s", tc->msg);
+		errno_exp, "%s", tc->msg);
 
 	clone_range->src_fd = *tc->src_fd;
 
 	TST_EXP_FAIL(ioctl(*tc->dst_fd, FICLONERANGE, clone_range),
-		tc->errno_exp,
-		"%s", tc->msg);
+		errno_exp, "%s", tc->msg);
 }
 
 static void setup(void)
@@ -117,6 +123,10 @@ static struct tst_test test = {
 			.mkfs_ver = "mkfs.xfs >= 1.5.0",
 			.mkfs_opts = (const char *const []) {"-m", "reflink=1", NULL},
 		},
+		{.type = "ext2"},
+		{.type = "ext3"},
+		{.type = "ext4"},
+		{.type = "tmpfs"},
 		{}
 	},
 	.bufs = (struct tst_buffers []) {
