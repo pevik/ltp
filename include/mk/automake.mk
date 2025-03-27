@@ -45,7 +45,7 @@ m4/ltp-version.m4: VERSION
 	sed -n '1{s:LTP-:m4_define([LTP_VERSION],[:;s:$$:]):;p;q}' $< > $@
 
 .PHONY: automake
-AUTOMAKE_FILES := config.guess config.sub install-sh missing stamp-h1
+AUTOMAKE_FILES := config.guess config.sub install-sh missing
 automake: aclocal $(AUTOMAKE_FILES)
 $(AUTOMAKE_FILES): m4/Makefile.in
 m4/Makefile.in: m4/Makefile.am aclocal.m4
@@ -55,8 +55,8 @@ m4/Makefile.in: m4/Makefile.am aclocal.m4
 ac-clean::
 	$(RM) -rf autom4te.cache
 	$(RM) -f config.log config.status
-	$(RM) -f include/config.h include/stamp-h1
 	$(RM) -f m4/Makefile m4/ltp-version.m4
+	$(MAKE) -C "$(top_srcdir)/include" $@;
 	for d in $(AUTOCONFED_SUBDIRS); do \
 	    $(MAKE) -C "$(top_srcdir)/$$d" $@; \
 	done
