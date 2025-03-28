@@ -1,3 +1,4 @@
+sphinx
 sphinx-rtd-theme==2.0.0
 linuxdoc==20231020
 sphinxcontrib-spelling==7.7.0
