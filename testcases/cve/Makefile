@@ -22,6 +22,9 @@ ifneq (,$(filter $(HOST_CPU),x86 x86_64))
 meltdown: CFLAGS += -msse2
 endif
 
-cve-2015-3290:	CFLAGS += -pthread -fomit-frame-pointer
+# The test needs to clobber %rbp, which requires frame pointer omission.  Also
+# bump up the preferred stack boundary to ensure that the compiler manages to
+# omit the frame pointer even with AVX enabled.
+cve-2015-3290:	CFLAGS += -pthread -fomit-frame-pointer -mpreferred-stack-boundary=5
 
 include $(top_srcdir)/include/mk/generic_leaf_target.mk
