@@ -67,6 +67,11 @@ jobs:
               CC: gcc
               TREE: out
 
+          - container: "quay.io/centos/centos:stream10"
+            env:
+              CC: gcc
+              TREE: out
+
           - container: "debian:testing"
             env:
               CC: gcc
