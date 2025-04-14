@@ -26,7 +26,6 @@ static int tcases[] = {
 	S_IFREG | 06700,
 };
 
-
 static void run(unsigned int i)
 {
 	dev_t dev = 0;
@@ -35,8 +34,8 @@ static void run(unsigned int i)
 		dev = makedev(1, 3);
 
 	TST_EXP_PASS(mknod(PATH, tcases[i], dev),
-				"mknod(PATH, %o, %ld)",
-				tcases[i], dev);
+		     "mknod(PATH, %o, %ld)",
+		     tcases[i], dev);
 	SAFE_UNLINK(PATH);
 }
 
