@@ -614,6 +614,7 @@ static void print_help(void)
 	fprintf(stderr, "KCONFIG_PATH            Specify kernel config file\n");
 	fprintf(stderr, "KCONFIG_SKIP_CHECK      Skip kernel config check if variable set (not set by default)\n");
 	fprintf(stderr, "LTPROOT                 Prefix for installed LTP (default: /opt/ltp)\n");
+	fprintf(stderr, "LTP_ENABLE_DEBUG        When set to 1 or y enables debug info\n");
 	fprintf(stderr, "LTP_COLORIZE_OUTPUT     Force colorized output behaviour (y/1 always, n/0: never)\n");
 	fprintf(stderr, "LTP_DEV                 Path to the block device to be used (for .needs_device)\n");
 	fprintf(stderr, "LTP_DEV_FS_TYPE         Filesystem used for testing (default: %s)\n", DEFAULT_FS_TYPE);
