@@ -158,9 +158,17 @@ const char **tst_get_supported_fs_types(const char *const *skiplist)
 	only_fs = getenv("LTP_SINGLE_FS_TYPE");
 
 	if (only_fs) {
+		enum tst_fs_impl ret;
+
 		tst_res(TINFO, "WARNING: testing only %s", only_fs);
-		if (tst_fs_is_supported(only_fs))
+
+		if (tst_fs_in_skiplist(only_fs, skiplist))
+			return fs_types;
+
+		ret = tst_fs_is_supported(only_fs);
+		if (ret == TST_FS_KERNEL || (ret == TST_FS_FUSE && !skip_fuse))
 			fs_types[0] = only_fs;
+
 		return fs_types;
 	}
 
