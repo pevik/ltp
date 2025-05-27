@@ -38,6 +38,7 @@
 #include "old_device.h"
 #include "old_tmpdir.h"
 #include "ltp-version.h"
+#include "tst_internal.h"
 
 /*
  * Hack to get TCID defined in newlib tests

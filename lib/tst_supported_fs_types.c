@@ -14,6 +14,7 @@
 #define TST_NO_DEFAULT_MAIN
 #include "tst_test.h"
 #include "tst_fs.h"
+#include "tst_internal.h"
 
 /*
  * NOTE: new filesystem should be also added to
@@ -147,7 +148,7 @@ enum tst_fs_impl tst_fs_is_supported(const char *fs_type)
 	return TST_FS_UNSUPPORTED;
 }
 
-int fs_could_be_used(const char *fs_type, const char *const *skiplist, int skip_fuse)
+static int fs_could_be_used(const char *fs_type, const char *const *skiplist, int skip_fuse)
 {
 	enum tst_fs_impl sup;
 
