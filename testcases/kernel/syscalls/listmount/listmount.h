@@ -9,7 +9,7 @@
 #define _GNU_SOURCE
 
 #include "tst_test.h"
-#include "lapi/mount.h"
+#include "lapi/fsmount.h"
 #include "lapi/syscalls.h"
 
 static inline ssize_t listmount(uint64_t mnt_id, uint64_t last_mnt_id,

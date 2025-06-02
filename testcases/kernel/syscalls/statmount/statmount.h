@@ -9,7 +9,7 @@
 #define _GNU_SOURCE
 
 #include "tst_test.h"
-#include "lapi/mount.h"
+#include "lapi/fsmount.h"
 #include "lapi/syscalls.h"
 #include "tst_safe_stdio.h"
 
