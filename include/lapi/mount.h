@@ -51,6 +51,7 @@ struct mnt_id_req {
 	uint32_t spare;
 	uint64_t mnt_id;
 	uint64_t param;
+	uint64_t mnt_ns_id;
 };
 #endif
 
