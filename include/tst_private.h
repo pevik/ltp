@@ -9,6 +9,10 @@
 #ifndef TST_PRIVATE_H_
 #define TST_PRIVATE_H_
 
+#if defined(TST_TEST_H__) && !defined(TST_NO_DEFAULT_MAIN)
+# error Do not use tst_private.h directly in test programs!
+#endif
+
 #include <stdio.h>
 #include <netdb.h>
 #include "tst_defaults.h"
