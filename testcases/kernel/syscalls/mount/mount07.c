@@ -21,7 +21,7 @@
 #include <sys/mount.h>
 #include <stdbool.h>
 #include "tst_test.h"
-#include "lapi/mount.h"
+#include "lapi/sys_mount.h"
 
 #ifndef ST_NOSYMFOLLOW
 # define ST_NOSYMFOLLOW 0x2000

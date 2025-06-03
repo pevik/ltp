@@ -26,7 +26,7 @@
 
 #include "test.h"
 #include "safe_macros.h"
-#include "lapi/mount.h"
+#include "lapi/sys_mount.h"
 
 static void setup(void);
 static void umount2_verify(void);

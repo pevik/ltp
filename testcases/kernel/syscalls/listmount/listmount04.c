@@ -15,7 +15,7 @@
 #define _GNU_SOURCE
 
 #include "tst_test.h"
-#include "lapi/mount.h"
+#include "lapi/linux_mount.h"
 #include "lapi/syscalls.h"
 
 #define MNT_SIZE 32

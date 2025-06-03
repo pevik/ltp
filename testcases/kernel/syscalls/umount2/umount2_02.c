@@ -18,8 +18,8 @@
  * - succeed when target is a mount point
  */
 
-#include "lapi/mount.h"
 #include "tst_test.h"
+#include "lapi/sys_mount.h"
 
 #define MNTPOINT        "mntpoint"
 #define SYMLINK	"symlink"

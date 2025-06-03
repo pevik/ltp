@@ -8,14 +8,13 @@
 #ifndef LAPI_MOUNT_H__
 #define LAPI_MOUNT_H__
 
+/*
+ * NOTE: <linux/mount.h> conflicts with <sys/mount.h>, therefore all fallback
+ * definitions from both of them should go to here.
+ */
+
 #include "config.h"
 #include <stdint.h>
-
-/*
- * NOTE: <linux/mount.h> conflicts with <sys/mount.h>, therefore not added
- * although some definitions from it are used.
- */
-#include <sys/mount.h>
 
 #ifndef MS_REC
 # define MS_REC 16384

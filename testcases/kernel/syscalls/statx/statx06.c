@@ -25,7 +25,7 @@
 #include "tst_safe_macros.h"
 #include "tst_timer.h"
 #include "lapi/stat.h"
-#include "lapi/mount.h"
+#include "lapi/sys_mount.h"
 #include "lapi/fcntl.h"
 
 #define MOUNT_POINT "mount_ext"

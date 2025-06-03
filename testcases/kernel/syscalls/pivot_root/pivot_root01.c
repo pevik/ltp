@@ -12,7 +12,7 @@
 #include <stdlib.h>
 
 #include "tst_test.h"
-#include "lapi/mount.h"
+#include "lapi/sys_mount.h"
 
 #ifdef HAVE_UNSHARE
 

@@ -27,7 +27,7 @@
 #include <sys/vfs.h>
 #include <pwd.h>
 #include "tst_test.h"
-#include "lapi/mount.h"
+#include "lapi/sys_mount.h"
 
 #define MNTPOINT	"mntpoint"
 #define TESTBIN	"mount03_suid_child"
