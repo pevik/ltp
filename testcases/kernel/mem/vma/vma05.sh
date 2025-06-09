@@ -39,7 +39,20 @@
 # }
 # ---
 
+TST_SETUP=setup
+TST_CLEANUP=cleanup
+
 . tst_loader.sh
+
+setup()
+{
+	tst_res TINFO "setup executed"
+}
+
+cleanup()
+{
+	tst_res TINFO "Cleanup executed"
+}
 
 tst_test()
 {
