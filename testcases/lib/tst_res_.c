@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 	int type, i;
 
 	if (argc < 5) {
-		printf("argc = %i expected 5\n", argc);
+		fprintf(stderr, "%s:%d: argc = %i expected 5\n", __FILE__, __LINE__, argc);
 		goto help;
 	}
 
@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
 	} else if (!strcmp(argv[3], "TBROK")) {
 		type = TBROK;
 	} else {
-		printf("Wrong type '%s'\n", argv[3]);
+		fprintf(stderr, "%s:%d: Wrong type '%s'\n", __FILE__, __LINE__, argv[3]);
 		goto help;
 	}
 
