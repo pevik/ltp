@@ -7,7 +7,8 @@
 
 #define PATH_FIPS	"/proc/sys/crypto/fips_enabled"
 #define PATH_LOCKDOWN	"/sys/kernel/security/lockdown"
-#define SELINUX_STATUS_PATH "/sys/fs/selinux/enforce"
+#define SELINUX_PATH "/sys/fs/selinux"
+#define SELINUX_STATUS_PATH (SELINUX_PATH "/enforce")
 
 #if defined(__powerpc64__) || defined(__ppc64__)
 # define SECUREBOOT_VAR "/proc/device-tree/ibm,secure-boot"
@@ -100,6 +101,18 @@ int tst_secureboot_enabled(void)
 	SAFE_CLOSE(fd);
 	tst_res(TINFO, "SecureBoot: %s", data[VAR_DATA_SIZE - 1] ? "on" : "off");
 	return data[VAR_DATA_SIZE - 1];
+}
+
+int tst_selinux_enabled(void)
+{
+	int res = 0;
+
+	if (tst_is_mounted(SELINUX_PATH))
+		res = 1;
+
+	tst_res(TINFO, "SELinux enabled: %s", res ? "yes" : "no");
+
+	return res;
 }
 
 int tst_selinux_enforcing(void)

@@ -14,5 +14,6 @@ int tst_fips_enabled(void);
 int tst_lockdown_enabled(void);
 int tst_secureboot_enabled(void);
 int tst_selinux_enforcing(void);
+int tst_selinux_enabled(void);
 
 #endif /* TST_SECURITY_H__ */
