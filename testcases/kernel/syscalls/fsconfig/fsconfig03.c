@@ -51,15 +51,18 @@ static void run(void)
 
 		if (!TST_RET) {
 			tst_res(TFAIL, "fsconfig() passed unexpectedly");
+			goto cleanup;
 		} else if (TST_RET != -1) {
 			tst_brk(TBROK | TTERRNO,
 				"Invalid fsconfig() return value %ld", TST_RET);
 		} else if (TST_ERR != EINVAL) {
 			tst_res(TFAIL | TTERRNO,
 				"fsconfig() failed with unexpected error");
+			goto cleanup;
 		}
 	}
 
+cleanup:
 	if (fd != -1)
 		SAFE_CLOSE(fd);
 
