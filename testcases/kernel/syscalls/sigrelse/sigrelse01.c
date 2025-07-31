@@ -98,11 +98,14 @@
  *
 ***************************************************************************/
 
+#define _GNU_SOURCE
+
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -176,6 +179,8 @@ static int sig_caught;		/* flag TRUE if signal caught */
 
 /* array of counters for signals caught by handler() */
 static int sig_array[NUMSIGS];
+
+static bool sig34_available = true; /* Signal 34 is unavailable on e.g., musl */
 
 /***********************************************************************
  *   M A I N
@@ -736,6 +741,8 @@ int choose_sig(int sig)
 	case SIGSWAP:
 #endif
 		return 0;
+	case 34:
+		return sig34_available;
 
 	}
 
@@ -773,6 +780,27 @@ void setup(void)
 	if (fcntl(pipe_fd2[0], F_SETFL, O_NONBLOCK) == -1)
 		tst_brkm(TBROK | TERRNO, cleanup,
 			 "fcntl(Fds[0], F_SETFL, O_NONBLOCK) failed");
+
+#ifndef __GLIBC__
+	/*
+	 * Check if signal 34 is available. Some libc implementations do
+	 * not support signal 34. For example, musl uses signal 34 as
+	 * internal signal (SIGSYNCCALL).
+	 */
+	sighandler_t previous = signal(34, handler);
+	if (previous == SIG_ERR) {
+		if (errno == EINVAL)
+			sig34_available = false;
+		else
+			tst_brkm(TBROK | TERRNO, cleanup,
+				 "signal(34, handler) failed");
+	} else {
+		/* Restore the original handler */
+		if (signal(34, previous) == SIG_ERR)
+			tst_brkm(TBROK | TERRNO, cleanup,
+					 "signal(34, handler) failed");
+	}
+#endif
 }
 
 void cleanup(void)
