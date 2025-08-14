@@ -7,7 +7,7 @@
  * API to create customized VMs.
  */
 
-/*
+/**
  * Most basic usage:
  *
  * #include "kvm_test.h"
@@ -47,6 +47,16 @@
 #define DEFAULT_RAM_SIZE (16 * 1024 * 1024)
 #define MAX_KVM_MEMSLOTS 8
 
+/**
+ * struct tst_kvm_instance - holds the file descriptors and memory buffers.
+ *
+ * @vm_fd: The main VM file descriptor created by ``ioctl(KVM_CREATE_VM)``.
+ * @vcpu_fd: The virtual CPU file descriptor created by @ioctl(KVM_CREATE_VCPU).
+ * @vcpu_info: The VCPU state structure created by ``mmap(vcpu_fd)``.
+ * @vcpu_info_size: The size of ``vcpu_info`` buffer.
+ * @ram[MAX_KVM_MEMSLOTS]: The list of memory slots defined in this VM. Unused memory slots have zero in the @userspace_addr: field.
+ * @result: A buffer for passing test result data from the VM to the controller program, mainly tst_res()/tst_brk() flags and messages.
+ */
 struct tst_kvm_instance {
 	int vm_fd, vcpu_fd;
 	struct kvm_run *vcpu_info;

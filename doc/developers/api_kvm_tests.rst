@@ -83,31 +83,7 @@ a minimal KVM virtual machine.
 Data Structures
 ~~~~~~~~~~~~~~~
 
-.. code-block:: c
-
-    struct tst_kvm_instance {
-        int vm_fd, vcpu_fd;
-        struct kvm_run *vcpu_info;
-        size_t vcpu_info_size;
-        struct kvm_userspace_memory_region ram[MAX_KVM_MEMSLOTS];
-        struct tst_kvm_result *result;
-    };
-
-``struct tst_kvm_instance`` holds the file descriptors and memory buffers
-of a single KVM virtual machine:
-
-* ``int vm_fd`` is the main VM file descriptor created by ``ioctl(KVM_CREATE_VM)``
-* ``int vcpu_fd`` is the virtual CPU file descriptor created by
-  ``ioctl(KVM_CREATE_VCPU)``
-* ``struct kvm_run *vcpu_info`` is the VCPU state structure created by
-  ``mmap(vcpu_fd)``
-* ``size_t vcpu_info_size`` is the size of ``vcpu_info`` buffer
-* ``struct kvm_userspace_memory_region ram[MAX_KVM_MEMSLOTS]`` is the list
-  of memory slots defined in this VM. Unused memory slots have zero
-  in the ``userspace_addr`` field.
-* ``struct tst_kvm_result *result`` is a buffer for passing test result data
-  from the VM to the controller program, mainly ``tst_res()``/``tst_brk()`` flags
-  and messages.
+.. .. kernel-doc:: ../../testcases/kernel/kvm/include/kvm_host.h
 
 .. code-block:: c
 
