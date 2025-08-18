@@ -34,11 +34,11 @@ struct test_case {
 
 static struct test_case tc[] = {
 	{
-	 .clktype = MAX_CLOCKS,
+	 .clktype = MAX_CLOCKS + MAX_AUX_CLOCKS,
 	 .exp_err = EINVAL,
 	 },
 	{
-	 .clktype = MAX_CLOCKS + 1,
+	 .clktype = MAX_CLOCKS + MAX_AUX_CLOCKS + 1,
 	 .exp_err = EINVAL,
 	 },
 	/*

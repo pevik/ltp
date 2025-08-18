@@ -30,6 +30,8 @@ static const clock_t clock_list[] = {
 /* MAX_CLOCKS is the maximum number of clock sources supported by kernel */
 #define MAX_CLOCKS 16
 
+#define MAX_AUX_CLOCKS 8
+
 #define CLOCK_TO_STR(def_name)	\
 	case def_name:		\
 		return #def_name;
