@@ -197,6 +197,11 @@ tst_cmd_run 'dmesg | grep -i secure.*boot'
 echo
 echo 'Lockdown (/sys/kernel/security/lockdown):'
 cat /sys/kernel/security/lockdown
+tst_cmd_run 'dmesg | grep -i lock.*down'
+
+echo
+echo 'LSM:'
+dmesg | grep -i -w lsm
 
 echo
 printf "AppArmor: "
@@ -206,6 +211,9 @@ if is_enabled /sys/module/apparmor/parameters/enabled; then
 else
 	echo 'disabled'
 fi
+
+echo 'IMA:'
+dmesg | grep -i -w ima
 
 echo
 if ! tst_cmd_run sestatus; then
