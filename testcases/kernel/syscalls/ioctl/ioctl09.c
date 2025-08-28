@@ -21,7 +21,7 @@
        ({ value ? TST_RETVAL_EQ0(x) : TST_RETVAL_NOTNULL(x); })
 
 static char dev_path[1024];
-static int dev_num, attach_flag, dev_fd;
+static int dev_num, attach_flag;
 static char loop_partpath[1026], sys_loop_partpath[1026];
 
 static void change_partition(const char *const cmd[])
@@ -72,6 +72,7 @@ static void verify_ioctl(void)
 	struct loop_info loopinfo = {0};
 
 	change_partition(cmd_parted_old);
+	int dev_fd = SAFE_OPEN(dev_path, O_RDWR);
 	tst_attach_device(dev_path, "test.img");
 	attach_flag = 1;
 
@@ -86,7 +87,6 @@ static void verify_ioctl(void)
 	check_partition(2, true);
 
 	tst_detach_device_by_fd(dev_path, dev_fd);
-	dev_fd = SAFE_OPEN(dev_path, O_RDWR);
 	attach_flag = 0;
 }
 
@@ -96,13 +96,10 @@ static void setup(void)
 	if (dev_num < 0)
 		tst_brk(TBROK, "Failed to find free loop device");
 	tst_prealloc_file("test.img", 1024 * 1024, 20);
-	dev_fd = SAFE_OPEN(dev_path, O_RDWR);
 }
 
 static void cleanup(void)
 {
-	if (dev_fd > 0)
-		SAFE_CLOSE(dev_fd);
 	if (attach_flag)
 		tst_detach_device(dev_path);
 }
