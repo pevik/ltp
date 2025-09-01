@@ -98,7 +98,7 @@ static void verify_ioctl_loop(void)
 static void setup(void)
 {
 	int ret;
-	const char *const cmd_parted[] = {"parted", "-s", "test.img", "mklabel", "msdos", "mkpart",
+	const char *const cmd_parted[] = {"parted", "-s", dev_path, "mklabel", "msdos", "mkpart",
 	                                  "primary", "ext4", "1M", "10M", NULL};
 
 	dev_num = tst_find_free_loopdev(dev_path, sizeof(dev_path));
