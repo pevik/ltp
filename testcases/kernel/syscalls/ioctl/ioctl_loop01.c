@@ -98,7 +98,7 @@ static void verify_ioctl_loop(void)
 static void setup(void)
 {
 	int ret;
-	const char *const cmd_parted[] = {"parted", "-s", "test.img", "mklabel", "msdos", "mkpart",
+	const char *const cmd_parted[] = {"parted", "-s", dev_path, "mklabel", "msdos", "mkpart",
 	                                  "primary", "ext4", "1M", "10M", NULL};
 
 	dev_num = tst_find_free_loopdev(dev_path, sizeof(dev_path));
@@ -106,19 +106,8 @@ static void setup(void)
 		tst_brk(TBROK, "Failed to find free loop device");
 
 	tst_fill_file("test.img", 0, 1024 * 1024, 10);
-
-	ret = tst_cmd(cmd_parted, NULL, NULL, TST_CMD_PASS_RETVAL);
-	switch (ret) {
-	case 0:
-		parted_sup = 1;
-	break;
-	case 255:
-		tst_res(TCONF, "parted binary not installed or failed");
-	break;
-	default:
-		tst_res(TCONF, "parted exited with %i", ret);
-	break;
-	}
+	tst_attach_device(dev_path, "test.img");
+	SAFE_CMD(cmd_parted, NULL, NULL);
 
 	sprintf(partscan_path, "/sys/block/loop%d/loop/partscan", dev_num);
 	sprintf(autoclear_path, "/sys/block/loop%d/loop/autoclear", dev_num);
