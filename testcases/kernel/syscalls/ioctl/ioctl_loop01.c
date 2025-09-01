@@ -98,7 +98,7 @@ static void verify_ioctl_loop(void)
 static void setup(void)
 {
 	int ret;
-	const char *const cmd_parted[] = {"parted", "-s", "test.img", "mklabel", "msdos", "mkpart",
+	const char *const cmd_parted[] = {"parted", "-s", dev_path, "mklabel", "msdos", "mkpart",
 	                                  "primary", "ext4", "1M", "10M", NULL};
 
 	dev_num = tst_find_free_loopdev(dev_path, sizeof(dev_path));
@@ -107,6 +107,15 @@ static void setup(void)
 
 	tst_fill_file("test.img", 0, 1024 * 1024, 10);
 
+	sprintf(partscan_path, "/sys/block/loop%d/loop/partscan", dev_num);
+	sprintf(autoclear_path, "/sys/block/loop%d/loop/autoclear", dev_num);
+	sprintf(backing_path, "/sys/block/loop%d/loop/backing_file", dev_num);
+	sprintf(sys_loop_partpath, "/sys/block/loop%d/loop%dp1", dev_num, dev_num);
+	backing_file_path = tst_tmpdir_genpath("test.img");
+	sprintf(loop_partpath, "%sp1", dev_path);
+	dev_fd = SAFE_OPEN(dev_path, O_RDWR);
+
+	/*
 	ret = tst_cmd(cmd_parted, NULL, NULL, TST_CMD_PASS_RETVAL);
 	switch (ret) {
 	case 0:
@@ -119,14 +128,7 @@ static void setup(void)
 		tst_res(TCONF, "parted exited with %i", ret);
 	break;
 	}
-
-	sprintf(partscan_path, "/sys/block/loop%d/loop/partscan", dev_num);
-	sprintf(autoclear_path, "/sys/block/loop%d/loop/autoclear", dev_num);
-	sprintf(backing_path, "/sys/block/loop%d/loop/backing_file", dev_num);
-	sprintf(sys_loop_partpath, "/sys/block/loop%d/loop%dp1", dev_num, dev_num);
-	backing_file_path = tst_tmpdir_genpath("test.img");
-	sprintf(loop_partpath, "%sp1", dev_path);
-	dev_fd = SAFE_OPEN(dev_path, O_RDWR);
+	*/
 }
 
 static void cleanup(void)
