@@ -3,10 +3,11 @@
  * Copyright (c) 2022 FUJITSU LIMITED. All rights reserved.
  * Author: Dai Shili <daisl.fnst@fujitsu.com>
  * Author: Chen Hanxiao <chenhx.fnst@fujitsu.com>
+ * Copyright (C) 2025 SUSE LLC Andrea Cervesato <andrea.cervesato@suse.com>
  */
 
 /*\
- * Basic mount_setattr() test.
+ * Basic mount_setattr()/open_tree_attr() test.
  * Test whether the basic mount attributes are set correctly.
  *
  * Verify some MOUNT_SETATTR(2) attributes:
@@ -22,7 +23,8 @@
  * - MOUNT_ATTR_NODIRATIME - prevents updating access time for
  *   directories on this mount
  *
- * The functionality was added in v5.12.
+ * The mount_setattr functionality was added in v5.12, while the open_tree_attr
+ * functionality was added in v6.15.
  */
 
 #define _GNU_SOURCE
@@ -41,6 +43,7 @@
 	}
 
 static int mount_flag, otfd = -1;
+struct mount_attr *attr;
 
 static struct tcase {
 	char *name;
@@ -66,35 +69,61 @@ static void cleanup(void)
 static void setup(void)
 {
 	fsopen_supported_by_kernel();
-	struct stat st = {0};
 
-	if (stat(OT_MNTPOINT, &st) == -1)
+	if (access(OT_MNTPOINT, F_OK) != 0)
 		SAFE_MKDIR(OT_MNTPOINT, 0777);
+}
+
+static int open_tree_variant1(struct mount_attr *attr)
+{
+	tst_res(TINFO, "Variant using open_tree() + mount_setattr()");
+
+	otfd = TST_EXP_FD_SILENT(open_tree(AT_FDCWD, MNTPOINT,
+			AT_EMPTY_PATH | OPEN_TREE_CLONE));
+	if (otfd == -1)
+		return -1;
+
+	TST_EXP_PASS(mount_setattr(otfd, "", AT_EMPTY_PATH,
+			attr, sizeof(*attr)));
+	if (TST_RET == -1) {
+		SAFE_CLOSE(otfd);
+		return -1;
+	}
+
+	return otfd;
+}
+
+static int open_tree_variant2(struct mount_attr *attr)
+{
+	tst_res(TINFO, "Variant using open_tree_attr()");
+
+	otfd = TST_EXP_FD(open_tree_attr(AT_FDCWD, MNTPOINT,
+			AT_EMPTY_PATH | OPEN_TREE_CLONE,
+			attr, sizeof(*attr)));
+
+	return otfd;
 }
 
 static void run(unsigned int n)
 {
 	struct tcase *tc = &tcases[n];
-	struct mount_attr attr = {
-		.attr_set = tc->mount_attrs,
-	};
 	struct statvfs buf;
 
-	TST_EXP_FD_SILENT(open_tree(AT_FDCWD, MNTPOINT, AT_EMPTY_PATH |
-		AT_SYMLINK_NOFOLLOW | OPEN_TREE_CLOEXEC | OPEN_TREE_CLONE));
-	if (!TST_PASS)
-		return;
+	memset(attr, 0, sizeof(*attr));
+	attr->attr_set = tc->mount_attrs;
 
-	otfd = (int)TST_RET;
+	if (tst_variant)
+		otfd = open_tree_variant1(attr);
+	else
+		otfd = open_tree_variant2(attr);
 
-	TST_EXP_PASS_SILENT(mount_setattr(otfd, "", AT_EMPTY_PATH, &attr, sizeof(attr)),
-		"%s set", tc->name);
-	if (!TST_PASS)
-		goto out1;
+	if (otfd == -1)
+		goto out2;
 
 	TST_EXP_PASS_SILENT(move_mount(otfd, "", AT_FDCWD, OT_MNTPOINT, MOVE_MOUNT_F_EMPTY_PATH));
 	if (!TST_PASS)
 		goto out1;
+
 	mount_flag = 1;
 	SAFE_CLOSE(otfd);
 
@@ -123,9 +152,14 @@ static struct tst_test test = {
 	.test = run,
 	.setup = setup,
 	.cleanup = cleanup,
+	.test_variants = 2,
 	.needs_root = 1,
 	.mount_device = 1,
 	.mntpoint = MNTPOINT,
 	.all_filesystems = 1,
-	.skip_filesystems = (const char *const []){"fuse", NULL},
+	.skip_filesystems = (const char *const []) {"fuse", NULL},
+	.bufs = (struct tst_buffers []) {
+		{&attr, .size = sizeof(struct mount_attr)},
+		{}
+	}
 };
