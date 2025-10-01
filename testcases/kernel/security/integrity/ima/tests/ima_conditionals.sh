@@ -81,7 +81,7 @@ test()
 		chown $IMA_USER $test_file
 		sh -c "$cmd"
 		;;
-	gid) sudo sg $IMA_USER "sh -c '$cmd'";;
+	gid) sg $IMA_USER "sh -c '$cmd'";;
 	uid) sudo -n -u $IMA_USER sh -c "$cmd";;
 	esac
 
