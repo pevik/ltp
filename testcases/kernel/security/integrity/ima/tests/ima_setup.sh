@@ -22,6 +22,7 @@ TST_FS_TYPE="ext3"
 
 IMA_FAIL="TFAIL"
 IMA_BROK="TBROK"
+IMA_USER="ltp_ima_$$"
 
 # TODO: find support for rmd128 rmd256 rmd320 wp256 wp384 tgr128 tgr160
 compute_digest()
@@ -283,11 +284,22 @@ ima_setup()
 		load_ima_policy
 	fi
 
+	if [ "$REQUIRE_TMP_USER" = 1 ]; then
+		tst_require_cmds useradd userdel
+		tst_res TINFO "adding temporary user $IMA_USER"
+		id "$IMA_USER" 2>/dev/null || ROD useradd --no-create-home "$IMA_USER"
+		USER_ADDED=1
+	fi
 }
 
 ima_cleanup()
 {
 	local dir
+
+	if [ "$USER_ADDED" = 1 ]; then
+		tst_res TINFO "removing user $IMA_USER"
+		userdel "$IMA_USER"
+	fi
 
 	[ -n "$TST_CLEANUP_CALLER" ] && $TST_CLEANUP_CALLER
 

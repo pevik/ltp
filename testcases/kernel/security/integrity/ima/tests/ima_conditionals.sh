@@ -9,9 +9,10 @@
 # gid and fgroup options test kernel commit 40224c41661b ("ima: add gid
 # support") from v5.16.
 
-TST_NEEDS_CMDS="cat chgrp chown id sg sudo"
+TST_NEEDS_CMDS="cat chgrp chown id sg sudo useradd userdel"
 TST_SETUP="setup"
 TST_CNT=1
+REQUIRE_TMP_USER=1
 
 setup()
 {
@@ -23,12 +24,11 @@ setup()
 verify_measurement()
 {
 	local request="$1"
-	local user="nobody"
 	local test_file="$PWD/test.txt"
 	local cmd="cat $test_file > /dev/null"
 
-	local value="$(id -u $user)"
-	[ "$request" = 'gid' -o "$request" = 'fgroup' ] && value="$(id -g $user)"
+	local value="$(id -u $IMA_USER)"
+	[ "$request" = 'gid' -o "$request" = 'fgroup' ] && value="$(id -g $IMA_USER)"
 
 	# needs to be checked each run (not in setup)
 	require_policy_writable
@@ -41,15 +41,15 @@ verify_measurement()
 
 	case "$request" in
 	fgroup)
-		chgrp $user $test_file
+		chgrp $IMA_USER $test_file
 		sh -c "$cmd"
 		;;
 	fowner)
-		chown $user $test_file
+		chown $IMA_USER $test_file
 		sh -c "$cmd"
 		;;
-	gid) sudo sg $user "sh -c '$cmd'";;
-	uid) sudo -n -u $user sh -c "$cmd";;
+	gid) sudo sg $IMA_USER "sh -c '$cmd'";;
+	uid) sudo -n -u $IMA_USER sh -c "$cmd";;
 	*) tst_brk TBROK "Invalid res type '$1'";;
 	esac
 
