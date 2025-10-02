@@ -75,7 +75,7 @@ test3()
 
 	# Default policy does not measure user files
 	tst_res TINFO "verify not measuring user files"
-	tst_check_cmds sudo || return
+	tst_check_cmds su || return
 
 	if [ "$IMA_MISSING_POLICY_CONTENT" = 1 ]; then
 		tst_res TCONF "test requires specific policy, try load it with LTP_IMA_LOAD_POLICY=1"
@@ -86,7 +86,7 @@ test3()
 	chown $IMA_USER $dir
 	cd $dir
 	# need to read file to get updated $ASCII_MEASUREMENTS
-	sudo -n -u $IMA_USER sh -c "echo $(cat /proc/uptime) user file > $file; cat $file > /dev/null"
+	su - $IMA_USER sh -c "echo $(cat /proc/uptime) user file > $file; cat $file > /dev/null"
 	cd ..
 
 	if ! tst_rod "$cmd" 2> /dev/null; then

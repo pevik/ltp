@@ -9,7 +9,7 @@
 # gid and fgroup options test kernel commit 40224c41661b ("ima: add gid
 # support") from v5.16.
 
-TST_NEEDS_CMDS="cat chgrp chown id sg sudo useradd userdel"
+TST_NEEDS_CMDS="cat chgrp chown id sg su useradd userdel"
 TST_SETUP="setup"
 TST_TESTFUNC="test"
 REQUIRE_TMP_USER=1
@@ -82,7 +82,7 @@ test()
 		sh -c "$cmd"
 		;;
 	gid) sg $IMA_USER "sh -c '$cmd'";;
-	uid) sudo -n -u $IMA_USER sh -c "$cmd";;
+	uid) su - $IMA_USER sh -c "$cmd";;
 	esac
 
 	ima_check $test_file
