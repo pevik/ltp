@@ -77,10 +77,10 @@ uint64_t tst_get_device_size(const char *dev_path);
  * it is up to caller to open it again for further usage.
  *
  * @dev_path Path to the loop device e.g. /dev/loop0
- * @dev_fd a open fd for the loop device
+ * @dev_fd An open fd for the loop device, set to -1 after the completion.
  * @return Zero on succes, non-zero otherwise.
  */
-int tst_detach_device_by_fd(const char *dev_path, int dev_fd);
+int tst_detach_device_by_fd(const char *dev_path, int *dev_fd);
 
 /*
  * Detaches a file from a loop device.
