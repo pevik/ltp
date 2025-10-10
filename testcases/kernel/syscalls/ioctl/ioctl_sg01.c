@@ -112,8 +112,9 @@ static void run(void)
 
 		/* Check the buffer even if ioctl() failed, just in case. */
 		for (j = 0; j < BUF_SIZE; j++) {
+			tst_res(TDEBUG, "memory %zi: %p", j, &buffer[j]);
 			if (buffer[j]) {
-				tst_res(TFAIL, "Kernel memory leaked");
+				tst_res(TFAIL, "Kernel memory leaked on %zi: %p", j, &buffer[j]);
 				return;
 			}
 		}
