@@ -132,13 +132,26 @@ static void overcommit_memory_test(void)
 	TST_SYS_CONF_LONG_SET(OVERCOMMIT_MEMORY, 2, 1);
 
 	update_mem_commit();
+
+	tst_res(TINFO, "commit_left: %ld", commit_left);
+	tst_res(TINFO, "sum_total: %ld", sum_total);
 	alloc_and_check(commit_left * 2, EXPECT_FAIL);
 	alloc_and_check(commit_limit + total_batch_size, EXPECT_FAIL);
 	update_mem_commit();
+
+	tst_res(TINFO, "commit_left: %ld", commit_left);
+	tst_res(TINFO, "sum_total: %ld", sum_total);
 	alloc_and_check(commit_left / 2, EXPECT_PASS);
 
 	/* start to test overcommit_memory=0 */
 	TST_SYS_CONF_LONG_SET(OVERCOMMIT_MEMORY, 0, 1);
+
+	tst_res(TINFO, "TST_GB: %d", TST_GB);
+	tst_res(TINFO, "ONE_GB: %d", ONE_GB);
+	tst_res(TINFO, "tst_kernel_bits(): %d", tst_kernel_bits());
+	tst_res(TINFO, "(unsigned long)sum_total <= ONE_GB: %d", (unsigned long)sum_total <= ONE_GB);
+	tst_res(TINFO, "(unsigned long)sum_total <= TST_GB: %d", (unsigned long)sum_total <= TST_GB);
+	tst_res(TINFO, "condition: %d", tst_kernel_bits() == 64 || (unsigned long)sum_total <= ONE_GB);
 
 	update_mem();
 	alloc_and_check(free_total / 2, EXPECT_PASS);
