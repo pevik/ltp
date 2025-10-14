@@ -41,6 +41,7 @@ Guarded buffers
 Kernel
 ------
 .. kernel-doc:: ../../include/tst_kernel.h
+.. kernel-doc:: ../../include/tst_kvercmp.h
 
 NUMA
 ----
