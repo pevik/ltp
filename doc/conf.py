@@ -35,6 +35,7 @@ extlinks = {
     'repo': (f'{ltp_repo}/%s', '%s'),
     'master': (f'{ltp_repo}/blob/master/%s', '%s'),
     'git_man': ('https://git-scm.com/docs/git-%s', 'git %s'),
+    'man1': ('https://man7.org/linux/man-pages/man1/%s.1.html', '%s(1)'),
     'man2': ('https://man7.org/linux/man-pages/man2/%s.2.html', '%s(2)'),
     'man3': ('https://man7.org/linux/man-pages/man3/%s.3.html', '%s(3)'),
     # TODO: allow 2nd parameter to show page description instead of plain URL
