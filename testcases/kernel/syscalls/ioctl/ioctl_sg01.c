@@ -33,7 +33,7 @@
 #define CMD_SIZE 6
 
 static int devfd = -1;
-static char buffer[BUF_SIZE];
+static char buffer[BUF_SIZE + 1];
 static unsigned char command[CMD_SIZE];
 static struct sg_io_hdr query;
 
@@ -71,6 +71,25 @@ static const char *find_generic_scsi_device(int access_flags)
 	return NULL;
 }
 
+static void dump_hex(const char *str, size_t size)
+{
+	size_t i;
+
+	for (; size && !str[size - 1]; size--)
+		;
+
+	for (i = 0; i < size; i++) {
+		if (i && (i % 32) == 0)
+			printf("\n");
+		else if (i && (i % 4) == 0)
+			printf(" ");
+
+		printf("%02x", (unsigned int)str[i]);
+	}
+
+	printf("\n");
+}
+
 static void setup(void)
 {
 	const char *devpath = find_generic_scsi_device(O_RDONLY);
@@ -82,6 +101,7 @@ static void setup(void)
 
 	/* Pollute some memory to avoid false negatives */
 	tst_pollute_memory(0, 0x42);
+	tst_res(TINFO, "after tst_pollute_memory()");
 
 	devfd = SAFE_OPEN(devpath, O_RDONLY);
 	query.interface_id = 'S';
@@ -90,6 +110,7 @@ static void setup(void)
 	query.dxfer_len = BUF_SIZE;
 	query.dxferp = buffer;
 	query.cmdp = command;
+	tst_res(TINFO, "after SAFE_OPEN(%s)", devpath);
 }
 
 static void cleanup(void)
@@ -105,15 +126,24 @@ static void run(void)
 	memset(buffer, 0, BUF_SIZE);
 
 	for (i = 0; i < 100; i++) {
+		tst_res(TINFO, "%zi, ioctl()", i);
+
 		TEST(ioctl(devfd, SG_IO, &query));
+		tst_res(TINFO, "%zi, after ioctl()", i);
+		buffer[BUF_SIZE] = '\0';
 
 		if (TST_RET != 0 && TST_RET != -1)
 			tst_brk(TBROK|TTERRNO, "Invalid ioctl() return value");
+
+		tst_res(TINFO, "Dump buffer");
+		dump_hex(buffer, BUF_SIZE);
 
 		/* Check the buffer even if ioctl() failed, just in case. */
 		for (j = 0; j < BUF_SIZE; j++) {
 			if (buffer[j]) {
 				tst_res(TFAIL, "Kernel memory leaked");
+				tst_res(TINFO, "Buffer contents: %s", buffer);
+				dump_hex(buffer, BUF_SIZE);
 				return;
 			}
 		}

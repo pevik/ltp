@@ -21,6 +21,8 @@
 
 void tst_pollute_memory(size_t maxsize, int fillchar)
 {
+	tst_res(TINFO, "start tst_pollute_memory");
+
 	size_t i, map_count = 0, safety = 0, blocksize = BLOCKSIZE;
 	unsigned long long freeram;
 	size_t min_free;
@@ -29,6 +31,8 @@ void tst_pollute_memory(size_t maxsize, int fillchar)
 
 	SAFE_FILE_SCANF("/proc/sys/vm/min_free_kbytes", "%zi", &min_free);
 	min_free *= 1024;
+	tst_res(TINFO, "min_free: %zi", min_free);
+
 	/* Apply a margin because we cannot get below "min" watermark */
 	min_free += min_free / 10;
 
