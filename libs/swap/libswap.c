@@ -268,6 +268,11 @@ int tst_max_swapfiles(void)
 		{ NULL, NULL},
 	};
 
+	struct tst_kern_exv kvers_device2[] = {
+		{ "SLES", "6.12.0-999999" },
+		{ NULL, NULL},
+	};
+
 	tst_kconfig_read(&migration, 1);
 	tst_kconfig_read(&memory, 1);
 	tst_kconfig_read(&device, 1);
@@ -288,7 +293,7 @@ int tst_max_swapfiles(void)
 			swp_device_num = 2;
 		if (tst_kvercmp(5, 14, 0) >= 0)
 			swp_device_num = 4;
-		if (tst_kvercmp(6, 15, 0) >= 0)
+		if (tst_kvercmp2(6, 15, 0, kvers_device2) >= 0)
 			swp_device_num = 3;
 	}
 
