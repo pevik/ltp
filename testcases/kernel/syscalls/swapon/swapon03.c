@@ -35,7 +35,7 @@ static int setup_swap(void)
 	SAFE_SETEUID(0);
 
 	/* Determine how many more files are to be created */
-	max_swapfiles = tst_max_swapfiles();
+	max_swapfiles = tst_max_swapfiles() + 1;
 	used_swapfiles = tst_count_swaps();
 	swapfiles = max_swapfiles - used_swapfiles;
 	if (swapfiles > max_swapfiles)
