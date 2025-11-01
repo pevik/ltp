@@ -3,6 +3,7 @@
 # Copyright (c) 2022 Petr Vorel <pvorel@suse.cz>
 
 TST_FORMAT_DEVICE=1
+TST_MOUNT_DEVICE=1
 TST_NEEDS_ROOT=1
 TST_TESTFUNC=test
 TST_CNT=2
