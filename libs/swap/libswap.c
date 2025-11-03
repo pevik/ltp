@@ -285,11 +285,11 @@ int tst_max_swapfiles(void)
 
 	if (device.choice == 'y') {
 		if (tst_kvercmp2(4, 14, 0, kvers_device) >= 0)
-			swp_device_num = 2;
-		if (tst_kvercmp(5, 14, 0) >= 0)
 			swp_device_num = 4;
+		if (tst_kvercmp(5, 14, 0) >= 0)
+			swp_device_num = 6;
 		if (tst_kvercmp(6, 15, 0) >= 0)
-			swp_device_num = 3;
+			swp_device_num = 5;
 	}
 
 	if ((marker.choice == 'y' &&
