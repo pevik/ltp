@@ -1,14 +1,18 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
+ * Copyright (c) Linux Test Project, 2009-2025
  * Copyright (c) International Business Machines Corp., 2007
  * Created by <rsalveti@linux.vnet.ibm.com>
- *
  */
 
 /*\
- * This test case checks whether swapon(2) system call returns:
+ * Test checks whether :man2:`swapon` system call returns EPERM when the maximum
+ * number of swap files are already in use.
  *
- *  - EPERM when there are more than MAX_SWAPFILES already in use.
+ * NOTE: test does not try to calculate MAX_SWAPFILES from the internal
+ * kernel implementation (which is currently <23, 29> depending on kernel
+ * configuration). Instead test exptect that at least 15 swap files minus
+ * currently used swap can be created.
  */
 
 #include <stdio.h>
@@ -20,49 +24,54 @@
 #include "lapi/syscalls.h"
 #include "libswap.h"
 
+#define NUM_SWAP_FILES 15
 #define MNTPOINT	"mntpoint"
 #define TEST_FILE	MNTPOINT"/testswap"
 
-static int swapfiles;
+static int *swapfiles;
 
 static void setup_swap(void)
 {
 	pid_t pid;
-	int status;
-	int j, max_swapfiles, used_swapfiles;
+	int status, used_swapfiles, expected_swapfiles;
 	char filename[FILENAME_MAX];
 
 	SAFE_SETEUID(0);
 
-	/* Determine how many more files are to be created */
-	max_swapfiles = tst_max_swapfiles();
 	used_swapfiles = tst_count_swaps();
-	swapfiles = max_swapfiles - used_swapfiles;
-	if (swapfiles > max_swapfiles)
-		swapfiles = max_swapfiles;
+	expected_swapfiles = NUM_SWAP_FILES - used_swapfiles;
+
+	if (expected_swapfiles < 0) {
+		tst_brk(TCONF, "Warning: too many used swap files (%d)",
+			expected_swapfiles);
+	}
 
 	pid = SAFE_FORK();
 	if (pid == 0) {
-		/*create and turn on remaining swapfiles */
-		for (j = 0; j < swapfiles; j++) {
-
+		while (true) {
 			/* Create the swapfile */
-			snprintf(filename, sizeof(filename), "%s%02d", TEST_FILE, j + 2);
+			snprintf(filename, sizeof(filename), "%s%02d", TEST_FILE, *swapfiles);
 			MAKE_SMALL_SWAPFILE(filename);
 
-			/* turn on the swap file */
-			TST_EXP_PASS_SILENT(swapon(filename, 0));
+			/* Quit on a first swap file over max */
+			if (swapon(filename, 0) == -1)
+				break;
+			(*swapfiles)++;
 		}
 		exit(0);
 	} else {
 		waitpid(pid, &status, 0);
 	}
 
-	if (WEXITSTATUS(status))
+	if (WEXITSTATUS(status) || *swapfiles == 0)
 		tst_brk(TBROK, "Failed to setup swap files");
 
-	tst_res(TINFO, "Successfully created %d swap files", swapfiles);
-	MAKE_SMALL_SWAPFILE(TEST_FILE);
+	if (*swapfiles < expected_swapfiles) {
+		tst_res(TWARN, "Successfully created only %d swap files (>= %d expected)",
+			*swapfiles, expected_swapfiles);
+	} else {
+		tst_res(TINFO, "Successfully created %d swap files", *swapfiles);
+	}
 }
 
 /*
@@ -86,8 +95,8 @@ static void clean_swap(void)
 	int j;
 	char filename[FILENAME_MAX];
 
-	for (j = 0; j < swapfiles; j++) {
-		snprintf(filename, sizeof(filename), "%s%02d", TEST_FILE, j + 2);
+	for (j = 0; j < *swapfiles; j++) {
+		snprintf(filename, sizeof(filename), "%s%02d", TEST_FILE, j);
 		check_and_swapoff(filename);
 	}
 
@@ -105,12 +114,20 @@ static void setup(void)
 		tst_brk(TCONF, "swap not supported by kernel");
 
 	is_swap_supported(TEST_FILE);
+
+	swapfiles = SAFE_MMAP(NULL, sizeof(*swapfiles), PROT_READ | PROT_WRITE,
+			MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+	*swapfiles = 0;
+
 	setup_swap();
 }
 
 static void cleanup(void)
 {
-	clean_swap();
+	if (swapfiles) {
+		clean_swap();
+		SAFE_MUNMAP(swapfiles, sizeof(*swapfiles));
+	}
 }
 
 static struct tst_test test = {
