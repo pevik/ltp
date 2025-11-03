@@ -301,6 +301,10 @@ int tst_max_swapfiles(void)
 	if ((tst_kvercmp(5, 19, 0) >= 0) && (tst_kvercmp(6, 2, 0) < 0))
 		swp_swapin_error_num = 1;
 
+	tst_res(TINFO, "tst_max_swapfiles: %d",
+		DEFAULT_MAX_SWAPFILE - swp_migration_num - swp_hwpoison_num
+		- swp_device_num - swp_pte_marker_num - swp_swapin_error_num);
+
 	return DEFAULT_MAX_SWAPFILE - swp_migration_num - swp_hwpoison_num
 		- swp_device_num - swp_pte_marker_num - swp_swapin_error_num;
 }
