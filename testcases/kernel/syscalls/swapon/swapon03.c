@@ -25,7 +25,7 @@
 
 static int swapfiles;
 
-static int setup_swap(void)
+static void setup_swap(void)
 {
 	pid_t pid;
 	int status;
@@ -54,34 +54,28 @@ static int setup_swap(void)
 			TST_EXP_PASS_SILENT(swapon(filename, 0));
 		}
 		exit(0);
-	} else
+	} else {
 		waitpid(pid, &status, 0);
+	}
 
 	if (WEXITSTATUS(status))
-		tst_brk(TFAIL, "Failed to setup swap files");
+		tst_brk(TBROK, "Failed to setup swap files");
 
 	tst_res(TINFO, "Successfully created %d swap files", swapfiles);
 	MAKE_SMALL_SWAPFILE(TEST_FILE);
-
-	return 0;
 }
 
 /*
  * Check if the file is at /proc/swaps and remove it giving swapoff
  */
-static int check_and_swapoff(const char *filename)
+static void check_and_swapoff(const char *filename)
 {
 	char cmd_buffer[256];
-	int rc = -1;
 
 	snprintf(cmd_buffer, sizeof(cmd_buffer), "grep -q '%s.*file' /proc/swaps", filename);
 
-	if (system(cmd_buffer) == 0 && swapoff(filename) != 0) {
+	if (system(cmd_buffer) == 0 && swapoff(filename) != 0)
 		tst_res(TWARN, "Failed to swapoff %s", filename);
-		rc = -1;
-	}
-
-	return rc;
 }
 
 /*
@@ -111,10 +105,7 @@ static void setup(void)
 		tst_brk(TCONF, "swap not supported by kernel");
 
 	is_swap_supported(TEST_FILE);
-	if (setup_swap() < 0) {
-		clean_swap();
-		tst_brk(TBROK, "Setup failed, quitting the test");
-	}
+	setup_swap();
 }
 
 static void cleanup(void)
