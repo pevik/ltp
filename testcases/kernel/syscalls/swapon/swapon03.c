@@ -31,9 +31,10 @@
 #define NUM_SWAP_FILES 15
 
 #define MNTPOINT	"mntpoint"
-#define TEST_FILE	MNTPOINT"/testswap"
+#define TEST_FILE	MNTPOINT "/LTP_" __FILE__ "_testswap"
 
 static int *swapfiles;
+static char *tmpdir;
 
 static void setup_swap(void)
 {
@@ -51,7 +52,6 @@ static void setup_swap(void)
 
 	pid = SAFE_FORK();
 	if (pid == 0) {
-		SAFE_MAKE_SMALL_SWAPFILE(TEST_FILE);
 		while (true) {
 			/* Create the swapfile */
 			snprintf(filename, sizeof(filename), "%s%02d", TEST_FILE, *swapfiles);
@@ -86,12 +86,14 @@ static void setup_swap(void)
  */
 static void check_and_swapoff(const char *filename)
 {
-	char cmd_buffer[256];
+	char buf[256];
+	int foo;
 
-	snprintf(cmd_buffer, sizeof(cmd_buffer), "grep -q '%s.*file' /proc/swaps", filename);
-
-	if (system(cmd_buffer) == 0 && swapoff(filename) != 0)
-		tst_res(TWARN, "Failed to swapoff %s", filename);
+	snprintf(buf, sizeof(buf), "%s/%s %%*s %%*s %%*s %%s", tmpdir, filename);
+	if (!FILE_LINES_SCANF("/proc/swaps", buf, &foo)) {
+		if (swapoff(filename) != 0)
+			tst_res(TWARN | TERRNO, "swapoff(%s) failed", filename);
+	}
 }
 
 /*
@@ -121,6 +123,8 @@ static void setup(void)
 		tst_brk(TCONF, "swap not supported by kernel");
 
 	is_swap_supported(TEST_FILE);
+
+	tmpdir = tst_tmpdir_path();
 
 	swapfiles = SAFE_MMAP(NULL, sizeof(*swapfiles), PROT_READ | PROT_WRITE,
 			MAP_SHARED | MAP_ANONYMOUS, -1, 0);
