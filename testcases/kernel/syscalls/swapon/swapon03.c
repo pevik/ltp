@@ -29,6 +29,7 @@
 #define TEST_FILE	MNTPOINT"/testswap"
 
 static int *swapfiles;
+static char *tmpdir;
 
 static void setup_swap(void)
 {
@@ -94,11 +95,12 @@ static void clean_swap(void)
 	char filename[FILENAME_MAX];
 
 	for (j = 0; j < *swapfiles; j++) {
-		snprintf(filename, sizeof(filename), "%s%02d", TEST_FILE, j);
+		snprintf(filename, sizeof(filename), "%s/%s%02d", tmpdir, TEST_FILE, j);
 		check_and_swapoff(filename);
 	}
 
-	check_and_swapoff(TEST_FILE);
+	snprintf(filename, sizeof(filename), "%s/%s", tmpdir, TEST_FILE);
+	check_and_swapoff(filename);
 }
 
 static void verify_swapon(void)
@@ -112,6 +114,8 @@ static void setup(void)
 		tst_brk(TCONF, "swap not supported by kernel");
 
 	is_swap_supported(TEST_FILE);
+
+	tmpdir = tst_tmpdir_path();
 
 	swapfiles = SAFE_MMAP(NULL, sizeof(*swapfiles), PROT_READ | PROT_WRITE,
 			MAP_SHARED | MAP_ANONYMOUS, -1, 0);
