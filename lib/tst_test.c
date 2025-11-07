@@ -1056,7 +1056,7 @@ static void do_exit(int ret)
 	exit(ret);
 }
 
-int check_kver(const char *min_kver, const int brk_nosupp)
+static int check_kver(const char *min_kver, const int brk_nosupp)
 {
 	char *msg;
 	int v1, v2, v3;
