@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
+ * Copyright (c) Linux Test Project, 2025
  * Copyright (C) 2020 Unisoc Communications Inc.
  *
  * This file is a implementation for rtc set read,covert to tm functions
@@ -124,4 +125,22 @@ int tst_rtc_ioctl(const char *rtc_dev, unsigned long request,
 		SAFE_CLOSE(rtc_fd);
 
 	return 0;
+}
+
+static inline int safe_clock_getres(const char *file, const int lineno,
+				    const char *rtc_dev, struct rtc_time *rtc_tm)
+{
+	int rval;
+
+	rval = tst_rtc_settime(rtc_dev, &rtc_restore);
+
+	if (rval == -1) {
+		tst_brk_(file, lineno, TBROK | TERRNO,
+			"ioctl(..., RTC_SET_TIME, ...) realtime failed");
+	} else if (rval) {
+		tst_brk_(file, lineno, TBROK | TERRNO,
+			"Invalid ioctl(..., RTC_SET_TIME, ...) return value %d", rval);
+	}
+
+	return rval;
 }

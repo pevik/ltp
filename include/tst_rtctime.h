@@ -10,7 +10,7 @@
 #include <linux/rtc.h>
 
 int tst_rtc_ioctl(const char *rtc_dev, unsigned long request,
-                  struct rtc_time *rtc_tm);
+				  struct rtc_time *rtc_tm);
 
 static inline int tst_rtc_gettime(const char *rtc_dev, struct rtc_time *rtc_tm)
 {
