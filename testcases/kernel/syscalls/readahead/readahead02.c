@@ -173,6 +173,7 @@ static int read_testfile(struct tcase *tc, int do_readahead,
 
 			i++;
 			offset += readahead_length;
+			usleep(1000);
 		} while ((size_t)offset < fsize);
 		tst_res(TINFO, "readahead calls made: %zu", i);
 		*cached = get_cached_size();
