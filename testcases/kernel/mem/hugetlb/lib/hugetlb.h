@@ -58,6 +58,7 @@ int getipckey(void);
 int getuserid(char *user);
 void rm_shm(int shm_id);
 int do_readback(void *p, size_t size, char *desc);
+int read_maps(unsigned long addr, char *buf);
 
 void update_shm_size(size_t *shm_size);
 

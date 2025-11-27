@@ -109,3 +109,45 @@ void update_shm_size(size_t * shm_size)
 		*shm_size = shmmax;
 	}
 }
+
+#define MAPS_BUF_SZ 4096
+int read_maps(unsigned long addr, char *buf)
+{
+        FILE *f;
+        char line[MAPS_BUF_SZ];
+        char *tmp;
+
+        f = fopen("/proc/self/maps", "r");
+        if (!f) {
+                tst_res(TFAIL, "Failed to open /proc/self/maps: %s\n", strerror(errno));
+                return -1;
+        }
+
+        while (1) {
+                unsigned long start, end, off, ino;
+                int ret;
+
+                tmp = fgets(line, MAPS_BUF_SZ, f);
+                if (!tmp)
+                        break;
+
+                buf[0] = '\0';
+                ret = sscanf(line, "%lx-%lx %*s %lx %*s %ld %255s",
+                             &start, &end, &off, &ino,
+                             buf);
+                if ((ret < 4) || (ret > 5)) {
+                        tst_res(TFAIL, "Couldn't parse /proc/self/maps line: %s\n",
+                                        line);
+                        fclose(f);
+                        return -1;
+                }
+
+                if ((start <= addr) && (addr < end)) {
+                        fclose(f);
+                        return 1;
+                }
+        }
+
+        fclose(f);
+        return 0;
+}
