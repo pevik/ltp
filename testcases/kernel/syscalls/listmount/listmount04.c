@@ -26,7 +26,11 @@ static uint64_t mnt_ids[MNT_SIZE];
 static struct tcase {
 	int req_usage;
 	uint32_t size;
+#ifdef HAVE_STRUCT_MNT_ID_REQ_MNT_NS_FD
+	uint32_t mnt_ns_fd;
+#else
 	uint32_t spare;
+#endif
 	uint64_t mnt_id;
 	uint64_t param;
 	uint64_t *mnt_ids;
@@ -73,12 +77,21 @@ static struct tcase {
 	{
 		.req_usage = 1,
 		.size = MNT_ID_REQ_SIZE_VER0,
+#ifdef HAVE_STRUCT_MNT_ID_REQ_MNT_NS_FD
+		.mnt_ns_fd = -1,
+#else
 		.spare = -1,
+#endif
 		.mnt_id = LSMT_ROOT,
 		.mnt_ids = mnt_ids,
 		.nr_mnt_ids = MNT_SIZE,
+#ifdef HAVE_STRUCT_MNT_ID_REQ_MNT_NS_FD
+		.exp_errno = EBADF,
+		.msg = "invalid mnt_id_req.mnt_ns_fd bad file descriptor",
+#else
 		.exp_errno = EINVAL,
 		.msg = "invalid mnt_id_req.spare",
+#endif
 	},
 	{
 		.req_usage = 1,
@@ -122,7 +135,11 @@ static void run(unsigned int n)
 		req->mnt_id = tc->mnt_id;
 		req->param = tc->param;
 		req->size = tc->size;
+#ifdef HAVE_STRUCT_MNT_ID_REQ_MNT_NS_FD
+		req->mnt_ns_fd = tc->mnt_ns_fd;
+#else
 		req->spare = tc->spare;
+#endif
 	}
 
 	TST_EXP_FAIL(tst_syscall(__NR_listmount, req, tc->mnt_ids,
