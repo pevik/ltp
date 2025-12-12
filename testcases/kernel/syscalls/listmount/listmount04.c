@@ -14,13 +14,14 @@
 
 #define _GNU_SOURCE
 
+#include "config.h"
 #include "tst_test.h"
 #include "lapi/mount.h"
 #include "lapi/syscalls.h"
 
 #define MNT_SIZE 32
 
-static struct mnt_id_req *request;
+static mnt_id_req *request;
 static uint64_t mnt_ids[MNT_SIZE];
 
 static struct tcase {
@@ -113,7 +114,7 @@ static struct tcase {
 static void run(unsigned int n)
 {
 	struct tcase *tc = &tcases[n];
-	struct mnt_id_req *req = NULL;
+	mnt_id_req *req = NULL;
 
 	memset(mnt_ids, 0, sizeof(mnt_ids));
 
@@ -122,7 +123,7 @@ static void run(unsigned int n)
 		req->mnt_id = tc->mnt_id;
 		req->param = tc->param;
 		req->size = tc->size;
-		req->spare = tc->spare;
+		req->mnt_ns_fd = tc->spare;
 	}
 
 	TST_EXP_FAIL(tst_syscall(__NR_listmount, req, tc->mnt_ids,
@@ -130,8 +131,17 @@ static void run(unsigned int n)
 		"%s", tc->msg);
 }
 
+static void setup(void)
+{
+	if (tst_kvercmp(6, 18, 0) >= 0) {
+		tcases[4].exp_errno = EBADF;
+		tcases[4].msg = "invalid mnt_id_req.mnt_ns_fd (EBADF)";
+	}
+}
+
 static struct tst_test test = {
 	.test = run,
+	.setup = setup,
 	.tcnt = ARRAY_SIZE(tcases),
 	.min_kver = "6.11",
 	.bufs = (struct tst_buffers []) {
