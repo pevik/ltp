@@ -42,7 +42,7 @@ measure()
 
 setup()
 {
-	local arch
+	local arch f uname
 
 	if [ ! -f "$IMA_KEXEC_IMAGE" ] && grep -q '^BOOT_IMAGE' /proc/cmdline; then
 		for arg in $(cat /proc/cmdline); do
@@ -60,6 +60,32 @@ setup()
 
 		if [ -f "$BOOT_IMAGE" ]; then
 			IMA_KEXEC_IMAGE="$BOOT_IMAGE"
+		fi
+	fi
+
+	if [ ! -f "$IMA_KEXEC_IMAGE" ]; then
+		uname="$(uname -r)"
+
+		# x86_64
+		f="/boot/vmlinuz-$uname"
+
+		# ppc64le, s390x
+		if [ ! -f "$f" ]; then
+			f="/boot/vmlinux-$uname"
+		fi
+
+		# aarch64
+		if [ ! -f "$f" ]; then
+			f="/boot/Image-$uname"
+		fi
+
+		# aarch64 often uses compression
+		if [ ! -f "$f" ]; then
+			f="$(ls /boot/Image-$uname.* || true)"
+		fi
+
+		if [ -f "$f" ]; then
+			IMA_KEXEC_IMAGE="$f"
 		fi
 	fi
 
