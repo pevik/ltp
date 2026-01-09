@@ -8,3 +8,8 @@
 .rst-content table td ul {
     margin-bottom: 0;
 }
+
+/* monospace for man page links */
+a.extlink-man2, a.extlink-man3, a.extlink-man7, a.extlink-man8 {
+    font-family: SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,Courier,monospace;
+}
