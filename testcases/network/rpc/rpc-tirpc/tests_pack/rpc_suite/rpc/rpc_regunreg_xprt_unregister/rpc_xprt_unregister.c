@@ -31,6 +31,10 @@
 #include <rpc/rpc.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <unistd.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <string.h>
 
 //Standard define
 #define PROCNUM 1
@@ -49,6 +53,27 @@ int main(int argn, char *argc[])
 	int test_status = 1;	//Default test result set to FAILED
 	SVCXPRT *svcr = NULL;
 	int fd = 0;
+	struct sockaddr_in server_addr;
+
+	fd = socket(AF_INET, SOCK_DGRAM, 0);
+	if (fd < 0) {
+		printf("socket creation failed");
+		return test_status;
+	}
+
+	memset(&server_addr, 0, sizeof(server_addr));
+	server_addr.sin_family = AF_INET;
+	server_addr.sin_port = htons(9001);
+	if (inet_pton(AF_INET, "127.0.0.1", &server_addr.sin_addr) <= 0) {
+		printf("inet_pton failed");
+		close(fd);
+		return test_status;
+	}
+	if (connect(fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
+		printf("connect failed");
+		close(fd);
+		return test_status;
+	}
 
 	//create a server
 	svcr = svcfd_create(fd, 1024, 1024);
