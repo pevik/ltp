@@ -117,8 +117,8 @@ static void *cpu_workload(double run_time)
 static void test_zone(int i)
 {
 			char path[NAME_MAX], temp_path[NAME_MAX];
-			int sleep_time = SLEEP, temp_high, temp;
-			double run_time = RUNTIME;
+			int sleep_time = 1, temp_high, temp;
+			double run_time = 1;
 
 			snprintf(path, NAME_MAX, "/sys/class/thermal/thermal_zone%d/", i);
 			strncpy(temp_path, path, NAME_MAX);
@@ -138,7 +138,7 @@ static void test_zone(int i)
 			SAFE_FILE_SCANF(trip_path, "%d", &trip);
 			SAFE_FILE_PRINTF(trip_path, "%d", temp_high);
 
-			while (sleep_time > 0) {
+			while (sleep_time < SLEEP) {
 				tst_res(TDEBUG, "Running for %f seconds, then sleeping for %d seconds", run_time, sleep_time);
 
 				for (int j = 0; j < nproc; j++) {
@@ -155,8 +155,8 @@ static void test_zone(int i)
 
 				if (temp > temp_high)
 					break;
-				sleep(sleep_time--);
-				run_time -= 3;
+				sleep(sleep_time++);
+				run_time += 3;
 			}
 
 			if (temp <= temp_high)
