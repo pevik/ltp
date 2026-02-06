@@ -258,6 +258,19 @@ static void open_netdev(const struct ldisc_info *ldisc)
 {
 	struct ifreq ifreq = { 0 };
 	struct sockaddr_ll lla = { 0 };
+	int protocol;
+
+	switch (ldisc->n) {
+		case N_SLIP:
+			protocol = ETH_P_IP;
+			break;
+		case N_SLCAN:
+			protocol = ETH_P_CAN;
+			break;
+		default:
+			protocol = ETH_P_ALL;
+			break;
+	}
 
 	SAFE_IOCTL(pts, SIOCGIFNAME, ifreq.ifr_name);
 	tst_res(TINFO, "Netdev is %s", ifreq.ifr_name);
@@ -282,7 +295,7 @@ static void open_netdev(const struct ldisc_info *ldisc)
 	SAFE_IOCTL(sk, SIOCGIFINDEX, &ifreq);
 
 	lla.sll_family = PF_PACKET;
-	lla.sll_protocol = htons(ETH_P_ALL);
+	lla.sll_protocol = htons(protocol);
 	lla.sll_ifindex = ifreq.ifr_ifindex;
 	SAFE_BIND(sk, (struct sockaddr *)&lla, sizeof(struct sockaddr_ll));
 
