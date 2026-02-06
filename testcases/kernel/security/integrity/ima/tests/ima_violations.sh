@@ -89,10 +89,13 @@ validate()
 	local max_attempt=3
 	local count2 diff i num_violations_new pass
 
+	tst_res TINFO "validate: $@"
+
 	for i in $(seq 1 $max_attempt); do
 		read num_violations_new < $IMA_VIOLATIONS
 		count2="$(get_count $search)"
 		diff=$(($num_violations_new - $num_violations))
+		tst_res TINFO "validate: count: '$count', count2: '$count2', num_violations_new: '$num_violations_new', num_violations: '$num_violations', diff: $diff"
 
 		if [ "$expected_violations" ]; then
 			[ $diff -eq $expected_violations ] && pass=1
@@ -128,6 +131,7 @@ test1()
 
 	read num_violations < $IMA_VIOLATIONS
 	count="$(get_count $search)"
+	tst_res TINFO "num_violations: '$num_violations' count: '$count'"
 
 	open_file_write
 	open_file_read
