@@ -1,5 +1,9 @@
 # Use the same sphinx as on readthedocs.org. When updated, make sure
 # sphinx-rtd-theme is compatible with sphinx.
+
+# workaround for sphinx.errors.ExtensionError: Could not import extension linuxdoc.rstKernelDoc (exception: No module named 'pkg_resources')
+setuptools==68.0.0
+
 sphinx==7.2.6
 sphinx-rtd-theme==2.0.0
 
