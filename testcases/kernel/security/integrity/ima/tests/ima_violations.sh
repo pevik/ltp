@@ -31,8 +31,9 @@ setup()
 		sysctl -wq kernel.printk_ratelimit=0
 	fi
 
+	LOG="/var/log/audit/audit.log"
 	if [ ! -e "$LOG" ]; then
-		tst_brk TCONF "log file not found, install auditd"
+		tst_brk TCONF "log file not found, install auditd ($LOG)"
 	fi
 	tst_res TINFO "using log $LOG"
 	exec 3< $LOG || tst_brk TBROK "failed to read log file"
