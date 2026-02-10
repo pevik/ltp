@@ -15,6 +15,8 @@ TST_CNT=8
 REQUIRED_BUILTIN_POLICY="tcb"
 REQUIRED_POLICY_CONTENT='violations.policy'
 
+REQUIRED_NEW_VIOLATIONS=1
+
 setup()
 {
 	FILE="test.txt"
@@ -34,6 +36,11 @@ setup()
 	fi
 	tst_res TINFO "using log $LOG"
 	exec 3< $LOG || tst_brk TBROK "failed to read log file"
+
+	# missing 0112721df4edb ("IMA: policy can be updated zero times")
+	if tst_kvcmp -lt "4.5"; then
+		REQUIRED_NEW_VIOLATIONS=0
+	fi
 }
 
 cleanup()
@@ -97,7 +104,7 @@ validate()
 		if [ "$expected_violations" ]; then
 			[ $diff -eq $expected_violations ] && pass=1
 		else
-			[ $diff -gt 0 ] && pass=1
+			[ $diff -ge $REQUIRED_NEW_VIOLATIONS ] && pass=1
 		fi
 
 		if [ "$pass" = 1 ]; then
