@@ -16,4 +16,4 @@ tst_test()
 	tst_res TPASS "Shell loader works fine!"
 }
 
-. tst_run.sh
+tst_test

@@ -49,4 +49,4 @@ tst_test()
 	fi
 }
 
-. tst_run.sh
+tst_test

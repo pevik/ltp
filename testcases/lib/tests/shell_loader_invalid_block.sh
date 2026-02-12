@@ -27,4 +27,4 @@ tst_test()
 	tst_res TPASS "This should pass!"
 }
 
-. tst_run.sh
+tst_test

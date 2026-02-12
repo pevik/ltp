@@ -25,4 +25,4 @@ tst_test()
 	shell_c_child
 }
 
-. tst_run.sh
+tst_test

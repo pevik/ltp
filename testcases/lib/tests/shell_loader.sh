@@ -27,4 +27,4 @@ tst_test()
 	esac
 }
 
-. tst_run.sh
+tst_test
