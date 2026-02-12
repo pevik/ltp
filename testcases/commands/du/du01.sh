@@ -1,15 +1,36 @@
 #!/bin/sh
 # SPDX-License-Identifier: GPL-2.0-or-later
+# Copyright (c) 2026 Petr Vorel <pvorel@suse.cz>
 # Copyright (c) 2015 Fujitsu Ltd.
 # Author: Zeng Linggang <zenglg.jy@cn.fujitsu.com>
 #
+# ---
+# doc
 # Test du command with some basic options.
+# ---
+#
+# ---
+# env
+# {
+#  "tcnt": 23,
+#  "needs_tmpdir": true,
+#  "needs_cmds": [
+#     {
+#       "cmd": "dd"
+#     },
+#     {
+#       "cmd": "du"
+#     },
+#     {
+#       "cmd": "stat"
+#     }
+#  ]
+# }
+# ---
 
-TST_CNT=23
+. tst_loader.sh
+
 TST_SETUP=setup
-TST_TESTFUNC=do_test
-TST_NEEDS_TMPDIR=1
-TST_NEEDS_CMDS="dd du stat"
 
 setup()
 {
@@ -17,10 +38,9 @@ setup()
 	cd basedir || tst_brk TBROK "cd basedir failed"
 
 	ROD_SILENT dd if=/dev/zero of=testfile bs=1M count=10
-
 	ROD_SILENT mkdir -p testdir
-
 	ROD_SILENT ln -s ../testfile testdir/testsymlink
+	cd ..
 
 	# Display values are in units of the first available SIZE
 	# from --block-size, and the DU_BLOCK_SIZE, BLOCK_SIZE and
@@ -34,12 +54,13 @@ setup()
 
 du_test()
 {
+	cd basedir || tst_brk TBROK "cd basedir failed"
 	local test_return
 
 	$1 > ../temp 2>&1
 	test_return=$?
 
-	if [ ${test_return} -ne 0 ]; then
+	if [ $test_return -ne 0 ]; then
 		grep -q -E "unrecognized option|invalid option" ../temp
 		if [ $? -eq 0 ]; then
 			tst_res TCONF "'$1' not supported"
@@ -69,7 +90,7 @@ block_size=$((block_size / 1024))
 # So we use the approximate value to check.
 check1="^10[2-3][0-9][0-9][[:space:]]\."
 check2="^10[2-3][0-9][0-9][[:space:]]testfile"
-check3="^\(0\|${block_size}\)[[:space:]]\./testdir/testsymlink"
+check3="^\(0\|$block_size\)[[:space:]]\./testdir/testsymlink"
 check5="^20[4-6][0-9][0-9][[:space:]]\."
 check7="^10[4-5][0-9][0-9]\{4\}[[:space:]]\."
 check9="^10[2-3][0-9][0-9][[:space:]]total"
@@ -79,34 +100,33 @@ check16="^10[2-3][0-9][0-9][[:space:]]testdir/"
 check20="^11M[[:space:]]\."
 check23="^[0-9]\{1,2\}[[:space:]]\."
 
-do_test()
+tst_test()
 {
 	case $1 in
-	1) du_test "du" ${check1};;
-	2) du_test "du testfile" ${check2};;
-	3) du_test "du -a" ${check3};;
-	4) du_test "du --all" ${check3};;
-	5) du_test "du -B ${block_size_default}" ${check5};;
-	6) du_test "du --block-size=${block_size_default}" ${check5};;
-	7) du_test "du -b" ${check7};;
-	8) du_test "du --bytes" ${check7};;
-	9) du_test "du -c" ${check9};;
-	10) du_test "du --total" ${check9};;
-	11) du_test "du -D testdir/testsymlink" ${check11};;
-	12) du_test "du --dereference-args testdir/testsymlink" ${check11};;
-	13) du_test "du --max-depth=1" ${check1};;
-	14) du_test "du --human-readable" ${check14};;
-	15) du_test "du -k" ${check1};;
-	16) du_test "du -L testdir/" ${check16};;
-	17) du_test "du --dereference testdir/" ${check16};;
-	18) du_test "du -P" ${check1};;
-	19) du_test "du --no-dereference" ${check1};;
-	20) du_test "du --si" ${check20};;
-	21) du_test "du -s" ${check1};;
-	22) du_test "du --summarize" ${check1};;
-	23) du_test "du --exclude=testfile" ${check23};;
+	1) du_test "du" $check1;;
+	2) du_test "du testfile" $check2;;
+	3) du_test "du -a" $check3;;
+	4) du_test "du --all" $check3;;
+	5) du_test "du -B $block_size_default" $check5;;
+	6) du_test "du --block-size=$block_size_default" $check5;;
+	7) du_test "du -b" $check7;;
+	8) du_test "du --bytes" $check7;;
+	9) du_test "du -c" $check9;;
+	10) du_test "du --total" $check9;;
+	11) du_test "du -D testdir/testsymlink" $check11;;
+	12) du_test "du --dereference-args testdir/testsymlink" $check11;;
+	13) du_test "du --max-depth=1" $check1;;
+	14) du_test "du --human-readable" $check14;;
+	15) du_test "du -k" $check1;;
+	16) du_test "du -L testdir/" $check16;;
+	17) du_test "du --dereference testdir/" $check16;;
+	18) du_test "du -P" $check1;;
+	19) du_test "du --no-dereference" $check1;;
+	20) du_test "du --si" $check20;;
+	21) du_test "du -s" $check1;;
+	22) du_test "du --summarize" $check1;;
+	23) du_test "du --exclude=testfile" $check23;;
 	esac
 }
 
-. tst_test.sh
-tst_run
+. tst_run.sh
