@@ -737,8 +737,11 @@ tst_wait_ipv6_dad()
 
 tst_netload_print_log()
 {
+	local strace_log="$TST_TMPDIR/netstress.$TST_ID"
+
 	tst_rhost_run -c "cat $TST_TMPDIR/netstress.log"
-	cat tst_netload.log
+	tst_res_ TINFO "pev: lhost $strace_log"
+	cat ${strace_log}*
 }
 
 tst_netload_brk()
@@ -830,23 +833,32 @@ tst_netload()
 	tst_res_ TINFO "run client 'netstress -l $c_opts' $run_cnt times"
 
 	tst_rhost_run -c "pkill -9 netstress\$"
-	rm -f tst_netload.log
 
 	local results
 	local passed=0
+	local strace_log="$TST_TMPDIR/netstress.$TST_ID"
 
 	for i in $(seq 1 $run_cnt); do
-		tst_rhost_run -c "netstress $s_opts" > tst_netload.log 2>&1
-		if [ $? -ne 0 ]; then
-			cat tst_netload.log
+		tst_res_ TINFO "pev: strace -ff -tt -T -o $strace_log netstress $s_opts"
+		tst_rhost_run -c "( strace -ff -tt -T -o $strace_log netstress $s_opts & )"
+		ret=$?
+		tst_res_ TINFO "pev: rhost ret: $ret"
+		tst_res_ TINFO "pev: rhost $TST_TMPDIR"
+		tst_rhost_run -c "ls -la $TST_TMPDIR"
+		if [ $ret -ne 0 ]; then
+			tst_res_ TINFO "pev: rhost $strace_log"
+			tst_rhost_run -c "cat ${strace_log}*"
 			local ttype="TFAIL"
-			grep -e 'CONF:' tst_netload.log && ttype="TCONF"
 			tst_brk_ $ttype "server failed"
 		fi
+		tst_res_ TINFO "pev: after rhost (server)"
 
 		local port=$(tst_rhost_run -s -c "cat $TST_TMPDIR/netstress_port")
-		netstress -l ${c_opts} -g $port > tst_netload.log 2>&1
+
+		tst_res_ TINFO "pev: strace -ff -tt -T -o $strace_log netstress -l ${c_opts} -g $port"
+		strace -ff -tt -T -o $strace_log netstress -l ${c_opts} -g $port
 		ret=$?
+		tst_res_ TINFO "pev: lhost ret: $ret"
 		tst_rhost_run -c "pkill -9 netstress\$"
 
 		if [ "$expect_ret" -ne 0 ]; then
@@ -1050,6 +1062,13 @@ tst_set_sysctl()
 
 tst_cleanup_rhost()
 {
+	local strace_log="$TST_TMPDIR/netstress.$TST_ID"
+
+	tst_res_ TINFO "pev: second lhost $strace_log"
+	cat ${strace_log}*
+	tst_res_ TINFO "pev: second rhost $strace_log"
+	tst_rhost_run -c "cat ${strace_log}*"
+
 	tst_rhost_run -c "rm -rf $TST_TMPDIR"
 }
 
