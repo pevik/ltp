@@ -1,0 +1,36 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+# EditorConfig configuration for LTP
+# https://editorconfig.org/
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# C/Assembly source files, headers, and Makefiles use tabs
+[*.{c,h,mk,S,sh,awk}]
+indent_style = tab
+indent_size = 8
+
+[{Makefile,Makefile.*}]
+indent_style = tab
+indent_size = 8
+
+# Python and Perl scripts use spaces
+[*.{py,pl}]
+indent_style = space
+indent_size = 4
+
+# Documentation files
+[*.{rst,md}]
+indent_style = space
+indent_size = 3
+
+# JSON files
+[*.json]
+indent_style = space
+indent_size = 4
