@@ -158,6 +158,10 @@ static void verify_fsetxattr(unsigned int i)
 	if (TST_RET == -1 && TST_ERR == EOPNOTSUPP)
 		tst_brk(TCONF, "fsetxattr(2) not supported");
 
+	/* consider newer kernels */
+	if ((tst_kvercmp(7, 0, 0) >= 0) && (strncmp(tc[i].fname, SOCK, strlen(SOCK)) == 0))
+		tc[i].exp_err = 0;
+
 	/* success */
 
 	if (!tc[i].exp_err) {
