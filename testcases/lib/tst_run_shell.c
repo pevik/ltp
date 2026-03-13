@@ -11,11 +11,6 @@
 
 static char *shell_filename;
 
-static void run_shell(void)
-{
-	tst_run_script(shell_filename, NULL);
-}
-
 static void run_shell_tcnt(unsigned int n)
 {
 	char buf[128];
@@ -24,6 +19,11 @@ static void run_shell_tcnt(unsigned int n)
 	snprintf(buf, sizeof(buf), "%u", n+1);
 
 	tst_run_script(shell_filename, params);
+}
+
+static void run_shell(void)
+{
+	run_shell_tcnt(0);
 }
 
 static struct tst_test test = {
