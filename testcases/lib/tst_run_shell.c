@@ -21,7 +21,7 @@ static void run_shell_tcnt(unsigned int n)
 	char buf[128];
 	char *const params[] = {buf, NULL};
 
-	snprintf(buf, sizeof(buf), "%u", n);
+	snprintf(buf, sizeof(buf), "%u", n+1);
 
 	tst_run_script(shell_filename, params);
 }
