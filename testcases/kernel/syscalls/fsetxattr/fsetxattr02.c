@@ -19,7 +19,8 @@
  * - Set attribute to a block special file, fsetxattr(2) should
  *   return -1 and set errno to EPERM.
  * - Set attribute to a UNIX domain socket, fsetxattr(2) should
- *   return -1 and set errno to EPERM.
+ *   return -1 and set errno to EPERM. Will SUCCEED on kernel
+ *   with commit dc0876b9846d.
  */
 
 /*
@@ -157,6 +158,10 @@ static void verify_fsetxattr(unsigned int i)
 
 	if (TST_RET == -1 && TST_ERR == EOPNOTSUPP)
 		tst_brk(TCONF, "fsetxattr(2) not supported");
+
+	/* consider kernels with commit dc0876b9846d */
+	if ((tst_kvercmp(7, 1, 0) >= 0) && (strncmp(tc[i].fname, SOCK, strlen(SOCK)) == 0))
+		tc[i].exp_err = 0;
 
 	/* success */
 
