@@ -15,7 +15,7 @@
  * - EPERM - set attribute to a FIFO
  * - EPERM - set attribute to a char special file
  * - EPERM - set attribute to a block special file
- * - EPERM - set attribute to a UNIX domain socket
+ * - EPERM/SUCCEED - set attribute to a UNIX domain socket (commit dc0876b9846d)
  */
 
 #include "config.h"
@@ -131,6 +131,10 @@ static void verify_setxattr(unsigned int i)
 
 	if (TST_RET == -1 && TST_ERR == EOPNOTSUPP)
 		tst_brk(TCONF, "setxattr(2) not supported");
+
+	/* consider kernels with commit dc0876b9846d */
+	if ((tst_kvercmp(7, 1, 0) >= 0) && (strncmp(tc[i].fname, SOCK, strlen(SOCK)) == 0))
+		tc[i].exp_err = 0;
 
 	/* success */
 
