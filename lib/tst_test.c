@@ -69,6 +69,7 @@ static float duration = -1;
 static float timeout_mul = -1;
 static int reproducible_output;
 static int quiet_output;
+static unsigned int tcnt;
 
 struct context {
 	int32_t lib_pid;
@@ -344,7 +345,7 @@ static void print_result(const char *file, const int lineno, int ttype,
 		str_errno = tst_strerrno(int_errno);
 	}
 
-	ret = snprintf(str, size, "%s:%i: ", file, lineno);
+	ret = snprintf(str, size, "%s:%i: %u ", file, lineno, tcnt+1);
 	str += ret;
 	size -= ret;
 
@@ -1705,7 +1706,6 @@ static void heartbeat(void)
 
 static void run_tests(void)
 {
-	unsigned int i;
 	struct results saved_results;
 
 	if (!tst_test->test) {
@@ -1724,10 +1724,10 @@ static void run_tests(void)
 		return;
 	}
 
-	for (i = 0; i < tst_test->tcnt; i++) {
+	for (tcnt = 0; tcnt < tst_test->tcnt; tcnt++) {
 		saved_results = *results;
 		heartbeat();
-		tst_test->test(i);
+		tst_test->test(tcnt);
 
 		if (tst_getpid() != context->main_pid)
 			exit(0);
@@ -1735,7 +1735,7 @@ static void run_tests(void)
 		tst_reap_children();
 
 		if (results_equal(&saved_results, results))
-			tst_brk(TBROK, "Test %i haven't reported results!", i);
+			tst_brk(TBROK, "Test %i haven't reported results!", tcnt);
 	}
 }
 
