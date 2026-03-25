@@ -85,6 +85,7 @@ AC_CHECK_HEADERS_ONCE([ \
     linux/userfaultfd.h \
     netinet/sctp.h \
     pthread.h \
+    rdma/rdma_user_cm.h \
     sys/epoll.h \
     sys/fanotify.h \
     sys/inotify.h \
