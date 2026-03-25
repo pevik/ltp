@@ -3,6 +3,7 @@ kmsg01 kmsg01
 fw_load fw_load
 rtc01 rtc01
 rtc02 rtc02
+ucma_uaf01 ucma_uaf01
 block_dev block_dev
 tpci tpci
 tbio tbio

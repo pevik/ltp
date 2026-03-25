@@ -11,6 +11,7 @@ SUBDIRS		:= acpi \
 		   locking \
 		   pci \
 		   rcu \
+		   rdma \
 		   rtc \
 		   tbio \
 		   uaccess \
