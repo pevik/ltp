@@ -110,10 +110,6 @@ jobs:
               CC: gcc
               TREE: out
 
-          - container: "ubuntu:bionic"
-            env:
-              CC: gcc
-
     container:
       image: ${{ matrix.container }}
       env: ${{ matrix.env }}
