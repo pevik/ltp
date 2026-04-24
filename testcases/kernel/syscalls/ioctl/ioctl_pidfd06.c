@@ -54,7 +54,7 @@ static void setup(void)
 	if (!ioctl_pidfd_info_exit_supported())
 		tst_brk(TCONF, "PIDFD_INFO_EXIT is not supported by ioctl()");
 
-	if (tst_kvercmp(7, 0, 0) >= 0)
+	if (tst_kvercmp(6, 18, 14) >= 0)
 		err_nr = EREMOTE;
 }
 
