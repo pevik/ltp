@@ -187,7 +187,9 @@ int main(int argc, char **argv)
 
 	/* ready to generate events */
 	if (checkpoint_id != -1) {
+		tst_res(TINFO, "!!! tst_reinit();");
 		tst_reinit();
+		tst_res(TINFO, "!!! TST_CHECKPOINT_WAIT(%d)", checkpoint_id);
 		TST_CHECKPOINT_WAIT(checkpoint_id);
 	}
 

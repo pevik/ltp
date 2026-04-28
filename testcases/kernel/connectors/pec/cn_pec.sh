@@ -80,7 +80,9 @@ do_test()
 	pec_listener -p $gen_pid -c $LISTENER_ID >lis.log &
 	lis_pid=$!
 
+	tst_res TINFO "!!! TST_CHECKPOINT_WAIT $LISTENER_ID" # FIXME: debug
 	TST_CHECKPOINT_WAIT $LISTENER_ID
+	tst_res TINFO "!!! TST_CHECKPOINT_WAKE $GENERATOR_ID" # FIXME: debug
 	TST_CHECKPOINT_WAKE $GENERATOR_ID
 
 	wait $gen_pid

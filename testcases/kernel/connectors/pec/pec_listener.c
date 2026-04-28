@@ -309,7 +309,9 @@ int main(int argc, char * const argv[])
 
 	/* ready to receive events */
 	if (checkpoint_id != -1) {
+		tst_res(TINFO, "!!! tst_reinit();");
 		tst_reinit();
+		tst_res(TINFO, "!!! TST_CHECKPOINT_WAKE(0)");
 		TST_CHECKPOINT_WAKE(0);
 	}
 
