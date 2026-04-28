@@ -8,6 +8,7 @@
 # test[4-6] test 6.15 commit 5b3cd801155f ("ima: limit the number of open-writers integrity violations")
 # test[7-8] test 6.15 commit a414016218ca ("ima: limit the number of ToMToU integrity violations")
 
+TST_NEEDS_CHECKPOINTS=1
 TST_SETUP="setup"
 TST_CLEANUP="cleanup"
 TST_CNT=8
@@ -157,6 +158,8 @@ test2()
 
 test3()
 {
+	local pid
+
 	tst_res TINFO "verify open_writers using mmapped files"
 
 	local search="open_writers"
@@ -168,16 +171,21 @@ test3()
 	echo 'testing testing' > $FILE
 
 	ima_mmap -f $FILE &
+	pid=$!
+
 	# wait for violations appear in logs
-	tst_sleep 1s
+	TST_CHECKPOINT_WAKE_AND_WAIT 0
 
 	open_file_read
 	close_file_read
 
+	TST_CHECKPOINT_WAKE 0
+
 	validate $num_violations $count $search
 
 	# wait for ima_mmap to exit, so we can umount
-	tst_sleep 2s
+	tst_res TINFO "wait for $pid to exit"
+	wait $pid
 }
 
 test4()
