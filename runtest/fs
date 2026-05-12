@@ -58,6 +58,8 @@ ftest06 ftest06
 ftest07 ftest07
 ftest08 ftest08
 
+fsstress01 fsstress -c -l 100 -p 1000
+
 lftest01	lftest
 writetest01	writetest
 
