@@ -22,7 +22,7 @@
 
 top_srcdir			?= ../../../..
 
-include $(top_srcdir)/include/mk/env_pre.mk
+include $(top_srcdir)/include/mk/testcases.mk
 
 CPPFLAGS			+= -DNO_XFS -I$(abs_srcdir) \
 				   -D_LARGEFILE64_SOURCE -D_GNU_SOURCE

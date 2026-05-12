@@ -33,6 +33,7 @@
 #include "config.h"
 #include "global.h"
 #include "tst_common.h"
+#include "tso_tmpdir.h"
 
 #ifdef HAVE_SYS_PRCTL_H
 # include <sys/prctl.h>
@@ -291,6 +292,7 @@ int main(int argc, char **argv)
 	char buf[10];
 	int c;
 	char *dirname = NULL;
+	char *tmpdir = NULL;
 	int fd;
 	int i;
 	int cleanup = 0;
@@ -404,18 +406,17 @@ int main(int argc, char **argv)
 	make_freq_table();
 
 	while (((loopcntr <= loops) || (loops == 0)) && !should_stop) {
-		if (!dirname) {
-			/* no directory specified */
-			if (!nousage)
-				usage();
-			exit(1);
+		if (dirname) {
+			(void)mkdir(dirname, 0777);
+			if (chdir(dirname) < 0) {
+				perror(dirname);
+				exit(1);
+			}
+		} else {
+			tst_tmpdir();
+			dirname = tmpdir = tst_get_tmpdir();
 		}
 
-		(void)mkdir(dirname, 0777);
-		if (chdir(dirname) < 0) {
-			perror(dirname);
-			exit(1);
-		}
 		sprintf(buf, "fss%x", getpid());
 		fd = creat(buf, 0666);
 		if (lseek64(fd, (off64_t) (MAXFSIZE32 + 1ULL), SEEK_SET) < 0)
@@ -535,6 +536,7 @@ int main(int argc, char **argv)
 				perror
 				    ("fsstress - XFS_SYSSGI clear error injection call");
 				close(fd);
+				free(tmpdir);
 				exit(1);
 			}
 			close(fd);
@@ -552,6 +554,7 @@ int main(int argc, char **argv)
 		}
 		loopcntr++;
 	}
+	free(tmpdir);
 	return 0;
 }
 
@@ -1371,7 +1374,7 @@ void usage(void)
 	printf
 	    ("   -c               specifies not to remove files(cleanup) after execution\n");
 	printf
-	    ("   -d dir           specifies the base directory for operations\n");
+	    ("   -d dir           specifies the base directory for operations (default $TMPDIR/LTP_*)\n");
 	printf("   -e errtg         specifies error injection stuff\n");
 	printf
 	    ("   -f op_name=freq  changes the frequency of option name to freq\n");
