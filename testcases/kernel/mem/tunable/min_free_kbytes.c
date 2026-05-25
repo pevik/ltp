@@ -188,6 +188,7 @@ static void check_monitor(void)
 	while (!end) {
 		memfree = SAFE_READ_MEMINFO("MemFree:");
 		tune = TST_SYS_CONF_LONG_GET(MIN_FREE_KBYTES);
+		tst_res(TINFO, "memfree: %lu, tune: %lu", memfree, tune);
 
 		if (memfree < tune) {
 			tst_res(TINFO, "MemFree is %lu kB, "
