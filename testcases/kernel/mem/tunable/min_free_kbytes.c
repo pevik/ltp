@@ -108,7 +108,8 @@ static void test_tune(unsigned long overcommit_policy)
 		fflush(stdout);
 		switch (pid[i] = fork()) {
 		case -1:
-			tst_brk(TBROK | TERRNO, "fork");
+			tst_brk((errno == ENOMEM ? TCONF : TBROK) | TERRNO, "fork");
+			break;
 		case 0:
 			ret = eatup_mem(overcommit_policy);
 			exit(ret);
