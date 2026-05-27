@@ -28,18 +28,26 @@
 #define FLAGS_DESC(x) .flags = x, .desc = #x
 
 static int fd;
+static int thread_pidfd_unsupported;
 
 static struct test_case_t {
 	unsigned int flags;
 	char *desc;
 	int exp_errno;
+	unsigned int needs_thread_pidfd;
 } test_cases[] = {
 	{
 		FLAGS_DESC(FAN_REPORT_PIDFD | FAN_REPORT_TID),
 		.exp_errno = EINVAL,
+		.needs_thread_pidfd = 1,
 	},
 	{
 		FLAGS_DESC(FAN_REPORT_PIDFD | FAN_REPORT_FID | FAN_REPORT_DFID_NAME),
+	},
+	{
+		FLAGS_DESC(FAN_REPORT_PIDFD | FAN_REPORT_TID | FAN_REPORT_FID | FAN_REPORT_DFID_NAME),
+		.exp_errno = EINVAL,
+		.needs_thread_pidfd = 1,
 	},
 };
 
@@ -51,17 +59,29 @@ static void do_setup(void)
 	 */
 	REQUIRE_FANOTIFY_INIT_FLAGS_SUPPORTED_ON_FS(FAN_REPORT_PIDFD,
 						    MOUNT_PATH);
+
+	/*
+	 * Check whether the kernel supports FAN_REPORT_PIDFD in combination
+	 * with FAN_REPORT_TID. Test cases with the needs_thread_pidfd field
+	 * set expect different errno values depending on whether this
+	 * combination is supported.
+	 */
+	thread_pidfd_unsupported = fanotify_init_flags_supported_on_fs(
+		FAN_REPORT_PIDFD | FAN_REPORT_TID, MOUNT_PATH);
 }
 
 static void do_test(unsigned int i)
 {
 	struct test_case_t *tc = &test_cases[i];
 
-	tst_res(TINFO, "Test %s on %s", tc->exp_errno ? "fail" : "pass",
+	int exp_errno = tc->needs_thread_pidfd && !thread_pidfd_unsupported ?
+		0 : tc->exp_errno;
+
+	tst_res(TINFO, "Test %s on %s", exp_errno ? "fail" : "pass",
 		tc->desc);
 
 	TST_EXP_FD_OR_FAIL(fd = fanotify_init(tc->flags, O_RDONLY),
-			   tc->exp_errno);
+			   exp_errno);
 
 	if (fd > 0)
 		SAFE_CLOSE(fd);

@@ -20,9 +20,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mount.h>
+#include <pthread.h>
 #include "tst_test.h"
 #include "tst_safe_stdio.h"
 #include "tst_safe_macros.h"
+#include "tst_safe_pthread.h"
 #include "lapi/pidfd.h"
 
 #ifdef HAVE_SYS_FANOTIFY_H
@@ -42,13 +44,19 @@ struct pidfd_fdinfo_t {
 
 static struct test_case_t {
 	char *name;
-	int fork;
+	int trigger_in_child;
 	int want_pidfd_err;
 	int remount_ro;
 } test_cases[] = {
 	{
 		"return a valid pidfd for event created by self",
 		0,
+		0,
+		0,
+	},
+	{
+		"return a valid pidfd for event created by child",
+		1,
 		0,
 		0,
 	},
@@ -68,16 +76,17 @@ static struct test_case_t {
 
 static int fanotify_fd;
 static char event_buf[BUF_SZ];
-static struct pidfd_fdinfo_t *self_pidfd_fdinfo;
+static struct pidfd_fdinfo_t expected_pidfd_fdinfo;
 
 static int fd_error_unsupported;
+static int thread_pidfd_unsupported;
 
-static struct pidfd_fdinfo_t *read_pidfd_fdinfo(int pidfd)
+#define TST_VARIANT_FD_ERROR (tst_variant & 1)
+#define TST_VARIANT_PIDFD_THREAD (tst_variant & 2)
+
+static void read_pidfd_fdinfo(int pidfd, struct pidfd_fdinfo_t *pidfd_fdinfo)
 {
 	char *fdinfo_path;
-	struct pidfd_fdinfo_t *pidfd_fdinfo;
-
-	pidfd_fdinfo = SAFE_MALLOC(sizeof(struct pidfd_fdinfo_t));
 
 	SAFE_ASPRINTF(&fdinfo_path, "/proc/self/fdinfo/%d", pidfd);
 	SAFE_FILE_LINES_SCANF(fdinfo_path, "pos: %d", &pidfd_fdinfo->pos);
@@ -87,8 +96,6 @@ static struct pidfd_fdinfo_t *read_pidfd_fdinfo(int pidfd)
 	SAFE_FILE_LINES_SCANF(fdinfo_path, "NSpid: %d", &pidfd_fdinfo->ns_pid);
 
 	free(fdinfo_path);
-
-	return pidfd_fdinfo;
 }
 
 static void generate_event(void)
@@ -100,35 +107,105 @@ static void generate_event(void)
 	SAFE_CLOSE(fd);
 }
 
-static void do_fork(void)
+static pid_t do_fork(int want_pidfd_err)
 {
-	int status;
+	int pidfd;
 	pid_t child;
 
 	child = SAFE_FORK();
 	if (child == 0) {
 		SAFE_CLOSE(fanotify_fd);
 		generate_event();
+		TST_CHECKPOINT_WAIT(0);
 		exit(EXIT_SUCCESS);
 	}
 
-	SAFE_WAITPID(child, &status, 0);
-	if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
-		tst_brk(TBROK,
-			"child process terminated incorrectly");
+	pidfd = SAFE_PIDFD_OPEN(child, 0);
+	read_pidfd_fdinfo(pidfd, &expected_pidfd_fdinfo);
+	SAFE_CLOSE(pidfd);
+
+	if (want_pidfd_err) {
+		int status;
+		TST_CHECKPOINT_WAKE(0);
+		SAFE_WAITPID(child, &status, 0);
+		if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
+			tst_brk(TBROK, "child process terminated incorrectly");
+
+		return -1;
+	}
+
+	return child;
+}
+
+static void *thread_generate_event(void *arg)
+{
+	*(int *)arg = SAFE_PIDFD_OPEN(gettid(), PIDFD_THREAD);
+	TST_CHECKPOINT_WAKE(0);
+
+	generate_event();
+	TST_CHECKPOINT_WAIT(0);
+	pthread_exit(0);
+}
+
+static pthread_t do_pthread_create(int want_pidfd_err)
+{
+	int pidfd;
+	pthread_t worker;
+
+	SAFE_PTHREAD_CREATE(&worker, NULL, thread_generate_event, &pidfd);
+
+	TST_CHECKPOINT_WAIT(0);
+	read_pidfd_fdinfo(pidfd, &expected_pidfd_fdinfo);
+
+	if (want_pidfd_err) {
+		int status;
+		struct pidfd_fdinfo_t thread_pidfd_fdinfo;
+		TST_CHECKPOINT_WAKE(0);
+		SAFE_PTHREAD_JOIN(worker, (void **)&status);
+		if (status != 0)
+			tst_brk(TBROK, "worker thread terminated incorrectly");
+
+		/*
+		 * Unlike waitpid(), pthread_join() only waits until the worker thread
+		 * has exited from the pthread point of view. The thread may still be
+		 * visible through its pidfd for a short time afterwards, and fanotify
+		 * creates the event pidfd when the event is read. Wait until the
+		 * worker pidfd fdinfo reports Pid: -1 before reading the event so
+		 * that fanotify reports ESRCH/FAN_NOPIDFD instead of a pidfd.
+		 */
+		do {
+			read_pidfd_fdinfo(pidfd, &thread_pidfd_fdinfo);
+		} while (thread_pidfd_fdinfo.pid != -1);
+
+		SAFE_CLOSE(pidfd);
+
+		return -1;
+	}
+
+	SAFE_CLOSE(pidfd);
+
+	return worker;
 }
 
 static void do_setup(void)
 {
-	int pidfd;
 	int init_flags = FAN_REPORT_PIDFD;
 
-	if (tst_variant) {
+	if (TST_VARIANT_FD_ERROR) {
 		fanotify_fd = -1;
 		fd_error_unsupported = fanotify_init_flags_supported_on_fs(FAN_REPORT_FD_ERROR, ".");
 		if (fd_error_unsupported)
 			return;
 		init_flags |= FAN_REPORT_FD_ERROR;
+	}
+
+	if (TST_VARIANT_PIDFD_THREAD) {
+		fanotify_fd = -1;
+		thread_pidfd_unsupported = fanotify_init_flags_supported_on_fs(
+			FAN_REPORT_PIDFD | FAN_REPORT_TID, ".");
+		if (thread_pidfd_unsupported)
+			return;
+		init_flags |= FAN_REPORT_TID;
 	}
 
 	SAFE_TOUCH(TEST_FILE, 0666, NULL);
@@ -144,15 +221,6 @@ static void do_setup(void)
 	fanotify_fd = SAFE_FANOTIFY_INIT(init_flags, O_RDWR);
 	SAFE_FANOTIFY_MARK(fanotify_fd, FAN_MARK_ADD, FAN_OPEN, AT_FDCWD,
 			   TEST_FILE);
-
-	pidfd = SAFE_PIDFD_OPEN(getpid(), 0);
-
-	self_pidfd_fdinfo = read_pidfd_fdinfo(pidfd);
-	if (self_pidfd_fdinfo == NULL) {
-		tst_brk(TBROK,
-			"pidfd=%d, failed to read pidfd fdinfo",
-			pidfd);
-	}
 }
 
 static void do_test(unsigned int num)
@@ -160,14 +228,26 @@ static void do_test(unsigned int num)
 	int i = 0, len;
 	struct test_case_t *tc = &test_cases[num];
 	int nopidfd_err = tc->want_pidfd_err ?
-			  (tst_variant ? -ESRCH : FAN_NOPIDFD) : 0;
-	int fd_err = (tc->remount_ro && tst_variant) ? -EROFS : 0;
+			  (TST_VARIANT_FD_ERROR ? -ESRCH : FAN_NOPIDFD) : 0;
+	int fd_err = (tc->remount_ro && TST_VARIANT_FD_ERROR) ? -EROFS : 0;
+	union {
+		pid_t pid;
+		pthread_t pthread_id;
+	} worker_id;
 
 	tst_res(TINFO, "Test #%d.%d: %s %s", num, tst_variant, tc->name,
-			tst_variant ? "(FAN_REPORT_FD_ERROR)" : "");
+		TST_VARIANT_FD_ERROR ? (TST_VARIANT_PIDFD_THREAD ?
+			"(FAN_REPORT_FD_ERROR, FAN_REPORT_TID)" : "(FAN_REPORT_FD_ERROR)") :
+			(TST_VARIANT_PIDFD_THREAD ? "(FAN_REPORT_TID)" : ""));
 
-	if (fd_error_unsupported && tst_variant) {
+	if (fd_error_unsupported && TST_VARIANT_FD_ERROR) {
 		FANOTIFY_INIT_FLAGS_ERR_MSG(FAN_REPORT_FD_ERROR, fd_error_unsupported);
+		return;
+	}
+
+	if (thread_pidfd_unsupported && TST_VARIANT_PIDFD_THREAD) {
+		FANOTIFY_INIT_FLAGS_ERR_MSG(FAN_REPORT_PIDFD | FAN_REPORT_TID,
+				thread_pidfd_unsupported);
 		return;
 	}
 
@@ -182,14 +262,30 @@ static void do_test(unsigned int num)
 	}
 
 	/*
-	 * Generate the event in either self or a child process. Event
-	 * generation in a child process is done so that the FAN_NOPIDFD case
-	 * can be verified.
+	 * Generate the event either in the current task or in another task.
+	 * When trigger_in_child is set, the event can be generated by either
+	 * a child process or a worker thread depending on the test variant.
+	 * The want_pidfd_err field determines whether the event-generating
+	 * task is still valid when the event is read.
 	 */
-	if (tc->fork)
-		do_fork();
-	else
+	if (tc->trigger_in_child) {
+		if (TST_VARIANT_PIDFD_THREAD)
+			worker_id.pthread_id = do_pthread_create(tc->want_pidfd_err);
+		else
+			worker_id.pid = do_fork(tc->want_pidfd_err);
+	} else {
+		/*
+		 * Although the expected pid and the pid reported by fanotify are
+		 * the same in this case, pidfds created with and without PIDFD_THREAD
+		 * flag have different fdinfo flags. Use PIDFD_THREAD for the expected
+		 * pidfd fdinfo so that the fdinfo can be compared bitwise.
+		 */
+		int pidfd = SAFE_PIDFD_OPEN(gettid(), TST_VARIANT_PIDFD_THREAD ? PIDFD_THREAD : 0);
+		read_pidfd_fdinfo(pidfd, &expected_pidfd_fdinfo);
+		SAFE_CLOSE(pidfd);
+
 		generate_event();
+	}
 
 	/*
 	 * Read all of the queued events into the provided event
@@ -208,7 +304,7 @@ static void do_test(unsigned int num)
 	while (i < len) {
 		struct fanotify_event_metadata *event;
 		struct fanotify_event_info_pidfd *info;
-		struct pidfd_fdinfo_t *event_pidfd_fdinfo = NULL;
+		struct pidfd_fdinfo_t event_pidfd_fdinfo;
 
 		event = (struct fanotify_event_metadata *)&event_buf[i];
 		info = (struct fanotify_event_info_pidfd *)(event + 1);
@@ -288,39 +384,32 @@ static void do_test(unsigned int num)
 		 * No pidfd errors occurred, continue with verifying pidfd
 		 * fdinfo validity.
 		 */
-		event_pidfd_fdinfo = read_pidfd_fdinfo(info->pidfd);
-		if (event_pidfd_fdinfo == NULL) {
-			tst_brk(TBROK,
-				"reading fdinfo for pidfd: %d "
-				"describing pid: %u failed",
-				info->pidfd,
-				(unsigned int)event->pid);
-			goto next_event;
-		} else if (event_pidfd_fdinfo->pid != event->pid) {
+		read_pidfd_fdinfo(info->pidfd, &event_pidfd_fdinfo);
+		if (event_pidfd_fdinfo.pid != event->pid) {
 			tst_res(TFAIL,
 				"pidfd provided for incorrect pid "
 				"(expected pidfd for pid: %u, got pidfd for "
 				"pid: %u)",
 				(unsigned int)event->pid,
-				(unsigned int)event_pidfd_fdinfo->pid);
+				(unsigned int)event_pidfd_fdinfo.pid);
 			goto next_event;
-		} else if (memcmp(event_pidfd_fdinfo, self_pidfd_fdinfo,
+		} else if (memcmp(&event_pidfd_fdinfo, &expected_pidfd_fdinfo,
 				  sizeof(struct pidfd_fdinfo_t))) {
 			tst_res(TFAIL,
 				"pidfd fdinfo values for self and event differ "
 				"(expected pos: %d, flags: %x, mnt_id: %d, "
 				"pid: %d, ns_pid: %d, got pos: %d, "
 				"flags: %x, mnt_id: %d, pid: %d, ns_pid: %d",
-				self_pidfd_fdinfo->pos,
-				self_pidfd_fdinfo->flags,
-				self_pidfd_fdinfo->mnt_id,
-				self_pidfd_fdinfo->pid,
-				self_pidfd_fdinfo->ns_pid,
-				event_pidfd_fdinfo->pos,
-				event_pidfd_fdinfo->flags,
-				event_pidfd_fdinfo->mnt_id,
-				event_pidfd_fdinfo->pid,
-				event_pidfd_fdinfo->ns_pid);
+				expected_pidfd_fdinfo.pos,
+				expected_pidfd_fdinfo.flags,
+				expected_pidfd_fdinfo.mnt_id,
+				expected_pidfd_fdinfo.pid,
+				expected_pidfd_fdinfo.ns_pid,
+				event_pidfd_fdinfo.pos,
+				event_pidfd_fdinfo.flags,
+				event_pidfd_fdinfo.mnt_id,
+				event_pidfd_fdinfo.pid,
+				event_pidfd_fdinfo.ns_pid);
 			goto next_event;
 		} else {
 			tst_res(TPASS,
@@ -342,9 +431,20 @@ next_event:
 
 		if (info && info->pidfd >= 0)
 			SAFE_CLOSE(info->pidfd);
+	}
 
-		if (event_pidfd_fdinfo)
-			free(event_pidfd_fdinfo);
+	if (tc->trigger_in_child && !tc->want_pidfd_err) {
+		int status;
+		TST_CHECKPOINT_WAKE(0);
+		if (TST_VARIANT_PIDFD_THREAD) {
+			SAFE_PTHREAD_JOIN(worker_id.pthread_id, (void **)&status);
+			if (status != 0)
+				tst_brk(TBROK, "worker thread terminated incorrectly");
+		} else {
+			SAFE_WAITPID(worker_id.pid, &status, 0);
+			if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
+				tst_brk(TBROK, "child process terminated incorrectly");
+		}
 	}
 }
 
@@ -352,19 +452,17 @@ static void do_cleanup(void)
 {
 	if (fanotify_fd >= 0)
 		SAFE_CLOSE(fanotify_fd);
-
-	if (self_pidfd_fdinfo)
-		free(self_pidfd_fdinfo);
 }
 
 static struct tst_test test = {
 	.setup = do_setup,
 	.test = do_test,
 	.tcnt = ARRAY_SIZE(test_cases),
-	.test_variants = 2,
+	.test_variants = 4,
 	.cleanup = do_cleanup,
 	.all_filesystems = 1,
 	.needs_root = 1,
+	.needs_checkpoints = 1,
 	.mount_device = 1,
 	.mntpoint = MOUNT_PATH,
 	.forks_child = 1,
