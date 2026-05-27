@@ -117,6 +117,15 @@ int safe_pipe2(const char *file, const int lineno, int fildes[2], int flags);
 #define SAFE_READ(len_strict, fildes, buf, nbyte) \
 	safe_read(__FILE__, __LINE__, NULL, (len_strict), (fildes), (buf), (nbyte))
 
+#define SAFE_READ_ANY(fildes, buf, nbyte) \
+	SAFE_READ(SAFE_READ_ANY, fildes, buf, nbyte)
+
+#define SAFE_READ_ALL(fildes, buf, nbyte) \
+	SAFE_READ(SAFE_READ_ALL, fildes, buf, nbyte)
+
+#define SAFE_READ_ANY_EAGAIN(fildes, buf, nbyte) \
+	SAFE_READ(SAFE_READ_ANY_EAGAIN, fildes, buf, nbyte)
+
 #define SAFE_SETEGID(egid) \
 	safe_setegid(__FILE__, __LINE__, NULL, (egid))
 
