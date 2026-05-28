@@ -110,6 +110,7 @@ static int nofid_fd;
 static int fanotify_fd;
 static int at_handle_fid;
 static int filesystem_mark_unsupported;
+static int rename_exchange_unsupported;
 static char events_buf[BUF_SIZE];
 static struct event_t event_set[EVENT_MAX];
 
@@ -191,6 +192,13 @@ static void do_test(unsigned int number)
 		return;
 	}
 
+	if (tst_variant && (tc->mask & FAN_DELETE_SELF) &&
+	    (!ovl_bind_mounted || rename_exchange_unsupported)) {
+		/* The eviction of base fs inodes is defered due to overlay held reference */
+		tst_res(TCONF, "overlayfs base fs cannot be watched for delete self events");
+		return;
+	}
+
 	if (filesystem_mark_unsupported && mark->flag != FAN_MARK_INODE) {
 		FANOTIFY_MARK_FLAGS_ERR_MSG(mark, filesystem_mark_unsupported);
 		return;
@@ -210,11 +218,6 @@ static void do_test(unsigned int number)
 	if (tst_variant && !ovl_bind_mounted) {
 		if (mark->flag & FAN_MARK_MOUNT) {
 			tst_res(TCONF, "overlayfs base fs cannot be watched with mount mark");
-			goto out;
-		}
-		if (tc->mask & FAN_DELETE_SELF) {
-			/* The eviction of base fs inodes is defered due to overlay held reference */
-			tst_res(TCONF, "overlayfs base fs cannot be watched for delete self events");
 			goto out;
 		}
 		SAFE_MOUNT(OVL_MNT, MOUNT_PATH, "none", MS_BIND, NULL);
@@ -340,9 +343,17 @@ static void do_test(unsigned int number)
 			"Did not get an expected event (expected: %llx)",
 			event_set[i].expected_mask);
 	}
+
+	if (tc->mask & FAN_DELETE_SELF) {
+		create_objects();
+		get_object_stats();
+	}
 out:
 	SAFE_CLOSE(fanotify_fd);
 }
+
+#define TST_VARIANT_OVL_LOWER (tst_variant & 1)
+#define TST_VARIANT_OVL_WATCH (tst_variant > 2)
 
 static void do_setup(void)
 {
@@ -371,10 +382,9 @@ static void do_setup(void)
 		if (!ovl_mounted)
 			return;
 
-		mnt = tst_variant & 1 ? OVL_LOWER : OVL_UPPER;
+		mnt = TST_VARIANT_OVL_LOWER ? OVL_LOWER : OVL_UPPER;
 	} else {
 		mnt = OVL_BASE_MNTPOINT;
-
 	}
 	REQUIRE_FANOTIFY_INIT_FLAGS_SUPPORTED_ON_FS(FAN_REPORT_FID, mnt);
 	SAFE_MKDIR(MOUNT_PATH, 0755);
@@ -386,7 +396,19 @@ static void do_setup(void)
 	/* Create file and directory objects for testing on base fs */
 	create_objects();
 
-	if (tst_variant > 2) {
+	/* RENAME_EXCHANGE is required for create over whiteout in overlayfs */
+	if (TST_VARIANT_OVL_LOWER) {
+		rename_exchange_unsupported = renameat2(AT_FDCWD, FILE_PATH_ONE,
+							AT_FDCWD, FILE_PATH_TWO,
+							RENAME_EXCHANGE) == -1 &&
+					(errno == EOPNOTSUPP || errno == EINVAL);
+		if (rename_exchange_unsupported) {
+			tst_res(TCONF, "RENAME_EXCHANGE not supported on %s",
+				tst_device->fs_type);
+		}
+	}
+
+	if (TST_VARIANT_OVL_WATCH) {
 		/* Setup watches on overlayfs */
 		SAFE_MOUNT(OVL_MNT, MOUNT_PATH, "none", MS_BIND, NULL);
 		ovl_bind_mounted = 1;
