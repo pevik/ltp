@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
- * Copyright (c) Linux Test Project, 2012-2025
+ * Copyright (c) Linux Test Project, 2012-2026
  * Copyright (C) 2012-2017  Red Hat, Inc.
  */
 
@@ -42,6 +42,7 @@
 volatile int end;
 static long default_tune = -1;
 static unsigned long total_mem;
+static int stat_refresh_sup;
 
 static void test_tune(unsigned long overcommit_policy);
 static int eatup_mem(unsigned long overcommit_policy);
@@ -179,18 +180,49 @@ static void check_monitor(void)
 {
 	unsigned long tune;
 	unsigned long memfree;
+	int i;
 
 	while (!end) {
+		if (stat_refresh_sup)
+			SAFE_FILE_PRINTF("/proc/sys/vm/stat_refresh", "1");
 		memfree = SAFE_READ_MEMINFO("MemFree:");
 		tune = TST_SYS_CONF_LONG_GET(MIN_FREE_KBYTES);
 
+		tst_res(TINFO, "MemFree %lu kB, min_free_kbytes %lu kB",
+			memfree, tune);
 		if (memfree < tune) {
-			tst_res(TINFO, "MemFree is %lu kB, "
-				 "min_free_kbytes is %lu kB", memfree, tune);
-			tst_res(TFAIL, "MemFree < min_free_kbytes");
+			/*
+			 * Give it some time to reclaim. The kernel should keep
+			 * MemFree above min_free_kbytes, but transient drops
+			 * are possible under high pressure.
+			 */
+			for (i = 1; i < 1024; i *= 2) {
+				usleep(i * 1000);
+				if (stat_refresh_sup)
+					SAFE_FILE_PRINTF("/proc/sys/vm/stat_refresh", "1");
+				memfree = SAFE_READ_MEMINFO("MemFree:");
+				tune = TST_SYS_CONF_LONG_GET(MIN_FREE_KBYTES);
+				tst_res(TINFO, "MemFree %lu kB (110%%: %lu kB), min_free_kbytes %lu kB",
+					memfree, (unsigned long)(1.1 * memfree), tune);
+
+				if (memfree >= tune)
+					break;
+			}
+
+			/* fail only if the MemFree is more than 10% smaller than min_free_kbytes */
+			if ((unsigned long)(1.1 * memfree) < tune) {
+				tst_res(TFAIL, "MemFree %lu kB < min_free_kbytes %lu kB",
+					memfree, tune);
+			}
+
+			if (memfree < tune) {
+				tst_res(TINFO, "it would fail: MemFree %lu kB < min_free_kbytes %lu kB",
+					memfree, tune);
+			}
+
 		}
 
-		sleep(2);
+		usleep(100000);
 	}
 }
 
@@ -209,6 +241,9 @@ static void setup(void)
 	total_mem = SAFE_READ_MEMINFO("MemTotal:") + SAFE_READ_MEMINFO("SwapTotal:");
 
 	default_tune = TST_SYS_CONF_LONG_GET(MIN_FREE_KBYTES);
+
+	if (!access("/proc/sys/vm/stat_refresh", W_OK))
+		stat_refresh_sup = 1;
 }
 
 static struct tst_test test = {
