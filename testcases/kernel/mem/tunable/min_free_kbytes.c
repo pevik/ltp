@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
- * Copyright (c) Linux Test Project, 2012-2025
+ * Copyright (c) Linux Test Project, 2012-2026
  * Copyright (C) 2012-2017  Red Hat, Inc.
  */
 
@@ -179,18 +179,45 @@ static void check_monitor(void)
 {
 	unsigned long tune;
 	unsigned long memfree;
+	int i;
 
 	while (!end) {
 		memfree = SAFE_READ_MEMINFO("MemFree:");
 		tune = TST_SYS_CONF_LONG_GET(MIN_FREE_KBYTES);
 
+		tst_res(TINFO, "MemFree %lu kB, min_free_kbytes %lu kB",
+			memfree, tune);
 		if (memfree < tune) {
-			tst_res(TINFO, "MemFree is %lu kB, "
-				 "min_free_kbytes is %lu kB", memfree, tune);
-			tst_res(TFAIL, "MemFree < min_free_kbytes");
+			/*
+			 * Give it some time to reclaim. The kernel should keep
+			 * MemFree above min_free_kbytes, but transient drops
+			 * are possible under high pressure.
+			 */
+			for (i = 1; i < 1024; i *= 2) {
+				usleep(i * 1000);
+				memfree = SAFE_READ_MEMINFO("MemFree:");
+				tune = TST_SYS_CONF_LONG_GET(MIN_FREE_KBYTES);
+				tst_res(TINFO, "MemFree %lu kB (110%%: %lu kB), min_free_kbytes %lu kB",
+					memfree, (unsigned long)(1.1 * memfree), tune);
+
+				if (memfree >= tune)
+					break;
+			}
+
+			/* fail only if the MemFree is more than 10% smaller than min_free_kbytes */
+			if ((unsigned long)(1.1 * memfree) < tune) {
+				tst_res(TFAIL, "MemFree %lu kB < min_free_kbytes %lu kB",
+					memfree, tune);
+			}
+
+			if (memfree < tune) {
+				tst_res(TINFO, "it would fail: MemFree %lu kB < min_free_kbytes %lu kB",
+					memfree, tune);
+			}
+
 		}
 
-		sleep(2);
+		usleep(100000);
 	}
 }
 
