@@ -42,6 +42,7 @@
 volatile int end;
 static long default_tune = -1;
 static unsigned long total_mem;
+static int stat_refresh_sup;
 
 static void test_tune(unsigned long overcommit_policy);
 static int eatup_mem(unsigned long overcommit_policy);
@@ -181,6 +182,8 @@ static void check_monitor(void)
 	unsigned long memfree;
 
 	while (!end) {
+		if (stat_refresh_sup)
+			SAFE_FILE_PRINTF("/proc/sys/vm/stat_refresh", "1");
 		memfree = SAFE_READ_MEMINFO("MemFree:");
 		tune = TST_SYS_CONF_LONG_GET(MIN_FREE_KBYTES);
 
@@ -209,6 +212,9 @@ static void setup(void)
 	total_mem = SAFE_READ_MEMINFO("MemTotal:") + SAFE_READ_MEMINFO("SwapTotal:");
 
 	default_tune = TST_SYS_CONF_LONG_GET(MIN_FREE_KBYTES);
+
+	if (!access("/proc/sys/vm/stat_refresh", W_OK))
+		stat_refresh_sup = 1;
 }
 
 static struct tst_test test = {
