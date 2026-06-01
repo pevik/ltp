@@ -25,6 +25,7 @@
    developers/writing_tests
    developers/test_case_tutorial
    developers/api_c_tests
+   developers/api_safe_macros
    developers/api_shell_tests
    developers/api_network_tests
    developers/api_kvm_tests
@@ -81,6 +82,9 @@ For developers
 
 :doc:`developers/api_c_tests`
    Walk through the C API features
+
+:doc:`developers/api_safe_macros`
+   Reference of all ``SAFE_*`` wrapper macros
 
 :doc:`developers/api_shell_tests`
    Walk through the Shell API features
