@@ -93,3 +93,166 @@ interrupted by :ref:`tst_brk`.
 
    .. literalinclude:: ../../testcases/lib/tests/shell_loader_setup_cleanup.sh
       :language: shell
+
+Shell API variables
+-------------------
+
+The following variables are available to shell tests. Variables marked
+*input* are set by the test before sourcing ``tst_run.sh``; variables
+marked *output* are set by the library for tests to read.
+
+Test definition (input)
+~~~~~~~~~~~~~~~~~~~~~~~
+
+``TST_TESTFUNC``
+    Name of the test function (required).
+
+``TST_CNT``
+    Number of test cases. When set the test function is called
+    ``TST_CNT`` times with a counter argument.
+
+``TST_SETUP``
+    Name of the setup function (called once before tests).
+
+``TST_CLEANUP``
+    Name of the cleanup function (called once after tests or on
+    ``tst_brk``).
+
+``TST_OPTS``
+    Extra getopts option string.
+
+``TST_PARSE_ARGS``
+    Name of a function to parse extra options from ``TST_OPTS``.
+
+``TST_USAGE``
+    Name of a function printing extra usage information.
+
+``TST_POS_ARGS``
+    Number of expected positional arguments.
+
+``TST_TEST_DATA``
+    Space-separated data passed as a second argument to the test
+    function.
+
+``TST_TEST_DATA_IFS``
+    Custom delimiter for ``TST_TEST_DATA`` (default: space).
+
+Requirements (input)
+~~~~~~~~~~~~~~~~~~~~
+
+``TST_NEEDS_ROOT``
+    Set to 1 to require root privileges.
+
+``TST_NEEDS_TMPDIR``
+    Set to 1 to create a temporary directory.
+
+``TST_NEEDS_DEVICE``
+    Set to 1 to prepare a block device.
+
+``TST_NEEDS_CMDS``
+    Space-separated list of required commands.
+
+``TST_NEEDS_MODULE``
+    Kernel module name that must be loadable.
+
+``TST_NEEDS_DRIVERS``
+    Space-separated list of required kernel drivers.
+
+``TST_NEEDS_KCONFIGS``
+    Space-separated list of required kernel config options
+    (e.g. ``CONFIG_NUMA=y``).
+
+``TST_NEEDS_KCONFIGS_IFS``
+    Custom delimiter for ``TST_NEEDS_KCONFIGS`` (default: comma).
+
+``TST_NEEDS_CHECKPOINTS``
+    Set to 1 to enable checkpoint support.
+
+``TST_MIN_KVER``
+    Minimum kernel version string (e.g. ``4.18``).
+
+Device and filesystem (input)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``TST_FORMAT_DEVICE``
+    Set to 1 to format ``TST_DEVICE`` before the test.
+
+``TST_MOUNT_DEVICE``
+    Set to 1 to mount ``TST_DEVICE`` at ``TST_MNTPOINT``.
+
+``TST_DEV_EXTRA_OPTS``
+    Extra options passed to ``mkfs``.
+
+``TST_DEV_FS_OPTS``
+    Extra filesystem-specific ``mkfs`` options.
+
+``TST_FS_TYPE``
+    Filesystem type for formatting (default: ``ext2``).
+
+``TST_DEVICE_SIZE``
+    Device size in MB.
+
+``TST_ALL_FILESYSTEMS``
+    Set to 1 to repeat the test for each supported filesystem.
+
+``TST_SKIP_FILESYSTEMS``
+    Space-separated list of filesystems to skip.
+
+``TST_MNT_PARAMS``
+    Mount flags/options string.
+
+Miscellaneous (input)
+~~~~~~~~~~~~~~~~~~~~~
+
+``TST_SKIP_IN_LOCKDOWN``
+    Set to 1 to skip when kernel lockdown is active.
+
+``TST_SKIP_IN_SECUREBOOT``
+    Set to 1 to skip when Secure Boot is enabled.
+
+``TST_TIMEOUT``
+    Test timeout in seconds.
+
+Output variables
+~~~~~~~~~~~~~~~~
+
+``TST_TMPDIR``
+    Path to the temporary directory (when ``TST_NEEDS_TMPDIR=1``).
+
+``TST_STARTWD``
+    Original working directory before ``chdir`` to ``TST_TMPDIR``.
+
+``TST_DEVICE``
+    Block device path (when ``TST_NEEDS_DEVICE=1``).
+
+``TST_MNTPOINT``
+    Mount point path.
+
+``TST_MODPATH``
+    Path to the loaded kernel module.
+
+Checkpoint functions
+~~~~~~~~~~~~~~~~~~~~
+
+``TST_CHECKPOINT_WAIT``
+    Wait on checkpoint (argument: checkpoint id).
+
+``TST_CHECKPOINT_WAKE``
+    Wake one waiter on checkpoint (argument: checkpoint id).
+
+``TST_CHECKPOINT_WAKE2``
+    Wake multiple waiters (arguments: checkpoint id, count).
+
+``TST_CHECKPOINT_WAKE_AND_WAIT``
+    Wake one waiter and then wait (argument: checkpoint id).
+
+Retry helpers
+~~~~~~~~~~~~~
+
+``TST_RETRY_FUNC``
+    Retry a function until it succeeds or times out
+    (arguments: function, expected value).
+
+``TST_RETRY_FN_EXP_BACKOFF``
+    Like ``TST_RETRY_FUNC`` with exponential backoff
+    (arguments: function, expected value, max delay).

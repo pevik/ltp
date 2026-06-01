@@ -391,6 +391,12 @@ LTP C And Shell Test API Comparison
     * - .dev_min_size
       - TST_DEVICE_SIZE
 
+    * - .filesystems
+      - \-
+
+    * - .forks_child
+      - not applicable
+
     * - .format_device
       - TST_FORMAT_DEVICE
 
@@ -408,11 +414,14 @@ LTP C And Shell Test API Comparison
     * - .min_mem_avail
       - not applicable
 
-    * - .mnt_flags
-      - TST_MNT_PARAMS
+    * - .min_runtime
+      - \-
 
     * - .min_swap_avail
       - not applicable
+
+    * - .mnt_flags
+      - TST_MNT_PARAMS
 
     * - .mntpoint | .mnt_data
       - TST_MNTPOINT
@@ -421,6 +430,12 @@ LTP C And Shell Test API Comparison
       - TST_MOUNT_DEVICE
 
     * - .needs_cgroup_ctrls
+      - \-
+
+    * - .needs_cgroup_nsdelegate
+      - \-
+
+    * - .needs_cgroup_ver
       - \-
 
     * - .needs_checkpoints
@@ -435,6 +450,9 @@ LTP C And Shell Test API Comparison
     * - .needs_device
       - TST_NEEDS_DEVICE
 
+    * - .needs_hugetlbfs
+      - \-
+
     * - removed
       - TST_NEEDS_DRIVERS
 
@@ -446,6 +464,9 @@ LTP C And Shell Test API Comparison
 
     * - .needs_rofs
       - \-
+
+    * - .needs_abi_bits
+      - not applicable
 
     * - .needs_root
       - TST_NEEDS_ROOT
@@ -460,6 +481,9 @@ LTP C And Shell Test API Comparison
       - \-
 
     * - .restore_wallclock
+      - not applicable
+
+    * - .runs_script
       - not applicable
 
     * - .sample
