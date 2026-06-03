@@ -1,31 +1,17 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * Copyright (c) 2015 Cedric Hnyda <chnyda@suse.com>
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it would be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write the Free Software Foundation,
- * Inc.,  51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * Copyright (c) 2026 Petr Vorel <pvorel@suse.cz>
  */
 
- /* Description:
- *   Calls renameat2(2) with the flag RENAME_EXCHANGE and check that
- *   the content was swapped
+/*\
+ * Verify that :manpage:`renameat2(2)` with RENAME_EXCHANGE swapps the content.
  */
 
 #define _GNU_SOURCE
 
-#include "test.h"
-#include "tso_safe_macros.h"
 #include "lapi/fcntl.h"
+#include "tst_test.h"
 #include "renameat2.h"
 
 #define TEST_DIR "test_dir/"
@@ -34,80 +20,42 @@
 #define TEST_FILE "test_file"
 #define TEST_FILE2 "test_file2"
 
-char *TCID = "renameat202";
+#define CONTENT "content"
 
 static int olddirfd;
 static int newdirfd;
 static int fd = -1;
-static int cnt;
-
-static const char content[] = "content";
 static long fs_type;
 
-
-int TST_TOTAL = 1;
-
-static void setup(void);
-static void cleanup(void);
-static void renameat2_verify(void);
-
-
-int main(int ac, char **av)
-{
-	int lc;
-
-	tst_parse_opts(ac, av, NULL, NULL);
-
-	setup();
-
-	for (lc = 0; TEST_LOOPING(lc); lc++) {
-
-		tst_count = 0;
-
-		TEST(renameat2(olddirfd, TEST_FILE,
-				newdirfd, TEST_FILE2, RENAME_EXCHANGE));
-
-		cnt++;
-
-		renameat2_verify();
-	}
-
-	cleanup();
-	tst_exit();
-}
+/* workaround for iterations not being exposed by lib/tst_test.c */
+static int cnt;
 
 static void setup(void)
 {
-	tst_tmpdir();
+	fs_type = tst_fs_type(".");
 
-	fs_type = tst_fs_type(cleanup, ".");
+	SAFE_MKDIR(TEST_DIR, 0700);
+	SAFE_MKDIR(TEST_DIR2, 0700);
 
-	SAFE_MKDIR(cleanup, TEST_DIR, 0700);
-	SAFE_MKDIR(cleanup, TEST_DIR2, 0700);
+	SAFE_TOUCH(TEST_DIR TEST_FILE, 0600, NULL);
+	SAFE_TOUCH(TEST_DIR2 TEST_FILE2, 0600, NULL);
 
-	SAFE_TOUCH(cleanup, TEST_DIR TEST_FILE, 0600, NULL);
-	SAFE_TOUCH(cleanup, TEST_DIR2 TEST_FILE2, 0600, NULL);
+	olddirfd = SAFE_OPEN(TEST_DIR, O_DIRECTORY);
+	newdirfd = SAFE_OPEN(TEST_DIR2, O_DIRECTORY);
 
-	olddirfd = SAFE_OPEN(cleanup, TEST_DIR, O_DIRECTORY);
-	newdirfd = SAFE_OPEN(cleanup, TEST_DIR2, O_DIRECTORY);
-
-	SAFE_FILE_PRINTF(cleanup, TEST_DIR TEST_FILE, "%s", content);
-
+	SAFE_FILE_PRINTF(TEST_DIR TEST_FILE, "%s", CONTENT);
 }
 
 static void cleanup(void)
 {
-	if (olddirfd > 0 && close(olddirfd) < 0)
-		tst_resm(TWARN | TERRNO, "close olddirfd failed");
+	if (olddirfd > 0)
+		SAFE_CLOSE(olddirfd);
 
-	if (newdirfd > 0 && close(newdirfd) < 0)
-		tst_resm(TWARN | TERRNO, "close newdirfd failed");
+	if (newdirfd > 0)
+		SAFE_CLOSE(newdirfd);
 
-	if (fd > 0 && close(fd) < 0)
-		tst_resm(TWARN | TERRNO, "close fd failed");
-
-	tst_rmdir();
-
+	if (fd > 0)
+		SAFE_CLOSE(fd);
 }
 
 static void renameat2_verify(void)
@@ -116,51 +64,54 @@ static void renameat2_verify(void)
 	struct stat st;
 	char *emptyfile;
 	char *contentfile;
-	int readn, data_len;
 
-	if (TEST_ERRNO == EINVAL && TST_BTRFS_MAGIC == fs_type) {
-		tst_brkm(TCONF, cleanup,
-			"RENAME_EXCHANGE flag is not implemeted on %s",
-			tst_fs_type_name(fs_type));
-	}
+	TST_EXP_PASS(renameat2(olddirfd, TEST_FILE, newdirfd, TEST_FILE2,
+				      RENAME_EXCHANGE));
 
-	if (TEST_RETURN != 0) {
-		tst_resm(TFAIL | TTERRNO, "renameat2() failed unexpectedly");
+	if (!TST_PASS) {
+		/*
+		 * cdd1fedf8261c ("btrfs: add support for RENAME_EXCHANGE and
+		 * RENAME_WHITEOUT") from v4.7-rc1 has been backported to 4.4
+		 * based SLES 12-SP3 kernel.
+		 */
+		if (TST_ERR == EINVAL && fs_type == TST_BTRFS_MAGIC) {
+			tst_brk(TCONF, "RENAME_EXCHANGE flag is not implemeted on %s",
+				tst_fs_type_name(fs_type));
+		}
 		return;
 	}
 
-	if (cnt % 2 == 1) {
+	if (cnt % 2 == 0) {
 		emptyfile = TEST_DIR TEST_FILE;
 		contentfile = TEST_DIR2 TEST_FILE2;
 	} else {
 		emptyfile = TEST_DIR2 TEST_FILE2;
 		contentfile = TEST_DIR TEST_FILE;
 	}
+	cnt++;
 
-	fd = SAFE_OPEN(cleanup, contentfile, O_RDONLY);
+	fd = SAFE_OPEN(contentfile, O_RDONLY);
 
-	SAFE_STAT(cleanup, emptyfile, &st);
+	SAFE_STAT(emptyfile, &st);
 
-	readn = SAFE_READ(cleanup, 0, fd, str, BUFSIZ);
+	SAFE_READ(SAFE_READ_ANY_EAGAIN, fd, str, BUFSIZ);
+	SAFE_CLOSE(fd);
 
-	if (close(fd) < 0)
-		tst_brkm(TERRNO | TFAIL, cleanup, "close fd failed");
-	fd = 0;
-
-	data_len = sizeof(content) - 1;
-	if (readn != data_len) {
-		tst_resm(TFAIL, "Wrong number of bytes read after renameat2(). "
-				"Expect %d, got %d", data_len, readn);
+	TST_EXP_EQ_STRN(CONTENT, str, sizeof(CONTENT) - 1);
+	if (!TST_PASS)
 		return;
-	}
-	if (strncmp(content, str, data_len)) {
-		tst_resm(TFAIL, "File content changed after renameat2(). "
-				"Expect '%s', got '%s'", content, str);
-		return;
-	}
+
 	if (st.st_size) {
-		tst_resm(TFAIL, "emptyfile has non-zero file size");
+		tst_res(TFAIL, "emptyfile has non-zero file size");
 		return;
 	}
-	tst_resm(TPASS, "renameat2() test passed");
+
+	tst_res(TPASS, "renameat2() test passed");
 }
+
+static struct tst_test test = {
+	.test_all = renameat2_verify,
+	.setup = setup,
+	.cleanup = cleanup,
+	.needs_tmpdir = 1,
+};
