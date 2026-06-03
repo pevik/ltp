@@ -5,12 +5,10 @@
  */
 
 /*\
- * Verify that :manpage:`renameat2(2)` returns -1 and sets errno to:
+ * Verify that :manpage:`renameat2(2)` works on these flags:
  *
- * 1. EEXIST when newpath already exists and the flag RENAME_NOREPLACE is used.
- * 2. ENOENT when the flag RENAME_EXCHANGE is used and newpath does not exist.
- * 3. EINVAL when RENAME_NOREPLACE and RENAME_EXCHANGE are used together
- * 4. EINVAL when RENAME_WHITEOUT and RENAME_EXCHANGE are used together
+ * 1. RENAME_EXCHANGE
+ * 2. RENAME_NOREPLACE
  */
 
 #define _GNU_SOURCE
@@ -22,25 +20,20 @@
 #define TEST_DIR "test_dir/"
 #define TEST_DIR2 "test_dir2/"
 
+#define TEST_FILE "test_file"
+#define TEST_FILE2 "test_file2"
+
 #define TEST_PATH TEST_DIR TEST_FILE
 #define TEST_PATH2 TEST_DIR2 TEST_FILE2
 
-#define TEST_FILE "test_file"
-#define TEST_FILE2 "test_file2"
-#define NON_EXIST "non_exist"
-
-#define FLAGS_ERRNO_DESC(x, y) .flags = x, .exp_errno = y, .desc = "flags: " #x ", errno: " #y
+#define FLAGS_DESC(x) .flags = x, .desc = #x
 
 static struct tcase {
-	const char *newpath;
 	int flags;
-	int exp_errno;
 	char *desc;
 } tcases[] = {
-	{TEST_FILE2, FLAGS_ERRNO_DESC(RENAME_NOREPLACE, EEXIST)},
-	{NON_EXIST, FLAGS_ERRNO_DESC(RENAME_EXCHANGE, ENOENT)},
-	{TEST_FILE2, FLAGS_ERRNO_DESC(RENAME_NOREPLACE | RENAME_EXCHANGE, EINVAL)},
-	{TEST_FILE2, FLAGS_ERRNO_DESC(RENAME_WHITEOUT | RENAME_EXCHANGE, EINVAL)}
+	{FLAGS_DESC(RENAME_EXCHANGE)},
+	{FLAGS_DESC(RENAME_NOREPLACE)},
 };
 
 static int olddirfd;
@@ -49,6 +42,7 @@ static long fs_type;
 
 static void setup(void)
 {
+	// TODO
 	fs_type = tst_fs_type(".");
 
 	SAFE_MKDIR(TEST_DIR, 0700);
@@ -56,9 +50,6 @@ static void setup(void)
 
 	olddirfd = SAFE_OPEN(TEST_DIR, O_DIRECTORY);
 	newdirfd = SAFE_OPEN(TEST_DIR2, O_DIRECTORY);
-
-	SAFE_TOUCH(TEST_PATH, 0600, NULL);
-	SAFE_TOUCH(TEST_PATH2, 0600, NULL);
 }
 
 static void cleanup(void)
@@ -76,8 +67,13 @@ static void renameat2_verify(unsigned int i)
 
 	tst_res(TINFO, "Testing flag: %s", tc->desc);
 
-	TST_EXP_FAIL(renameat2(olddirfd, TEST_FILE, newdirfd, tc->newpath,
-						   tc->flags), tc->exp_errno);
+	SAFE_TOUCH(TEST_PATH, 0600, NULL);
+	if (!i)
+		SAFE_TOUCH(TEST_PATH2, 0600, NULL);
+
+	TST_EXP_PASS(renameat2(olddirfd, TEST_FILE, newdirfd, TEST_FILE2, tc->flags));
+
+	SAFE_UNLINK(TEST_PATH2);
 }
 
 static struct tst_test test = {
