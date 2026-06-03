@@ -64,9 +64,6 @@ int main(int ac, char **av)
 
 		tst_count = 0;
 
-		TEST(renameat2(olddirfd, TEST_FILE,
-				newdirfd, TEST_FILE2, RENAME_EXCHANGE));
-
 		cnt++;
 
 		renameat2_verify();
@@ -118,9 +115,15 @@ static void renameat2_verify(void)
 	char *contentfile;
 	int readn, data_len;
 
+	TEST(renameat2(olddirfd, TEST_FILE,
+			newdirfd, TEST_FILE2, RENAME_EXCHANGE));
+
+	tst_resm(TINFO, "fs_type: %ld, TST_BTRFS_MAGIC: %d, fs_type == TST_BTRFS_MAGIC: %d TEST_ERRNO: %d, errno: %d, EINVAL: %d",
+			 fs_type, TST_BTRFS_MAGIC, fs_type == TST_BTRFS_MAGIC, TEST_ERRNO, errno, EINVAL);
+
 	if (TEST_ERRNO == EINVAL && TST_BTRFS_MAGIC == fs_type) {
-		tst_brkm(TCONF, cleanup,
-			"RENAME_EXCHANGE flag is not implemeted on %s",
+		tst_resm(TINFO,
+			"WOULD SKIP: RENAME_EXCHANGE flag is not implemeted on %s",
 			tst_fs_type_name(fs_type));
 	}
 
@@ -148,6 +151,8 @@ static void renameat2_verify(void)
 	fd = 0;
 
 	data_len = sizeof(content) - 1;
+
+	tst_resm(TINFO, "data_len: %d, readn: %d", data_len, readn);
 	if (readn != data_len) {
 		tst_resm(TFAIL, "Wrong number of bytes read after renameat2(). "
 				"Expect %d, got %d", data_len, readn);

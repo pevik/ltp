@@ -132,12 +132,14 @@ static void renameat2_verify(const struct test_case *test)
 	TEST(renameat2(*(test->olddirfd), test->oldpath,
 			*(test->newdirfd), test->newpath, test->flags));
 
+	tst_resm(TINFO, "fs_type: %ld, TST_BTRFS_MAGIC: %d, fs_type == TST_BTRFS_MAGIC: %d TEST_ERRNO: %d, errno: %d, EINVAL: %d",
+			 fs_type, TST_BTRFS_MAGIC, fs_type == TST_BTRFS_MAGIC, TEST_ERRNO, errno, EINVAL);
+
 	if ((test->flags & RENAME_EXCHANGE) && EINVAL == TEST_ERRNO
 		&& fs_type == TST_BTRFS_MAGIC) {
-		tst_resm(TCONF,
-			"RENAME_EXCHANGE flag is not implemeted on %s",
+		tst_resm(TINFO,
+			"WOULD SKIP: RENAME_EXCHANGE flag is not implemeted on %s",
 			tst_fs_type_name(fs_type));
-		return;
 	}
 
 	if (test->exp_errno && TEST_RETURN != -1) {
