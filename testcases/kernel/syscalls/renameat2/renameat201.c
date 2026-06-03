@@ -15,9 +15,9 @@
 
 #define _GNU_SOURCE
 
-#include "lapi/fcntl.h"
 #include "tst_test.h"
-#include "renameat2.h"
+#include "lapi/fcntl.h"
+#include "lapi/stdio.h"
 
 #define TEST_DIR "test_dir/"
 #define TEST_DIR2 "test_dir2/"
