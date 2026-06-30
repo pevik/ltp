@@ -5,67 +5,103 @@
 
 /*\
  * Verify the landlock support for bind()/connect() syscalls in IPV4 and IPV6
- * protocols. In particular, check that bind() is assigning the address only on
- * the TCP port enforced by LANDLOCK_ACCESS_NET_BIND_TCP and check that
- * connect() is connecting only to a specific TCP port enforced by
- * LANDLOCK_ACCESS_NET_CONNECT_TCP.
+ * protocols, using both TCP and UDP. In particular, check that bind() is
+ * assigning the address only on the port enforced by
+ * LANDLOCK_ACCESS_NET_BIND_TCP / LANDLOCK_ACCESS_NET_BIND_UDP and check that
+ * connect() is connecting only to a specific port enforced by
+ * LANDLOCK_ACCESS_NET_CONNECT_TCP / LANDLOCK_ACCESS_NET_CONNECT_SEND_UDP.
+ *
+ * TCP rules are available since Landlock ABI v4, while UDP rules are available
+ * since Landlock ABI v10.
  *
  * [Algorithm]
  *
- * Repeat the following procedure for IPV4 and IPV6:
+ * Repeat the following procedure for {TCP, UDP} x {IPV4, IPV6}:
  *
  * - create a socket on PORT1, bind() it and check if it passes
- * - enforce the current sandbox with LANDLOCK_ACCESS_NET_BIND_TCP on PORT1
+ * - enforce the current sandbox with the BIND access right on PORT1
  * - create a socket on PORT1, bind() it and check if it passes
  * - create a socket on PORT2, bind() it and check if it fails
  *
  * - create a server listening on PORT1
  * - create a socket on PORT1, connect() to it and check if it passes
- * - enforce the current sandbox with LANDLOCK_ACCESS_NET_CONNECT_TCP on PORT1
+ * - enforce the current sandbox with the CONNECT access right on PORT1
  * - create a socket on PORT1, connect() to it and check if it passes
  * - create a socket on PORT2, connect() to it and check if it fails
  */
 
 #include "landlock_common.h"
 
-static int variants[] = {
-	AF_INET,
-	AF_INET6,
+static struct tcase {
+	int family;
+	int type;
+	uint64_t bind_access;
+	uint64_t connect_access;
+	int min_abi;
+	const char *desc;
+} variants[] = {
+	{
+		AF_INET, SOCK_STREAM,
+		LANDLOCK_ACCESS_NET_BIND_TCP,
+		LANDLOCK_ACCESS_NET_CONNECT_TCP,
+		4, "TCP/IPV4"
+	},
+	{
+		AF_INET6, SOCK_STREAM,
+		LANDLOCK_ACCESS_NET_BIND_TCP,
+		LANDLOCK_ACCESS_NET_CONNECT_TCP,
+		4, "TCP/IPV6"
+	},
+	{
+		AF_INET, SOCK_DGRAM,
+		LANDLOCK_ACCESS_NET_BIND_UDP,
+		LANDLOCK_ACCESS_NET_CONNECT_SEND_UDP,
+		10, "UDP/IPV4"
+	},
+	{
+		AF_INET6, SOCK_DGRAM,
+		LANDLOCK_ACCESS_NET_BIND_UDP,
+		LANDLOCK_ACCESS_NET_CONNECT_SEND_UDP,
+		10, "UDP/IPV6"
+	},
 };
 
 static struct tst_landlock_ruleset_attr_abi4 *ruleset_attr;
 static struct landlock_net_port_attr *net_port_attr;
 static in_port_t *server_port;
 static int addr_port;
+static int landlock_abi;
 
-static void create_server(const int addr_family)
+static void create_server(const struct tcase *tc)
 {
 	struct socket_data socket;
 	struct sockaddr *addr = NULL;
 
-	create_socket(&socket, addr_family, 0);
-	getsocket_addr(&socket, addr_family, &addr);
+	create_socket(&socket, tc->family, 0, tc->type);
+	getsocket_addr(&socket, tc->family, &addr);
 
 	SAFE_BIND(socket.fd, addr, socket.address_size);
-	SAFE_LISTEN(socket.fd, 1);
 
-	*server_port = getsocket_port(&socket, addr_family);
+	if (tc->type == SOCK_STREAM)
+		SAFE_LISTEN(socket.fd, 1);
 
-	tst_res(TDEBUG, "Server listening on port %u", *server_port);
+	*server_port = getsocket_port(&socket, tc->family);
+
+	tst_res(TDEBUG, "Server bound on port %u", *server_port);
 
 	TST_CHECKPOINT_WAKE_AND_WAIT(0);
 
 	SAFE_CLOSE(socket.fd);
 }
 
-static void test_bind(const int addr_family, const in_port_t port,
+static void test_bind(const struct tcase *tc, const in_port_t port,
 	const int exp_err)
 {
 	struct socket_data socket;
 	struct sockaddr *addr = NULL;
 
-	create_socket(&socket, addr_family, port);
-	getsocket_addr(&socket, addr_family, &addr);
+	create_socket(&socket, tc->family, port, tc->type);
+	getsocket_addr(&socket, tc->family, &addr);
 
 	if (exp_err) {
 		TST_EXP_FAIL(
@@ -80,14 +116,14 @@ static void test_bind(const int addr_family, const in_port_t port,
 	SAFE_CLOSE(socket.fd);
 }
 
-static void test_connect(const int addr_family, const in_port_t port,
+static void test_connect(const struct tcase *tc, const in_port_t port,
 	const int exp_err)
 {
 	struct socket_data socket;
 	struct sockaddr *addr = NULL;
 
-	create_socket(&socket, addr_family, port);
-	getsocket_addr(&socket, addr_family, &addr);
+	create_socket(&socket, tc->family, port, tc->type);
+	getsocket_addr(&socket, tc->family, &addr);
 
 	if (exp_err) {
 		TST_EXP_FAIL(
@@ -102,13 +138,14 @@ static void test_connect(const int addr_family, const in_port_t port,
 	SAFE_CLOSE(socket.fd);
 }
 
-static int check_ipv6_support(void)
+static int check_family_support(const struct tcase *tc)
 {
 	int fd;
 
-	fd = socket(AF_INET6, SOCK_STREAM, 0);
+	fd = socket(tc->family, tc->type, 0);
 	if (fd == -1 && errno == EAFNOSUPPORT) {
-		tst_res(TCONF, "IPv6 not supported in kernel");
+		tst_res(TCONF, "%s address family not supported in kernel",
+			tc->family == AF_INET ? "IPV4" : "IPV6");
 		return 0;
 	}
 	if (fd != -1)
@@ -118,15 +155,21 @@ static int check_ipv6_support(void)
 
 static void run(void)
 {
-	int addr_family = variants[tst_variant];
+	struct tcase *tc = &variants[tst_variant];
 
-	tst_res(TINFO, "Using %s protocol",
-		addr_family == AF_INET ? "IPV4" : "IPV6");
-	if (addr_family == AF_INET6 && !check_ipv6_support())
+	tst_res(TINFO, "Using %s protocol", tc->desc);
+
+	if (landlock_abi < tc->min_abi) {
+		tst_res(TCONF, "%s rules require Landlock ABI v%d",
+			tc->desc, tc->min_abi);
+		return;
+	}
+
+	if (!check_family_support(tc))
 		return;
 
 	if (!SAFE_FORK()) {
-		create_server(addr_family);
+		create_server(tc);
 		exit(0);
 	}
 
@@ -134,10 +177,9 @@ static void run(void)
 
 	/* verify bind() syscall accessibility */
 	if (!SAFE_FORK()) {
-		ruleset_attr->handled_access_net =
-			LANDLOCK_ACCESS_NET_BIND_TCP;
+		ruleset_attr->handled_access_net = tc->bind_access;
 
-		test_bind(addr_family, addr_port, 0);
+		test_bind(tc, addr_port, 0);
 
 		tst_res(TINFO, "Enable bind() access only for port %u",
 			addr_port);
@@ -147,20 +189,19 @@ static void run(void)
 			sizeof(struct tst_landlock_ruleset_attr_abi4),
 			net_port_attr,
 			addr_port,
-			LANDLOCK_ACCESS_NET_BIND_TCP);
+			tc->bind_access);
 
-		test_bind(addr_family, addr_port, 0);
-		test_bind(addr_family, addr_port + 0x80, EACCES);
+		test_bind(tc, addr_port, 0);
+		test_bind(tc, addr_port + 0x80, EACCES);
 
 		exit(0);
 	}
 
 	/* verify connect() syscall accessibility */
 	if (!SAFE_FORK()) {
-		ruleset_attr->handled_access_net =
-			LANDLOCK_ACCESS_NET_CONNECT_TCP;
+		ruleset_attr->handled_access_net = tc->connect_access;
 
-		test_connect(addr_family, *server_port, 0);
+		test_connect(tc, *server_port, 0);
 
 		tst_res(TINFO, "Enable connect() access only on port %u",
 			*server_port);
@@ -170,10 +211,10 @@ static void run(void)
 			sizeof(struct tst_landlock_ruleset_attr_abi4),
 			net_port_attr,
 			*server_port,
-			LANDLOCK_ACCESS_NET_CONNECT_TCP);
+			tc->connect_access);
 
-		test_connect(addr_family, *server_port, 0);
-		test_connect(addr_family, *server_port + 0x80, EACCES);
+		test_connect(tc, *server_port, 0);
+		test_connect(tc, *server_port + 0x80, EACCES);
 
 		TST_CHECKPOINT_WAKE(0);
 
@@ -183,7 +224,8 @@ static void run(void)
 
 static void setup(void)
 {
-	if (verify_landlock_is_enabled() < 4)
+	landlock_abi = verify_landlock_is_enabled();
+	if (landlock_abi < 4)
 		tst_brk(TCONF, "Landlock network is not supported");
 
 	addr_port = TST_GET_UNUSED_PORT(AF_INET, SOCK_STREAM);

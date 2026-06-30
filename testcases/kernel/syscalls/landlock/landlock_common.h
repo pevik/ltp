@@ -158,7 +158,7 @@ static inline in_port_t getsocket_port(struct socket_data *socket,
 }
 
 static inline void create_socket(struct socket_data *socket,
-	const int addr_family, const in_port_t port)
+	const int addr_family, const in_port_t port, const int sock_type)
 {
 	memset(socket, 0, sizeof(struct socket_data));
 
@@ -190,7 +190,7 @@ static inline void create_socket(struct socket_data *socket,
 		return;
 	};
 
-	socket->fd = SAFE_SOCKET(addr_family, SOCK_STREAM | SOCK_CLOEXEC, 0);
+	socket->fd = SAFE_SOCKET(addr_family, sock_type | SOCK_CLOEXEC, 0);
 }
 
 static inline void getsocket_addr(struct socket_data *socket,
