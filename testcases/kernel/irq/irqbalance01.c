@@ -112,9 +112,13 @@ static void collect_irq_info(void)
 		case ' ':
 		case '\t':
 		case '\n':
+		/* IRQ names */
+		case '/':
+		case 'A' ... 'Z':
 		case '0' ... '9':
 			c++;
 			break;
+		/* IRQ delimiter */
 		case ':':
 			nr_irqs++;
 			/* fall-through */
@@ -156,6 +160,10 @@ static void collect_irq_info(void)
 				row++;
 			row_parsed = 0;
 			break;
+
+		/* IRQ names */
+		case '/':
+		case 'A' ... 'Z':
 		case '0' ... '9':
 			if (acc == -1)
 				acc = 0;
@@ -163,6 +171,7 @@ static void collect_irq_info(void)
 			acc *= 10;
 			acc += *c - '0';
 			break;
+		/* IRQ delimiter */
 		case ':':
 			if (acc == -1 || col != 0)
 				tst_brk(TBROK, "Unexpected ':'");
