@@ -168,7 +168,7 @@ extern int TST_PASS;
  * @ERRNO: Expected errno or 0.
  * @...: A printf-like parameters.
  *
- * Expect a file descriptor if errno is 0 otherwise expect a failure with
+ * Expect a file descriptor if ERRNO is 0 otherwise expect a failure with
  * expected errno.
  *
  * Internally it uses TST_EXP_FAIL() and TST_EXP_FD().
@@ -353,6 +353,29 @@ extern int TST_PASS;
 		if (TST_PASS)                                                  \
 			TST_MSG_(TPASS, " passed", #SCALL, ##__VA_ARGS__);     \
 	} while (0)
+
+/**
+ * TST_EXP_PASS_OR_FAIL() - Test syscall to and expect to pass or fail with
+ * expected errno.
+ *
+ * @SCALL: Tested syscall.
+ * @ERRNO: Expected errno or 0.
+ * @...: A printf-like parameters.
+ *
+ * Expect to pass if ERRNO is 0 otherwise expect a failure with
+ * expected errno.
+ *
+ * Internally it uses TST_EXP_FAIL() and TST_EXP_PASS().
+ */
+#define TST_EXP_PASS_OR_FAIL(SCALL, ERRNO, ...)                                \
+	({                                                                     \
+		if (ERRNO)                                                     \
+			TST_EXP_FAIL(SCALL, ERRNO, ##__VA_ARGS__);             \
+		else                                                           \
+			TST_EXP_PASS(SCALL, ##__VA_ARGS__);                      \
+		                                                               \
+		TST_RET;                                                       \
+	})
 
 /**
  * TST_EXP_PASS_PTR_VOID() - Test syscall to return a valid pointer.
