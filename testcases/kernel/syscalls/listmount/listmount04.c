@@ -153,16 +153,35 @@ static void run(unsigned int n)
 	}
 
 	TST_EXP_FAIL(tst_syscall(__NR_listmount, req, tc->mnt_ids,
-		tc->nr_mnt_ids, tc->flags), tc->exp_errno,
-		"%s", tc->msg);
+				 tc->nr_mnt_ids, tc->flags),
+		     tc->exp_errno,
+		     "%s", tc->msg);
 }
 
 static void setup(void)
 {
-	if (tst_kvercmp(6, 17, 9) >= 0)
+	mnt_id_req req = {
+		.size = MNT_ID_REQ_SIZE_VER0,
+		.mnt_id = LSMT_ROOT,
+		.mnt_ns_fd = -1,
+	};
+	uint64_t ids[MNT_SIZE];
+
+	TEST(tst_syscall(__NR_listmount, &req, ids, MNT_SIZE, 0));
+	if (TST_RET >= 0)
+		tst_brk(TBROK, "listmount() succeeded unexpectedly with invalid fd");
+
+	if (TST_ERR == EBADF) {
 		kver = AFTER_6_17_9;
-	else
+		tst_res(TINFO, "Detected kernel with EBADF behavior for invalid mnt_ns_fd");
+	} else if (TST_ERR == EINVAL) {
 		kver = BEFORE_6_17_9;
+		tst_res(TINFO, "Detected kernel with EINVAL behavior for invalid mnt_ns_fd");
+	} else if (TST_ERR == ENOSYS) {
+		tst_brk(TCONF, "listmount() syscall not supported");
+	} else {
+		tst_brk(TBROK | TTERRNO, "Unexpected error during probe");
+	}
 }
 
 static struct tst_test test = {
