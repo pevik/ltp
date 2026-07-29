@@ -402,6 +402,9 @@ LTP C And Shell Test API Comparison
     * - .min_kver
       - TST_MIN_KVER
 
+    * - .max_kver
+      - not implemented
+
     * - .min_mem_avail
       - not applicable
 
