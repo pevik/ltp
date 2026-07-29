@@ -1084,6 +1084,40 @@ static bool check_min_kver(const char *min_kver, const int brk_nosupp)
 }
 
 /*
+ * Check for the maximal required kernel version.
+ *
+ * return: true if the kernel version is low enough, false otherwise.
+ */
+static bool check_max_kver(const char *max_kver, const int brk_nosupp)
+{
+	char *msg;
+	int dots, i, v1, v2, v3;
+
+	tst_parse_kver(max_kver, &v1, &v2, &v3);
+
+	for (i = 0, dots = 0; max_kver[i]; i++)
+		dots += (max_kver[i] == '.');
+
+	/*
+	 * For mainline kernel release without patch level (single dot e.g. "7.1")
+	 * ignore v3 (the sublevel): 7.1.x is always ok.
+	 * Do *not* ignore v3 on stable kernel release (2 dots, e.g. 7.1.5).
+	 */
+	if (tst_kvercmp(v1, v2, v3) > (dots == 1 ? 1023 : 0)) {
+		msg = "The test requires kernel %s or older";
+
+		if (brk_nosupp)
+			tst_brk(TCONF, msg, max_kver);
+		else
+			tst_res(TCONF, msg, max_kver);
+
+		return false;
+	}
+
+	return true;
+}
+
+/*
  * Checks if the struct results values are equal.
  *
  * return: true if results are equal, false otherwise.
@@ -1459,6 +1493,9 @@ static void do_setup(int argc, char *argv[])
 	if (tst_test->min_kver)
 		check_min_kver(tst_test->min_kver, 1);
 
+	if (tst_test->max_kver)
+		check_max_kver(tst_test->max_kver, 1);
+
 	if (tst_test->skip_in_lockdown && tst_lockdown_enabled() > 0)
 		tst_brk(TCONF, "Kernel is locked down, skipping test");
 
@@ -1581,6 +1618,9 @@ static void do_setup(int argc, char *argv[])
 
 			if (tst_test->filesystems && tst_test->filesystems->min_kver)
 				check_min_kver(tst_test->filesystems->min_kver, 1);
+
+			if (tst_test->filesystems && tst_test->filesystems->max_kver)
+				check_max_kver(tst_test->filesystems->max_kver, 1);
 
 			prepare_device(tst_test->filesystems);
 		}
@@ -1985,6 +2025,9 @@ static void run_tcase_on_fs(struct tst_fs *fs, const char *fs_type)
 		return;
 
 	if (fs->min_kver && !check_min_kver(fs->min_kver, 0))
+		return;
+
+	if (fs->max_kver && !check_max_kver(fs->max_kver, 0))
 		return;
 
 	prepare_device(fs);
