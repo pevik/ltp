@@ -1058,11 +1058,11 @@ static void do_exit(int ret)
 }
 
 /*
- * Check for the required kernel version.
+ * Check for the minimal required kernel version.
  *
  * return: true if the kernel version is high enough, false otherwise.
  */
-static bool check_kver(const char *min_kver, const int brk_nosupp)
+static bool check_min_kver(const char *min_kver, const int brk_nosupp)
 {
 	char *msg;
 	int v1, v2, v3;
@@ -1457,7 +1457,7 @@ static void do_setup(int argc, char *argv[])
 		tst_brk(TCONF, "Test needs to be run as root");
 
 	if (tst_test->min_kver)
-		check_kver(tst_test->min_kver, 1);
+		check_min_kver(tst_test->min_kver, 1);
 
 	if (tst_test->skip_in_lockdown && tst_lockdown_enabled() > 0)
 		tst_brk(TCONF, "Kernel is locked down, skipping test");
@@ -1580,7 +1580,7 @@ static void do_setup(int argc, char *argv[])
 				tst_check_cmd(tst_test->filesystems->mkfs_ver, 1);
 
 			if (tst_test->filesystems && tst_test->filesystems->min_kver)
-				check_kver(tst_test->filesystems->min_kver, 1);
+				check_min_kver(tst_test->filesystems->min_kver, 1);
 
 			prepare_device(tst_test->filesystems);
 		}
@@ -1984,7 +1984,7 @@ static void run_tcase_on_fs(struct tst_fs *fs, const char *fs_type)
 	if (fs->mkfs_ver && !tst_check_cmd(fs->mkfs_ver, 0))
 		return;
 
-	if (fs->min_kver && !check_kver(fs->min_kver, 0))
+	if (fs->min_kver && !check_min_kver(fs->min_kver, 0))
 		return;
 
 	prepare_device(fs);
