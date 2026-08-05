@@ -26,6 +26,7 @@ tst_device
 tst_expiration_timer
 tst_filesystems01
 tst_fuzzy_sync0[1-3]
+tst_min_kver_max_kver
 tst_needs_cmds0[1-36-8]
 tst_res_hexd
 tst_safe_sscanf
