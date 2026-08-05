@@ -1496,6 +1496,8 @@ static void do_setup(int argc, char *argv[])
 	if (tst_test->max_kver)
 		check_max_kver(tst_test->max_kver, 1);
 
+	// TODO: Add runtime check tst_test->max_kver >= tst_test->min_kver.
+
 	if (tst_test->skip_in_lockdown && tst_lockdown_enabled() > 0)
 		tst_brk(TCONF, "Kernel is locked down, skipping test");
 

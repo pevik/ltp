@@ -6,6 +6,7 @@
 
 #define _GNU_SOURCE
 
+#include <assert.h>
 #include <search.h>
 #include <stdio.h>
 #include <string.h>
@@ -15,6 +16,7 @@
 #include <errno.h>
 
 #include "data_storage.h"
+#include "tst_kvercmp.h"
 
 #define INCLUDE_PATH_MAX 5
 #define GROUPS_TAG "@groups"
@@ -1369,6 +1371,37 @@ int main(int argc, char *argv[])
 					fprintf(stderr, "%s: useless tag: %s\n",
 						argv[optind], implies[i].implies[j]);
 			}
+		}
+	}
+
+	/* Check max_kver >= min_kver */
+	struct data_node *max_kver = data_node_hash_get(res, "max_kver");
+	struct data_node *min_kver = data_node_hash_get(res, "min_kver");
+	int a1, a2, a3, b1, b2, b3;
+
+	if (min_kver) {
+		assert(min_kver->type == DATA_STRING);
+		if (tst_parse_kver(min_kver->string.val, &b1, &b2, &b3)) {
+			fprintf(stderr, "%s: wrong min_kver: '%s'\n",
+				argv[optind], min_kver->string.val);
+			return 1;
+		}
+	}
+
+	if (max_kver) {
+		assert(max_kver->type == DATA_STRING);
+		if (tst_parse_kver(max_kver->string.val, &a1, &a2, &a3)) {
+			fprintf(stderr, "%s: wrong max_kver: '%s'\n",
+					argv[optind], max_kver->string.val);
+			return 1;
+		}
+	}
+
+	if (min_kver && max_kver) {
+		if (tst_kver_cmp(a1, a2, a3, b1, b2, b3) < 0) {
+			fprintf(stderr, "%s: min_kver (%s) > max_kver (%s)\n",
+					argv[optind], min_kver->string.val, max_kver->string.val);
+			return 1;
 		}
 	}
 
