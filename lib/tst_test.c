@@ -1067,11 +1067,7 @@ static bool check_kver(const char *min_kver, const int brk_nosupp)
 	char *msg;
 	int v1, v2, v3;
 
-	if (tst_parse_kver(min_kver, &v1, &v2, &v3)) {
-		tst_res(TWARN,
-			"Invalid kernel version %s, expected %%d.%%d.%%d",
-			min_kver);
-	}
+	tst_parse_kver(min_kver, &v1, &v2, &v3);
 
 	if (tst_kvercmp(v1, v2, v3) < 0) {
 		msg = "The test requires kernel %s or newer";
