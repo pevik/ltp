@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Generic leaf rules include Makefile.
-# Copyright (c) Linux Test Project, 2017-2022
+# Copyright (c) Linux Test Project, 2017-2026
 # Copyright (C) 2009, Cisco Systems Inc.
 # Ngie Cooper, July 2009
 
@@ -83,6 +83,9 @@ $(MAKE_TARGETS) += $(HOST_MAKE_TARGETS)
 endif
 
 $(MAKE_TARGETS): | $(MAKE_DEPS)
+
+# Allow to host tools reuse libltp.a
+$(HOST_MAKE_TARGETS): | $(MAKE_DEPS)
 
 all: $(MAKE_TARGETS)
 
