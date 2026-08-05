@@ -96,17 +96,23 @@ int tst_parse_kver(const char *str_kver, int *v1, int *v2, int *v3)
 	return rc;
 }
 
+int tst_kver_cmp(int a1, int a2, int a3, int b1, int b2, int b3)
+{
+	int aver, bver;
+
+	aver = (a1 << 20) + (a2 << 10) + a3;
+	bver = (b1 << 20) + (b2 << 10) + b3;
+
+	return aver - bver;
+}
+
 int tst_kvcmp(const char *cur_kver, int r1, int r2, int r3)
 {
 	int a1, a2, a3;
-	int testver, currver;
 
 	tst_parse_kver(cur_kver, &a1, &a2, &a3);
 
-	testver = (r1 << 20) + (r2 << 10) + r3;
-	currver = (a1 << 20) + (a2 << 10) + a3;
-
-	return currver - testver;
+	return tst_kver_cmp(a1, a2, a3, r1, r2, r3);
 }
 
 int tst_kvercmp(int r1, int r2, int r3)

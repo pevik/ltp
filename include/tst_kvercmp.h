@@ -8,6 +8,18 @@
 #define TST_KVERCMP_H__
 
 /**
+ * tst_kver_cmp() - Compare two kernel versions, versions passed by 3 integers.
+ *
+ * @a1: First kernel major version.
+ * @a2: First kernel minor version.
+ * @a3: First kernel patch level.
+ * @b1: Second kernel major version.
+ * @b2: Second kernel minor  version.
+ * @b3: Second kernel patch level.
+ */
+int tst_kver_cmp(int a1, int a2, int a3, int b1, int b2, int b3);
+
+/**
  * tst_kvcmp() - Compare given kernel version with kernel in string.
  *
  * @cur_kver: Kernel version string (:manpage:`struct utsname.release <uname(2)>`).
