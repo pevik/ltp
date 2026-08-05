@@ -45,7 +45,7 @@ static char *parse_digit(const char *str, int *d)
 	return end;
 }
 
-int tst_parse_kver(const char *str_kver, int *v1, int *v2, int *v3)
+static int _tst_parse_kver(const char *str_kver, int *v1, int *v2, int *v3)
 {
 	const char *str = str_kver;
 
@@ -81,16 +81,27 @@ int tst_parse_kver(const char *str_kver, int *v1, int *v2, int *v3)
 	return 0;
 }
 
+int tst_parse_kver(const char *str_kver, int *v1, int *v2, int *v3)
+{
+	int rc;
+
+	rc = _tst_parse_kver(str_kver, v1, v2, v3);
+
+	if (rc) {
+		tst_resm(TWARN,
+			 "Invalid kernel version %s, expected %%d.%%d.%%d",
+		         str_kver);
+	}
+
+	return rc;
+}
+
 int tst_kvcmp(const char *cur_kver, int r1, int r2, int r3)
 {
 	int a1, a2, a3;
 	int testver, currver;
 
-	if (tst_parse_kver(cur_kver, &a1, &a2, &a3)) {
-		tst_resm(TWARN,
-			 "Invalid kernel version %s, expected %%d.%%d.%%d",
-		         cur_kver);
-	}
+	tst_parse_kver(cur_kver, &a1, &a2, &a3);
 
 	testver = (r1 << 20) + (r2 << 10) + r3;
 	currver = (a1 << 20) + (a2 << 10) + a3;
