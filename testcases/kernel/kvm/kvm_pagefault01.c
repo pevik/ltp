@@ -9,13 +9,9 @@
  * CVE 2021-38198
  *
  * Check that x86_64 KVM correctly enforces (lack of) write permissions
- * in 4-level and 5-level memory page table mode. Missing page faults fixed in:
- *
- *  commit b1bd5cba3306691c771d558e94baa73e8b0b96b7
- *  Author: Lai Jiangshan <laijs@linux.alibaba.com>
- *  Date:   Thu Jun 3 13:24:55 2021 +0800
- *
- *  KVM: X86: MMU: Use the correct inherited permissions to get shadow page
+ * in 4-level and 5-level memory page table mode. Missing page faults fixed in
+ * v5.13-rc6:
+ * b1bd5cba3306 ("KVM: X86: MMU: Use the correct inherited permissions to get shadow page")
  */
 
 #include "kvm_test.h"

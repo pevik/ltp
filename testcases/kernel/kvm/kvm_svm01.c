@@ -12,13 +12,8 @@
  * in nested VMs or correctly sets up the required memory address translation.
  * If AVIC is enabled without address translation in the host kernel,
  * the nested VM will be able to read and write an arbitraty physical memory
- * page specified by the parent VM. Unauthorized memory access fixed in:
- *
- *  commit 0f923e07124df069ba68d8bb12324398f4b6b709
- *  Author: Maxim Levitsky <mlevitsk@redhat.com>
- *  Date:   Thu Jul 15 01:56:24 2021 +0300
- *
- *  KVM: nSVM: avoid picking up unsupported bits from L2 in int_ctl (CVE-2021-3653)
+ * page specified by the parent VM. Unauthorized memory access fixed in v5.14-rc7:
+ * 0f923e07124d ("KVM: nSVM: avoid picking up unsupported bits from L2 in int_ctl (CVE-2021-3653)")
  */
 
 #include "kvm_test.h"

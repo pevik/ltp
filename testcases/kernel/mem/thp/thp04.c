@@ -7,13 +7,10 @@
  * CVE-2017-1000405
  *
  * Check for the Huge Dirty Cow vulnerability which allows a userspace process
- * to overwrite the huge zero page. Race fixed in:
+ * to overwrite the huge zero page.
  *
- *  commit a8f97366452ed491d13cf1e44241bc0b5740b1f0
- *  Author: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
- *  Date:   Mon Nov 27 06:21:25 2017 +0300
- *
- *   mm, thp: Do not make page table dirty unconditionally in touch_p[mu]d()
+ * Race fixed in v4.15-rc2:
+ * a8f97366452e ("mm, thp: Do not make page table dirty unconditionally in touch_p[mu]d()")
  *
  * More details see the following URL
  * https://medium.com/bindecy/huge-dirty-cow-cve-2017-1000405-110eca132de0
@@ -22,8 +19,9 @@
  * in huge_memory.c was forgotten.  As a result, remote memory writes to ro regions
  * of memory backed by transparent huge pages cause an infinite loop in the kernel.
  * While in this state the process is stil SIGKILLable, but little else works.
- * It is also a regression test about kernel
- * commit 8310d48b125d("huge_memory.c: respect FOLL_FORCE/FOLL_COW for thp").
+ *
+ * It is also a regression test for kernel commit from v4.10-rc6
+ * 8310d48b125d ("huge_memory.c: respect FOLL_FORCE/FOLL_COW for thp").
  */
 
 #include "tst_test.h"

@@ -10,13 +10,10 @@
  * virtual machine even when the parent guest disables intercept.
  * If KVM does not override the disabled intercept, it'll allow the nested VM
  * to hold the physical CPU indefinitely and potentially perform a denial
- * of service attack against the host kernel. CPU lockup fixed in:
+ * of service attack against the host kernel.
  *
- *  commit 91b7130cb6606d8c6b3b77e54426b3f3a83f48b1
- *  Author: Paolo Bonzini <pbonzini@redhat.com>
- *  Date:   Fri May 22 12:28:52 2020 -0400
- *
- *  KVM: SVM: preserve VGIF across VMCB switch
+ * CPU lockup fixed in v5.8-rc1:
+ * 91b7130cb660 ("KVM: SVM: preserve VGIF across VMCB switch")
  */
 
 #include "kvm_test.h"

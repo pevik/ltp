@@ -8,13 +8,8 @@
  * still running, causing a use-after-free in vt_ioctl(). Because VT_RESIZEX ioctl
  * have not make sure vc_cons[i].d is not NULL after grabbing console_lock().
  *
- * Fixed by commit:
- *
- *  commit 6cd1ed50efd88261298577cd92a14f2768eddeeb
- *  Author: Eric Dumazet <edumazet@google.com>
- *  Date:   Mon Feb 10 11:07:21 2020 -0800
- *
- *    vt: vt_ioctl: fix race in VT_RESIZEX
+ * Fixed by commit from v5.6-rc3:
+ * 6cd1ed50efd8 ("vt: vt_ioctl: fix race in VT_RESIZEX")
  */
 
 #define _GNU_SOURCE
@@ -115,7 +110,7 @@ static struct tst_test test = {
 	.runtime = 150,
 	.min_runtime = 16,
 	.tags = (const struct tst_tag[]) {
-		{ "linux-git", "6cd1ed50efd8"},
+		{ "linux-git", "6cd1ed50efd88261298577cd92a14f2768eddeeb"},
 		{}
 	}
 };

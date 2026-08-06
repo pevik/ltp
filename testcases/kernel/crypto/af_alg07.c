@@ -15,22 +15,12 @@
  *
  * The race window is small and it's hard to trigger a kernel crash but
  * fchownat() will return ENOENT as it should only when the bug is not
- * present. Race fixed specifically for af_alg in:
- *
- *  commit 9060cb719e61b685ec0102574e10337fa5f445ea
- *  Author: Mao Wenan <maowenan@huawei.com>
- *  Date:   Mon Feb 18 10:44:44 2019 +0800
- *
- *  net: crypto set sk to NULL when af_alg_release.
+ * present. Race fixed specifically for af_alg in v5.0-rc8:
+ * 9060cb719e61 ("net: crypto set sk to NULL when af_alg_release.")
  *
  * It was observed that the same bug is present on many other
- * protocols. A more general fix is in:
- *
- *  commit ff7b11aa481f682e0e9711abfeb7d03f5cd612bf
- *  Author: Eric Biggers <ebiggers@google.com>
- *  Date:   Thu Feb 21 14:13:56 2019 -0800
- *
- *  net: socket: set sock->sk to NULL after calling proto_ops::release()
+ * protocols. A more general fix is in v5.0:
+ * ff7b11aa481f ("net: socket: set sock->sk to NULL after calling proto_ops::release()")
  */
 
 #include <sys/types.h>

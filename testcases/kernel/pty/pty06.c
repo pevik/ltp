@@ -13,13 +13,8 @@
  * has a tty_struct with count > 0. But actually when count == 0, the tty is
  * still in the process of being closed.
  *
- * Fixed by commit:
- *
- *  commit ca4463bf8438b403596edd0ec961ca0d4fbe0220
- *  Author: Eric Biggers <ebiggers@google.com>
- *  Date:   Sat Mar 21 20:43:04 2020 -0700
- *
- *    vt: vt_ioctl: fix VT_DISALLOCATE freeing in-use virtual console
+ * Fixed by commit from v5.7-rc1:
+ * ca4463bf8438 ("vt: vt_ioctl: fix VT_DISALLOCATE freeing in-use virtual console")
  */
 
 #define _GNU_SOURCE

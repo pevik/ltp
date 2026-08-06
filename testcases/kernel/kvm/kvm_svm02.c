@@ -12,13 +12,10 @@
  * in a nested virtual machine even when the parent guest disables
  * intercepting either instruction. If KVM does not override the disabled
  * intercepts, it'll give the nested VM read/write access to a few bytes
- * of an arbitrary physical memory page. Unauthorized memory access fixed in:
+ * of an arbitrary physical memory page.
  *
- *  commit c7dfa4009965a9b2d7b329ee970eb8da0d32f0bc
- *  Author: Maxim Levitsky <mlevitsk@redhat.com>
- *  Date:   Mon Jul 19 16:05:00 2021 +0300
- *
- *  KVM: nSVM: always intercept VMLOAD/VMSAVE when nested (CVE-2021-3656)
+ * Unauthorized memory access fixed in v5.14-rc7:
+ * c7dfa4009965 ("KVM: nSVM: always intercept VMLOAD/VMSAVE when nested (CVE-2021-3656)")
  */
 
 #include "kvm_test.h"

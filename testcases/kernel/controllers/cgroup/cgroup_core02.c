@@ -12,13 +12,8 @@
  * subcase. Note that this case only runs on cgroup2 as cgroup1 doesn't have
  * namespace support.
  *
- * It is a regression test for
- *
- * commit e57457641613fef0d147ede8bd6a3047df588b95
- * Author: Tejun Heo <tj@kernel.org>
- * Date:   Thu Jan 6 11:02:29 2022 -1000
- *
- * cgroup: Use open-time cgroup namespace for process migration perm checks
+ * It is a regression test for kernel commit from v5.16:
+ * e57457641613 ("cgroup: Use open-time cgroup namespace for process migration perm checks")
  */
 
 #define _GNU_SOURCE

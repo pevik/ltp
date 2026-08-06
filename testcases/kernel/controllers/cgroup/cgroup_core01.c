@@ -12,13 +12,8 @@
  * subcase. The difference is that kernel selftest only supports cgroup v2 but
  * here we also support cgroup v1 and v2.
  *
- * It is a regression test for
- *
- * commit 1756d7994ad85c2479af6ae5a9750b92324685af
- * Author: Tejun Heo <tj@kernel.org>
- * Date:   Thu Jan 6 11:02:28 2022 -1000
- *
- * cgroup: Use open-time credentials for process migraton perm checks
+ * It is a regression test for kernel commit from v5.16:
+ * 1756d7994ad8 ("cgroup: Use open-time credentials for process migraton perm checks")
  */
 
 #include <stdlib.h>

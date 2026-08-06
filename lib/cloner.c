@@ -35,7 +35,7 @@
 
 /*
  * The ia64 port has never included a prototype for __clone2(). It was updated
- * to take eight parameters in glibc commit:
+ * to take eight parameters in glibc 2.3.3, commit:
  *
  * commit 625f22fc7f8e0d61e3e6cff2c65468b91dbad426
  * Author: Ulrich Drepper <drepper@redhat.com>
