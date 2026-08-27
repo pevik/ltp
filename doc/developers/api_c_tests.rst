@@ -109,3 +109,8 @@ Test macros
 Uinput
 ------
 .. kernel-doc:: ../../include/tse_uinput.h
+
+Sysfs
+-----
+
+.. kernel-doc:: ../../include/tst_sysfs_assert.h
