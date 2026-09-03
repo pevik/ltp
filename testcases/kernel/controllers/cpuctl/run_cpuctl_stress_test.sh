@@ -358,7 +358,7 @@ usage ()
 	echo TASKS FIRED
 	echo helloworld > myfifo;
 
-	#wait for the tasks to finish for cleanup and status report to pan
+	#wait for the tasks to finish for cleanup and status report
 	for i in $(seq 1 $TOTAL_TASKS)
 	do
 		wait ${PID[$i]};
