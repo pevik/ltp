@@ -117,6 +117,6 @@ enum tse_numa_types {
  * Return: On success returns allocated and initialized struct tse_nodemap which contains
  *         array of numa node ids that contains desired resources.
  */
-struct tse_nodemap *tse_get_nodemap(int type, size_t min_mem_kb);
+struct tse_nodemap *tse_get_nodemap(enum tse_numa_types type, size_t min_mem_kb);
 
 #endif /* TSE_NUMA_H__ */

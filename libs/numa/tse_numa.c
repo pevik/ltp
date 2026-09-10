@@ -178,7 +178,7 @@ static int node_has_enough_memory(int node, size_t min_kb)
 	return 1;
 }
 
-struct tse_nodemap *tse_get_nodemap(int type, size_t min_mem_kb)
+struct tse_nodemap *tse_get_nodemap(enum tse_numa_types type, size_t min_mem_kb)
 {
 	struct bitmask *membind;
 	struct tse_nodemap *nodes;
