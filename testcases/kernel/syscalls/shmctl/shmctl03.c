@@ -30,7 +30,11 @@ static void verify_ipcinfo(void)
 	else
 		tst_res(TPASS, "shmmin = 1");
 
-	TST_ASSERT_ULONG(PATH_KERN_SHMMAX, info.shmmax);
+	if (tst_is_compat_mode() && info.shmmax == INT_MAX)
+		tst_res(TPASS, "shmmax clamped to INT_MAX in compat mode");
+	else
+		TST_ASSERT_ULONG(PATH_KERN_SHMMAX, info.shmmax);
+
 	TST_ASSERT_ULONG(PATH_KERN_SHMMNI, info.shmmni);
 	TST_ASSERT_ULONG(PATH_KERN_SHMALL, info.shmall);
 }
