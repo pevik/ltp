@@ -37,7 +37,7 @@
 
 static void verify_statx(void)
 {
-	struct statx buf;
+	struct ltp_statx buf;
 
 	TST_EXP_PASS_SILENT(statx(AT_FDCWD, TESTFILE, 0, STATX_DIOALIGN, &buf),
 		"statx(AT_FDCWD, %s, 0, STATX_DIOALIGN, &buf)", TESTFILE);
@@ -47,7 +47,6 @@ static void verify_statx(void)
 		return;
 	}
 
-#ifdef HAVE_STRUCT_STATX_STX_DIO_MEM_ALIGN
 	if (buf.stx_dio_mem_align != 0)
 		tst_res(TPASS, "stx_dio_mem_align:%u", buf.stx_dio_mem_align);
 	else
@@ -57,9 +56,6 @@ static void verify_statx(void)
 		tst_res(TPASS, "stx_dio_offset_align:%u", buf.stx_dio_offset_align);
 	else
 		tst_res(TFAIL, "stx_dio_offset_align was 0, but DIO should be supported");
-#else
-	tst_res(TCONF, "glibc statx struct miss stx_dio_mem_align field");
-#endif
 }
 
 static void setup(void)
