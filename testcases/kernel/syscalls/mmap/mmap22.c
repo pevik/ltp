@@ -101,11 +101,11 @@ static void setup(void)
 	void *addr = mmap(0, 1, PROT_READ | PROT_WRITE,
 			MAP_ANONYMOUS | MAP_DROPPABLE, -1, 0);
 
-	if (addr == MAP_FAILED && errno == EINVAL)
-		tst_brk(TCONF, "MAP_DROPPABLE not supported");
-
-	if (addr == MAP_FAILED)
+	if (addr == MAP_FAILED) {
+		if (errno == EINVAL || errno == EOPNOTSUPP)
+			tst_brk(TCONF, "MAP_DROPPABLE not supported");
 		tst_brk(TBROK | TERRNO, "mmap() MAP_DROPPABLE failed");
+	}
 
 	SAFE_MUNMAP(addr, 1);
 	page_size = getpagesize();
