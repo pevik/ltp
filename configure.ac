@@ -300,6 +300,10 @@ AC_CHECK_TYPES([struct uffdio_move],,,[#include <linux/userfaultfd.h>])
 AC_CHECK_TYPES([struct uffdio_poison],,,[#include <linux/userfaultfd.h>])
 AC_CHECK_TYPES([struct uffdio_writeprotect],,,[#include <linux/userfaultfd.h>])
 
+# see also m4/ltp-keyutils.m4
+AC_CHECK_TYPES([struct keyctl_kdf_params, struct keyctl_pkey_query, struct keyctl_pkey_params],,,
+[#include <linux/keyctl.h>])
+
 # Tools knobs
 
 # Bash

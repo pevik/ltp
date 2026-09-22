@@ -8,7 +8,4 @@ AC_DEFUN([LTP_CHECK_KEYUTILS_SUPPORT], [
 	AC_CHECK_LIB([keyutils], [add_key],
 	[AC_DEFINE(HAVE_LIBKEYUTILS, 1, [Define to 1 if you have libkeyutils installed.])
 	      AC_SUBST(KEYUTILS_LIBS, "-lkeyutils")])
-
-	AC_CHECK_TYPES([struct keyctl_kdf_params, struct keyctl_pkey_query, struct keyctl_pkey_params],,,
-			[#include <linux/keyctl.h>])
 ])
