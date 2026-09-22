@@ -19,7 +19,7 @@
 
 #define KDF_OTHERINFO	"LTP-KDF-TEST-INFO"
 
-static struct keyctl_dh_params *dh_params;
+static struct ltp_keyctl_dh_params *dh_params;
 static struct keyctl_kdf_params *kdf_params;
 static unsigned char out_buf[32];
 

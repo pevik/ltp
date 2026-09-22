@@ -21,9 +21,9 @@
 #include "keyctl_common.h"
 #include "keyctl_dh_data.h"
 
-static struct keyctl_dh_params *dh_params;
-static struct keyctl_dh_params *dh_bogus_prime;
-static struct keyctl_dh_params *dh_nonuser_prime;
+static struct ltp_keyctl_dh_params *dh_params;
+static struct ltp_keyctl_dh_params *dh_bogus_prime;
+static struct ltp_keyctl_dh_params *dh_nonuser_prime;
 
 static struct keyctl_kdf_params *kdf_valid;
 static struct keyctl_kdf_params *kdf_spare_nonzero;
@@ -33,7 +33,7 @@ static struct keyctl_kdf_params *kdf_unknown_hash;
 static unsigned char out_buf[1025];
 
 static struct tcase {
-	struct keyctl_dh_params **params;
+	struct ltp_keyctl_dh_params **params;
 	void *buffer;
 	size_t buflen;
 	struct keyctl_kdf_params **kdf;
@@ -105,7 +105,7 @@ static void setup(void)
 static void verify_negative(unsigned int n)
 {
 	struct tcase *tc = &tcases[n];
-	struct keyctl_dh_params *p = *tc->params;
+	struct ltp_keyctl_dh_params *p = *tc->params;
 	struct keyctl_kdf_params *kdf = tc->kdf ? *tc->kdf : NULL;
 
 	TST_EXP_FAIL2(keyctl(KEYCTL_DH_COMPUTE, (unsigned long)p,

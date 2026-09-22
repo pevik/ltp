@@ -61,13 +61,11 @@ static inline key_serial_t keyctl_join_session_keyring(const char *name) {
 
 #endif /* defined(HAVE_KEYUTILS_H) && defined(HAVE_LIBKEYUTILS) */
 
-#ifndef HAVE_STRUCT_KEYCTL_DH_PARAMS
-struct keyctl_dh_params {
+struct ltp_keyctl_dh_params {
 	int32_t priv;
 	int32_t prime;
 	int32_t base;
 };
-#endif
 
 #ifndef HAVE_STRUCT_KEYCTL_KDF_PARAMS
 struct keyctl_kdf_params {

@@ -15,7 +15,7 @@
 #include "keyctl_common.h"
 #include "keyctl_dh_data.h"
 
-static struct keyctl_dh_params *dh_params;
+static struct ltp_keyctl_dh_params *dh_params;
 
 static void setup(void)
 {
