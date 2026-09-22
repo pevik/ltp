@@ -300,6 +300,10 @@ AC_CHECK_TYPES([struct uffdio_move],,,[#include <linux/userfaultfd.h>])
 AC_CHECK_TYPES([struct uffdio_poison],,,[#include <linux/userfaultfd.h>])
 AC_CHECK_TYPES([struct uffdio_writeprotect],,,[#include <linux/userfaultfd.h>])
 
+AC_CHECK_TYPES([struct keyctl_dh_params, struct keyctl_kdf_params,
+	struct keyctl_pkey_query, struct keyctl_pkey_params],,,
+	[#include <linux/keyctl.h>])
+
 # Tools knobs
 
 # Bash
@@ -422,7 +426,6 @@ LTP_CHECK_CLEAR_CACHE
 LTP_CHECK_CRYPTO
 LTP_CHECK_FORTIFY_SOURCE
 LTP_CHECK_KERNEL_DEVEL
-LTP_CHECK_KEYUTILS_SUPPORT
 LTP_CHECK_LIBMNL
 LTP_CHECK_SELINUX
 LTP_CHECK_SYNC_ADD_AND_FETCH
