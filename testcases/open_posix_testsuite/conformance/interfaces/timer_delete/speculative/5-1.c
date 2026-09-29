@@ -5,34 +5,52 @@
  * of this license, see the COPYING file at the top level of this
  * source tree.
 
- * Test to see if timer_delete() returns -1 and sets errno==EINVAL if
- * timerid is not a valid timer ID or not.
- * Since this is a "may" requirement, either option is a PASS.
+ * Test to see if timer_delete() sets errno==EINVAL for an invalid
+ * timerid. Since this is a "may" requirement, succeeding or crashing
+ * are equally valid outcomes.
  */
 
 #include <time.h>
 #include <stdio.h>
 #include <errno.h>
+#include <unistd.h>
+#include <sys/wait.h>
 #include "posixtest.h"
 
 #define BOGUSTIMERID 99999
 
 int test_main(int argc PTS_ATTRIBUTE_UNUSED, char **argv PTS_ATTRIBUTE_UNUSED)
 {
-	timer_t tid = (timer_t)BOGUSTIMERID;
+	pid_t pid;
+	int status;
 
-	if (timer_delete(tid) == -1) {
-		if (errno == EINVAL) {
-			printf
-			    ("timer_delete() returned -1 and set errno=EINVAL\n");
-			return PTS_PASS;
-		} else {
-			printf
-			    ("timer_delete() returned -1, but didn't set errno!=EINVAL\n");
-			return PTS_FAIL;
-		}
+	pid = fork();
+	if (pid == -1) {
+		perror("fork");
+		return PTS_UNRESOLVED;
 	}
 
-	printf("timer_delete() did not return -1\n");
-	return PTS_PASS;
+	if (pid == 0) {
+		timer_t tid = (timer_t) BOGUSTIMERID;
+
+		if (timer_delete(tid) == -1) {
+			if (errno == EINVAL)
+				_exit(PTS_PASS);
+			_exit(PTS_FAIL);
+		}
+		_exit(PTS_PASS);
+	}
+
+	if (waitpid(pid, &status, 0) == -1) {
+		perror("waitpid");
+		return PTS_UNRESOLVED;
+	}
+
+	if (WIFSIGNALED(status) || (WIFEXITED(status) && WEXITSTATUS(status) == 0)) {
+		printf("Test PASSED\n");
+		return PTS_PASS;
+	}
+
+	printf("Test FAILED\n");
+	return PTS_FAIL;
 }
