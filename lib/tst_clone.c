@@ -20,6 +20,9 @@ pid_t tst_clone(const struct tst_clone_args *tst_args)
 	};
 	int flags;
 	pid_t pid = -1;
+#ifdef __sparc__
+	pid_t parent_pid = tst_getpid();
+#endif
 
 	tst_flush();
 
@@ -43,6 +46,11 @@ pid_t tst_clone(const struct tst_clone_args *tst_args)
 
 	if (pid == -1)
 		return -2;
+
+#ifdef __sparc__
+	if (pid == parent_pid)
+		pid = 0;
+#endif
 
 	return pid;
 }
