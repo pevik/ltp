@@ -35,6 +35,10 @@ pid_t tst_clone(const struct tst_clone_args *tst_args)
 
 	flags = args.exit_signal | args.flags;
 
+#ifdef __sparc__
+	pid_t tid = tst_gettid();
+#endif
+
 #ifdef __s390x__
 	pid = syscall(__NR_clone, NULL, flags, args.pidfd, NULL, NULL);
 #else
@@ -43,6 +47,11 @@ pid_t tst_clone(const struct tst_clone_args *tst_args)
 
 	if (pid == -1)
 		return -2;
+
+#ifdef __sparc__
+	if (pid == tid)
+		pid = 0;
+#endif
 
 	return pid;
 }
