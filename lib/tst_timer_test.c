@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <limits.h>
 #include <string.h>
+#include <stdlib.h>
 
 #define TST_NO_DEFAULT_MAIN
 #include "tst_test.h"
@@ -309,8 +310,25 @@ void do_timer_test(long long usec, unsigned int nsamples)
 
 	if (virt_env) {
 		tst_res(TINFO,
-			"Virtualisation detected, skipping oversleep checks");
-	} else if (trunc_mean > (nsamples - discard) * usec + threshold) {
+			"SKIP: Virtualisation detected, skipping oversleep checks");
+	}
+
+	long ticks = sysconf(_SC_CLK_TCK);
+	double avgs[3];
+
+	if (getloadavg(avgs, 3) == -1)
+		tst_res(TWARN, "Failed to obtain load average");
+
+	tst_res(TINFO, "load average 1 min: %f, 5 min: %f, 15 min: %f",
+			avgs[0], avgs[1], avgs[2]);
+
+	tst_res(TINFO, "ticks per sec: %ld, trunc_mean: %lld, nsamples: %u, discard: %u, usec: %lld, threshold: %lld, %lld > %d * %lld + %lld: %d (diff: %lld)",
+			ticks, trunc_mean, nsamples, discard, usec, threshold,
+			trunc_mean, nsamples - discard, usec, threshold,
+			trunc_mean > (nsamples - discard) * usec + threshold,
+			trunc_mean - ((nsamples - discard) * usec + threshold));
+
+	if (trunc_mean > (nsamples - discard) * usec + threshold) {
 		tst_res(TFAIL, "%s slept for too long", scall);
 
 		if (!print_frequency_plot)
@@ -322,8 +340,10 @@ void do_timer_test(long long usec, unsigned int nsamples)
 	if (print_frequency_plot)
 		frequency_plot();
 
-	if (!failed)
+	if (!failed) {
 		tst_res(TPASS, "Measured times are within thresholds");
+		frequency_plot(); // FIXME: debug
+	}
 }
 
 static void parse_timer_opts(void);
