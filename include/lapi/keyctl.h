@@ -58,10 +58,7 @@ static inline key_serial_t keyctl_join_session_keyring(const char *name) {
 
 #ifndef HAVE_STRUCT_KEYCTL_DH_PARAMS
 struct keyctl_dh_params {
-	union {
-		int32_t priv;
-		int32_t private;
-	};
+	int32_t priv;
 	int32_t prime;
 	int32_t base;
 };
