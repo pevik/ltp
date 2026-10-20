@@ -78,22 +78,33 @@ endif
 
 install: trunk-install
 
-# Print out CURDIR to check for a recursion issue.
-ifeq ($(strip $(SUBDIRS)),)
-	$(warning CURDIR is: $(CURDIR))
-	$(error SUBDIRS empty -- did you want generic_leaf_target instead?)
-else
-$(RECURSIVE_TARGETS): %: | $(SUBDIRS)
 ifdef VERBOSE
-	@set -e; for dir in $(SUBDIRS); do \
-	    $(MAKE) -C $$dir -f "$(abs_srcdir)/$$dir/Makefile" $@; \
-	done
+Q :=
+SUBMAKE := $(MAKE)
 else
-	@set -e; for dir in $(SUBDIRS); do \
-	    $(MAKE) --no-print-directory -C $$dir -f "$(abs_srcdir)/$$dir/Makefile" $@; \
-	done
+Q := @
+SUBMAKE := $(MAKE) --no-print-directory
 endif
-endif
+
+# Recurse into subdirectories in parallel instead of using a serial shell loop.
+# Each subdirectory is mapped to a phony target (<dir>-all, <dir>-install, etc.).
+# GNU Make can then schedule sibling directories concurrently under -jN.
+all:     $(addsuffix -all,$(SUBDIRS))
+install: $(addsuffix -install,$(SUBDIRS))
+check:   $(addsuffix -check,$(SUBDIRS))
+
+.PHONY: $(addsuffix -all,$(SUBDIRS)) $(addsuffix -install,$(SUBDIRS)) $(addsuffix -check,$(SUBDIRS))
+
+# For each target (e.g. 'open-all'), strip the suffix to get the directory name,
+# build trunk-local targets first, and ensure the subdirectory exists.
+$(addsuffix -all,$(SUBDIRS)): %-all: trunk-all | $(SUBDIRS) $(MAKE_DEPS)
+	$(Q)$(SUBMAKE) -C "$*" -f "$(abs_srcdir)/$*/Makefile" all
+
+$(addsuffix -install,$(SUBDIRS)): %-install: trunk-install | $(SUBDIRS) $(MAKE_DEPS)
+	$(Q)$(SUBMAKE) -C "$*" -f "$(abs_srcdir)/$*/Makefile" install
+
+$(addsuffix -check,$(SUBDIRS)): %-check: trunk-check | $(SUBDIRS) $(MAKE_DEPS)
+	$(Q)$(SUBMAKE) -C "$*" -f "$(abs_srcdir)/$*/Makefile" check
 
 check: trunk-check
 
