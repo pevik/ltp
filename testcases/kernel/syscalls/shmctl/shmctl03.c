@@ -18,6 +18,7 @@ static void verify_ipcinfo(void)
 {
 	struct shminfo info;
 	unsigned long shmmax;
+	unsigned long long shmall;
 
 	TST_EXP_POSITIVE(shmctl(0, IPC_INFO, (struct shmid_ds *)&info));
 	if (!TST_PASS)
@@ -32,7 +33,18 @@ static void verify_ipcinfo(void)
 		TST_EXP_EQ_LU(info.shmmax, shmmax);
 
 	TST_ASSERT_ULONG(PATH_KERN_SHMMNI, info.shmmni);
-	TST_ASSERT_ULONG(PATH_KERN_SHMALL, info.shmall);
+
+	/*
+	 * On 32-bit compat, the kernel truncates the (64-bit) shmall to the
+	 * 32-bit compat shminfo, instead of clamping it like shmmax. The
+	 * /proc file still holds the untruncated value, so compare against
+	 * its low 32 bits.
+	 */
+	SAFE_FILE_SCANF(PATH_KERN_SHMALL, "%llu", &shmall);
+	if (tst_is_compat_mode())
+		TST_EXP_EQ_LU(info.shmall, (uint32_t)shmall);
+	else
+		TST_EXP_EQ_LU(info.shmall, shmall);
 }
 
 static struct tst_test test = {
