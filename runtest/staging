@@ -1,2 +1,3 @@
 # Tests for features that are not yet in the stable kernel ABI
 fanotify26 fanotify26
+inotify13 inotify13
