@@ -1139,6 +1139,12 @@ else
 	fi
 fi
 
+tst_net_unset_2_hosts_variables()
+{
+	unset IPV4_LHOST IPV4_RHOST IPV6_LHOST IPV6_RHOST LHOST_HWADDRS \
+		LHOST_IFACES RHOST RHOST_HWADDRS RHOST_IFACES
+}
+
 # detect IPv6 support on lhost for tests which don't use test links
 tst_net_detect_ipv6
 

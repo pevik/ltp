@@ -20,7 +20,7 @@ do_test()
 }
 
 # Force use of nested net namespace
-unset RHOST
+tst_net_use_netns || tst_net_unset_2_hosts_variables
 
 . nfs_lib.sh
 tst_run
