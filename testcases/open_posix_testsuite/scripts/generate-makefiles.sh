@@ -182,6 +182,7 @@ install: \$(INSTALL_DIR) run.sh
 				\$(INSTALL_DIR)/\$\$file;	\\
 		fi;						\\
 	done
+	\$(if \$(wildcard \$(srcdir)/*.args),install -m 00644 \$(wildcard \$(srcdir)/*.args) \$(INSTALL_DIR)/)
 	@if [ -d speculative ]; then \$(MAKE) -C speculative install; fi
 
 .PHONY: test
