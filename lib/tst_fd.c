@@ -30,29 +30,42 @@ struct tst_fd_desc {
 	const char *desc;
 };
 
+static void fd_path(char *buf, size_t len, const char *prefix)
+{
+	snprintf(buf, len, "%s_%d", prefix, getpid());
+}
+
 static void open_file(struct tst_fd *fd)
 {
-	fd->fd = SAFE_OPEN("fd_file", O_RDWR | O_CREAT, 0666);
-	SAFE_UNLINK("fd_file");
+	char path[64];
+
+	fd_path(path, sizeof(path), "fd_file");
+	fd->fd = SAFE_OPEN(path, O_RDWR | O_CREAT | O_EXCL, 0666);
+	SAFE_UNLINK(path);
 }
 
 static void open_path(struct tst_fd *fd)
 {
+	char path[64];
 	int tfd;
 
-	tfd = SAFE_CREAT("fd_file", 0666);
+	fd_path(path, sizeof(path), "fd_path");
+	tfd = SAFE_OPEN(path, O_RDWR | O_CREAT | O_EXCL, 0666);
 	SAFE_CLOSE(tfd);
 
-	fd->fd = SAFE_OPEN("fd_file", O_PATH);
+	fd->fd = SAFE_OPEN(path, O_PATH);
 
-	SAFE_UNLINK("fd_file");
+	SAFE_UNLINK(path);
 }
 
 static void open_dir(struct tst_fd *fd)
 {
-	SAFE_MKDIR("fd_dir", 0700);
-	fd->fd = SAFE_OPEN("fd_dir", O_DIRECTORY);
-	SAFE_RMDIR("fd_dir");
+	char path[64];
+
+	fd_path(path, sizeof(path), "fd_dir");
+	SAFE_MKDIR(path, 0700);
+	fd->fd = SAFE_OPEN(path, O_DIRECTORY);
+	SAFE_RMDIR(path);
 }
 
 static void open_dev_zero(struct tst_fd *fd)
