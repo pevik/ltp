@@ -307,9 +307,11 @@ static inline int fanotify_handle_supported_by_kernel(int flag)
 
 #define REQUIRE_FANOTIFY_EVENTS_SUPPORTED_ON_FS(init_flags, mark_type, mask, fname) do { \
 	if (mark_type)							\
-		REQUIRE_MARK_TYPE_SUPPORTED_ON_FS(mark_type, fname);	\
+		fanotify_flags_err_msg(#mark_type, __FILE__, __LINE__, tst_brk_, \
+			fanotify_mark_supported_on_fs(mark_type, fname)); \
 	if (init_flags)							\
-		REQUIRE_FANOTIFY_INIT_FLAGS_SUPPORTED_ON_FS(init_flags, fname); \
+		fanotify_flags_err_msg(#init_flags, __FILE__, __LINE__, tst_brk_, \
+			fanotify_init_flags_supported_on_fs(init_flags, fname)); \
 	fanotify_flags_err_msg(#mask, __FILE__, __LINE__, tst_brk_, \
 		fanotify_flags_supported_on_fs(init_flags, mark_type, mask, fname)); \
 } while (0)
