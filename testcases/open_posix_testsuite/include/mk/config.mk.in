@@ -14,4 +14,7 @@ testdir_rel := @testdir@
 testdir     := ${prefix}/${testdir_rel}
 testdir_bin := ${testdir}/bin
 
+ltp_bindir  := ${prefix}/testcases/bin
+runtestdir  := ${prefix}/runtest
+
 CFLAGS  += -std=c99 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -Wall -Wextra

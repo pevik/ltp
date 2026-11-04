@@ -74,7 +74,7 @@ generate-makefiles: distclean-makefiles
 		$(top_srcdir)/scripts/generate-makefiles.sh
 
 .PHONY: install
-install: bin-install conformance-install functional-install stress-install
+install: bin-install conformance-install functional-install stress-install runtest-install
 
 .PHONY: test
 test: conformance-test functional-test stress-test
@@ -118,6 +118,15 @@ stress-install:
 stress-test:
 	@rm -f `if echo "$(LOGFILE)" | grep -q '^/'; then echo "$(LOGFILE)"; else echo "\`pwd\`/$(LOGFILE)"; fi`.$@
 	@$(TEST_MAKE) -C stress test
+
+.PHONY: runtest-install
+runtest-install: $(addsuffix -install,$(SUBDIRS))
+	@mkdir -p $(DESTDIR)/$(runtestdir)
+	@set -e; for suite in $(SUBDIRS); do \
+		$(top_srcdir)/scripts/generate-runtest.sh \
+			$(DESTDIR)/$(testdir) "$(testdir_rel)" $$suite \
+			> $(DESTDIR)/$(runtestdir)/openposix-$$suite; \
+	done
 
 # Tools build and install targets.
 .PHONY: bin-install

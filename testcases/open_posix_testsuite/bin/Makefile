@@ -16,7 +16,7 @@ clean:
 	@rm -f t0.val
 
 .PHONY: install
-install: clean $(DESTDIR)/$(bindir) $(DESTDIR)/$(testdir_bin)
+install: clean $(DESTDIR)/$(bindir) $(DESTDIR)/$(testdir_bin) $(DESTDIR)/$(ltp_bindir)
 	set -e; for file in $(INSTALL_BIN_TARGETS); do           \
 		install -m 00755 $$file $(DESTDIR)/$(bindir)/$$file; \
 	done
@@ -27,9 +27,13 @@ install: clean $(DESTDIR)/$(bindir) $(DESTDIR)/$(testdir_bin)
 		install -m 00755 $$file $(DESTDIR)/$(testdir_bin)/$$file; \
 	done
 
+	install -m 00755 openposix_run.sh $(DESTDIR)/$(ltp_bindir)/
 
 $(DESTDIR)/$(bindir):
 	mkdir -p $@
 
 $(DESTDIR)/$(testdir_bin):
+	mkdir -p $@
+
+$(DESTDIR)/$(ltp_bindir):
 	mkdir -p $@
