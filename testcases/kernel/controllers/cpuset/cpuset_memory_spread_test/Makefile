@@ -22,6 +22,11 @@
 
 top_srcdir              ?= ../../../../..
 
+LTPLIBS = numa
+
 include $(top_srcdir)/include/mk/testcases.mk
-include $(abs_srcdir)/../Makefile.inc
+
+cpuset_memory_spread01: LDLIBS += $(NUMA_LIBS)
+cpuset_memory_spread01: LTPLDLIBS = -lltpnuma
+
 include $(top_srcdir)/include/mk/generic_leaf_target.mk

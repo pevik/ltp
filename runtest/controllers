@@ -357,7 +357,7 @@ cpuset_load_balance	cpuset_load_balance_test.sh
 cpuset_hotplug	cpuset_hotplug_test.sh
 cpuset_memory	cpuset_memory_testset.sh
 cpuset_memory_pressure	cpuset_memory_pressure_testset.sh
-cpuset_memory_spread	cpuset_memory_spread_testset.sh
+cpuset_memory_spread01	cpuset_memory_spread01
 
 cpuset_regression_test cpuset_regression_test.sh
 
