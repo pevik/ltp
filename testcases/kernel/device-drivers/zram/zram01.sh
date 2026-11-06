@@ -1,15 +1,34 @@
 #!/bin/sh
 # Copyright (c) 2015 Oracle and/or its affiliates. All Rights Reserved.
-# Copyright (c) 2019-2022 Petr Vorel <pvorel@suse.cz>
+# Copyright (c) 2019-2026 Petr Vorel <pvorel@suse.cz>
 # Author: Alexey Kodanev <alexey.kodanev@oracle.com>
 #
-# Test creates several zram devices with different filesystems on them.
-# It fills each device with zeros and checks that compression works.
+# Test creates zram device with a filesystem on it.
+# It fills the device with zeros and checks that compression works.
 
 TST_CNT=7
 TST_TESTFUNC="do_test"
 TST_NEEDS_CMDS="awk bc dd"
 TST_SETUP="setup"
+TST_OPTS="f:"
+TST_USAGE="usage"
+TST_PARSE_ARGS="parse_args"
+
+usage()
+{
+	cat << EOF
+usage: $0 [-f <ext2|ext3|ext4|xfs|btrfs|...>]
+
+OPTIONS
+-f	Specify the filesystem to be tested. If not specified,
+	\$LTP_DEV_FS_TYPE or ext2 is used.
+EOF
+}
+
+parse_args()
+{
+	TST_FS_TYPE="$2"
+}
 
 check_space_for_fs()
 {
@@ -18,14 +37,11 @@ check_space_for_fs()
 
 	ram_size=$(awk '/MemTotal:/ {print $2}' /proc/meminfo)
 	if [ "$ram_size" -lt 1048576 ]; then
-		tst_res TINFO "not enough space for $fs"
-		return 1
+		tst_brk TCONF "not enough space for $fs"
 	fi
-	return 0
 }
 
-# List of parameters for zram devices.
-# For each number the test creates own zram device.
+# Parameters for zram device.
 # NOTE about size:
 # The zram sysfs node 'disksize' value can be either in bytes,
 # or you can use mem suffixes. But in some old kernels, mem
@@ -36,34 +52,33 @@ check_space_for_fs()
 # bytes to make sure everything works correctly.
 initialize_vars()
 {
-	local fs limit size stream=-1
-	dev_num=0
+	local fs="${TST_FS_TYPE:-${LTP_DEV_FS_TYPE:-ext2}}"
+	local size="26214400"
+	local limit="25M"
 
-	for fs in $(tst_supported_fs -s tmpfs); do
-		size="26214400"
-		limit="25M"
+	[ "$fs" = "tmpfs" ] && tst_brk TCONF "tmpfs is not supported"
 
-		if [ "$fs" = "btrfs" -o "$fs" = "xfs" ]; then
-			check_space_for_fs "$fs" || continue
+	tst_supported_fs "$fs" || \
+		tst_brk TCONF "filesystem $fs is not supported"
 
-			if [ "$fs" = "btrfs" ]; then
-				size="402653184"
-			elif [ "$fs" = "xfs" ]; then
-				size=314572800
-			fi
-			limit="$((size/1024/1024))M"
+	if [ "$fs" = "btrfs" -o "$fs" = "xfs" ]; then
+		check_space_for_fs "$fs"
+
+		if [ "$fs" = "btrfs" ]; then
+			size="402653184"
+		elif [ "$fs" = "xfs" ]; then
+			size=314572800
 		fi
+		limit="$((size/1024/1024))M"
+	fi
 
-		stream=$((stream+3))
-		dev_num=$((dev_num+1))
-		zram_filesystems="$zram_filesystems $fs"
-		zram_mem_limits="$zram_mem_limits $limit"
-		zram_sizes="$zram_sizes $size"
-		zram_max_streams="$zram_max_streams $stream"
-	done
+	tst_res TINFO "testing $fs filesystem"
 
-	[ $dev_num -eq 0 ] && \
-		tst_brk TCONF "no suitable filesystem"
+	dev_num=1
+	zram_filesystems="$fs"
+	zram_mem_limits="$limit"
+	zram_sizes="$size"
+	zram_max_streams="2"
 }
 
 setup()

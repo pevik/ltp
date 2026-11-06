@@ -13,6 +13,15 @@ uaccess uaccess
 rcu_torture rcu_torture.sh
 lock_torture lock_torture.sh
 zram01 zram01.sh
+zram01_ext2 zram01.sh -f ext2
+zram01_ext3 zram01.sh -f ext3
+zram01_ext4 zram01.sh -f ext4
+zram01_xfs zram01.sh -f xfs
+zram01_btrfs zram01.sh -f btrfs
+zram01_bcachefs zram01.sh -f bcachefs
+zram01_vfat zram01.sh -f vfat
+zram01_exfat zram01.sh -f exfat
+zram01_ntfs zram01.sh -f ntfs
 zram02 zram02.sh
 zram03 zram03
 umip_basic_test umip_basic_test
